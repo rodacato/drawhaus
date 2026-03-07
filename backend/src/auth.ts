@@ -1,24 +1,19 @@
-import crypto from "crypto";
 import type { Request, Response } from "express";
 import { Router } from "express";
 import { compare, hash } from "bcryptjs";
-import { parse } from "cookie";
 import { z } from "zod";
 import { pool } from "./db";
-
-const COOKIE_NAME = "drawhaus_session";
-const SESSION_TTL_DAYS = 30;
+import {
+  COOKIE_NAME,
+  createSession,
+  deleteSession,
+  getCookieOptions,
+  getSessionToken,
+  getUserFromSession,
+} from "./session";
 
 type UserRow = {
   id: string;
-  email: string;
-  name: string;
-};
-
-type SessionRow = {
-  id: string;
-  user_id: string;
-  expires_at: string;
   email: string;
   name: string;
 };
@@ -42,74 +37,6 @@ function asyncRoute(
       console.error("Auth route failed", error);
       res.status(500).json({ error: "Internal server error" });
     });
-  };
-}
-
-function getCookieOptions() {
-  return {
-    httpOnly: true,
-    sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: SESSION_TTL_DAYS * 24 * 60 * 60 * 1000,
-  };
-}
-
-function getSessionToken(req: Request): string | null {
-  const cookieHeader = req.headers.cookie;
-  if (!cookieHeader) {
-    return null;
-  }
-
-  const parsedCookies = parse(cookieHeader);
-  return parsedCookies[COOKIE_NAME] ?? null;
-}
-
-function sessionExpiresAt(): Date {
-  const expires = new Date();
-  expires.setDate(expires.getDate() + SESSION_TTL_DAYS);
-  return expires;
-}
-
-async function createSession(userId: string): Promise<string> {
-  const token = crypto.randomBytes(32).toString("hex");
-  const expiresAt = sessionExpiresAt();
-
-  await pool.query("INSERT INTO sessions (id, user_id, expires_at) VALUES ($1, $2, $3)", [
-    token,
-    userId,
-    expiresAt.toISOString(),
-  ]);
-
-  return token;
-}
-
-async function getUserFromSession(token: string): Promise<UserRow | null> {
-  const { rows } = await pool.query<SessionRow>(
-    `
-      SELECT s.id, s.user_id, s.expires_at, u.email, u.name
-      FROM sessions s
-      JOIN users u ON u.id = s.user_id
-      WHERE s.id = $1
-      LIMIT 1
-    `,
-    [token]
-  );
-
-  const session = rows[0];
-  if (!session) {
-    return null;
-  }
-
-  if (new Date(session.expires_at).getTime() <= Date.now()) {
-    await pool.query("DELETE FROM sessions WHERE id = $1", [token]);
-    return null;
-  }
-
-  return {
-    id: session.user_id,
-    email: session.email,
-    name: session.name,
   };
 }
 
@@ -183,9 +110,9 @@ authRouter.post("/login", asyncRoute(async (req: Request, res: Response) => {
 }));
 
 authRouter.post("/logout", asyncRoute(async (req: Request, res: Response) => {
-  const token = getSessionToken(req);
+  const token = getSessionToken(req.headers.cookie);
   if (token) {
-    await pool.query("DELETE FROM sessions WHERE id = $1", [token]);
+    await deleteSession(token);
   }
 
   res.clearCookie(COOKIE_NAME, {
@@ -199,7 +126,7 @@ authRouter.post("/logout", asyncRoute(async (req: Request, res: Response) => {
 }));
 
 authRouter.get("/me", asyncRoute(async (req: Request, res: Response) => {
-  const token = getSessionToken(req);
+  const token = getSessionToken(req.headers.cookie);
   if (!token) {
     return res.status(401).json({ error: "Unauthorized" });
   }
