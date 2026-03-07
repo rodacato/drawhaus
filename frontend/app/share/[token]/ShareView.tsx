@@ -5,7 +5,7 @@ import type { ComponentType } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "@excalidraw/excalidraw/index.css";
 import { io, type Socket } from "socket.io-client";
-import { BoardSidebar } from "./BoardSidebar";
+import { ui } from "@/lib/ui";
 
 type ExcalidrawApi = {
   updateScene: (scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => void;
@@ -22,50 +22,54 @@ const ExcalidrawCanvas = Excalidraw as unknown as ComponentType<{
     elements: unknown[];
     appState: Record<string, unknown>;
   };
-  onChange: (elements: readonly unknown[], appState: Record<string, unknown>) => void;
+  onChange?: (elements: readonly unknown[], appState: Record<string, unknown>) => void;
+  viewModeEnabled?: boolean;
 }>;
 
-type BoardEditorProps = {
+type PresenceUser = { userId: string; name: string; isGuest: boolean };
+type CursorInfo = { name: string; x: number; y: number; lastSeen: number };
+
+type ShareViewProps = {
+  shareToken: string;
   diagramId: string;
   title: string;
-  userEmail: string;
+  role: "editor" | "viewer";
   initialElements: unknown[];
   initialAppState: Record<string, unknown>;
 };
 
-type SaveState = "idle" | "pending" | "saving" | "saved" | "error";
-type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
-type PresenceUser = { userId: string; name: string };
-type CursorInfo = { name: string; x: number; y: number; lastSeen: number };
-
 const THROTTLE_MS = 100;
 const SAVE_DEBOUNCE_MS = 1200;
+const CURSOR_TIMEOUT_MS = 5000;
 
 function jsonSafe<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-export default function BoardEditor({
+export default function ShareView({
+  shareToken,
   diagramId,
   title,
-  userEmail,
+  role,
   initialElements,
   initialAppState,
-}: BoardEditorProps) {
-  const [saveState, setSaveState] = useState<SaveState>("idle");
-  const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
-  const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+}: ShareViewProps) {
+  const [guestName, setGuestName] = useState("");
+  const [joined, setJoined] = useState(false);
   const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
   const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const throttleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastEmitTime = useRef(0);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
+
   const socketRef = useRef<Socket | null>(null);
   const excalidrawApiRef = useRef<ExcalidrawApi | null>(null);
   const applyingRemoteCounter = useRef(0);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const throttleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastEmitTime = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
+
+  const canEdit = role === "editor";
 
   const initialData = useMemo(
     () => ({
@@ -81,6 +85,21 @@ export default function BoardEditor({
     [initialElements, initialAppState]
   );
 
+  // Clean stale cursors
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCursors((prev) => {
+        const now = Date.now();
+        const next: Record<string, CursorInfo> = {};
+        for (const [k, v] of Object.entries(prev)) {
+          if (now - v.lastSeen < CURSOR_TIMEOUT_MS) next[k] = v;
+        }
+        return Object.keys(next).length !== Object.keys(prev).length ? next : prev;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -92,34 +111,10 @@ export default function BoardEditor({
     };
   }, []);
 
-  // Clean stale cursors
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCursors((prev) => {
-        const now = Date.now();
-        const next: Record<string, CursorInfo> = {};
-        for (const [k, v] of Object.entries(prev)) {
-          if (now - v.lastSeen < 5000) next[k] = v;
-        }
-        return Object.keys(next).length !== Object.keys(prev).length ? next : prev;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  function handleJoin() {
+    const name = guestName.trim() || "Guest";
+    setGuestName(name);
 
-  // Keyboard shortcut to toggle sidebar
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
-        e.preventDefault();
-        setSidebarOpen((prev) => !prev);
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_WS_URL ?? window.location.origin, {
       path: "/socket.io",
       transports: ["websocket", "polling"],
@@ -127,40 +122,24 @@ export default function BoardEditor({
     });
     socketRef.current = socket;
 
-    function joinRoom() {
-      socket.emit("join-room", { roomId: diagramId });
-    }
-
     socket.on("connect", () => {
-      setConnectionState("connected");
-      setConnectionError(null);
-      joinRoom();
+      socket.emit("join-room-guest", { shareToken, guestName: name });
     });
 
     socket.on("connect_error", (err) => {
-      console.error("Socket connect_error:", err.message);
-      setConnectionState("error");
       setConnectionError(err.message);
     });
 
-    socket.on("disconnect", (reason) => {
-      console.warn("Socket disconnected:", reason);
-      setConnectionState("disconnected");
-    });
-
     socket.on("room-error", ({ message }: { message: string }) => {
-      console.error("Room error:", message);
       setConnectionError(message);
-      setConnectionState("error");
     });
 
-    socket.on("room-joined", ({ role }: { role: string }) => {
-      setUserRole(role);
+    socket.on("room-joined", () => {
+      setJoined(true);
       setConnectionError(null);
     });
 
     socket.on("scene-from-db", ({ elements, appState }: { elements: unknown[]; appState: Record<string, unknown> }) => {
-      // On reconnect, only apply DB state if we have no local elements
       const localElements = excalidrawApiRef.current?.getSceneElements?.() ?? [];
       if (localElements.length > 0) return;
 
@@ -181,7 +160,6 @@ export default function BoardEditor({
       appState: Record<string, unknown>;
     }) => {
       if (fromSocketId === socket.id) return;
-
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ elements, appState: { ...appState, collaborators: new Map() } });
       requestAnimationFrame(() => {
@@ -191,11 +169,6 @@ export default function BoardEditor({
 
     socket.on("room-presence", ({ users }: { users: PresenceUser[] }) => {
       setPresenceUsers(users);
-    });
-
-    socket.on("scene-saved", () => {
-      lastSavedAt.current = new Date().toLocaleTimeString();
-      setSaveState("saved");
     });
 
     socket.on("cursor-moved", ({ userId, name: cursorName, x, y }: { userId: string; name: string; x: number; y: number }) => {
@@ -213,48 +186,22 @@ export default function BoardEditor({
       });
     });
 
-    return () => {
-      socket.disconnect();
-      socketRef.current = null;
-    };
-  }, [diagramId]);
-
-  const canEdit = userRole === "owner" || userRole === "editor";
+    socket.on("scene-saved", () => {
+      lastSavedAt.current = new Date().toLocaleTimeString();
+      setSaveState("saved");
+    });
+  }
 
   const persistScene = useCallback(
-    async (elements: unknown[], appState: Record<string, unknown>) => {
+    (elements: unknown[], appState: Record<string, unknown>) => {
       setSaveState("saving");
-      try {
-        const sanitizedAppState = jsonSafe({
-          ...appState,
-          collaborators: undefined,
+      const sanitizedAppState = jsonSafe({ ...appState, collaborators: undefined });
+      if (socketRef.current?.connected) {
+        socketRef.current.emit("save-scene", {
+          roomId: diagramId,
+          elements: jsonSafe(elements),
+          appState: sanitizedAppState,
         });
-        if (socketRef.current?.connected) {
-          socketRef.current.emit("save-scene", {
-            roomId: diagramId,
-            elements: jsonSafe(elements),
-            appState: sanitizedAppState,
-          });
-          return;
-        }
-
-        const response = await fetch(`/api/diagrams/${diagramId}`, {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            elements: jsonSafe(elements),
-            appState: sanitizedAppState,
-          }),
-        });
-        if (!response.ok) {
-          setSaveState("error");
-          return;
-        }
-        lastSavedAt.current = new Date().toLocaleTimeString();
-        setSaveState("saved");
-      } catch {
-        setSaveState("error");
       }
     },
     [diagramId]
@@ -267,10 +214,8 @@ export default function BoardEditor({
 
       setSaveState("pending");
 
-      // Strip non-serializable collaborators Map before sending
       const { collaborators: _c, ...cleanAppState } = appState;
 
-      // Throttle scene-update emissions
       const now = Date.now();
       const elapsed = now - lastEmitTime.current;
       if (elapsed >= THROTTLE_MS) {
@@ -292,7 +237,6 @@ export default function BoardEditor({
         }, THROTTLE_MS - elapsed);
       }
 
-      // Debounce save to DB
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       debounceTimer.current = setTimeout(() => {
         persistScene([...elements], appState);
@@ -300,6 +244,56 @@ export default function BoardEditor({
     },
     [diagramId, persistScene, canEdit]
   );
+
+  // Guest name prompt
+  if (!joined) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-surface px-4 py-8">
+        <div className={`${ui.card} ${ui.centerNarrow} space-y-4`}>
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-widest text-accent">
+              Drawhaus
+            </p>
+            <h1 className={ui.h1}>{title || "Shared Diagram"}</h1>
+            <p className={ui.subtitle}>
+              {canEdit
+                ? "Enter your name to join and collaborate."
+                : "Enter your name to view this diagram."}
+            </p>
+          </div>
+          {connectionError && (
+            <div className={ui.alertError}>{connectionError}</div>
+          )}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleJoin();
+            }}
+            className="space-y-3"
+          >
+            <label className={ui.label}>
+              Your name
+              <input
+                className={ui.input}
+                type="text"
+                placeholder="Guest"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                maxLength={50}
+                autoFocus
+              />
+            </label>
+            <button type="submit" className={`${ui.btn} ${ui.btnPrimary} w-full`}>
+              {canEdit ? "Join & Edit" : "View Diagram"}
+            </button>
+          </form>
+          <p className={ui.muted}>
+            Access: <span className="font-medium">{role}</span>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const saveLabel = {
     idle: "Ready",
@@ -317,45 +311,31 @@ export default function BoardEditor({
     error: "bg-red-100 text-red-700",
   }[saveState];
 
-  const connectionBadge = connectionState !== "connected" ? (
-    <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${
-      connectionState === "error"
-        ? "bg-red-100 text-red-700"
-        : connectionState === "disconnected"
-          ? "bg-amber-100 text-amber-700"
-          : "bg-blue-100 text-blue-700"
-    }`}>
-      {connectionState === "error"
-        ? connectionError ?? "Connection error"
-        : connectionState === "disconnected"
-          ? "Reconnecting..."
-          : "Connecting..."}
-    </div>
-  ) : null;
-
   return (
     <div className="relative h-screen w-screen">
-      {/* Sidebar drawer */}
-      <BoardSidebar
-        userEmail={userEmail}
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen((prev) => !prev)}
-      />
-
-      {/* Title - next to Excalidraw menu, matching its style */}
-      <div className="pointer-events-none fixed left-16 top-3 z-20 flex items-center gap-3">
+      {/* Top bar */}
+      <div className="pointer-events-none fixed left-4 top-3 z-20 flex items-center gap-3">
         <div className="pointer-events-auto rounded-lg bg-white px-4 py-2 shadow-sm">
           <span className="text-lg font-medium text-[#1b1b1f]">
             {title || "Untitled"}
           </span>
         </div>
-        <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${saveColor}`}>
-          {saveLabel}
+        <div className="pointer-events-auto rounded-full bg-purple-100 px-2.5 py-1 text-[10px] font-medium text-purple-700 shadow-sm">
+          {guestName} (guest)
         </div>
+        {canEdit && (
+          <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${saveColor}`}>
+            {saveLabel}
+          </div>
+        )}
+        {!canEdit && (
+          <div className="pointer-events-auto rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-medium text-gray-600 shadow-sm">
+            View only
+          </div>
+        )}
         <div className="pointer-events-auto rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-medium text-[#1b1b1f] shadow-sm">
           {presenceUsers.length || 1} online
         </div>
-        {connectionBadge}
       </div>
 
       {/* Cursors overlay */}
@@ -376,7 +356,7 @@ export default function BoardEditor({
         ))}
       </div>
 
-      {/* Fullscreen Excalidraw canvas */}
+      {/* Canvas */}
       <div
         className="h-full w-full"
         onPointerMove={(e) => {
@@ -392,7 +372,8 @@ export default function BoardEditor({
             excalidrawApiRef.current = api;
           }}
           initialData={initialData}
-          onChange={onChange}
+          onChange={canEdit ? onChange : undefined}
+          viewModeEnabled={!canEdit}
         />
       </div>
     </div>

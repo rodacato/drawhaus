@@ -47,6 +47,17 @@ export async function initSchema(): Promise<void> {
       CHECK (role IN ('editor', 'viewer'))
     );
 
+    CREATE TABLE IF NOT EXISTS share_links (
+      id TEXT PRIMARY KEY,
+      diagram_id UUID NOT NULL REFERENCES diagrams(id) ON DELETE CASCADE,
+      created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      role TEXT NOT NULL DEFAULT 'viewer',
+      expires_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      CHECK (role IN ('editor', 'viewer'))
+    );
+
+    CREATE INDEX IF NOT EXISTS share_links_diagram_id_idx ON share_links (diagram_id);
     CREATE INDEX IF NOT EXISTS diagrams_owner_id_idx ON diagrams (owner_id);
     CREATE INDEX IF NOT EXISTS diagrams_updated_at_idx ON diagrams (updated_at DESC);
     CREATE INDEX IF NOT EXISTS diagram_members_user_id_idx ON diagram_members (user_id);
