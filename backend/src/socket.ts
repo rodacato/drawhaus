@@ -14,14 +14,29 @@ type DiagramRow = {
   app_state: Record<string, unknown>;
 };
 
+type ShareLinkRow = {
+  diagram_id: string;
+  role: "editor" | "viewer";
+  expires_at: string | null;
+};
+
 type SocketData = {
   userId: string;
   userName: string;
   userEmail: string;
+  isGuest: boolean;
   roomRoles: Record<string, "owner" | "editor" | "viewer">;
 };
 
 type PresenceUser = {
+  userId: string;
+  name: string;
+  isGuest: boolean;
+};
+
+type CursorData = {
+  x: number;
+  y: number;
   userId: string;
   name: string;
 };
@@ -46,6 +61,17 @@ async function getAccess(diagramId: string, userId: string): Promise<AccessRow |
   return rows[0] ?? null;
 }
 
+async function resolveShareLink(token: string): Promise<ShareLinkRow | null> {
+  const { rows } = await pool.query<ShareLinkRow>(
+    "SELECT diagram_id, role, expires_at FROM share_links WHERE id = $1 LIMIT 1",
+    [token]
+  );
+  const link = rows[0];
+  if (!link) return null;
+  if (link.expires_at && new Date(link.expires_at).getTime() <= Date.now()) return null;
+  return link;
+}
+
 function getRoomPresenceUsers(io: Server, roomId: string): PresenceUser[] {
   const seen = new Set<string>();
   const users: PresenceUser[] = [];
@@ -58,7 +84,7 @@ function getRoomPresenceUsers(io: Server, roomId: string): PresenceUser[] {
     const data = s.data as SocketData;
     if (data.userId && !seen.has(data.userId)) {
       seen.add(data.userId);
-      users.push({ userId: data.userId, name: data.userName });
+      users.push({ userId: data.userId, name: data.userName, isGuest: data.isGuest ?? false });
     }
   }
   return users;
@@ -95,7 +121,9 @@ export function setupSocketServer(httpServer: HttpServer): Server {
 
   io.on("connection", (socket) => {
     socket.data.roomRoles = {};
+    socket.data.isGuest = false;
 
+    // Authenticated user join
     socket.on("join-room", async ({ roomId }: { roomId: string }) => {
       try {
         const token = getSessionToken(socket.handshake.headers.cookie);
@@ -122,6 +150,7 @@ export function setupSocketServer(httpServer: HttpServer): Server {
         socket.data.userId = authUser.id;
         socket.data.userName = authUser.name;
         socket.data.userEmail = authUser.email;
+        socket.data.isGuest = false;
         (socket.data.roomRoles as Record<string, string>)[roomId] = role;
 
         socket.join(roomId);
@@ -150,6 +179,58 @@ export function setupSocketServer(httpServer: HttpServer): Server {
       }
     });
 
+    // Guest join via share link
+    socket.on("join-room-guest", async ({
+      shareToken,
+      guestName,
+    }: {
+      shareToken: string;
+      guestName: string;
+    }) => {
+      try {
+        const name = (guestName || "").trim().slice(0, 50) || "Guest";
+        const link = await resolveShareLink(shareToken);
+        if (!link) {
+          socket.emit("room-error", { message: "Invalid or expired share link" });
+          return;
+        }
+
+        const roomId = link.diagram_id;
+        const guestId = `guest_${socket.id}`;
+
+        socket.data.userId = guestId;
+        socket.data.userName = name;
+        socket.data.userEmail = "";
+        socket.data.isGuest = true;
+        (socket.data.roomRoles as Record<string, string>)[roomId] = link.role;
+
+        socket.join(roomId);
+
+        const diagramRes = await pool.query<DiagramRow>(
+          "SELECT elements, app_state FROM diagrams WHERE id = $1 LIMIT 1",
+          [roomId]
+        );
+        const diagram = diagramRes.rows[0];
+        if (diagram) {
+          socket.emit("scene-from-db", {
+            elements: diagram.elements,
+            appState: diagram.app_state,
+          });
+        }
+
+        socket.emit("room-joined", { roomId, role: link.role });
+
+        io.to(roomId).emit("room-presence", {
+          roomId,
+          users: getRoomPresenceUsers(io, roomId),
+        });
+      } catch (error: unknown) {
+        console.error("join-room-guest failed", error);
+        socket.emit("room-error", { message: "Join failed" });
+      }
+    });
+
+    // Scene updates
     socket.on(
       "scene-update",
       ({
@@ -175,6 +256,24 @@ export function setupSocketServer(httpServer: HttpServer): Server {
       }
     );
 
+    // Cursor position broadcast
+    socket.on(
+      "cursor-move",
+      ({ roomId, x, y }: { roomId: string; x: number; y: number }) => {
+        if (!socket.rooms.has(roomId)) return;
+        if (!checkRateLimit(socket)) return;
+
+        const data = socket.data as SocketData;
+        socket.to(roomId).emit("cursor-moved", {
+          userId: data.userId,
+          name: data.userName,
+          x,
+          y,
+        } satisfies CursorData);
+      }
+    );
+
+    // Save scene
     socket.on(
       "save-scene",
       async ({
@@ -212,7 +311,6 @@ export function setupSocketServer(httpServer: HttpServer): Server {
 
         const futureUsers = getRoomPresenceUsers(io, roomId).filter(
           (u) => u.userId !== (socket.data as SocketData).userId ||
-            // Keep user if they have other sockets in the room
             Array.from(io.sockets.adapter.rooms.get(roomId) ?? []).some(
               (sid) => sid !== socket.id &&
                 (io.sockets.sockets.get(sid)?.data as SocketData)?.userId === (socket.data as SocketData).userId
@@ -222,6 +320,11 @@ export function setupSocketServer(httpServer: HttpServer): Server {
         socket.to(roomId).emit("room-presence", {
           roomId,
           users: futureUsers,
+        });
+
+        // Notify cursor removal
+        socket.to(roomId).emit("cursor-left", {
+          userId: (socket.data as SocketData).userId,
         });
       }
     });

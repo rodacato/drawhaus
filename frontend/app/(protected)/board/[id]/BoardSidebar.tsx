@@ -23,6 +23,9 @@ export function BoardSidebar({ userEmail, isOpen, onToggle }: BoardSidebarProps)
   const currentId = params.id as string;
   const [diagrams, setDiagrams] = useState<Diagram[]>([]);
   const [creating, setCreating] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -62,6 +65,33 @@ export function BoardSidebar({ userEmail, isOpen, onToggle }: BoardSidebarProps)
       // silent
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function createShareLink(role: "viewer" | "editor") {
+    setShareLoading(true);
+    setShareCopied(false);
+    try {
+      const res = await fetch(`/api/share/${currentId}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      if (!res.ok) return;
+      const payload = await res.json();
+      const token = payload.shareLink?.token;
+      if (token) {
+        const url = `${window.location.origin}/share/${token}`;
+        setShareUrl(url);
+        await navigator.clipboard.writeText(url);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2000);
+      }
+    } catch {
+      // silent
+    } finally {
+      setShareLoading(false);
     }
   }
 
@@ -133,6 +163,47 @@ export function BoardSidebar({ userEmail, isOpen, onToggle }: BoardSidebarProps)
             </svg>
             {creating ? "Creating..." : "New diagram"}
           </button>
+        </div>
+
+        {/* Share section */}
+        <div className="border-b border-white/10 p-3 space-y-2">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-widest text-white/40">
+            Share
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => createShareLink("viewer")}
+              disabled={shareLoading}
+              className="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 font-mono text-xs text-white/60 transition hover:bg-white/5 hover:text-white disabled:opacity-50"
+              type="button"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              View link
+            </button>
+            <button
+              onClick={() => createShareLink("editor")}
+              disabled={shareLoading}
+              className="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/10 font-mono text-xs text-white/60 transition hover:bg-white/5 hover:text-white disabled:opacity-50"
+              type="button"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              Edit link
+            </button>
+          </div>
+          {shareUrl && (
+            <div className="rounded-lg bg-white/5 p-2">
+              <p className="break-all font-mono text-[10px] text-white/50">{shareUrl}</p>
+              <p className="mt-1 font-mono text-[10px] text-emerald-400">
+                {shareCopied ? "Copied to clipboard!" : ""}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Diagram list */}

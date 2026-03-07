@@ -3,6 +3,7 @@ import cors from "cors";
 import { createServer } from "http";
 import { authRouter } from "./auth";
 import { diagramsRouter } from "./diagrams";
+import { shareRouter } from "./share";
 import { initSchema } from "./db";
 import { setupSocketServer } from "./socket";
 
@@ -24,6 +25,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/diagrams", diagramsRouter);
+app.use("/api/share", shareRouter);
 
 async function startServer(): Promise<void> {
   await initSchema();
