@@ -5,7 +5,7 @@ Self-hosted collaborative whiteboard MVP (Excalidraw-based) built with an AI-fir
 ## Getting Started
 
 ### Prerequisites
-- Node.js 20+
+- Node.js 22+
 - npm 10+
 
 ### Install dependencies
@@ -54,6 +54,22 @@ npm run build
 ```bash
 docker compose up
 ```
+
+### Dev Container (recommended for consistent setup)
+
+1. Open this repo in VS Code.
+2. Run `Dev Containers: Reopen in Container`.
+3. Wait for the post-install script to finish (`.devcontainer/post-install.sh`).
+4. Start both apps:
+
+```bash
+npm run dev
+```
+
+Inside the container:
+- Frontend: http://localhost:3000
+- Backend: http://localhost:4000
+- PostgreSQL: `db:5432` (also forwarded to localhost:5432)
 
 ---
 
@@ -106,4 +122,3 @@ When in doubt, or when requested, use the expert panel to get recommendations, r
 - Prefer proven patterns over novelty.
 - Protect auth and permissions in every API/socket path.
 - Document decisions briefly and move forward.
-
