@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "@excalidraw/excalidraw/index.css";
+import { io, type Socket } from "socket.io-client";
 import { BoardSidebar } from "./BoardSidebar";
 
 const Excalidraw = dynamic(
@@ -11,6 +12,9 @@ const Excalidraw = dynamic(
   { ssr: false }
 );
 const ExcalidrawCanvas = Excalidraw as unknown as ComponentType<{
+  excalidrawAPI?: (api: {
+    updateScene: (scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => void;
+  }) => void;
   initialData: {
     elements: unknown[];
     appState: Record<string, unknown>;
@@ -41,7 +45,13 @@ export default function BoardEditor({
 }: BoardEditorProps) {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [presenceCount, setPresenceCount] = useState(1);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const excalidrawApiRef = useRef<{
+    updateScene: (scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => void;
+  } | null>(null);
+  const isApplyingRemoteRef = useRef(false);
   const lastSavedAt = useRef<string | null>(null);
 
   const initialData = useMemo(
@@ -62,6 +72,10 @@ export default function BoardEditor({
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
     };
   }, []);
 
@@ -77,37 +91,110 @@ export default function BoardEditor({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const persistScene = useCallback(async function persistScene(elements: unknown[], appState: Record<string, unknown>) {
-    setSaveState("saving");
-    try {
-      const sanitizedAppState = jsonSafe({
-        ...appState,
-        collaborators: undefined,
-      });
-      const response = await fetch(`/api/diagrams/${diagramId}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          elements: jsonSafe(elements),
-          appState: sanitizedAppState,
-        }),
-      });
+  useEffect(() => {
+    const socket = io(process.env.NEXT_PUBLIC_WS_URL ?? window.location.origin, {
+      path: "/socket.io",
+      transports: ["websocket", "polling"],
+      withCredentials: true,
+    });
+    socketRef.current = socket;
 
-      if (!response.ok) {
-        setSaveState("error");
+    function joinRoom() {
+      socket.emit("join-room", { roomId: diagramId });
+    }
+
+    socket.on("connect", joinRoom);
+    socket.on("scene-from-db", ({ elements, appState }: { elements: unknown[]; appState: Record<string, unknown> }) => {
+      isApplyingRemoteRef.current = true;
+      excalidrawApiRef.current?.updateScene({ elements, appState });
+      setTimeout(() => {
+        isApplyingRemoteRef.current = false;
+      }, 0);
+    });
+    socket.on("scene-updated", ({
+      fromSocketId,
+      elements,
+      appState,
+    }: {
+      fromSocketId: string;
+      elements: unknown[];
+      appState: Record<string, unknown>;
+    }) => {
+      if (fromSocketId === socket.id) {
         return;
       }
+      isApplyingRemoteRef.current = true;
+      excalidrawApiRef.current?.updateScene({ elements, appState });
+      setTimeout(() => {
+        isApplyingRemoteRef.current = false;
+      }, 0);
+    });
+    socket.on("room-presence", ({ users }: { users: string[] }) => {
+      setPresenceCount(users.length);
+    });
+    socket.on("scene-saved", () => {
       lastSavedAt.current = new Date().toLocaleTimeString();
       setSaveState("saved");
-    } catch {
-      setSaveState("error");
-    }
+    });
+
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
   }, [diagramId]);
+
+  const persistScene = useCallback(
+    async (elements: unknown[], appState: Record<string, unknown>) => {
+      setSaveState("saving");
+      try {
+        const sanitizedAppState = jsonSafe({
+          ...appState,
+          collaborators: undefined,
+        });
+        if (socketRef.current?.connected) {
+          socketRef.current.emit("save-scene", {
+            roomId: diagramId,
+            elements: jsonSafe(elements),
+            appState: sanitizedAppState,
+          });
+          return;
+        }
+
+        const response = await fetch(`/api/diagrams/${diagramId}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            elements: jsonSafe(elements),
+            appState: sanitizedAppState,
+          }),
+        });
+        if (!response.ok) {
+          setSaveState("error");
+          return;
+        }
+        lastSavedAt.current = new Date().toLocaleTimeString();
+        setSaveState("saved");
+      } catch {
+        setSaveState("error");
+      }
+    },
+    [diagramId]
+  );
 
   const onChange = useCallback(
     (elements: readonly unknown[], appState: Record<string, unknown>) => {
+      if (isApplyingRemoteRef.current) {
+        return;
+      }
       setSaveState("pending");
+
+      socketRef.current?.emit("scene-update", {
+        roomId: diagramId,
+        elements: [...elements],
+        appState,
+      });
+
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }
@@ -115,7 +202,7 @@ export default function BoardEditor({
         persistScene([...elements], appState);
       }, 1200);
     },
-    [persistScene]
+    [diagramId, persistScene]
   );
 
   const saveLabel = {
@@ -153,11 +240,17 @@ export default function BoardEditor({
         <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${saveColor}`}>
           {saveLabel}
         </div>
+        <div className="pointer-events-auto rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-medium text-[#1b1b1f] shadow-sm">
+          {presenceCount} online
+        </div>
       </div>
 
       {/* Fullscreen Excalidraw canvas */}
       <div className="h-full w-full">
         <ExcalidrawCanvas
+          excalidrawAPI={(api) => {
+            excalidrawApiRef.current = api;
+          }}
           initialData={initialData}
           onChange={onChange}
         />
