@@ -1,0 +1,23 @@
+services:
+  workspace:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspaces/drawhaus:cached
+    command: sleep infinity
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: drawhaus
+      POSTGRES_USER: drawhaus
+      POSTGRES_PASSWORD: drawhaus
+    ports:
+      - "5432:5432"
+    volumes:
+      - devcontainer-pgdata:/var/lib/postgresql/data
+
+volumes:
+  devcontainer-pgdata:
