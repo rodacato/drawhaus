@@ -24,3 +24,20 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+/* Excalidraw fullscreen overrides */
+.excalidraw-container,
+.excalidraw {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.excalidraw .App-menu_top .buttonList {
+  gap: 4px;
+}
+
+/* Ensure Excalidraw canvas fills parent */
+.excalidraw-wrapper {
+  width: 100%;
+  height: 100%;
+}

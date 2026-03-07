@@ -163,6 +163,19 @@ before(() => {
 
     if (
       sql.startsWith(
+        "SELECT id, owner_id, title, elements, app_state, created_at, updated_at FROM diagrams WHERE id = $1 LIMIT 1"
+      )
+    ) {
+      const diagramId = params?.[0] as string;
+      const diagram = diagrams.get(diagramId);
+      if (!diagram) {
+        return { rows: [], rowCount: 0 } as unknown;
+      }
+      return { rows: [diagram], rowCount: 1 } as unknown;
+    }
+
+    if (
+      sql.startsWith(
         "UPDATE diagrams SET"
       ) &&
       sql.includes("RETURNING id, owner_id, title, elements, app_state, created_at, updated_at")
@@ -252,6 +265,12 @@ test("diagram CRUD works for owner", async () => {
   assert.equal(listRes.body.diagrams.length, 1);
   assert.equal(listRes.body.diagrams[0].title, "Roadmap");
 
+  const getRes = await request(app)
+    .get(`/api/diagrams/${diagramId}`)
+    .set("Cookie", `drawhaus_session=${token}`);
+  assert.equal(getRes.status, 200);
+  assert.equal(getRes.body.diagram.id, diagramId);
+
   const patchRes = await request(app)
     .patch(`/api/diagrams/${diagramId}`)
     .set("Cookie", `drawhaus_session=${token}`)
@@ -295,6 +314,11 @@ test("membership and permissions are enforced", async () => {
     .set("Cookie", `drawhaus_session=${memberToken}`);
   assert.equal(memberList.status, 200);
   assert.equal(memberList.body.diagrams.length, 1);
+
+  const memberGet = await request(app)
+    .get(`/api/diagrams/${diagramId}`)
+    .set("Cookie", `drawhaus_session=${memberToken}`);
+  assert.equal(memberGet.status, 200);
 
   const viewerPatch = await request(app)
     .patch(`/api/diagrams/${diagramId}`)

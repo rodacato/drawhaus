@@ -95,6 +95,44 @@ diagramsRouter.get(
   })
 );
 
+diagramsRouter.get(
+  "/:id",
+  asyncRoute(async (req, res) => {
+    const diagramId = String(req.params.id);
+    const userId = req.authUser.id;
+    const access = await getAccess(diagramId, userId);
+    if (!access) {
+      return res.status(404).json({ error: "Diagram not found" });
+    }
+
+    const { rows } = await pool.query<DiagramRow>(
+      `
+        SELECT id, owner_id, title, elements, app_state, created_at, updated_at
+        FROM diagrams
+        WHERE id = $1
+        LIMIT 1
+      `,
+      [diagramId]
+    );
+    const diagram = rows[0];
+    if (!diagram) {
+      return res.status(404).json({ error: "Diagram not found" });
+    }
+
+    return res.status(200).json({
+      diagram: {
+        id: diagram.id,
+        ownerId: diagram.owner_id,
+        title: diagram.title,
+        elements: diagram.elements,
+        appState: diagram.app_state,
+        createdAt: diagram.created_at,
+        updatedAt: diagram.updated_at,
+      },
+    });
+  })
+);
+
 diagramsRouter.post(
   "/",
   asyncRoute(async (req, res) => {

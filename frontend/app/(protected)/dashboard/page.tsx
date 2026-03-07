@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import Link from "next/link";
 import DashboardActions from "./actions";
 import { getBackendUrl } from "@/lib/backend";
 import { ui } from "@/lib/ui";
@@ -63,6 +64,9 @@ export default async function DashboardPage() {
                     Updated: {diagram.updatedAt ?? diagram.updated_at ?? "unknown"}
                   </p>
                 </div>
+                <Link className={`${ui.btn} ${ui.btnSecondary}`} href={`/board/${diagram.id}`}>
+                  Open board
+                </Link>
               </article>
             ))}
           </div>
