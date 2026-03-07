@@ -28,7 +28,14 @@ export default function DashboardActions() {
       } else if (!response.ok) {
         setStatus("Could not create diagram right now.");
       } else {
-        setStatus("Diagram created.");
+        const payload = (await response.json()) as { diagram?: { id?: string } };
+        const diagramId = payload.diagram?.id;
+        if (!diagramId) {
+          setStatus("Diagram created, but missing id.");
+          router.refresh();
+          return;
+        }
+        router.push(`/board/${diagramId}`);
         router.refresh();
       }
     } catch {
