@@ -39,6 +39,12 @@ npm run dev:backend    # Express only
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
 
+### Current frontend routes
+
+- `/login`
+- `/register`
+- `/dashboard` (protected)
+
 ### Lint
 
 ```bash
