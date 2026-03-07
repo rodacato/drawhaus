@@ -24,5 +24,14 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+# LLM / AI assistants
+.claude/
+.cursorrules
+.cursorignore
+.cursor/
+.aider*
+.copilot/
+.github/copilot/
+
 # TypeScript
 *.tsbuildinfo
