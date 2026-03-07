@@ -1,8 +1,10 @@
 import express from "express";
 import cors from "cors";
+import { createServer } from "http";
 import { authRouter } from "./auth";
 import { diagramsRouter } from "./diagrams";
 import { initSchema } from "./db";
+import { setupSocketServer } from "./socket";
 
 const app = express();
 const PORT = process.env.PORT ?? 4000;
@@ -25,8 +27,10 @@ app.use("/api/diagrams", diagramsRouter);
 
 async function startServer(): Promise<void> {
   await initSchema();
+  const httpServer = createServer(app);
+  setupSocketServer(httpServer);
 
-  app.listen(PORT, () => {
+  httpServer.listen(PORT, () => {
     console.log(`Backend running on http://localhost:${PORT}`);
   });
 }
