@@ -7,15 +7,17 @@ import "@excalidraw/excalidraw/index.css";
 import { io, type Socket } from "socket.io-client";
 import { BoardSidebar } from "./BoardSidebar";
 
+type ExcalidrawApi = {
+  updateScene: (scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => void;
+  getSceneElements?: () => readonly unknown[];
+};
+
 const Excalidraw = dynamic(
   async () => (await import("@excalidraw/excalidraw")).Excalidraw,
   { ssr: false }
 );
 const ExcalidrawCanvas = Excalidraw as unknown as ComponentType<{
-  excalidrawAPI?: (api: {
-    updateScene: (scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => void;
-    getSceneElements: () => readonly unknown[];
-  }) => void;
+  excalidrawAPI?: (api: ExcalidrawApi) => void;
   initialData: {
     elements: unknown[];
     appState: Record<string, unknown>;
@@ -59,10 +61,7 @@ export default function BoardEditor({
   const throttleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastEmitTime = useRef(0);
   const socketRef = useRef<Socket | null>(null);
-  const excalidrawApiRef = useRef<{
-    updateScene: (scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => void;
-    getSceneElements: () => readonly unknown[];
-  } | null>(null);
+  const excalidrawApiRef = useRef<ExcalidrawApi | null>(null);
   const applyingRemoteCounter = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
 
@@ -71,6 +70,7 @@ export default function BoardEditor({
       elements: initialElements,
       appState: {
         ...initialAppState,
+        collaborators: new Map(),
         gridModeEnabled: true,
         theme: "light",
         viewBackgroundColor: "#f8f9fc",
@@ -144,11 +144,11 @@ export default function BoardEditor({
 
     socket.on("scene-from-db", ({ elements, appState }: { elements: unknown[]; appState: Record<string, unknown> }) => {
       // On reconnect, only apply DB state if we have no local elements
-      const localElements = excalidrawApiRef.current?.getSceneElements() ?? [];
+      const localElements = excalidrawApiRef.current?.getSceneElements?.() ?? [];
       if (localElements.length > 0) return;
 
       applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({ elements, appState });
+      excalidrawApiRef.current?.updateScene({ elements, appState: { ...appState, collaborators: new Map() } });
       requestAnimationFrame(() => {
         applyingRemoteCounter.current -= 1;
       });
@@ -166,7 +166,7 @@ export default function BoardEditor({
       if (fromSocketId === socket.id) return;
 
       applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({ elements, appState });
+      excalidrawApiRef.current?.updateScene({ elements, appState: { ...appState, collaborators: new Map() } });
       requestAnimationFrame(() => {
         applyingRemoteCounter.current -= 1;
       });
@@ -235,6 +235,9 @@ export default function BoardEditor({
 
       setSaveState("pending");
 
+      // Strip non-serializable collaborators Map before sending
+      const { collaborators: _c, ...cleanAppState } = appState;
+
       // Throttle scene-update emissions
       const now = Date.now();
       const elapsed = now - lastEmitTime.current;
@@ -243,7 +246,7 @@ export default function BoardEditor({
         socketRef.current?.emit("scene-update", {
           roomId: diagramId,
           elements: [...elements],
-          appState,
+          appState: cleanAppState,
         });
       } else if (!throttleTimer.current) {
         throttleTimer.current = setTimeout(() => {
@@ -251,8 +254,8 @@ export default function BoardEditor({
           lastEmitTime.current = Date.now();
           socketRef.current?.emit("scene-update", {
             roomId: diagramId,
-            elements: [...(excalidrawApiRef.current?.getSceneElements() ?? elements)],
-            appState,
+            elements: [...(excalidrawApiRef.current?.getSceneElements?.() ?? elements)],
+            appState: cleanAppState,
           });
         }, THROTTLE_MS - elapsed);
       }
