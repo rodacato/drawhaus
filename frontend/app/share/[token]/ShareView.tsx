@@ -38,12 +38,55 @@ type ShareViewProps = {
   initialAppState: Record<string, unknown>;
 };
 
-const THROTTLE_MS = 100;
+const THROTTLE_MS = 50;
+const CURSOR_THROTTLE_MS = 30;
 const SAVE_DEBOUNCE_MS = 1200;
 const CURSOR_TIMEOUT_MS = 5000;
 
+type ExcalidrawElement = {
+  id: string;
+  version: number;
+  [key: string]: unknown;
+};
+
 function jsonSafe<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function mergeElements(
+  localElements: readonly unknown[],
+  remoteElements: unknown[]
+): unknown[] {
+  const localMap = new Map<string, ExcalidrawElement>();
+  for (const el of localElements) {
+    const e = el as ExcalidrawElement;
+    if (e.id) localMap.set(e.id, e);
+  }
+
+  const remoteMap = new Map<string, ExcalidrawElement>();
+  for (const el of remoteElements) {
+    const e = el as ExcalidrawElement;
+    if (e.id) remoteMap.set(e.id, e);
+  }
+
+  const merged = new Map<string, ExcalidrawElement>();
+
+  for (const [id, remote] of remoteMap) {
+    const local = localMap.get(id);
+    if (local && (local.version ?? 0) >= (remote.version ?? 0)) {
+      merged.set(id, local);
+    } else {
+      merged.set(id, remote);
+    }
+  }
+
+  for (const [id, local] of localMap) {
+    if (!remoteMap.has(id)) {
+      merged.set(id, local);
+    }
+  }
+
+  return Array.from(merged.values());
 }
 
 export default function ShareView({
@@ -67,6 +110,7 @@ export default function ShareView({
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const throttleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastEmitTime = useRef(0);
+  const lastCursorEmitTime = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
 
   const canEdit = role === "editor";
@@ -152,7 +196,7 @@ export default function ShareView({
 
     socket.on("scene-updated", ({
       fromSocketId,
-      elements,
+      elements: remoteElements,
       appState,
     }: {
       fromSocketId: string;
@@ -160,8 +204,10 @@ export default function ShareView({
       appState: Record<string, unknown>;
     }) => {
       if (fromSocketId === socket.id) return;
+      const localElements = excalidrawApiRef.current?.getSceneElements?.() ?? [];
+      const merged = mergeElements(localElements, remoteElements);
       applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({ elements, appState: { ...appState, collaborators: new Map() } });
+      excalidrawApiRef.current?.updateScene({ elements: merged, appState: { ...appState, collaborators: new Map() } });
       requestAnimationFrame(() => {
         applyingRemoteCounter.current -= 1;
       });
@@ -343,7 +389,7 @@ export default function ShareView({
         {Object.entries(cursors).map(([userId, cursor]) => (
           <div
             key={userId}
-            className="absolute transition-all duration-100"
+            className="absolute"
             style={{ left: cursor.x, top: cursor.y }}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -360,11 +406,15 @@ export default function ShareView({
       <div
         className="h-full w-full"
         onPointerMove={(e) => {
-          socketRef.current?.emit("cursor-move", {
-            roomId: diagramId,
-            x: e.clientX,
-            y: e.clientY,
-          });
+          const now = Date.now();
+          if (now - lastCursorEmitTime.current >= CURSOR_THROTTLE_MS) {
+            lastCursorEmitTime.current = now;
+            socketRef.current?.emit("cursor-move", {
+              roomId: diagramId,
+              x: e.clientX,
+              y: e.clientY,
+            });
+          }
         }}
       >
         <ExcalidrawCanvas
