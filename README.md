@@ -63,6 +63,17 @@ npm run typecheck
 npm run build
 ```
 
+### CI Expectations
+
+On every PR (and pushes to `master`/`main`), GitHub Actions runs:
+- install (`npm ci`)
+- lint (`npm run lint`)
+- typecheck (`npm run typecheck`)
+- backend tests (`npm run test --workspace=backend`)
+- build (`npm run build`)
+
+PRs should only be merged when CI is green.
+
 ### Docker (local dev)
 
 ```bash
