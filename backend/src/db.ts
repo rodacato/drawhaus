@@ -7,7 +7,7 @@ export const pool = new Pool({
   connectionString: databaseUrl,
 });
 
-export async function initAuthSchema(): Promise<void> {
+export async function initSchema(): Promise<void> {
   await pool.query(`
     CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -27,5 +27,28 @@ export async function initAuthSchema(): Promise<void> {
     );
 
     CREATE INDEX IF NOT EXISTS sessions_expires_at_idx ON sessions (expires_at);
+
+    CREATE TABLE IF NOT EXISTS diagrams (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title TEXT NOT NULL DEFAULT 'Untitled',
+      elements JSONB NOT NULL DEFAULT '[]',
+      app_state JSONB NOT NULL DEFAULT '{}',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE TABLE IF NOT EXISTS diagram_members (
+      diagram_id UUID NOT NULL REFERENCES diagrams(id) ON DELETE CASCADE,
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      role TEXT NOT NULL DEFAULT 'editor',
+      added_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (diagram_id, user_id),
+      CHECK (role IN ('editor', 'viewer'))
+    );
+
+    CREATE INDEX IF NOT EXISTS diagrams_owner_id_idx ON diagrams (owner_id);
+    CREATE INDEX IF NOT EXISTS diagrams_updated_at_idx ON diagrams (updated_at DESC);
+    CREATE INDEX IF NOT EXISTS diagram_members_user_id_idx ON diagram_members (user_id);
   `);
 }
