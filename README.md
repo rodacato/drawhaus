@@ -31,6 +31,14 @@ npm run dev:frontend   # Next.js only
 npm run dev:backend    # Express only
 ```
 
+### Current backend API
+
+- `GET /health`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+
 ### Lint
 
 ```bash
