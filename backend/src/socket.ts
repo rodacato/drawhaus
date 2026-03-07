@@ -14,6 +14,21 @@ type DiagramRow = {
   app_state: Record<string, unknown>;
 };
 
+type SocketData = {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  roomRoles: Record<string, "owner" | "editor" | "viewer">;
+};
+
+type PresenceUser = {
+  userId: string;
+  name: string;
+};
+
+const RATE_LIMIT_WINDOW_MS = 1000;
+const RATE_LIMIT_MAX = 30;
+
 async function getAccess(diagramId: string, userId: string): Promise<AccessRow | null> {
   const { rows } = await pool.query<AccessRow>(
     `
@@ -31,8 +46,42 @@ async function getAccess(diagramId: string, userId: string): Promise<AccessRow |
   return rows[0] ?? null;
 }
 
-function toRoomPresence(io: Server, roomId: string): string[] {
-  return Array.from(io.sockets.adapter.rooms.get(roomId) ?? []);
+function getRoomPresenceUsers(io: Server, roomId: string): PresenceUser[] {
+  const seen = new Set<string>();
+  const users: PresenceUser[] = [];
+  const socketIds = io.sockets.adapter.rooms.get(roomId);
+  if (!socketIds) return users;
+
+  for (const sid of socketIds) {
+    const s = io.sockets.sockets.get(sid);
+    if (!s) continue;
+    const data = s.data as SocketData;
+    if (data.userId && !seen.has(data.userId)) {
+      seen.add(data.userId);
+      users.push({ userId: data.userId, name: data.userName });
+    }
+  }
+  return users;
+}
+
+function checkRateLimit(socket: { data: Record<string, unknown> }): boolean {
+  const now = Date.now();
+  const windowStart = (socket.data._rlWindowStart as number) ?? 0;
+  if (now - windowStart > RATE_LIMIT_WINDOW_MS) {
+    socket.data._rlWindowStart = now;
+    socket.data._rlCount = 1;
+    return true;
+  }
+  const count = ((socket.data._rlCount as number) ?? 0) + 1;
+  socket.data._rlCount = count;
+  return count <= RATE_LIMIT_MAX;
+}
+
+function canEdit(socket: { data: Record<string, unknown> }, roomId: string): boolean {
+  const data = socket.data as SocketData;
+  if (!data.userId) return false;
+  const role = data.roomRoles?.[roomId];
+  return role === "owner" || role === "editor";
 }
 
 export function setupSocketServer(httpServer: HttpServer): Server {
@@ -45,6 +94,8 @@ export function setupSocketServer(httpServer: HttpServer): Server {
   });
 
   io.on("connection", (socket) => {
+    socket.data.roomRoles = {};
+
     socket.on("join-room", async ({ roomId }: { roomId: string }) => {
       try {
         const token = getSessionToken(socket.handshake.headers.cookie);
@@ -64,7 +115,15 @@ export function setupSocketServer(httpServer: HttpServer): Server {
           return;
         }
 
+        const role = access.owner_id === authUser.id
+          ? "owner"
+          : (access.role ?? "viewer");
+
         socket.data.userId = authUser.id;
+        socket.data.userName = authUser.name;
+        socket.data.userEmail = authUser.email;
+        (socket.data.roomRoles as Record<string, string>)[roomId] = role;
+
         socket.join(roomId);
 
         const diagramRes = await pool.query<DiagramRow>(
@@ -79,9 +138,11 @@ export function setupSocketServer(httpServer: HttpServer): Server {
           });
         }
 
+        socket.emit("room-joined", { roomId, role });
+
         io.to(roomId).emit("room-presence", {
           roomId,
-          users: toRoomPresence(io, roomId),
+          users: getRoomPresenceUsers(io, roomId),
         });
       } catch (error: unknown) {
         console.error("join-room failed", error);
@@ -100,13 +161,13 @@ export function setupSocketServer(httpServer: HttpServer): Server {
         elements: unknown[];
         appState: Record<string, unknown>;
       }) => {
-        const userId = socket.data.userId as string | undefined;
-        if (!userId) {
-          return;
-        }
+        if (!socket.rooms.has(roomId)) return;
+        if (!canEdit(socket, roomId)) return;
+        if (!checkRateLimit(socket)) return;
+
         socket.to(roomId).emit("scene-updated", {
           roomId,
-          fromUserId: userId,
+          fromUserId: (socket.data as SocketData).userId,
           fromSocketId: socket.id,
           elements,
           appState,
@@ -126,17 +187,9 @@ export function setupSocketServer(httpServer: HttpServer): Server {
         appState: Record<string, unknown>;
       }) => {
         try {
-          const userId = socket.data.userId as string | undefined;
-          if (!userId) {
-            return;
-          }
-          const access = await getAccess(roomId, userId);
-          if (!access) {
-            return;
-          }
-          if (access.owner_id !== userId && access.role !== "editor") {
-            return;
-          }
+          if (!socket.rooms.has(roomId)) return;
+          if (!canEdit(socket, roomId)) return;
+
           await pool.query(
             `
               UPDATE diagrams
@@ -155,12 +208,20 @@ export function setupSocketServer(httpServer: HttpServer): Server {
 
     socket.on("disconnecting", () => {
       for (const roomId of socket.rooms) {
-        if (roomId === socket.id) {
-          continue;
-        }
+        if (roomId === socket.id) continue;
+
+        const futureUsers = getRoomPresenceUsers(io, roomId).filter(
+          (u) => u.userId !== (socket.data as SocketData).userId ||
+            // Keep user if they have other sockets in the room
+            Array.from(io.sockets.adapter.rooms.get(roomId) ?? []).some(
+              (sid) => sid !== socket.id &&
+                (io.sockets.sockets.get(sid)?.data as SocketData)?.userId === (socket.data as SocketData).userId
+            )
+        );
+
         socket.to(roomId).emit("room-presence", {
           roomId,
-          users: toRoomPresence(io, roomId).filter((id) => id !== socket.id),
+          users: futureUsers,
         });
       }
     });

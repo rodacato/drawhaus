@@ -14,6 +14,7 @@ const Excalidraw = dynamic(
 const ExcalidrawCanvas = Excalidraw as unknown as ComponentType<{
   excalidrawAPI?: (api: {
     updateScene: (scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => void;
+    getSceneElements: () => readonly unknown[];
   }) => void;
   initialData: {
     elements: unknown[];
@@ -31,6 +32,11 @@ type BoardEditorProps = {
 };
 
 type SaveState = "idle" | "pending" | "saving" | "saved" | "error";
+type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
+type PresenceUser = { userId: string; name: string };
+
+const THROTTLE_MS = 100;
+const SAVE_DEBOUNCE_MS = 1200;
 
 function jsonSafe<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
@@ -44,14 +50,20 @@ export default function BoardEditor({
   initialAppState,
 }: BoardEditorProps) {
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [presenceCount, setPresenceCount] = useState(1);
+  const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const throttleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastEmitTime = useRef(0);
   const socketRef = useRef<Socket | null>(null);
   const excalidrawApiRef = useRef<{
     updateScene: (scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => void;
+    getSceneElements: () => readonly unknown[];
   } | null>(null);
-  const isApplyingRemoteRef = useRef(false);
+  const applyingRemoteCounter = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
 
   const initialData = useMemo(
@@ -69,9 +81,8 @@ export default function BoardEditor({
 
   useEffect(() => {
     return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      if (throttleTimer.current) clearTimeout(throttleTimer.current);
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
@@ -103,14 +114,46 @@ export default function BoardEditor({
       socket.emit("join-room", { roomId: diagramId });
     }
 
-    socket.on("connect", joinRoom);
-    socket.on("scene-from-db", ({ elements, appState }: { elements: unknown[]; appState: Record<string, unknown> }) => {
-      isApplyingRemoteRef.current = true;
-      excalidrawApiRef.current?.updateScene({ elements, appState });
-      setTimeout(() => {
-        isApplyingRemoteRef.current = false;
-      }, 0);
+    socket.on("connect", () => {
+      setConnectionState("connected");
+      setConnectionError(null);
+      joinRoom();
     });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connect_error:", err.message);
+      setConnectionState("error");
+      setConnectionError(err.message);
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.warn("Socket disconnected:", reason);
+      setConnectionState("disconnected");
+    });
+
+    socket.on("room-error", ({ message }: { message: string }) => {
+      console.error("Room error:", message);
+      setConnectionError(message);
+      setConnectionState("error");
+    });
+
+    socket.on("room-joined", ({ role }: { role: string }) => {
+      setUserRole(role);
+      setConnectionError(null);
+    });
+
+    socket.on("scene-from-db", ({ elements, appState }: { elements: unknown[]; appState: Record<string, unknown> }) => {
+      // On reconnect, only apply DB state if we have no local elements
+      const localElements = excalidrawApiRef.current?.getSceneElements() ?? [];
+      if (localElements.length > 0) return;
+
+      applyingRemoteCounter.current += 1;
+      excalidrawApiRef.current?.updateScene({ elements, appState });
+      requestAnimationFrame(() => {
+        applyingRemoteCounter.current -= 1;
+      });
+    });
+
     socket.on("scene-updated", ({
       fromSocketId,
       elements,
@@ -120,18 +163,19 @@ export default function BoardEditor({
       elements: unknown[];
       appState: Record<string, unknown>;
     }) => {
-      if (fromSocketId === socket.id) {
-        return;
-      }
-      isApplyingRemoteRef.current = true;
+      if (fromSocketId === socket.id) return;
+
+      applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ elements, appState });
-      setTimeout(() => {
-        isApplyingRemoteRef.current = false;
-      }, 0);
+      requestAnimationFrame(() => {
+        applyingRemoteCounter.current -= 1;
+      });
     });
-    socket.on("room-presence", ({ users }: { users: string[] }) => {
-      setPresenceCount(users.length);
+
+    socket.on("room-presence", ({ users }: { users: PresenceUser[] }) => {
+      setPresenceUsers(users);
     });
+
     socket.on("scene-saved", () => {
       lastSavedAt.current = new Date().toLocaleTimeString();
       setSaveState("saved");
@@ -142,6 +186,8 @@ export default function BoardEditor({
       socketRef.current = null;
     };
   }, [diagramId]);
+
+  const canEdit = userRole === "owner" || userRole === "editor";
 
   const persistScene = useCallback(
     async (elements: unknown[], appState: Record<string, unknown>) => {
@@ -184,25 +230,40 @@ export default function BoardEditor({
 
   const onChange = useCallback(
     (elements: readonly unknown[], appState: Record<string, unknown>) => {
-      if (isApplyingRemoteRef.current) {
-        return;
-      }
+      if (applyingRemoteCounter.current > 0) return;
+      if (!canEdit) return;
+
       setSaveState("pending");
 
-      socketRef.current?.emit("scene-update", {
-        roomId: diagramId,
-        elements: [...elements],
-        appState,
-      });
-
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
+      // Throttle scene-update emissions
+      const now = Date.now();
+      const elapsed = now - lastEmitTime.current;
+      if (elapsed >= THROTTLE_MS) {
+        lastEmitTime.current = now;
+        socketRef.current?.emit("scene-update", {
+          roomId: diagramId,
+          elements: [...elements],
+          appState,
+        });
+      } else if (!throttleTimer.current) {
+        throttleTimer.current = setTimeout(() => {
+          throttleTimer.current = null;
+          lastEmitTime.current = Date.now();
+          socketRef.current?.emit("scene-update", {
+            roomId: diagramId,
+            elements: [...(excalidrawApiRef.current?.getSceneElements() ?? elements)],
+            appState,
+          });
+        }, THROTTLE_MS - elapsed);
       }
+
+      // Debounce save to DB
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
       debounceTimer.current = setTimeout(() => {
         persistScene([...elements], appState);
-      }, 1200);
+      }, SAVE_DEBOUNCE_MS);
     },
-    [diagramId, persistScene]
+    [diagramId, persistScene, canEdit]
   );
 
   const saveLabel = {
@@ -220,6 +281,22 @@ export default function BoardEditor({
     saved: "bg-emerald-100 text-emerald-700",
     error: "bg-red-100 text-red-700",
   }[saveState];
+
+  const connectionBadge = connectionState !== "connected" ? (
+    <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${
+      connectionState === "error"
+        ? "bg-red-100 text-red-700"
+        : connectionState === "disconnected"
+          ? "bg-amber-100 text-amber-700"
+          : "bg-blue-100 text-blue-700"
+    }`}>
+      {connectionState === "error"
+        ? connectionError ?? "Connection error"
+        : connectionState === "disconnected"
+          ? "Reconnecting..."
+          : "Connecting..."}
+    </div>
+  ) : null;
 
   return (
     <div className="relative h-screen w-screen">
@@ -241,8 +318,9 @@ export default function BoardEditor({
           {saveLabel}
         </div>
         <div className="pointer-events-auto rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-medium text-[#1b1b1f] shadow-sm">
-          {presenceCount} online
+          {presenceUsers.length || 1} online
         </div>
+        {connectionBadge}
       </div>
 
       {/* Fullscreen Excalidraw canvas */}
