@@ -69,6 +69,11 @@ npm run build
 docker compose up
 ```
 
+This boots:
+- Frontend on `http://localhost:3300`
+- Backend on `http://localhost:4300`
+- PostgreSQL on `localhost:5643` (`drawhaus/drawhaus`)
+
 ### Dev Container (recommended for consistent setup)
 
 1. Open this repo in VS Code.
