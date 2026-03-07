@@ -42,7 +42,8 @@ type CursorData = {
 };
 
 const RATE_LIMIT_WINDOW_MS = 1000;
-const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_MAX_SCENE = 30;
+const RATE_LIMIT_MAX_CURSOR = 60;
 
 async function getAccess(diagramId: string, userId: string): Promise<AccessRow | null> {
   const { rows } = await pool.query<AccessRow>(
@@ -90,17 +91,19 @@ function getRoomPresenceUsers(io: Server, roomId: string): PresenceUser[] {
   return users;
 }
 
-function checkRateLimit(socket: { data: Record<string, unknown> }): boolean {
+function checkRateLimit(socket: { data: Record<string, unknown> }, bucket: string, max: number): boolean {
   const now = Date.now();
-  const windowStart = (socket.data._rlWindowStart as number) ?? 0;
+  const startKey = `_rl_${bucket}_start`;
+  const countKey = `_rl_${bucket}_count`;
+  const windowStart = (socket.data[startKey] as number) ?? 0;
   if (now - windowStart > RATE_LIMIT_WINDOW_MS) {
-    socket.data._rlWindowStart = now;
-    socket.data._rlCount = 1;
+    socket.data[startKey] = now;
+    socket.data[countKey] = 1;
     return true;
   }
-  const count = ((socket.data._rlCount as number) ?? 0) + 1;
-  socket.data._rlCount = count;
-  return count <= RATE_LIMIT_MAX;
+  const count = ((socket.data[countKey] as number) ?? 0) + 1;
+  socket.data[countKey] = count;
+  return count <= max;
 }
 
 function canEdit(socket: { data: Record<string, unknown> }, roomId: string): boolean {
@@ -244,7 +247,7 @@ export function setupSocketServer(httpServer: HttpServer): Server {
       }) => {
         if (!socket.rooms.has(roomId)) return;
         if (!canEdit(socket, roomId)) return;
-        if (!checkRateLimit(socket)) return;
+        if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
 
         socket.to(roomId).emit("scene-updated", {
           roomId,
@@ -261,7 +264,7 @@ export function setupSocketServer(httpServer: HttpServer): Server {
       "cursor-move",
       ({ roomId, x, y }: { roomId: string; x: number; y: number }) => {
         if (!socket.rooms.has(roomId)) return;
-        if (!checkRateLimit(socket)) return;
+        if (!checkRateLimit(socket, "cursor", RATE_LIMIT_MAX_CURSOR)) return;
 
         const data = socket.data as SocketData;
         socket.to(roomId).emit("cursor-moved", {
