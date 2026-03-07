@@ -2,12 +2,67 @@
 
 Self-hosted collaborative whiteboard MVP (Excalidraw-based) built with an AI-first workflow.
 
+## Getting Started
+
+### Prerequisites
+- Node.js 20+
+- npm 10+
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Run locally (both services)
+
+```bash
+npm run dev
+```
+
+This starts:
+- **Frontend** (Next.js) at http://localhost:3000
+- **Backend** (Express) at http://localhost:4000
+
+### Run services individually
+
+```bash
+npm run dev:frontend   # Next.js only
+npm run dev:backend    # Express only
+```
+
+### Lint
+
+```bash
+npm run lint
+```
+
+### Type-check
+
+```bash
+npm run typecheck
+```
+
+### Build
+
+```bash
+npm run build
+```
+
+### Docker (local dev)
+
+```bash
+docker compose up
+```
+
+---
+
 ## Goal
 Build a working MVP mainly for personal use, friends, and coworkers, with minimal manual coding.
 
 ## Core Stack (Planned)
-- Next.js 14 (frontend)
-- Express + Socket.IO (backend)
+- Next.js 14 (frontend) — `frontend/`
+- Express + Socket.IO (backend) — `backend/`
 - PostgreSQL (database)
 - Docker Compose + Caddy (deployment)
 - GitHub Actions (CI/CD automation)
