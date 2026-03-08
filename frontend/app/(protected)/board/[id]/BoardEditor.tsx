@@ -118,6 +118,7 @@ export default function BoardEditor({
   const excalidrawApiRef = useRef<ExcalidrawApi | null>(null);
   const applyingRemoteCounter = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
+  const pendingSceneRef = useRef<{ elements: unknown[]; appState: Record<string, unknown> } | null>(null);
 
   const cacheKey = `drawhaus_scene_${diagramId}`;
 
@@ -227,13 +228,16 @@ export default function BoardEditor({
       setConnectionError(null);
     });
 
-    socket.on("scene-from-db", ({ elements, appState }: { elements: unknown[]; appState: Record<string, unknown> }) => {
-      // On reconnect, only apply DB state if we have no local elements
-      const localElements = excalidrawApiRef.current?.getSceneElements?.() ?? [];
+    socket.on("scene-from-db", ({ elements }: { elements: unknown[] }) => {
+      if (!excalidrawApiRef.current) {
+        pendingSceneRef.current = { elements, appState: {} };
+        return;
+      }
+      const localElements = excalidrawApiRef.current.getSceneElements?.() ?? [];
       if (localElements.length > 0) return;
 
       applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({ elements, appState: { ...appState, collaborators: new Map() } });
+      excalidrawApiRef.current.updateScene({ elements });
       requestAnimationFrame(() => {
         applyingRemoteCounter.current -= 1;
       });
@@ -242,11 +246,9 @@ export default function BoardEditor({
     socket.on("scene-updated", ({
       fromSocketId,
       elements: remoteElements,
-      appState,
     }: {
       fromSocketId: string;
       elements: unknown[];
-      appState: Record<string, unknown>;
     }) => {
       if (fromSocketId === socket.id) return;
 
@@ -254,7 +256,7 @@ export default function BoardEditor({
       const merged = mergeElements(localElements, remoteElements);
 
       applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({ elements: merged, appState: { ...appState, collaborators: new Map() } });
+      excalidrawApiRef.current?.updateScene({ elements: merged });
       requestAnimationFrame(() => {
         applyingRemoteCounter.current -= 1;
       });
@@ -345,10 +347,7 @@ export default function BoardEditor({
 
       setSaveState("pending");
 
-      // Strip non-serializable collaborators Map before sending
-      const { collaborators: _c, ...cleanAppState } = appState;
-
-      // Throttle scene-update emissions
+      // Throttle scene-update emissions (only sync elements, not appState/viewport)
       const now = Date.now();
       const elapsed = now - lastEmitTime.current;
       if (elapsed >= THROTTLE_MS) {
@@ -356,7 +355,6 @@ export default function BoardEditor({
         socketRef.current?.emit("scene-update", {
           roomId: diagramId,
           elements: [...elements],
-          appState: cleanAppState,
         });
       } else if (!throttleTimer.current) {
         throttleTimer.current = setTimeout(() => {
@@ -365,7 +363,6 @@ export default function BoardEditor({
           socketRef.current?.emit("scene-update", {
             roomId: diagramId,
             elements: [...(excalidrawApiRef.current?.getSceneElements?.() ?? elements)],
-            appState: cleanAppState,
           });
         }, THROTTLE_MS - elapsed);
       }
@@ -472,6 +469,15 @@ export default function BoardEditor({
         <ExcalidrawCanvas
           excalidrawAPI={(api) => {
             excalidrawApiRef.current = api;
+            if (pendingSceneRef.current) {
+              const pending = pendingSceneRef.current;
+              pendingSceneRef.current = null;
+              applyingRemoteCounter.current += 1;
+              api.updateScene({ elements: pending.elements });
+              requestAnimationFrame(() => {
+                applyingRemoteCounter.current -= 1;
+              });
+            }
           }}
           initialData={initialData}
           onChange={onChange}

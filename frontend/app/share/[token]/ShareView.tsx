@@ -117,6 +117,7 @@ export default function ShareView({
   const lastEmitTime = useRef(0);
   const lastCursorEmitTime = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
+  const pendingSceneRef = useRef<{ elements: unknown[] } | null>(null);
 
   const canEdit = role === "editor";
   const cacheKey = `drawhaus_scene_${diagramId}`;
@@ -214,12 +215,16 @@ export default function ShareView({
       setConnectionError(null);
     });
 
-    socket.on("scene-from-db", ({ elements, appState }: { elements: unknown[]; appState: Record<string, unknown> }) => {
-      const localElements = excalidrawApiRef.current?.getSceneElements?.() ?? [];
+    socket.on("scene-from-db", ({ elements }: { elements: unknown[] }) => {
+      if (!excalidrawApiRef.current) {
+        pendingSceneRef.current = { elements };
+        return;
+      }
+      const localElements = excalidrawApiRef.current.getSceneElements?.() ?? [];
       if (localElements.length > 0) return;
 
       applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({ elements, appState: { ...appState, collaborators: new Map() } });
+      excalidrawApiRef.current.updateScene({ elements });
       requestAnimationFrame(() => {
         applyingRemoteCounter.current -= 1;
       });
@@ -228,17 +233,15 @@ export default function ShareView({
     socket.on("scene-updated", ({
       fromSocketId,
       elements: remoteElements,
-      appState,
     }: {
       fromSocketId: string;
       elements: unknown[];
-      appState: Record<string, unknown>;
     }) => {
       if (fromSocketId === socket.id) return;
       const localElements = excalidrawApiRef.current?.getSceneElements?.() ?? [];
       const merged = mergeElements(localElements, remoteElements);
       applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({ elements: merged, appState: { ...appState, collaborators: new Map() } });
+      excalidrawApiRef.current?.updateScene({ elements: merged });
       requestAnimationFrame(() => {
         applyingRemoteCounter.current -= 1;
       });
@@ -305,8 +308,6 @@ export default function ShareView({
 
       setSaveState("pending");
 
-      const { collaborators: _c, ...cleanAppState } = appState;
-
       const now = Date.now();
       const elapsed = now - lastEmitTime.current;
       if (elapsed >= THROTTLE_MS) {
@@ -314,7 +315,6 @@ export default function ShareView({
         socketRef.current?.emit("scene-update", {
           roomId: diagramId,
           elements: [...elements],
-          appState: cleanAppState,
         });
       } else if (!throttleTimer.current) {
         throttleTimer.current = setTimeout(() => {
@@ -323,7 +323,6 @@ export default function ShareView({
           socketRef.current?.emit("scene-update", {
             roomId: diagramId,
             elements: [...(excalidrawApiRef.current?.getSceneElements?.() ?? elements)],
-            appState: cleanAppState,
           });
         }, THROTTLE_MS - elapsed);
       }
@@ -465,6 +464,15 @@ export default function ShareView({
         <ExcalidrawCanvas
           excalidrawAPI={(api) => {
             excalidrawApiRef.current = api;
+            if (pendingSceneRef.current) {
+              const pending = pendingSceneRef.current;
+              pendingSceneRef.current = null;
+              applyingRemoteCounter.current += 1;
+              api.updateScene({ elements: pending.elements });
+              requestAnimationFrame(() => {
+                applyingRemoteCounter.current -= 1;
+              });
+            }
           }}
           initialData={initialData}
           onChange={canEdit ? onChange : undefined}
