@@ -1,34 +1,12 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import type { ComponentType } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import "@excalidraw/excalidraw/index.css";
-import { io, type Socket } from "socket.io-client";
+import { useEffect, useRef, useState } from "react";
+import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
+import { CursorOverlay } from "@/components/CursorOverlay";
+import { ConnectionBadge } from "@/components/ConnectionBadge";
+import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
+import { useCollaboration } from "@/lib/hooks/useCollaboration";
 import { ui } from "@/lib/ui";
-import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/app/(protected)/board/[id]/BoardToolbar";
-
-type ExcalidrawApi = {
-  updateScene: (scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => void;
-  getSceneElements?: () => readonly unknown[];
-};
-
-const Excalidraw = dynamic(
-  async () => (await import("@excalidraw/excalidraw")).Excalidraw,
-  { ssr: false }
-);
-const ExcalidrawCanvas = Excalidraw as unknown as ComponentType<{
-  excalidrawAPI?: (api: ExcalidrawApi) => void;
-  initialData: {
-    elements: unknown[];
-    appState: Record<string, unknown>;
-  };
-  onChange?: (elements: readonly unknown[], appState: Record<string, unknown>) => void;
-  viewModeEnabled?: boolean;
-}>;
-
-type PresenceUser = { userId: string; name: string; isGuest: boolean };
-type CursorInfo = { name: string; x: number; y: number; lastSeen: number };
 
 type ShareViewProps = {
   shareToken: string;
@@ -38,57 +16,6 @@ type ShareViewProps = {
   initialElements: unknown[];
   initialAppState: Record<string, unknown>;
 };
-
-const THROTTLE_MS = 50;
-const CURSOR_THROTTLE_MS = 30;
-const SAVE_DEBOUNCE_MS = 1200;
-const CURSOR_TIMEOUT_MS = 5000;
-
-type ExcalidrawElement = {
-  id: string;
-  version: number;
-  [key: string]: unknown;
-};
-
-function jsonSafe<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
-
-function mergeElements(
-  localElements: readonly unknown[],
-  remoteElements: unknown[]
-): unknown[] {
-  const localMap = new Map<string, ExcalidrawElement>();
-  for (const el of localElements) {
-    const e = el as ExcalidrawElement;
-    if (e.id) localMap.set(e.id, e);
-  }
-
-  const remoteMap = new Map<string, ExcalidrawElement>();
-  for (const el of remoteElements) {
-    const e = el as ExcalidrawElement;
-    if (e.id) remoteMap.set(e.id, e);
-  }
-
-  const merged = new Map<string, ExcalidrawElement>();
-
-  for (const [id, remote] of remoteMap) {
-    const local = localMap.get(id);
-    if (local && (local.version ?? 0) >= (remote.version ?? 0)) {
-      merged.set(id, local);
-    } else {
-      merged.set(id, remote);
-    }
-  }
-
-  for (const [id, local] of localMap) {
-    if (!remoteMap.has(id)) {
-      merged.set(id, local);
-    }
-  }
-
-  return Array.from(merged.values());
-}
 
 export default function ShareView({
   shareToken,
@@ -105,94 +32,8 @@ export default function ShareView({
   });
   const [joined, setJoined] = useState(false);
   const autoJoinedRef = useRef(false);
-  const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
-  const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
-  const [connectionState, setConnectionState] = useState<"connecting" | "connected" | "disconnected" | "error">("connecting");
-  const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [saveState, setSaveState] = useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
-  const [followingUserId, setFollowingUserId] = useState<string | null>(null);
-  const [selfUserId, setSelfUserId] = useState<string | null>(null);
-  const [toolbarOpen, setToolbarOpen] = useState(false);
-
-  const socketRef = useRef<Socket | null>(null);
-  const excalidrawApiRef = useRef<ExcalidrawApi | null>(null);
-  const applyingRemoteCounter = useRef(0);
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const throttleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastEmitTime = useRef(0);
-  const lastCursorEmitTime = useRef(0);
-  const lastViewportEmitTime = useRef(0);
-  const followingUserIdRef = useRef<string | null>(null);
-  const lastSavedAt = useRef<string | null>(null);
-  const pendingSceneRef = useRef<{ elements: unknown[] } | null>(null);
 
   const canEdit = role === "editor";
-  const cacheKey = `drawhaus_scene_${diagramId}`;
-
-  useEffect(() => {
-    followingUserIdRef.current = followingUserId;
-  }, [followingUserId]);
-
-  useEffect(() => {
-    if (followingUserId && !presenceUsers.some((u) => u.userId === followingUserId)) {
-      setFollowingUserId(null);
-    }
-  }, [presenceUsers, followingUserId]);
-
-  const initialData = useMemo(() => {
-    // Try localStorage cache first for instant load
-    let elements = initialElements;
-    let appState = initialAppState;
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed.elements) && parsed.elements.length > 0) {
-          elements = parsed.elements;
-        }
-        if (parsed.appState) {
-          appState = parsed.appState;
-        }
-      }
-    } catch { /* ignore */ }
-
-    return {
-      elements,
-      appState: {
-        ...appState,
-        collaborators: new Map(),
-        gridModeEnabled: true,
-        theme: "light",
-        viewBackgroundColor: "#f8f9fc",
-      },
-    };
-  }, [initialElements, initialAppState, cacheKey]);
-
-  // Clean stale cursors
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCursors((prev) => {
-        const now = Date.now();
-        const next: Record<string, CursorInfo> = {};
-        for (const [k, v] of Object.entries(prev)) {
-          if (now - v.lastSeen < CURSOR_TIMEOUT_MS) next[k] = v;
-        }
-        return Object.keys(next).length !== Object.keys(prev).length ? next : prev;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      if (throttleTimer.current) clearTimeout(throttleTimer.current);
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-    };
-  }, []);
 
   // Auto-join if name was previously saved
   useEffect(() => {
@@ -201,203 +42,16 @@ export default function ShareView({
     if (saved) {
       autoJoinedRef.current = true;
       setGuestName(saved);
-      connectSocket(saved);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function connectSocket(name: string) {
-
-    const socket = io(process.env.NEXT_PUBLIC_WS_URL ?? window.location.origin, {
-      path: "/socket.io",
-      transports: ["websocket", "polling"],
-      withCredentials: true,
-    });
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
-      setConnectionState("connected");
-      setConnectionError(null);
-      socket.emit("join-room-guest", { shareToken, guestName: name });
-    });
-
-    socket.on("connect_error", (err) => {
-      console.warn("Socket connect_error:", err.message);
-      setConnectionState("error");
-      setConnectionError(err.message);
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.warn("Socket disconnected:", reason);
-      setConnectionState("disconnected");
-    });
-
-    socket.on("room-error", ({ message }: { message: string }) => {
-      console.warn("Room error:", message);
-      setConnectionError(message);
-      setConnectionState("error");
-    });
-
-    socket.on("room-joined", ({ userId }: { userId?: string }) => {
       setJoined(true);
-      if (userId) setSelfUserId(userId);
-      setConnectionError(null);
-    });
-
-    socket.on("scene-from-db", ({ elements }: { elements: unknown[] }) => {
-      if (!excalidrawApiRef.current) {
-        pendingSceneRef.current = { elements };
-        return;
-      }
-      const localElements = excalidrawApiRef.current.getSceneElements?.() ?? [];
-      if (localElements.length > 0) return;
-
-      applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current.updateScene({ elements });
-      requestAnimationFrame(() => {
-        applyingRemoteCounter.current -= 1;
-      });
-    });
-
-    socket.on("scene-updated", ({
-      fromSocketId,
-      elements: remoteElements,
-    }: {
-      fromSocketId: string;
-      elements: unknown[];
-    }) => {
-      if (fromSocketId === socket.id) return;
-      const localElements = excalidrawApiRef.current?.getSceneElements?.() ?? [];
-      const merged = mergeElements(localElements, remoteElements);
-      applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({ elements: merged });
-      requestAnimationFrame(() => {
-        applyingRemoteCounter.current -= 1;
-      });
-    });
-
-    socket.on("room-presence", ({ users }: { users: PresenceUser[] }) => {
-      setPresenceUsers(users);
-    });
-
-    socket.on("cursor-moved", ({ userId, name: cursorName, x, y }: { userId: string; name: string; x: number; y: number }) => {
-      setCursors((prev) => ({
-        ...prev,
-        [userId]: { name: cursorName, x, y, lastSeen: Date.now() },
-      }));
-    });
-
-    socket.on("cursor-left", ({ userId }: { userId: string }) => {
-      setCursors((prev) => {
-        const next = { ...prev };
-        delete next[userId];
-        return next;
-      });
-    });
-
-    socket.on("viewport-updated", ({
-      userId,
-      scrollX,
-      scrollY,
-      zoom,
-    }: {
-      userId: string;
-      scrollX: number;
-      scrollY: number;
-      zoom: number;
-    }) => {
-      if (followingUserIdRef.current !== userId) return;
-      applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({
-        appState: { scrollX, scrollY, zoom: { value: zoom } },
-      });
-      requestAnimationFrame(() => {
-        applyingRemoteCounter.current -= 1;
-      });
-    });
-
-    socket.on("scene-saved", () => {
-      lastSavedAt.current = new Date().toLocaleTimeString();
-      setSaveState("saved");
-    });
-  }
+    }
+  }, [storageKey]);
 
   function handleJoin() {
     const name = guestName.trim() || "Guest";
     setGuestName(name);
     localStorage.setItem(storageKey, name);
-    connectSocket(name);
+    setJoined(true);
   }
-
-  const persistScene = useCallback(
-    (elements: unknown[], appState: Record<string, unknown>) => {
-      setSaveState("saving");
-      const sanitizedAppState = jsonSafe({ ...appState, collaborators: undefined });
-      const safeElements = jsonSafe(elements);
-
-      // Cache to localStorage for instant reload
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify({ elements: safeElements, appState: sanitizedAppState }));
-      } catch { /* quota exceeded */ }
-
-      if (socketRef.current?.connected) {
-        socketRef.current.emit("save-scene", {
-          roomId: diagramId,
-          elements: safeElements,
-          appState: sanitizedAppState,
-        });
-      }
-    },
-    [diagramId, cacheKey]
-  );
-
-  const onChange = useCallback(
-    (elements: readonly unknown[], appState: Record<string, unknown>) => {
-      if (applyingRemoteCounter.current > 0) return;
-
-      // Broadcast viewport for follow mode (skip when we're following someone)
-      const now = Date.now();
-      if (!followingUserIdRef.current) {
-        if (now - lastViewportEmitTime.current >= CURSOR_THROTTLE_MS) {
-          lastViewportEmitTime.current = now;
-          const zoom = (appState.zoom as { value: number })?.value ?? 1;
-          socketRef.current?.emit("viewport-update", {
-            roomId: diagramId,
-            scrollX: appState.scrollX,
-            scrollY: appState.scrollY,
-            zoom,
-          });
-        }
-      }
-
-      if (!canEdit) return;
-
-      setSaveState("pending");
-      const elapsed = now - lastEmitTime.current;
-      if (elapsed >= THROTTLE_MS) {
-        lastEmitTime.current = now;
-        socketRef.current?.emit("scene-update", {
-          roomId: diagramId,
-          elements: [...elements],
-        });
-      } else if (!throttleTimer.current) {
-        throttleTimer.current = setTimeout(() => {
-          throttleTimer.current = null;
-          lastEmitTime.current = Date.now();
-          socketRef.current?.emit("scene-update", {
-            roomId: diagramId,
-            elements: [...(excalidrawApiRef.current?.getSceneElements?.() ?? elements)],
-          });
-        }, THROTTLE_MS - elapsed);
-      }
-
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      debounceTimer.current = setTimeout(() => {
-        persistScene([...elements], appState);
-      }, SAVE_DEBOUNCE_MS);
-    },
-    [diagramId, persistScene, canEdit]
-  );
 
   // Guest name prompt
   if (!joined) {
@@ -415,9 +69,6 @@ export default function ShareView({
                 : "Enter your name to view this diagram."}
             </p>
           </div>
-          {connectionError && (
-            <div className={ui.alertError}>{connectionError}</div>
-          )}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -449,42 +100,43 @@ export default function ShareView({
     );
   }
 
-  const saveLabel = {
-    idle: "Ready",
-    pending: "Unsaved",
-    saving: "Saving...",
-    saved: lastSavedAt.current ? `Saved ${lastSavedAt.current}` : "Saved",
-    error: "Error",
-  }[saveState];
+  return (
+    <ShareViewCanvas
+      shareToken={shareToken}
+      diagramId={diagramId}
+      title={title}
+      canEdit={canEdit}
+      guestName={guestName}
+      initialElements={initialElements}
+      initialAppState={initialAppState}
+    />
+  );
+}
 
-  const saveColor = {
-    idle: "bg-white/80 text-black/50",
-    pending: "bg-amber-100 text-amber-700",
-    saving: "bg-blue-100 text-blue-700",
-    saved: "bg-emerald-100 text-emerald-700",
-    error: "bg-red-100 text-red-700",
-  }[saveState];
-
-  const connectionBadge = connectionState !== "connected" ? (
-    <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${
-      connectionState === "error"
-        ? "bg-red-100 text-red-700"
-        : connectionState === "disconnected"
-          ? "bg-amber-100 text-amber-700"
-          : "bg-blue-100 text-blue-700"
-    }`}>
-      {connectionState === "error"
-        ? connectionError ?? "Connection error"
-        : connectionState === "disconnected"
-          ? "Reconnecting..."
-          : "Connecting..."}
-    </div>
-  ) : null;
-
-  const mappedPresenceUsers = presenceUsers.map((u) => ({
-    ...u,
-    isSelf: u.userId === selfUserId,
-  }));
+function ShareViewCanvas({
+  shareToken,
+  diagramId,
+  title,
+  canEdit,
+  guestName,
+  initialElements,
+  initialAppState,
+}: {
+  shareToken: string;
+  diagramId: string;
+  title: string;
+  canEdit: boolean;
+  guestName: string;
+  initialElements: unknown[];
+  initialAppState: Record<string, unknown>;
+}) {
+  const collab = useCollaboration({
+    diagramId,
+    canEdit,
+    joinMode: { type: "guest", shareToken, guestName },
+    initialElements,
+    initialAppState,
+  });
 
   return (
     <div className="relative h-screen w-screen">
@@ -498,93 +150,50 @@ export default function ShareView({
         <div className="pointer-events-auto rounded-full bg-purple-100 px-2.5 py-1 text-[10px] font-medium text-purple-700 shadow-sm">
           {guestName} (guest)
         </div>
-        {canEdit && (
-          <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${saveColor}`}>
-            {saveLabel}
+        {canEdit ? (
+          <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}>
+            {collab.saveLabel}
           </div>
-        )}
-        {!canEdit && (
+        ) : (
           <div className="pointer-events-auto rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-medium text-gray-600 shadow-sm">
             View only
           </div>
         )}
         <div className="pointer-events-auto relative">
           <BoardToolbarTrigger
-            open={toolbarOpen}
-            onToggle={() => setToolbarOpen((p) => !p)}
-            userCount={presenceUsers.length || 1}
+            open={collab.toolbarOpen}
+            onToggle={() => collab.setToolbarOpen(!collab.toolbarOpen)}
+            userCount={collab.presenceUsers.length || 1}
           />
-          {toolbarOpen && (
+          {collab.toolbarOpen && (
             <BoardToolbarPanel
-              presenceUsers={mappedPresenceUsers}
-              followingUserId={followingUserId}
-              onFollow={setFollowingUserId}
+              presenceUsers={collab.presenceUsers}
+              followingUserId={collab.followingUserId}
+              onFollow={collab.setFollowingUserId}
               onCreateShareLink={async () => null}
               showShare={false}
-              onClose={() => setToolbarOpen(false)}
+              onClose={() => collab.setToolbarOpen(false)}
             />
           )}
         </div>
-        {connectionBadge}
+        <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
       </div>
 
-      {/* Following banner */}
-      {followingUserId && (
+      {collab.followingUserId && (
         <FollowingBanner
-          presenceUsers={mappedPresenceUsers}
-          followingUserId={followingUserId}
-          onStop={() => setFollowingUserId(null)}
+          presenceUsers={collab.presenceUsers}
+          followingUserId={collab.followingUserId}
+          onStop={() => collab.setFollowingUserId(null)}
         />
       )}
 
-      {/* Cursors overlay */}
-      <div className="pointer-events-none fixed inset-0 z-10">
-        {Object.entries(cursors).map(([userId, cursor]) => (
-          <div
-            key={userId}
-            className="absolute"
-            style={{ left: cursor.x, top: cursor.y }}
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M0 0L6 14L8 8L14 6L0 0Z" fill="#6366f1" stroke="#fff" strokeWidth="1" />
-            </svg>
-            <span className="ml-3 -mt-1 inline-block rounded bg-indigo-500 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm whitespace-nowrap">
-              {cursor.name}
-            </span>
-          </div>
-        ))}
-      </div>
+      <CursorOverlay cursors={collab.cursors} />
 
-      {/* Canvas */}
-      <div
-        className="h-full w-full"
-        onPointerMove={(e) => {
-          const now = Date.now();
-          if (now - lastCursorEmitTime.current >= CURSOR_THROTTLE_MS) {
-            lastCursorEmitTime.current = now;
-            socketRef.current?.emit("cursor-move", {
-              roomId: diagramId,
-              x: e.clientX,
-              y: e.clientY,
-            });
-          }
-        }}
-      >
+      <div className="h-full w-full" onPointerMove={collab.onPointerMove}>
         <ExcalidrawCanvas
-          excalidrawAPI={(api) => {
-            excalidrawApiRef.current = api;
-            if (pendingSceneRef.current) {
-              const pending = pendingSceneRef.current;
-              pendingSceneRef.current = null;
-              applyingRemoteCounter.current += 1;
-              api.updateScene({ elements: pending.elements });
-              requestAnimationFrame(() => {
-                applyingRemoteCounter.current -= 1;
-              });
-            }
-          }}
-          initialData={initialData}
-          onChange={onChange}
+          excalidrawAPI={collab.onExcalidrawApi}
+          initialData={collab.initialData}
+          onChange={collab.onChange}
           viewModeEnabled={!canEdit}
         />
       </div>
