@@ -32,6 +32,7 @@ env:
     - DATABASE_URL
     - SESSION_SECRET
     - FRONTEND_URL
+    - COOKIE_DOMAIN
 
 volumes:
   - drawhaus-uploads:/data/files
