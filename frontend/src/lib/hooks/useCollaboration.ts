@@ -288,7 +288,6 @@ export function useCollaboration({
       socketRef.current = null;
     };
   // joinMode fields are stable per mount
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diagramId]);
 
   const generateThumbnail = useCallback(async (): Promise<void> => {
