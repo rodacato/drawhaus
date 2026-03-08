@@ -32,12 +32,14 @@ const changePasswordSchema = z.object({
 });
 
 function getCookieOptions() {
+  const isProduction = config.nodeEnv === "production";
   return {
     httpOnly: true,
-    sameSite: "lax" as const,
-    secure: config.nodeEnv === "production",
+    sameSite: isProduction ? "none" as const : "lax" as const,
+    secure: isProduction,
     path: "/",
     maxAge: config.sessionTtlDays * 24 * 60 * 60 * 1000,
+    ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
   };
 }
 
@@ -78,9 +80,10 @@ export function createAuthRoutes(
     await useCases.logout.execute(token);
     res.clearCookie(config.cookieName, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: config.nodeEnv === "production" ? "none" as const : "lax" as const,
       secure: config.nodeEnv === "production",
       path: "/",
+      ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
     });
     return res.status(200).json({ success: true });
   }));
