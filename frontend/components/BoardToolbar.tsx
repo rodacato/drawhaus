@@ -1,17 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-
-type PresenceUser = { userId: string; name: string; isGuest?: boolean; isSelf?: boolean };
-
-type BoardToolbarProps = {
-  diagramId: string;
-  presenceUsers: PresenceUser[];
-  followingUserId: string | null;
-  onFollow: (userId: string | null) => void;
-  onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
-  showShare?: boolean;
-};
+import type { PresenceUserWithSelf } from "@/lib/types";
 
 export function BoardToolbarTrigger({
   open,
@@ -65,7 +55,7 @@ export function BoardToolbarPanel({
   showShare = true,
   onClose,
 }: {
-  presenceUsers: PresenceUser[];
+  presenceUsers: PresenceUserWithSelf[];
   followingUserId: string | null;
   onFollow: (userId: string | null) => void;
   onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
@@ -93,7 +83,6 @@ export function BoardToolbarPanel({
         onClose();
       }
     }
-    // Delay to avoid closing immediately from the trigger click
     const timer = setTimeout(() => {
       window.addEventListener("mousedown", onClick);
     }, 0);
@@ -163,7 +152,6 @@ export function BoardToolbarPanel({
       {/* Collaborate tab */}
       {tab === "collab" && (
         <div className="p-4 space-y-1 max-h-80 overflow-y-auto">
-          {/* Self */}
           {selfUser && (
             <div className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 bg-gray-50">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-600">
@@ -176,7 +164,6 @@ export function BoardToolbarPanel({
             </div>
           )}
 
-          {/* Others */}
           {otherUsers.map((user) => {
             const isFollowing = followingUserId === user.userId;
             return (
@@ -275,7 +262,7 @@ export function FollowingBanner({
   followingUserId,
   onStop,
 }: {
-  presenceUsers: PresenceUser[];
+  presenceUsers: PresenceUserWithSelf[];
   followingUserId: string;
   onStop: () => void;
 }) {
