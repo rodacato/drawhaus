@@ -1,5 +1,5 @@
 import type { UserRepository } from "../../domain/ports/user-repository";
-import type { User } from "../../domain/entities/user";
+import type { User, UserRole } from "../../domain/entities/user";
 import { pool } from "../db";
 
 type UserRow = {
@@ -7,8 +7,12 @@ type UserRow = {
   email: string;
   name: string;
   password_hash: string;
+  role: string;
+  disabled: boolean;
   created_at: string;
 };
+
+const SELECT_COLS = "id, email, name, password_hash, role, disabled, created_at";
 
 function toDomain(row: UserRow): User {
   return {
@@ -16,6 +20,8 @@ function toDomain(row: UserRow): User {
     email: row.email,
     name: row.name,
     passwordHash: row.password_hash,
+    role: row.role as UserRole,
+    disabled: row.disabled,
     createdAt: new Date(row.created_at),
   };
 }
@@ -23,7 +29,7 @@ function toDomain(row: UserRow): User {
 export class PgUserRepository implements UserRepository {
   async findById(id: string): Promise<User | null> {
     const { rows } = await pool.query<UserRow>(
-      "SELECT id, email, name, password_hash, created_at FROM users WHERE id = $1 LIMIT 1",
+      `SELECT ${SELECT_COLS} FROM users WHERE id = $1 LIMIT 1`,
       [id],
     );
     return rows[0] ? toDomain(rows[0]) : null;
@@ -31,7 +37,7 @@ export class PgUserRepository implements UserRepository {
 
   async findByEmail(email: string): Promise<User | null> {
     const { rows } = await pool.query<UserRow>(
-      "SELECT id, email, name, password_hash, created_at FROM users WHERE email = $1 LIMIT 1",
+      `SELECT ${SELECT_COLS} FROM users WHERE email = $1 LIMIT 1`,
       [email],
     );
     return rows[0] ? toDomain(rows[0]) : null;
@@ -41,9 +47,83 @@ export class PgUserRepository implements UserRepository {
     const { rows } = await pool.query<UserRow>(
       `INSERT INTO users (email, name, password_hash)
        VALUES ($1, $2, $3)
-       RETURNING id, email, name, password_hash, created_at`,
+       RETURNING ${SELECT_COLS}`,
       [data.email, data.name, data.passwordHash],
     );
     return toDomain(rows[0]);
+  }
+
+  async update(id: string, data: Partial<Pick<User, "email" | "name" | "passwordHash">>): Promise<User | null> {
+    const updates: string[] = [];
+    const values: unknown[] = [];
+    let index = 1;
+
+    if (data.email !== undefined) {
+      updates.push(`email = $${index}`);
+      values.push(data.email);
+      index += 1;
+    }
+    if (data.name !== undefined) {
+      updates.push(`name = $${index}`);
+      values.push(data.name);
+      index += 1;
+    }
+    if (data.passwordHash !== undefined) {
+      updates.push(`password_hash = $${index}`);
+      values.push(data.passwordHash);
+      index += 1;
+    }
+
+    if (updates.length === 0) return this.findById(id);
+
+    values.push(id);
+    const { rows } = await pool.query<UserRow>(
+      `UPDATE users SET ${updates.join(", ")} WHERE id = $${index}
+       RETURNING ${SELECT_COLS}`,
+      values,
+    );
+    return rows[0] ? toDomain(rows[0]) : null;
+  }
+
+  async count(): Promise<number> {
+    const { rows } = await pool.query<{ count: string }>("SELECT count(*) FROM users");
+    return parseInt(rows[0].count, 10);
+  }
+
+  async listAll(): Promise<Omit<User, "passwordHash">[]> {
+    const { rows } = await pool.query<UserRow>(
+      `SELECT ${SELECT_COLS} FROM users ORDER BY created_at ASC`,
+    );
+    return rows.map((row) => {
+      const { passwordHash: _, ...rest } = toDomain(row);
+      return rest;
+    });
+  }
+
+  async adminUpdate(id: string, data: { role?: UserRole; disabled?: boolean }): Promise<User | null> {
+    const updates: string[] = [];
+    const values: unknown[] = [];
+    let index = 1;
+
+    if (data.role !== undefined) {
+      updates.push(`role = $${index}`);
+      values.push(data.role);
+      index += 1;
+    }
+    if (data.disabled !== undefined) {
+      updates.push(`disabled = $${index}`);
+      values.push(data.disabled);
+      index += 1;
+    }
+
+    if (updates.length === 0) return this.findById(id);
+
+    values.push(id);
+    const { rows } = await pool.query<UserRow>(
+      `UPDATE users SET ${updates.join(", ")} WHERE id = $${index}
+       RETURNING ${SELECT_COLS}`,
+      values,
+    );
+    return rows[0] ? toDomain(rows[0]) : null;
   }
 }
