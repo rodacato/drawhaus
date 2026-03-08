@@ -6,12 +6,15 @@ servers:
   web:
     hosts:
       - <%= ENV["HOST_IP"] %>
-    options:
-      publish: "127.0.0.1:4001:4000"
-    healthcheck:
-      path: /health
-      port: 4000
-      interval: 10
+
+proxy:
+  ssl: false
+  host: drawhaus-api.notdefined.dev
+  app_port: 4000
+  healthcheck:
+    interval: 10
+    path: /health
+    timeout: 5
 
 registry:
   server: ghcr.io
@@ -41,11 +44,16 @@ env:
 volumes:
   - drawhaus-uploads:/data/files
 
+logging:
+  driver: json-file
+  options:
+    max-size: 50m
+    max-file: "3"
+
 accessories:
   postgres:
     image: postgres:16-alpine
     host: <%= ENV["HOST_IP"] %>
-    port: "127.0.0.1:5433:5432"
     env:
       clear:
         POSTGRES_USER: drawhaus
