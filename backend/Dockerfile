@@ -9,7 +9,7 @@ EXPOSE 4000
 CMD ["npm", "run", "dev"]
 
 FROM base AS builder
-RUN npm ci
+RUN npm install
 COPY . .
 RUN npm run build
 
@@ -18,6 +18,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 EXPOSE 4000
 CMD ["node", "dist/main.js"]
