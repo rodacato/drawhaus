@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import type { SessionRepository, AuthUser } from "../../domain/ports/session-repository";
 import type { Session } from "../../domain/entities/session";
+import type { UserRole } from "../../domain/entities/user";
 import { pool } from "../db";
 import { config } from "../config";
 
@@ -10,6 +11,8 @@ type SessionRow = {
   expires_at: string;
   email: string;
   name: string;
+  role: string;
+  disabled: boolean;
 };
 
 export class PgSessionRepository implements SessionRepository {
@@ -28,7 +31,7 @@ export class PgSessionRepository implements SessionRepository {
 
   async findUserByToken(token: string): Promise<AuthUser | null> {
     const { rows } = await pool.query<SessionRow>(
-      `SELECT s.id, s.user_id, s.expires_at, u.email, u.name
+      `SELECT s.id, s.user_id, s.expires_at, u.email, u.name, u.role, u.disabled
        FROM sessions s
        JOIN users u ON u.id = s.user_id
        WHERE s.id = $1
@@ -44,10 +47,20 @@ export class PgSessionRepository implements SessionRepository {
       return null;
     }
 
-    return { id: row.user_id, email: row.email, name: row.name };
+    return {
+      id: row.user_id,
+      email: row.email,
+      name: row.name,
+      role: row.role as UserRole,
+      disabled: row.disabled,
+    };
   }
 
   async delete(token: string): Promise<void> {
     await pool.query("DELETE FROM sessions WHERE id = $1", [token]);
+  }
+
+  async deleteAllForUser(userId: string): Promise<void> {
+    await pool.query("DELETE FROM sessions WHERE user_id = $1", [userId]);
   }
 }

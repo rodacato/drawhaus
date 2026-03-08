@@ -14,6 +14,8 @@ export async function initSchema(): Promise<void> {
       email TEXT UNIQUE NOT NULL,
       name TEXT NOT NULL,
       password_hash TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+      disabled BOOLEAN NOT NULL DEFAULT false,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
@@ -55,9 +57,24 @@ export async function initSchema(): Promise<void> {
       CHECK (role IN ('editor', 'viewer'))
     );
 
+    CREATE TABLE IF NOT EXISTS site_settings (
+      id BOOLEAN PRIMARY KEY DEFAULT true CHECK (id = true),
+      registration_open BOOLEAN NOT NULL DEFAULT true,
+      instance_name TEXT NOT NULL DEFAULT 'Drawhaus'
+    );
+
+    -- Seed default row if missing
+    INSERT INTO site_settings (id) VALUES (true) ON CONFLICT DO NOTHING;
+
     CREATE INDEX IF NOT EXISTS share_links_diagram_id_idx ON share_links (diagram_id);
     CREATE INDEX IF NOT EXISTS diagrams_owner_id_idx ON diagrams (owner_id);
     CREATE INDEX IF NOT EXISTS diagrams_updated_at_idx ON diagrams (updated_at DESC);
     CREATE INDEX IF NOT EXISTS diagram_members_user_id_idx ON diagram_members (user_id);
+  `);
+
+  // Add columns for upgrades from older schema
+  await pool.query(`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user';
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS disabled BOOLEAN NOT NULL DEFAULT false;
   `);
 }

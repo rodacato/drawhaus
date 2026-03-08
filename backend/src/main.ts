@@ -3,12 +3,16 @@ import cors from "cors";
 import { createServer } from "http";
 import { config } from "./infrastructure/config";
 import { initSchema } from "./infrastructure/db";
+import { logger } from "./infrastructure/logger";
+import { requestId } from "./infrastructure/http/middleware/request-id";
+import { requestLogger } from "./infrastructure/http/middleware/request-logger";
 
 // --- Repositories ---
 import { PgUserRepository } from "./infrastructure/persistence/pg-user-repository";
 import { PgSessionRepository } from "./infrastructure/persistence/pg-session-repository";
 import { PgDiagramRepository } from "./infrastructure/persistence/pg-diagram-repository";
 import { PgShareRepository } from "./infrastructure/persistence/pg-share-repository";
+import { PgSiteSettingsRepository } from "./infrastructure/persistence/pg-site-settings-repository";
 
 // --- Services ---
 import { BcryptHasher } from "./infrastructure/services/bcrypt-hasher";
@@ -18,6 +22,8 @@ import { RegisterUseCase } from "./application/use-cases/auth/register";
 import { LoginUseCase } from "./application/use-cases/auth/login";
 import { LogoutUseCase } from "./application/use-cases/auth/logout";
 import { GetCurrentUserUseCase } from "./application/use-cases/auth/get-current-user";
+import { UpdateProfileUseCase } from "./application/use-cases/auth/update-profile";
+import { ChangePasswordUseCase } from "./application/use-cases/auth/change-password";
 
 // --- Use Cases: Diagrams ---
 import { CreateDiagramUseCase } from "./application/use-cases/diagrams/create-diagram";
@@ -32,6 +38,13 @@ import { ResolveLinkUseCase } from "./application/use-cases/share/resolve-link";
 import { ListLinksUseCase } from "./application/use-cases/share/list-links";
 import { DeleteLinkUseCase } from "./application/use-cases/share/delete-link";
 
+// --- Use Cases: Admin ---
+import { ListUsersUseCase } from "./application/use-cases/admin/list-users";
+import { AdminUpdateUserUseCase } from "./application/use-cases/admin/update-user";
+import { GetSiteSettingsUseCase } from "./application/use-cases/admin/get-site-settings";
+import { UpdateSiteSettingsUseCase } from "./application/use-cases/admin/update-site-settings";
+import { GetMetricsUseCase } from "./application/use-cases/admin/get-metrics";
+
 // --- Use Cases: Realtime ---
 import { JoinRoomUseCase } from "./application/use-cases/realtime/join-room";
 import { JoinRoomGuestUseCase } from "./application/use-cases/realtime/join-room-guest";
@@ -41,6 +54,7 @@ import { SaveSceneUseCase } from "./application/use-cases/realtime/save-scene";
 import { createAuthRoutes } from "./infrastructure/http/routes/auth.routes";
 import { createDiagramRoutes } from "./infrastructure/http/routes/diagram.routes";
 import { createShareRoutes } from "./infrastructure/http/routes/share.routes";
+import { createAdminRoutes } from "./infrastructure/http/routes/admin.routes";
 import { createRequireAuth } from "./infrastructure/http/middleware/require-auth";
 
 // --- Socket ---
@@ -54,13 +68,16 @@ const userRepo = new PgUserRepository();
 const sessionRepo = new PgSessionRepository();
 const diagramRepo = new PgDiagramRepository();
 const shareRepo = new PgShareRepository();
+const siteSettingsRepo = new PgSiteSettingsRepository();
 const hasher = new BcryptHasher();
 
 // Auth
-const register = new RegisterUseCase(userRepo, sessionRepo, hasher);
+const register = new RegisterUseCase(userRepo, sessionRepo, hasher, siteSettingsRepo);
 const login = new LoginUseCase(userRepo, sessionRepo, hasher);
 const logout = new LogoutUseCase(sessionRepo);
 const getCurrentUser = new GetCurrentUserUseCase(sessionRepo);
+const updateProfile = new UpdateProfileUseCase(userRepo);
+const changePassword = new ChangePasswordUseCase(userRepo, hasher);
 
 // Diagrams
 const createDiagram = new CreateDiagramUseCase(diagramRepo);
@@ -74,6 +91,13 @@ const createLink = new CreateShareLinkUseCase(shareRepo, diagramRepo);
 const resolveLink = new ResolveLinkUseCase(shareRepo, diagramRepo);
 const listLinks = new ListLinksUseCase(shareRepo, diagramRepo);
 const deleteLink = new DeleteLinkUseCase(shareRepo);
+
+// Admin
+const listUsers = new ListUsersUseCase(userRepo);
+const adminUpdateUser = new AdminUpdateUserUseCase(userRepo, sessionRepo);
+const getSettings = new GetSiteSettingsUseCase(siteSettingsRepo);
+const updateSettings = new UpdateSiteSettingsUseCase(siteSettingsRepo);
+const getMetrics = new GetMetricsUseCase();
 
 // Realtime
 const joinRoom = new JoinRoomUseCase(sessionRepo, diagramRepo);
@@ -89,6 +113,8 @@ const requireAuth = createRequireAuth(getCurrentUser);
 
 export const app = express();
 
+app.use(requestId);
+app.use(requestLogger);
 app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json());
 
@@ -96,9 +122,10 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser }));
+app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword }, requireAuth));
 app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, update: updateDiagram, delete: deleteDiagram }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
+app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, getSettings, updateSettings, getMetrics }, requireAuth));
 
 // ============================================================
 // Start
@@ -110,11 +137,11 @@ async function startServer(): Promise<void> {
   setupSocketServer(httpServer, { joinRoom, joinRoomGuest, saveScene });
 
   httpServer.listen(config.port, () => {
-    console.log(`Backend running on http://localhost:${config.port}`);
+    logger.info({ port: config.port }, `Backend running on http://localhost:${config.port}`);
   });
 }
 
 startServer().catch((error: unknown) => {
-  console.error("Failed to start backend", error);
+  logger.fatal(error, "Failed to start backend");
   process.exit(1);
 });

@@ -10,6 +10,12 @@ export function createRequireAuth(getCurrentUser: GetCurrentUserUseCase) {
       const cookieHeader = req.headers.cookie;
       const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
       const user = await getCurrentUser.execute(token);
+
+      if (user.disabled) {
+        res.status(403).json({ error: "Account is disabled" });
+        return;
+      }
+
       (req as AuthedRequest).authUser = user;
       next();
     } catch {
