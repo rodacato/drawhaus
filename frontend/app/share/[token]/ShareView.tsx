@@ -5,6 +5,7 @@ import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
 import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
+import { SceneTabBar } from "@/components/SceneTabBar";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
 import { ui } from "@/lib/ui";
 
@@ -197,6 +198,20 @@ function ShareViewCanvas({
           viewModeEnabled={!canEdit}
         />
       </div>
+
+      {collab.scenes.length > 0 && (
+        <div className="pointer-events-none fixed bottom-3 left-1/2 z-20 -translate-x-1/2">
+          <SceneTabBar
+            scenes={collab.scenes}
+            activeSceneId={collab.activeSceneId}
+            canEdit={canEdit}
+            onSwitch={collab.switchScene}
+            onCreate={collab.createScene}
+            onDelete={collab.deleteScene}
+            onRename={collab.renameScene}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -13,6 +13,8 @@ import { PgSessionRepository } from "./infrastructure/persistence/pg-session-rep
 import { PgDiagramRepository } from "./infrastructure/persistence/pg-diagram-repository";
 import { PgShareRepository } from "./infrastructure/persistence/pg-share-repository";
 import { PgSiteSettingsRepository } from "./infrastructure/persistence/pg-site-settings-repository";
+import { PgFolderRepository } from "./infrastructure/persistence/pg-folder-repository";
+import { PgSceneRepository } from "./infrastructure/persistence/pg-scene-repository";
 
 // --- Services ---
 import { BcryptHasher } from "./infrastructure/services/bcrypt-hasher";
@@ -29,8 +31,17 @@ import { ChangePasswordUseCase } from "./application/use-cases/auth/change-passw
 import { CreateDiagramUseCase } from "./application/use-cases/diagrams/create-diagram";
 import { GetDiagramUseCase } from "./application/use-cases/diagrams/get-diagram";
 import { ListDiagramsUseCase } from "./application/use-cases/diagrams/list-diagrams";
+import { SearchDiagramsUseCase } from "./application/use-cases/diagrams/search-diagrams";
 import { UpdateDiagramUseCase } from "./application/use-cases/diagrams/update-diagram";
 import { DeleteDiagramUseCase } from "./application/use-cases/diagrams/delete-diagram";
+import { UpdateThumbnailUseCase } from "./application/use-cases/diagrams/update-thumbnail";
+
+// --- Use Cases: Folders ---
+import { CreateFolderUseCase } from "./application/use-cases/folders/create-folder";
+import { ListFoldersUseCase } from "./application/use-cases/folders/list-folders";
+import { RenameFolderUseCase } from "./application/use-cases/folders/rename-folder";
+import { DeleteFolderUseCase } from "./application/use-cases/folders/delete-folder";
+import { MoveDiagramUseCase } from "./application/use-cases/folders/move-diagram";
 
 // --- Use Cases: Share ---
 import { CreateShareLinkUseCase } from "./application/use-cases/share/create-link";
@@ -45,6 +56,13 @@ import { GetSiteSettingsUseCase } from "./application/use-cases/admin/get-site-s
 import { UpdateSiteSettingsUseCase } from "./application/use-cases/admin/update-site-settings";
 import { GetMetricsUseCase } from "./application/use-cases/admin/get-metrics";
 
+// --- Use Cases: Scenes ---
+import { ListScenesUseCase } from "./application/use-cases/scenes/list-scenes";
+import { GetSceneUseCase } from "./application/use-cases/scenes/get-scene";
+import { CreateSceneUseCase } from "./application/use-cases/scenes/create-scene";
+import { RenameSceneUseCase } from "./application/use-cases/scenes/rename-scene";
+import { DeleteSceneUseCase } from "./application/use-cases/scenes/delete-scene";
+
 // --- Use Cases: Realtime ---
 import { JoinRoomUseCase } from "./application/use-cases/realtime/join-room";
 import { JoinRoomGuestUseCase } from "./application/use-cases/realtime/join-room-guest";
@@ -53,8 +71,10 @@ import { SaveSceneUseCase } from "./application/use-cases/realtime/save-scene";
 // --- HTTP Routes ---
 import { createAuthRoutes } from "./infrastructure/http/routes/auth.routes";
 import { createDiagramRoutes } from "./infrastructure/http/routes/diagram.routes";
+import { createFolderRoutes } from "./infrastructure/http/routes/folder.routes";
 import { createShareRoutes } from "./infrastructure/http/routes/share.routes";
 import { createAdminRoutes } from "./infrastructure/http/routes/admin.routes";
+import { createSceneRoutes } from "./infrastructure/http/routes/scene.routes";
 import { createRequireAuth } from "./infrastructure/http/middleware/require-auth";
 
 // --- Socket ---
@@ -69,6 +89,8 @@ const sessionRepo = new PgSessionRepository();
 const diagramRepo = new PgDiagramRepository();
 const shareRepo = new PgShareRepository();
 const siteSettingsRepo = new PgSiteSettingsRepository();
+const folderRepo = new PgFolderRepository();
+const sceneRepo = new PgSceneRepository();
 const hasher = new BcryptHasher();
 
 // Auth
@@ -83,8 +105,17 @@ const changePassword = new ChangePasswordUseCase(userRepo, hasher);
 const createDiagram = new CreateDiagramUseCase(diagramRepo);
 const getDiagram = new GetDiagramUseCase(diagramRepo);
 const listDiagrams = new ListDiagramsUseCase(diagramRepo);
+const searchDiagrams = new SearchDiagramsUseCase(diagramRepo);
 const updateDiagram = new UpdateDiagramUseCase(diagramRepo);
 const deleteDiagram = new DeleteDiagramUseCase(diagramRepo);
+const updateThumbnail = new UpdateThumbnailUseCase(diagramRepo);
+
+// Folders
+const createFolder = new CreateFolderUseCase(folderRepo);
+const listFolders = new ListFoldersUseCase(folderRepo);
+const renameFolder = new RenameFolderUseCase(folderRepo);
+const deleteFolder = new DeleteFolderUseCase(folderRepo);
+const moveDiagram = new MoveDiagramUseCase(diagramRepo, folderRepo);
 
 // Share
 const createLink = new CreateShareLinkUseCase(shareRepo, diagramRepo);
@@ -99,10 +130,17 @@ const getSettings = new GetSiteSettingsUseCase(siteSettingsRepo);
 const updateSettings = new UpdateSiteSettingsUseCase(siteSettingsRepo);
 const getMetrics = new GetMetricsUseCase();
 
+// Scenes
+const listScenes = new ListScenesUseCase(sceneRepo, diagramRepo);
+const getScene = new GetSceneUseCase(sceneRepo, diagramRepo);
+const createScene = new CreateSceneUseCase(sceneRepo, diagramRepo);
+const renameScene = new RenameSceneUseCase(sceneRepo, diagramRepo);
+const deleteScene = new DeleteSceneUseCase(sceneRepo, diagramRepo);
+
 // Realtime
-const joinRoom = new JoinRoomUseCase(sessionRepo, diagramRepo);
-const joinRoomGuest = new JoinRoomGuestUseCase(shareRepo, diagramRepo);
-const saveScene = new SaveSceneUseCase(diagramRepo);
+const joinRoom = new JoinRoomUseCase(sessionRepo, diagramRepo, sceneRepo);
+const joinRoomGuest = new JoinRoomGuestUseCase(shareRepo, diagramRepo, sceneRepo);
+const saveScene = new SaveSceneUseCase(sceneRepo);
 
 // Middleware
 const requireAuth = createRequireAuth(getCurrentUser);
@@ -123,7 +161,9 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword }, requireAuth));
-app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, update: updateDiagram, delete: deleteDiagram }, requireAuth));
+app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, move: moveDiagram }, requireAuth));
+app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes, get: getScene, create: createScene, rename: renameScene, delete: deleteScene }, requireAuth));
+app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
 app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, getSettings, updateSettings, getMetrics }, requireAuth));
 

@@ -7,6 +7,7 @@ import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "./BoardSidebar";
 import { ExportMenu } from "@/components/ExportMenu";
+import { SceneTabBar } from "@/components/SceneTabBar";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
 
 type BoardEditorProps = {
@@ -133,6 +134,21 @@ export default function BoardEditor({
           onChange={collab.onChange}
         />
       </div>
+
+      {/* Scene tabs at the bottom */}
+      {collab.scenes.length > 0 && (
+        <div className="pointer-events-none fixed bottom-3 left-1/2 z-20 -translate-x-1/2">
+          <SceneTabBar
+            scenes={collab.scenes}
+            activeSceneId={collab.activeSceneId}
+            canEdit={canEdit}
+            onSwitch={collab.switchScene}
+            onCreate={collab.createScene}
+            onDelete={collab.deleteScene}
+            onRename={collab.renameScene}
+          />
+        </div>
+      )}
     </div>
   );
 }
