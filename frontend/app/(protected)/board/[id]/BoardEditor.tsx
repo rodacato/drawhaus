@@ -119,19 +119,35 @@ export default function BoardEditor({
   const applyingRemoteCounter = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
 
-  const initialData = useMemo(
-    () => ({
-      elements: initialElements,
+  const cacheKey = `drawhaus_scene_${diagramId}`;
+
+  const initialData = useMemo(() => {
+    let elements = initialElements;
+    let appState = initialAppState;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed.elements) && parsed.elements.length > 0) {
+          elements = parsed.elements;
+        }
+        if (parsed.appState) {
+          appState = parsed.appState;
+        }
+      }
+    } catch { /* ignore */ }
+
+    return {
+      elements,
       appState: {
-        ...initialAppState,
+        ...appState,
         collaborators: new Map(),
         gridModeEnabled: true,
         theme: "light",
         viewBackgroundColor: "#f8f9fc",
       },
-    }),
-    [initialElements, initialAppState]
-  );
+    };
+  }, [initialElements, initialAppState, cacheKey]);
 
   useEffect(() => {
     return () => {
@@ -284,10 +300,17 @@ export default function BoardEditor({
           ...appState,
           collaborators: undefined,
         });
+        const safeElements = jsonSafe(elements);
+
+        // Cache to localStorage for instant reload
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({ elements: safeElements, appState: sanitizedAppState }));
+        } catch { /* quota exceeded */ }
+
         if (socketRef.current?.connected) {
           socketRef.current.emit("save-scene", {
             roomId: diagramId,
-            elements: jsonSafe(elements),
+            elements: safeElements,
             appState: sanitizedAppState,
           });
           return;
@@ -312,7 +335,7 @@ export default function BoardEditor({
         setSaveState("error");
       }
     },
-    [diagramId]
+    [diagramId, cacheKey]
   );
 
   const onChange = useCallback(

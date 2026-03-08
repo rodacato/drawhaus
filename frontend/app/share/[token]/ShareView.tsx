@@ -97,8 +97,13 @@ export default function ShareView({
   initialElements,
   initialAppState,
 }: ShareViewProps) {
-  const [guestName, setGuestName] = useState("");
+  const storageKey = `drawhaus_guest_${shareToken}`;
+  const [guestName, setGuestName] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem(storageKey) ?? "";
+  });
   const [joined, setJoined] = useState(false);
+  const autoJoinedRef = useRef(false);
   const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
   const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -114,20 +119,36 @@ export default function ShareView({
   const lastSavedAt = useRef<string | null>(null);
 
   const canEdit = role === "editor";
+  const cacheKey = `drawhaus_scene_${diagramId}`;
 
-  const initialData = useMemo(
-    () => ({
-      elements: initialElements,
+  const initialData = useMemo(() => {
+    // Try localStorage cache first for instant load
+    let elements = initialElements;
+    let appState = initialAppState;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed.elements) && parsed.elements.length > 0) {
+          elements = parsed.elements;
+        }
+        if (parsed.appState) {
+          appState = parsed.appState;
+        }
+      }
+    } catch { /* ignore */ }
+
+    return {
+      elements,
       appState: {
-        ...initialAppState,
+        ...appState,
         collaborators: new Map(),
         gridModeEnabled: true,
         theme: "light",
         viewBackgroundColor: "#f8f9fc",
       },
-    }),
-    [initialElements, initialAppState]
-  );
+    };
+  }, [initialElements, initialAppState, cacheKey]);
 
   // Clean stale cursors
   useEffect(() => {
@@ -155,9 +176,19 @@ export default function ShareView({
     };
   }, []);
 
-  function handleJoin() {
-    const name = guestName.trim() || "Guest";
-    setGuestName(name);
+  // Auto-join if name was previously saved
+  useEffect(() => {
+    if (autoJoinedRef.current) return;
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      autoJoinedRef.current = true;
+      setGuestName(saved);
+      connectSocket(saved);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function connectSocket(name: string) {
 
     const socket = io(process.env.NEXT_PUBLIC_WS_URL ?? window.location.origin, {
       path: "/socket.io",
@@ -238,19 +269,33 @@ export default function ShareView({
     });
   }
 
+  function handleJoin() {
+    const name = guestName.trim() || "Guest";
+    setGuestName(name);
+    localStorage.setItem(storageKey, name);
+    connectSocket(name);
+  }
+
   const persistScene = useCallback(
     (elements: unknown[], appState: Record<string, unknown>) => {
       setSaveState("saving");
       const sanitizedAppState = jsonSafe({ ...appState, collaborators: undefined });
+      const safeElements = jsonSafe(elements);
+
+      // Cache to localStorage for instant reload
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ elements: safeElements, appState: sanitizedAppState }));
+      } catch { /* quota exceeded */ }
+
       if (socketRef.current?.connected) {
         socketRef.current.emit("save-scene", {
           roomId: diagramId,
-          elements: jsonSafe(elements),
+          elements: safeElements,
           appState: sanitizedAppState,
         });
       }
     },
-    [diagramId]
+    [diagramId, cacheKey]
   );
 
   const onChange = useCallback(
