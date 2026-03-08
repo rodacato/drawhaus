@@ -16,6 +16,8 @@ export type CollaborationOptions = {
   initialAppState: Record<string, unknown>;
 };
 
+export type SceneInfo = { id: string; name: string; sortOrder: number };
+
 export type CollaborationState = {
   saveState: SaveState;
   connectionState: ConnectionState;
@@ -32,6 +34,12 @@ export type CollaborationState = {
   saveLabel: string;
   saveColor: string;
   lastSavedAt: string | null;
+  scenes: SceneInfo[];
+  activeSceneId: string | null;
+  switchScene: (sceneId: string) => void;
+  createScene: (name?: string) => Promise<void>;
+  deleteScene: (sceneId: string) => Promise<void>;
+  renameScene: (sceneId: string, name: string) => Promise<void>;
   // Refs & callbacks for Excalidraw integration
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
   onExcalidrawApi: (api: ExcalidrawApi) => void;
@@ -55,6 +63,9 @@ export function useCollaboration({
   const [followingUserId, setFollowingUserId] = useState<string | null>(null);
   const [selfUserId, setSelfUserId] = useState<string | null>(null);
   const [toolbarOpen, setToolbarOpen] = useState(false);
+  const [scenes, setScenes] = useState<SceneInfo[]>([]);
+  const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
+  const activeSceneIdRef = useRef<string | null>(null);
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const throttleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -70,10 +81,13 @@ export function useCollaboration({
 
   const cacheKey = `drawhaus_scene_${diagramId}`;
 
-  // Keep ref in sync for use inside socket callbacks
+  // Keep refs in sync for use inside socket callbacks
   useEffect(() => {
     followingUserIdRef.current = followingUserId;
   }, [followingUserId]);
+  useEffect(() => {
+    activeSceneIdRef.current = activeSceneId;
+  }, [activeSceneId]);
 
   const initialData = useMemo(() => {
     let elements = initialElements;
@@ -179,7 +193,18 @@ export function useCollaboration({
       setConnectionError(null);
     });
 
-    socket.on("scene-from-db", ({ elements }: { elements: unknown[] }) => {
+    socket.on("scene-from-db", ({
+      elements,
+      scenes: scenesList,
+      activeSceneId: sceneId,
+    }: {
+      elements: unknown[];
+      scenes?: SceneInfo[];
+      activeSceneId?: string | null;
+    }) => {
+      if (scenesList) setScenes(scenesList);
+      if (sceneId) setActiveSceneId(sceneId);
+
       if (!excalidrawApiRef.current) {
         pendingSceneRef.current = { elements };
         return;
@@ -264,6 +289,33 @@ export function useCollaboration({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diagramId]);
 
+  const generateThumbnail = useCallback(async (): Promise<void> => {
+    const api = excalidrawApiRef.current;
+    if (!api) return;
+    try {
+      const { exportToBlob } = await import("@excalidraw/excalidraw");
+      const els = api.getSceneElements() as Parameters<typeof exportToBlob>[0]["elements"];
+      if (els.length === 0) return;
+      const blob = await exportToBlob({
+        elements: els,
+        appState: { ...api.getAppState(), exportWithDarkMode: false } as Parameters<typeof exportToBlob>[0]["appState"],
+        files: api.getFiles() as Parameters<typeof exportToBlob>[0]["files"],
+        maxWidthOrHeight: 300,
+      });
+      const dataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+      await fetch(`/api/diagrams/${diagramId}/thumbnail`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ thumbnail: dataUrl }),
+      });
+    } catch { /* thumbnail is best-effort */ }
+  }, [diagramId]);
+
   const persistScene = useCallback(
     async (elements: unknown[], appState: Record<string, unknown>) => {
       setSaveState("saving");
@@ -278,9 +330,11 @@ export function useCollaboration({
         if (socketRef.current?.connected) {
           socketRef.current.emit("save-scene", {
             roomId: diagramId,
+            sceneId: activeSceneIdRef.current,
             elements: safeElements,
             appState: sanitizedAppState,
           });
+          generateThumbnail();
           return;
         }
 
@@ -296,11 +350,12 @@ export function useCollaboration({
         }
         lastSavedAt.current = new Date().toLocaleTimeString();
         setSaveState("saved");
+        generateThumbnail();
       } catch {
         setSaveState("error");
       }
     },
-    [diagramId, cacheKey]
+    [diagramId, cacheKey, generateThumbnail]
   );
 
   const onChange = useCallback(
@@ -329,6 +384,7 @@ export function useCollaboration({
         lastEmitTime.current = now;
         socketRef.current?.emit("scene-update", {
           roomId: diagramId,
+          sceneId: activeSceneIdRef.current,
           elements: [...elements],
         });
       } else if (!throttleTimer.current) {
@@ -337,6 +393,7 @@ export function useCollaboration({
           lastEmitTime.current = Date.now();
           socketRef.current?.emit("scene-update", {
             roomId: diagramId,
+            sceneId: activeSceneIdRef.current,
             elements: [...(excalidrawApiRef.current?.getSceneElements?.() ?? elements)],
           });
         }, THROTTLE_MS - elapsed);
@@ -373,6 +430,81 @@ export function useCollaboration({
         y: e.clientY,
       });
     }
+  }, [diagramId]);
+
+  const switchScene = useCallback(async (sceneId: string) => {
+    if (sceneId === activeSceneIdRef.current) return;
+
+    // Tell socket to switch sub-rooms
+    socketRef.current?.emit("switch-scene", { roomId: diagramId, sceneId });
+    setActiveSceneId(sceneId);
+
+    // Fetch scene data from REST
+    try {
+      const res = await fetch(`/api/diagrams/${diagramId}/scenes/${sceneId}`, {
+        credentials: "include",
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const scene = data.scene as { elements: unknown[]; appState: Record<string, unknown> };
+      applyingRemoteCounter.current += 1;
+      excalidrawApiRef.current?.updateScene({
+        elements: scene.elements ?? [],
+      });
+      requestAnimationFrame(() => { applyingRemoteCounter.current -= 1; });
+    } catch { /* ignore */ }
+  }, [diagramId]);
+
+  const createScene = useCallback(async (name?: string) => {
+    try {
+      const res = await fetch(`/api/diagrams/${diagramId}/scenes`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const newScene = data.scene as SceneInfo;
+      setScenes((prev) => [...prev, newScene]);
+      // Switch to the new scene
+      switchScene(newScene.id);
+      // Load empty canvas for the new scene
+      applyingRemoteCounter.current += 1;
+      excalidrawApiRef.current?.updateScene({ elements: [] });
+      requestAnimationFrame(() => { applyingRemoteCounter.current -= 1; });
+    } catch { /* ignore */ }
+  }, [diagramId, switchScene]);
+
+  const deleteScene = useCallback(async (sceneId: string) => {
+    try {
+      const res = await fetch(`/api/diagrams/${diagramId}/scenes/${sceneId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) return;
+      setScenes((prev) => {
+        const updated = prev.filter((s) => s.id !== sceneId);
+        // If we deleted the active scene, switch to the first remaining
+        if (activeSceneIdRef.current === sceneId && updated.length > 0) {
+          switchScene(updated[0].id);
+        }
+        return updated;
+      });
+    } catch { /* ignore */ }
+  }, [diagramId, switchScene]);
+
+  const renameScene = useCallback(async (sceneId: string, name: string) => {
+    try {
+      const res = await fetch(`/api/diagrams/${diagramId}/scenes/${sceneId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) return;
+      setScenes((prev) => prev.map((s) => s.id === sceneId ? { ...s, name } : s));
+    } catch { /* ignore */ }
   }, [diagramId]);
 
   const mappedPresenceUsers: PresenceUserWithSelf[] = presenceUsers.map((u) => ({
@@ -412,6 +544,12 @@ export function useCollaboration({
     saveLabel,
     saveColor,
     lastSavedAt: lastSavedAt.current,
+    scenes,
+    activeSceneId,
+    switchScene,
+    createScene,
+    deleteScene,
+    renameScene,
     excalidrawApiRef,
     onExcalidrawApi,
     onChange,
