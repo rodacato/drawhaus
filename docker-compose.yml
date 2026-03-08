@@ -2,19 +2,17 @@ services:
   frontend:
     build:
       context: ./frontend
-      target: dev
     depends_on:
       backend:
         condition: service_started
     volumes:
       - ./frontend:/app
       - /app/node_modules
-      - /app/.next
     ports:
-      - "3300:3000"
+      - "5173:5173"
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:4300
-      NEXT_PUBLIC_WS_URL: http://localhost:4300
+      VITE_API_URL: http://localhost:4300
+      VITE_WS_URL: http://localhost:4300
     command: npm run dev
 
   backend:
@@ -32,7 +30,7 @@ services:
       - "4300:4000"
     environment:
       PORT: 4000
-      FRONTEND_URL: http://localhost:3300
+      FRONTEND_URL: http://localhost:5173
       DATABASE_URL: postgres://drawhaus:drawhaus@db:5432/drawhaus
     command: npm run dev
 

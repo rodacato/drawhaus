@@ -1,25 +1,7 @@
-FROM node:20-alpine AS base
+FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
-
-FROM base AS dev
 RUN npm install
 COPY . .
-EXPOSE 3000
+EXPOSE 5173
 CMD ["npm", "run", "dev"]
-
-FROM base AS builder
-RUN npm ci
-COPY . .
-ARG NEXT_PUBLIC_API_URL
-ARG NEXT_PUBLIC_WS_URL
-RUN npm run build
-
-FROM node:20-alpine AS production
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
-EXPOSE 3000
-CMD ["node", "server.js"]
