@@ -508,25 +508,25 @@ export default function ShareView({
             View only
           </div>
         )}
-        <BoardToolbarTrigger
-          open={toolbarOpen}
-          onToggle={() => setToolbarOpen((p) => !p)}
-          userCount={presenceUsers.length || 1}
-        />
+        <div className="pointer-events-auto relative">
+          <BoardToolbarTrigger
+            open={toolbarOpen}
+            onToggle={() => setToolbarOpen((p) => !p)}
+            userCount={presenceUsers.length || 1}
+          />
+          {toolbarOpen && (
+            <BoardToolbarPanel
+              presenceUsers={mappedPresenceUsers}
+              followingUserId={followingUserId}
+              onFollow={setFollowingUserId}
+              onCreateShareLink={async () => null}
+              showShare={false}
+              onClose={() => setToolbarOpen(false)}
+            />
+          )}
+        </div>
         {connectionBadge}
       </div>
-
-      {/* Collaboration panel (no share for guests) */}
-      {toolbarOpen && (
-        <BoardToolbarPanel
-          presenceUsers={mappedPresenceUsers}
-          followingUserId={followingUserId}
-          onFollow={setFollowingUserId}
-          onCreateShareLink={async () => null}
-          showShare={false}
-          onClose={() => setToolbarOpen(false)}
-        />
-      )}
 
       {/* Following banner */}
       {followingUserId && (
