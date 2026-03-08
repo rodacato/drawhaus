@@ -28,12 +28,23 @@ export async function initSchema(): Promise<void> {
 
     CREATE INDEX IF NOT EXISTS sessions_expires_at_idx ON sessions (expires_at);
 
+    CREATE TABLE IF NOT EXISTS folders (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name TEXT NOT NULL DEFAULT 'New Folder',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS folders_owner_id_idx ON folders (owner_id);
+
     CREATE TABLE IF NOT EXISTS diagrams (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      folder_id UUID REFERENCES folders(id) ON DELETE SET NULL,
       title TEXT NOT NULL DEFAULT 'Untitled',
       elements JSONB NOT NULL DEFAULT '[]',
       app_state JSONB NOT NULL DEFAULT '{}',
+      thumbnail TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
@@ -57,6 +68,19 @@ export async function initSchema(): Promise<void> {
       CHECK (role IN ('editor', 'viewer'))
     );
 
+    CREATE TABLE IF NOT EXISTS scenes (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      diagram_id UUID NOT NULL REFERENCES diagrams(id) ON DELETE CASCADE,
+      name TEXT NOT NULL DEFAULT 'Scene 1',
+      elements JSONB NOT NULL DEFAULT '[]',
+      app_state JSONB NOT NULL DEFAULT '{}',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS scenes_diagram_id_idx ON scenes (diagram_id, sort_order);
+
     CREATE TABLE IF NOT EXISTS site_settings (
       id BOOLEAN PRIMARY KEY DEFAULT true CHECK (id = true),
       registration_open BOOLEAN NOT NULL DEFAULT true,
@@ -68,6 +92,7 @@ export async function initSchema(): Promise<void> {
 
     CREATE INDEX IF NOT EXISTS share_links_diagram_id_idx ON share_links (diagram_id);
     CREATE INDEX IF NOT EXISTS diagrams_owner_id_idx ON diagrams (owner_id);
+    CREATE INDEX IF NOT EXISTS diagrams_folder_id_idx ON diagrams (folder_id);
     CREATE INDEX IF NOT EXISTS diagrams_updated_at_idx ON diagrams (updated_at DESC);
     CREATE INDEX IF NOT EXISTS diagram_members_user_id_idx ON diagram_members (user_id);
   `);
@@ -76,5 +101,7 @@ export async function initSchema(): Promise<void> {
   await pool.query(`
     ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user';
     ALTER TABLE users ADD COLUMN IF NOT EXISTS disabled BOOLEAN NOT NULL DEFAULT false;
+    ALTER TABLE diagrams ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES folders(id) ON DELETE SET NULL;
+    ALTER TABLE diagrams ADD COLUMN IF NOT EXISTS thumbnail TEXT;
   `);
 }

@@ -13,12 +13,16 @@ import { GetDiagramUseCase } from "../../application/use-cases/diagrams/get-diag
 import { ListDiagramsUseCase } from "../../application/use-cases/diagrams/list-diagrams";
 import { UpdateDiagramUseCase } from "../../application/use-cases/diagrams/update-diagram";
 import { DeleteDiagramUseCase } from "../../application/use-cases/diagrams/delete-diagram";
+import { SearchDiagramsUseCase } from "../../application/use-cases/diagrams/search-diagrams";
+import { UpdateThumbnailUseCase } from "../../application/use-cases/diagrams/update-thumbnail";
+import { MoveDiagramUseCase } from "../../application/use-cases/folders/move-diagram";
 import { createAuthRoutes } from "../../infrastructure/http/routes/auth.routes";
 import { createDiagramRoutes } from "../../infrastructure/http/routes/diagram.routes";
 import { createRequireAuth } from "../../infrastructure/http/middleware/require-auth";
 import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../fakes/in-memory-session-repository";
 import { InMemoryDiagramRepository } from "../fakes/in-memory-diagram-repository";
+import { InMemoryFolderRepository } from "../fakes/in-memory-folder-repository";
 import { FakeHasher } from "../fakes/fake-hasher";
 
 let diagrams: InMemoryDiagramRepository;
@@ -42,12 +46,16 @@ function createApp() {
     updateProfile: new UpdateProfileUseCase(users),
     changePassword: new ChangePasswordUseCase(users, hasher),
   }, requireAuth));
+  const folders = new InMemoryFolderRepository();
   app.use("/api/diagrams", createDiagramRoutes({
     create: new CreateDiagramUseCase(diagrams),
     get: new GetDiagramUseCase(diagrams),
     list: new ListDiagramsUseCase(diagrams),
+    search: new SearchDiagramsUseCase(diagrams),
     update: new UpdateDiagramUseCase(diagrams),
+    updateThumbnail: new UpdateThumbnailUseCase(diagrams),
     delete: new DeleteDiagramUseCase(diagrams),
+    move: new MoveDiagramUseCase(diagrams, folders),
   }, requireAuth));
   return app;
 }

@@ -3,12 +3,17 @@ import { z } from "zod";
 import type { CreateDiagramUseCase } from "../../../application/use-cases/diagrams/create-diagram";
 import type { GetDiagramUseCase } from "../../../application/use-cases/diagrams/get-diagram";
 import type { ListDiagramsUseCase } from "../../../application/use-cases/diagrams/list-diagrams";
+import type { SearchDiagramsUseCase } from "../../../application/use-cases/diagrams/search-diagrams";
 import type { UpdateDiagramUseCase } from "../../../application/use-cases/diagrams/update-diagram";
 import type { DeleteDiagramUseCase } from "../../../application/use-cases/diagrams/delete-diagram";
+import type { UpdateThumbnailUseCase } from "../../../application/use-cases/diagrams/update-thumbnail";
+import type { MoveDiagramUseCase } from "../../../application/use-cases/folders/move-diagram";
 import { asyncRoute } from "../middleware/async-handler";
+import type { Diagram } from "../../../domain/entities/diagram";
 
 const createSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
+  folderId: z.string().uuid().nullable().optional(),
   elements: z.array(z.unknown()).optional(),
   appState: z.record(z.string(), z.unknown()).optional(),
 });
@@ -23,13 +28,19 @@ const patchSchema = z
     message: "At least one field is required",
   });
 
-function formatDiagram(d: { id: string; ownerId: string; title: string; elements: unknown[]; appState: Record<string, unknown>; createdAt: Date; updatedAt: Date }) {
+const moveSchema = z.object({
+  folderId: z.string().uuid().nullable(),
+});
+
+function formatDiagram(d: Diagram) {
   return {
     id: d.id,
     ownerId: d.ownerId,
+    folderId: d.folderId,
     title: d.title,
     elements: d.elements,
     appState: d.appState,
+    thumbnail: d.thumbnail,
     createdAt: d.createdAt.toISOString(),
     updatedAt: d.updatedAt.toISOString(),
   };
@@ -40,22 +51,34 @@ export function createDiagramRoutes(
     create: CreateDiagramUseCase;
     get: GetDiagramUseCase;
     list: ListDiagramsUseCase;
+    search: SearchDiagramsUseCase;
     update: UpdateDiagramUseCase;
+    updateThumbnail: UpdateThumbnailUseCase;
     delete: DeleteDiagramUseCase;
+    move: MoveDiagramUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
 ) {
   const router = Router();
   router.use(requireAuth);
 
+  // Search must be registered before /:id to avoid "search" being parsed as UUID
+  router.get("/search", asyncRoute(async (req, res) => {
+    const q = String(req.query.q ?? "");
+    const diagrams = await useCases.search.execute(req.authUser.id, q);
+    return res.json({ diagrams: diagrams.map(formatDiagram) });
+  }));
+
   router.get("/", asyncRoute(async (req, res) => {
-    const diagrams = await useCases.list.execute(req.authUser.id);
-    return res.status(200).json({ diagrams: diagrams.map(formatDiagram) });
+    const folderParam = req.query.folderId;
+    const folderId = folderParam === "null" ? null : (typeof folderParam === "string" ? folderParam : undefined);
+    const diagrams = await useCases.list.execute(req.authUser.id, folderId);
+    return res.json({ diagrams: diagrams.map(formatDiagram) });
   }));
 
   router.get("/:id", asyncRoute(async (req, res) => {
     const diagram = await useCases.get.execute(String(req.params.id), req.authUser.id);
-    return res.status(200).json({ diagram: formatDiagram(diagram) });
+    return res.json({ diagram: formatDiagram(diagram) });
   }));
 
   router.post("/", asyncRoute(async (req, res) => {
@@ -65,27 +88,37 @@ export function createDiagramRoutes(
     const diagram = await useCases.create.execute({
       ownerId: req.authUser.id,
       title: parsed.data.title,
+      folderId: parsed.data.folderId,
       elements: parsed.data.elements,
       appState: parsed.data.appState,
     });
     return res.status(201).json({ diagram: formatDiagram(diagram) });
   }));
 
+  router.put("/:id/thumbnail", asyncRoute(async (req, res) => {
+    const thumbnail = req.body?.thumbnail;
+    if (typeof thumbnail !== "string") return res.status(400).json({ error: "thumbnail is required" });
+    await useCases.updateThumbnail.execute(String(req.params.id), req.authUser.id, thumbnail);
+    return res.json({ success: true });
+  }));
+
+  router.post("/:id/move", asyncRoute(async (req, res) => {
+    const parsed = moveSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+    await useCases.move.execute(String(req.params.id), req.authUser.id, parsed.data.folderId);
+    return res.json({ success: true });
+  }));
+
   router.patch("/:id", asyncRoute(async (req, res) => {
     const parsed = patchSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    const diagram = await useCases.update.execute(
-      String(req.params.id),
-      req.authUser.id,
-      parsed.data,
-    );
-    return res.status(200).json({ diagram: formatDiagram(diagram) });
+    const diagram = await useCases.update.execute(String(req.params.id), req.authUser.id, parsed.data);
+    return res.json({ diagram: formatDiagram(diagram) });
   }));
 
   router.delete("/:id", asyncRoute(async (req, res) => {
     await useCases.delete.execute(String(req.params.id), req.authUser.id);
-    return res.status(200).json({ success: true });
+    return res.json({ success: true });
   }));
 
   return router;
