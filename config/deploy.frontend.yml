@@ -1,0 +1,32 @@
+service: drawhaus-frontend
+
+image: ghcr.io/rodacato/drawhaus-frontend
+
+servers:
+  web:
+    hosts:
+      - <%= ENV["HOST_IP"] %>
+    options:
+      publish: "127.0.0.1:4000:3000"
+
+registry:
+  server: ghcr.io
+  username: rodacato
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  context: frontend/
+  dockerfile: Dockerfile
+  target: production
+  arch: amd64
+  args:
+    NEXT_PUBLIC_API_URL: <%= ENV["NEXT_PUBLIC_API_URL"] %>
+    NEXT_PUBLIC_WS_URL: <%= ENV["NEXT_PUBLIC_WS_URL"] %>
+  cache:
+    type: gha
+
+healthcheck:
+  path: /
+  port: 3000
+  interval: 10

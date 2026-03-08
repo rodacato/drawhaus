@@ -11,6 +11,8 @@ CMD ["npm", "run", "dev"]
 FROM base AS builder
 RUN npm ci
 COPY . .
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_WS_URL
 RUN npm run build
 
 FROM node:20-alpine AS production
