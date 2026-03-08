@@ -1,9 +1,9 @@
-import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
+import type { SceneRepository } from "../../../domain/ports/scene-repository";
 
 export class SaveSceneUseCase {
-  constructor(private diagrams: DiagramRepository) {}
+  constructor(private scenes: SceneRepository) {}
 
-  async execute(diagramId: string, elements: unknown[], appState: Record<string, unknown>) {
-    await this.diagrams.updateScene(diagramId, elements, appState);
+  async execute(sceneId: string, elements: unknown[], appState: Record<string, unknown>) {
+    await this.scenes.updateScene(sceneId, elements, appState);
   }
 }

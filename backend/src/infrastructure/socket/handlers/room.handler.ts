@@ -6,6 +6,10 @@ import { type SocketData, getRoomPresenceUsers } from "../helpers";
 import { config } from "../../config";
 import { logger } from "../../logger";
 
+function formatScene(s: { id: string; name: string; sortOrder: number }) {
+  return { id: s.id, name: s.name, sortOrder: s.sortOrder };
+}
+
 export function registerRoomHandlers(
   io: Server,
   socket: Socket,
@@ -26,9 +30,18 @@ export function registerRoomHandlers(
 
       socket.join(roomId);
 
+      // Join the first scene's sub-room
+      const firstScene = result.scenes[0];
+      if (firstScene) {
+        socket.join(`${roomId}:${firstScene.id}`);
+        socket.data.activeSceneId = firstScene.id;
+      }
+
       socket.emit("scene-from-db", {
         elements: result.elements,
         appState: result.appState,
+        scenes: result.scenes.map(formatScene),
+        activeSceneId: firstScene?.id ?? null,
       });
 
       socket.emit("room-joined", { roomId, role: result.role, userId: result.user.id });
@@ -65,9 +78,17 @@ export function registerRoomHandlers(
 
       socket.join(roomId);
 
+      const firstScene = result.scenes[0];
+      if (firstScene) {
+        socket.join(`${roomId}:${firstScene.id}`);
+        socket.data.activeSceneId = firstScene.id;
+      }
+
       socket.emit("scene-from-db", {
         elements: result.elements,
         appState: result.appState,
+        scenes: result.scenes.map(formatScene),
+        activeSceneId: firstScene?.id ?? null,
       });
 
       socket.emit("room-joined", { roomId, role: result.role, userId: guestId });
@@ -82,9 +103,32 @@ export function registerRoomHandlers(
     }
   });
 
+  // Switch active scene
+  socket.on("switch-scene", async ({
+    roomId,
+    sceneId,
+  }: {
+    roomId: string;
+    sceneId: string;
+  }) => {
+    if (!socket.rooms.has(roomId)) return;
+
+    // Leave previous scene sub-room
+    const prevSceneId = socket.data.activeSceneId as string | undefined;
+    if (prevSceneId) {
+      socket.leave(`${roomId}:${prevSceneId}`);
+    }
+
+    // Join new scene sub-room
+    socket.join(`${roomId}:${sceneId}`);
+    socket.data.activeSceneId = sceneId;
+  });
+
   socket.on("disconnecting", () => {
     for (const roomId of socket.rooms) {
       if (roomId === socket.id) continue;
+      // Skip scene sub-rooms (they contain ':')
+      if (roomId.includes(":")) continue;
 
       const futureUsers = getRoomPresenceUsers(io, roomId).filter(
         (u) =>

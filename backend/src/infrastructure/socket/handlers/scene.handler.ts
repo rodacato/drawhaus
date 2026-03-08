@@ -10,13 +10,17 @@ export function registerSceneHandlers(
 ) {
   socket.on(
     "scene-update",
-    ({ roomId, elements }: { roomId: string; elements: unknown[] }) => {
+    ({ roomId, sceneId, elements }: { roomId: string; sceneId?: string; elements: unknown[] }) => {
       if (!socket.rooms.has(roomId)) return;
       if (!canEdit(socket, roomId)) return;
       if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
 
-      socket.to(roomId).emit("scene-updated", {
+      const targetSceneId = sceneId ?? (socket.data.activeSceneId as string | undefined);
+      const broadcastRoom = targetSceneId ? `${roomId}:${targetSceneId}` : roomId;
+
+      socket.to(broadcastRoom).emit("scene-updated", {
         roomId,
+        sceneId: targetSceneId,
         fromUserId: (socket.data as SocketData).userId,
         fromSocketId: socket.id,
         elements,
@@ -28,10 +32,12 @@ export function registerSceneHandlers(
     "save-scene",
     async ({
       roomId,
+      sceneId,
       elements,
       appState,
     }: {
       roomId: string;
+      sceneId?: string;
       elements: unknown[];
       appState: Record<string, unknown>;
     }) => {
@@ -39,8 +45,11 @@ export function registerSceneHandlers(
         if (!socket.rooms.has(roomId)) return;
         if (!canEdit(socket, roomId)) return;
 
-        await useCases.saveScene.execute(roomId, elements, appState);
-        socket.emit("scene-saved", { roomId });
+        const targetSceneId = sceneId ?? (socket.data.activeSceneId as string | undefined);
+        if (!targetSceneId) return;
+
+        await useCases.saveScene.execute(targetSceneId, elements, appState);
+        socket.emit("scene-saved", { roomId, sceneId: targetSceneId });
       } catch (error: unknown) {
         logger.error(error, "save-scene failed");
         socket.emit("room-error", { message: "Save failed" });
