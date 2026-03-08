@@ -1,21 +1,17 @@
 {
   "name": "frontend",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "typecheck": "tsc --noEmit",
-    "dev:vite": "vite",
-    "build:vite": "vite build",
-    "preview": "vite preview"
+    "typecheck": "tsc --noEmit -p tsconfig.vite.json"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
     "axios": "^1.13.6",
-    "next": "^15.5.10",
     "react": "^18",
     "react-dom": "^18",
     "react-router-dom": "^7.13.1",
@@ -28,7 +24,6 @@
     "@types/react-dom": "^18",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^8",
-    "eslint-config-next": "^15.5.10",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
     "typescript": "^5",
