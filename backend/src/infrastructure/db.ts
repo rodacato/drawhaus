@@ -1,10 +1,8 @@
 import { Pool } from "pg";
-
-const databaseUrl =
-  process.env.DATABASE_URL ?? "postgres://drawhaus:drawhaus@db:5432/drawhaus";
+import { config } from "./config";
 
 export const pool = new Pool({
-  connectionString: databaseUrl,
+  connectionString: config.databaseUrl,
 });
 
 export async function initSchema(): Promise<void> {
