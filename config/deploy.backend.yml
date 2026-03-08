@@ -8,6 +8,10 @@ servers:
       - <%= ENV["HOST_IP"] %>
     options:
       publish: "127.0.0.1:4001:4000"
+    healthcheck:
+      path: /health
+      port: 4000
+      interval: 10
 
 registry:
   server: ghcr.io
@@ -36,11 +40,6 @@ env:
 
 volumes:
   - drawhaus-uploads:/data/files
-
-healthcheck:
-  path: /health
-  port: 4000
-  interval: 10
 
 accessories:
   postgres:
