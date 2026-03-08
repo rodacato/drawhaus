@@ -7,13 +7,18 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev:vite": "vite",
+    "build:vite": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
+    "axios": "^1.13.6",
     "next": "^15.5.10",
     "react": "^18",
     "react-dom": "^18",
+    "react-router-dom": "^7.13.1",
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
@@ -21,10 +26,12 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^8",
     "eslint-config-next": "^15.5.10",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^7.3.1"
   }
 }
