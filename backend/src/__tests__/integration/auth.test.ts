@@ -6,7 +6,10 @@ import { RegisterUseCase } from "../../application/use-cases/auth/register";
 import { LoginUseCase } from "../../application/use-cases/auth/login";
 import { LogoutUseCase } from "../../application/use-cases/auth/logout";
 import { GetCurrentUserUseCase } from "../../application/use-cases/auth/get-current-user";
+import { UpdateProfileUseCase } from "../../application/use-cases/auth/update-profile";
+import { ChangePasswordUseCase } from "../../application/use-cases/auth/change-password";
 import { createAuthRoutes } from "../../infrastructure/http/routes/auth.routes";
+import { createRequireAuth } from "../../infrastructure/http/middleware/require-auth";
 import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../fakes/in-memory-session-repository";
 import { FakeHasher } from "../fakes/fake-hasher";
@@ -23,10 +26,13 @@ function createApp() {
   const login = new LoginUseCase(users, sessions, hasher);
   const logout = new LogoutUseCase(sessions);
   const getCurrentUser = new GetCurrentUserUseCase(sessions);
+  const updateProfile = new UpdateProfileUseCase(users);
+  const changePassword = new ChangePasswordUseCase(users, hasher);
+  const requireAuth = createRequireAuth(getCurrentUser);
 
   const app = express();
   app.use(express.json());
-  app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser }));
+  app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword }, requireAuth));
   return app;
 }
 

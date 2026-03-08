@@ -6,6 +6,8 @@ import { RegisterUseCase } from "../../application/use-cases/auth/register";
 import { LoginUseCase } from "../../application/use-cases/auth/login";
 import { LogoutUseCase } from "../../application/use-cases/auth/logout";
 import { GetCurrentUserUseCase } from "../../application/use-cases/auth/get-current-user";
+import { UpdateProfileUseCase } from "../../application/use-cases/auth/update-profile";
+import { ChangePasswordUseCase } from "../../application/use-cases/auth/change-password";
 import { CreateDiagramUseCase } from "../../application/use-cases/diagrams/create-diagram";
 import { GetDiagramUseCase } from "../../application/use-cases/diagrams/get-diagram";
 import { ListDiagramsUseCase } from "../../application/use-cases/diagrams/list-diagrams";
@@ -37,7 +39,9 @@ function createApp() {
     login: new LoginUseCase(users, sessions, hasher),
     logout: new LogoutUseCase(sessions),
     getCurrentUser,
-  }));
+    updateProfile: new UpdateProfileUseCase(users),
+    changePassword: new ChangePasswordUseCase(users, hasher),
+  }, requireAuth));
   app.use("/api/diagrams", createDiagramRoutes({
     create: new CreateDiagramUseCase(diagrams),
     get: new GetDiagramUseCase(diagrams),
