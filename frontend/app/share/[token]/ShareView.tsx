@@ -356,8 +356,8 @@ export default function ShareView({
       if (applyingRemoteCounter.current > 0) return;
 
       // Broadcast viewport for follow mode (skip when we're following someone)
+      const now = Date.now();
       if (!followingUserIdRef.current) {
-        const now = Date.now();
         if (now - lastViewportEmitTime.current >= CURSOR_THROTTLE_MS) {
           lastViewportEmitTime.current = now;
           const zoom = (appState.zoom as { value: number })?.value ?? 1;
