@@ -95,7 +95,7 @@ export class PgUserRepository implements UserRepository {
       `SELECT ${SELECT_COLS} FROM users ORDER BY created_at ASC`,
     );
     return rows.map((row) => {
-      const { passwordHash: _, ...rest } = toDomain(row);
+      const { passwordHash: _passwordHash, ...rest } = toDomain(row);
       return rest;
     });
   }

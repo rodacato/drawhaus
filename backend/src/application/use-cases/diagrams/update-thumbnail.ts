@@ -7,7 +7,7 @@ export class UpdateThumbnailUseCase {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
     if (!role || role === "viewer") {
       const err = new Error("Forbidden");
-      (err as any).status = 403;
+      (err as Error & { status: number }).status = 403;
       throw err;
     }
     await this.diagrams.updateThumbnail(diagramId, thumbnail);

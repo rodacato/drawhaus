@@ -25,7 +25,7 @@ export class AdminUpdateUserUseCase {
       await this.sessions.deleteAllForUser(targetId);
     }
 
-    const { passwordHash: _, ...safe } = user;
+    const { passwordHash: _passwordHash, ...safe } = user;
     return safe;
   }
 }

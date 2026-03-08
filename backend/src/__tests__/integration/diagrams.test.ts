@@ -120,7 +120,7 @@ test("membership and permissions are enforced", async () => {
   const diagramId = createRes.body.diagram.id as string;
 
   // Add member as viewer
-  const memberUserId = diagrams.store.length > 0 ? undefined : undefined;
+  // memberUserId was unused placeholder — removed
   // We need to find the member's user ID from the session repository
   // For simplicity, add member directly to diagrams repo
   const memberRes = await request(app).get("/api/auth/me").set("Cookie", memberCookie);
