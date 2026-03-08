@@ -1,12 +1,13 @@
-name: Build & Deploy
+name: Deploy
 
 on:
   push:
     branches: [production]
+  workflow_dispatch:
 
 concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: true
+  group: deploy
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -17,11 +18,10 @@ jobs:
     name: Build backend
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: production
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -49,28 +49,37 @@ jobs:
     name: Deploy backend
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     environment: production
+    timeout-minutes: 20
+
+    env:
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      HOST_IP: ${{ secrets.HOST_IP }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+      COOKIE_DOMAIN: ${{ secrets.COOKIE_DOMAIN }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
 
       - name: Install Kamal
         run: gem install kamal
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy backend
+      - name: Deploy with Kamal
         run: kamal deploy -c config/deploy.backend.yml
-        env:
-          HOST_IP: ${{ secrets.HOST_IP }}
-          KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
-          COOKIE_DOMAIN: ${{ secrets.COOKIE_DOMAIN }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
