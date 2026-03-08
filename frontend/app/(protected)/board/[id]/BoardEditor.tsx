@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "@excalidraw/excalidraw/index.css";
 import { io, type Socket } from "socket.io-client";
 import { BoardSidebar } from "./BoardSidebar";
+import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "./BoardToolbar";
 
 type ExcalidrawApi = {
   updateScene: (scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => void;
@@ -35,7 +36,7 @@ type BoardEditorProps = {
 
 type SaveState = "idle" | "pending" | "saving" | "saved" | "error";
 type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
-type PresenceUser = { userId: string; name: string };
+type PresenceUser = { userId: string; name: string; isGuest?: boolean };
 type CursorInfo = { name: string; x: number; y: number; lastSeen: number };
 
 const THROTTLE_MS = 50;
@@ -110,15 +111,25 @@ export default function BoardEditor({
   const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
   const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [followingUserId, setFollowingUserId] = useState<string | null>(null);
+  const [selfUserId, setSelfUserId] = useState<string | null>(null);
+  const [toolbarOpen, setToolbarOpen] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const throttleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastEmitTime = useRef(0);
   const lastCursorEmitTime = useRef(0);
+  const lastViewportEmitTime = useRef(0);
+  const followingUserIdRef = useRef<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const excalidrawApiRef = useRef<ExcalidrawApi | null>(null);
   const applyingRemoteCounter = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
   const pendingSceneRef = useRef<{ elements: unknown[]; appState: Record<string, unknown> } | null>(null);
+
+  // Keep ref in sync for use inside socket callbacks
+  useEffect(() => {
+    followingUserIdRef.current = followingUserId;
+  }, [followingUserId]);
 
   const cacheKey = `drawhaus_scene_${diagramId}`;
 
@@ -207,7 +218,7 @@ export default function BoardEditor({
     });
 
     socket.on("connect_error", (err) => {
-      console.error("Socket connect_error:", err.message);
+      console.warn("Socket connect_error:", err.message);
       setConnectionState("error");
       setConnectionError(err.message);
     });
@@ -218,13 +229,14 @@ export default function BoardEditor({
     });
 
     socket.on("room-error", ({ message }: { message: string }) => {
-      console.error("Room error:", message);
+      console.warn("Room error:", message);
       setConnectionError(message);
       setConnectionState("error");
     });
 
-    socket.on("room-joined", ({ role }: { role: string }) => {
+    socket.on("room-joined", ({ role, userId }: { role: string; userId?: string }) => {
       setUserRole(role);
+      if (userId) setSelfUserId(userId);
       setConnectionError(null);
     });
 
@@ -286,6 +298,27 @@ export default function BoardEditor({
       });
     });
 
+    socket.on("viewport-updated", ({
+      userId,
+      scrollX,
+      scrollY,
+      zoom,
+    }: {
+      userId: string;
+      scrollX: number;
+      scrollY: number;
+      zoom: number;
+    }) => {
+      if (followingUserIdRef.current !== userId) return;
+      applyingRemoteCounter.current += 1;
+      excalidrawApiRef.current?.updateScene({
+        appState: { scrollX, scrollY, zoom: { value: zoom } },
+      });
+      requestAnimationFrame(() => {
+        applyingRemoteCounter.current -= 1;
+      });
+    });
+
     return () => {
       socket.disconnect();
       socketRef.current = null;
@@ -293,6 +326,40 @@ export default function BoardEditor({
   }, [diagramId]);
 
   const canEdit = userRole === "owner" || userRole === "editor";
+
+  // Stop following if user leaves
+  useEffect(() => {
+    if (followingUserId && !presenceUsers.some((u) => u.userId === followingUserId)) {
+      setFollowingUserId(null);
+    }
+  }, [presenceUsers, followingUserId]);
+
+  const handleCreateShareLink = useCallback(async (role: "viewer" | "editor"): Promise<string | null> => {
+    // Reuse cached link if available
+    const cacheShareKey = `drawhaus_share_${diagramId}_${role}`;
+    const cached = localStorage.getItem(cacheShareKey);
+    if (cached) return cached;
+
+    try {
+      const res = await fetch(`/api/share/${diagramId}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      if (!res.ok) return null;
+      const payload = await res.json();
+      const token = payload.shareLink?.token;
+      if (token) {
+        const url = `${window.location.origin}/share/${token}`;
+        try { localStorage.setItem(cacheShareKey, url); } catch { /* quota */ }
+        return url;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }, [diagramId]);
 
   const persistScene = useCallback(
     async (elements: unknown[], appState: Record<string, unknown>) => {
@@ -343,12 +410,26 @@ export default function BoardEditor({
   const onChange = useCallback(
     (elements: readonly unknown[], appState: Record<string, unknown>) => {
       if (applyingRemoteCounter.current > 0) return;
+
+      // Broadcast viewport for follow mode (skip when we're following someone)
+      if (!followingUserIdRef.current) {
+        const now = Date.now();
+        if (now - lastViewportEmitTime.current >= CURSOR_THROTTLE_MS) {
+          lastViewportEmitTime.current = now;
+          const zoom = (appState.zoom as { value: number })?.value ?? 1;
+          socketRef.current?.emit("viewport-update", {
+            roomId: diagramId,
+            scrollX: appState.scrollX,
+            scrollY: appState.scrollY,
+            zoom,
+          });
+        }
+      }
       if (!canEdit) return;
 
       setSaveState("pending");
 
       // Throttle scene-update emissions (only sync elements, not appState/viewport)
-      const now = Date.now();
       const elapsed = now - lastEmitTime.current;
       if (elapsed >= THROTTLE_MS) {
         lastEmitTime.current = now;
@@ -408,6 +489,11 @@ export default function BoardEditor({
     </div>
   ) : null;
 
+  const mappedPresenceUsers = presenceUsers.map((u) => ({
+    ...u,
+    isSelf: u.userId === selfUserId,
+  }));
+
   return (
     <div className="relative h-screen w-screen">
       {/* Sidebar drawer */}
@@ -417,7 +503,7 @@ export default function BoardEditor({
         onToggle={() => setSidebarOpen((prev) => !prev)}
       />
 
-      {/* Title - next to Excalidraw menu, matching its style */}
+      {/* Top bar */}
       <div className="pointer-events-none fixed left-16 top-3 z-20 flex items-center gap-3">
         <div className="pointer-events-auto rounded-lg bg-white px-4 py-2 shadow-sm">
           <span className="text-lg font-medium text-[#1b1b1f]">
@@ -427,11 +513,33 @@ export default function BoardEditor({
         <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${saveColor}`}>
           {saveLabel}
         </div>
-        <div className="pointer-events-auto rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-medium text-[#1b1b1f] shadow-sm">
-          {presenceUsers.length || 1} online
-        </div>
+        <BoardToolbarTrigger
+          open={toolbarOpen}
+          onToggle={() => setToolbarOpen((p) => !p)}
+          userCount={presenceUsers.length || 1}
+        />
         {connectionBadge}
       </div>
+
+      {/* Collaboration panel */}
+      {toolbarOpen && (
+        <BoardToolbarPanel
+          presenceUsers={mappedPresenceUsers}
+          followingUserId={followingUserId}
+          onFollow={setFollowingUserId}
+          onCreateShareLink={handleCreateShareLink}
+          onClose={() => setToolbarOpen(false)}
+        />
+      )}
+
+      {/* Following banner */}
+      {followingUserId && (
+        <FollowingBanner
+          presenceUsers={mappedPresenceUsers}
+          followingUserId={followingUserId}
+          onStop={() => setFollowingUserId(null)}
+        />
+      )}
 
       {/* Cursors overlay */}
       <div className="pointer-events-none fixed inset-0 z-10">
