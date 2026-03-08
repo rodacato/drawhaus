@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/main.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/main.js",
     "lint": "eslint 'src/**/*.ts'",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test --test-concurrency=1 src/**/*.test.ts"
+    "test": "tsx --test --test-concurrency=1 'src/__tests__/**/*.test.ts'",
+    "test:unit": "tsx --test --test-concurrency=1 'src/__tests__/unit/**/*.test.ts'",
+    "test:integration": "tsx --test --test-concurrency=1 'src/__tests__/integration/**/*.test.ts'"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
