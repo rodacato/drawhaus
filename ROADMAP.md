@@ -167,38 +167,73 @@ Excalidraw is building MCP for their Plus tier. If Drawhaus ships MCP support fo
 | 9 | Multi-scene | Multiple pages per diagram, scene tabs, schema migration | M |
 | 10 | Diagram thumbnails | Auto-generated preview on save (canvas snapshot) | M |
 
-### Phase 3 — Collaboration Depth
+### Phase 3 — Static Frontend Migration
+
+> Goal: Replace Next.js with Vite + React Router. No feature in the roadmap requires SSR —
+> the app is a SPA behind auth. This simplifies deployment, removes a Node server, and
+> enables static hosting (GitHub Pages, Cloudflare Pages, or just a CDN).
+
+| # | Feature | Description | Effort |
+|---|---------|-------------|--------|
+| 11 | Vite + React Router scaffold | Replace Next.js App Router with Vite + React Router | M |
+| 12 | Axios HTTP client | Replace raw `fetch()` calls with axios (interceptors, base URL, auto credentials) | S |
+| 13 | Client-side auth guards | Replace server-side `requireUser()` with route guards + `useAuth` hook | S |
+| 14 | CORS on backend | Allow direct browser→backend requests (no more Next.js API proxy) | S |
+| 15 | Static deploy pipeline | GitHub Pages or Cloudflare Pages with GitHub Actions CI/CD | S |
+
+#### Migration strategy
+
+1. **Scaffold:** New Vite project, move existing components as-is (they're already React)
+2. **Routing:** Map Next.js App Router paths to React Router routes
+3. **HTTP client:** Replace all `fetch()` with axios instance configured with `VITE_API_URL` base URL and `withCredentials: true`
+4. **Auth:** Replace server-side cookie checks with a client-side `useAuth` context that calls `/api/auth/me` on mount
+5. **Socket.IO:** No changes needed — already client-side
+6. **Deploy:** `vite build` → static files → GitHub Pages via Actions. Backend stays on Kamal as-is
+
+#### What changes in the backend
+
+- Add CORS middleware (allow frontend origin, credentials: true)
+- No other backend changes needed
+
+#### What changes in deployment
+
+- **Frontend:** No longer needs a Node server or Docker image. Served as static files from GitHub Pages (or Cloudflare Pages). Deployed via GitHub Actions on push to main
+- **Backend:** Stays on Kamal as-is. Only change is CORS middleware
+- **Remove:** `config/deploy.frontend.yml` (Kamal frontend config), frontend Docker production stage, frontend service from `docker-compose.yml`
+- **Cloudflare Tunnel:** Points only to backend. Frontend DNS is a CNAME to GitHub Pages
+
+### Phase 4 — Collaboration Depth
 
 > Goal: Async collaboration features.
 
 | # | Feature | Description | Effort |
 |---|---------|-------------|--------|
-| 11 | Comments | Element-anchored threads, notifications | M |
-| 12 | Teams / workspaces | Team entity, invite flow, shared folders | M |
-| 13 | Activity feed | Recent changes per diagram, who edited what | M |
-| 14 | Audit log | Share link access tracking, admin visibility | S |
+| 16 | Comments | Element-anchored threads, notifications | M |
+| 17 | Teams / workspaces | Team entity, invite flow, shared folders | M |
+| 18 | Activity feed | Recent changes per diagram, who edited what | M |
+| 19 | Audit log | Share link access tracking, admin visibility | S |
 
-### Phase 4 — Power Features
+### Phase 5 — Power Features
 
 > Goal: Things that would genuinely improve daily use. Scope TBD.
 
 | # | Feature | Description | Effort |
 |---|---------|-------------|--------|
-| 15 | Versioning | Track diagram history over time, revert to previous versions | M |
-| 16 | PDF/PPTX export | Export scenes as presentation-ready files | M |
-| 17 | Presentations | Scene-based slideshow mode | M |
-| 18 | Libraries | Reusable component library (personal, synced across diagrams) | M |
+| 20 | Versioning | Track diagram history over time, revert to previous versions | M |
+| 21 | PDF/PPTX export | Export scenes as presentation-ready files | M |
+| 22 | Presentations | Scene-based slideshow mode | M |
+| 23 | Libraries | Reusable component library (personal, synced across diagrams) | M |
 
-### Phase 5 — Stretch / Explore
+### Phase 6 — Stretch / Explore
 
 > Goal: High-value features worth exploring once the core is solid.
 
 | # | Feature | Description | Effort |
 |---|---------|-------------|--------|
-| 19 | AI assist | Generate diagrams from text prompts (Claude API) | L |
-| 20 | MCP server | Expose Drawhaus to AI agents for automated diagram creation | M |
-| 21 | Public API | REST API for external integrations, automation | M |
-| 22 | Archive / soft delete | Archive diagrams instead of permanent delete | S |
+| 24 | AI assist | Generate diagrams from text prompts (Claude API) | L |
+| 25 | MCP server | Expose Drawhaus to AI agents for automated diagram creation | M |
+| 26 | Public API | REST API for external integrations, automation | M |
+| 27 | Archive / soft delete | Archive diagrams instead of permanent delete | S |
 
 ### Not Planned
 
@@ -231,14 +266,14 @@ Excalidraw is building MCP for their Plus tier. If Drawhaus ships MCP support fo
 | Excalidraw Feature | Status | Relevant? | Our Plan |
 |--------------------|--------|-----------|----------|
 | Fulltext search | In progress | Yes | Phase 2 (#8) — search diagram content, not just titles |
-| Versioning | In progress | Yes | Phase 4 (#15) — snapshot-based, timeline UI |
-| PDF/PPTX export | Shipped | Yes | Phase 4 (#16) — after multi-scene |
-| MCP (agent integration) | Backlog | Yes | Phase 5 (#20) — unique for self-hosted |
-| Public API | In progress | Yes | Phase 5 (#21) — enables MCP and automation |
-| Archive (soft delete) | In progress | Yes | Phase 5 (#22) — `deleted_at` column, simple |
-| Generate anything (AI) | In progress | Maybe | Phase 5 (#19) — explore after core is solid |
+| Versioning | In progress | Yes | Phase 5 (#20) — snapshot-based, timeline UI |
+| PDF/PPTX export | Shipped | Yes | Phase 5 (#21) — after multi-scene |
+| MCP (agent integration) | Backlog | Yes | Phase 6 (#25) — unique for self-hosted |
+| Public API | In progress | Yes | Phase 6 (#26) — enables MCP and automation |
+| Archive (soft delete) | In progress | Yes | Phase 6 (#27) — `deleted_at` column, simple |
+| Generate anything (AI) | In progress | Maybe | Phase 6 (#24) — explore after core is solid |
 | Nesting with folders | Backlog | Yes | Phase 2 (#7) — already planned |
-| Shared library | Backlog | Low | Phase 4 (#18) — personal library only |
+| Shared library | Backlog | Low | Phase 5 (#23) — personal library only |
 | Presenter notes | In progress | Low | Could add alongside presentations |
 | Custom fonts | In progress | No | Default fonts are fine |
 | SSO | Backlog | No | Personal use, not enterprise |
@@ -257,8 +292,10 @@ Excalidraw is building MCP for their Plus tier. If Drawhaus ships MCP support fo
 | Skip E2EE | Self-hosted = you own the data | Full client-side E2EE | Breaks collab merge logic; redundant on own server |
 | Skip voice/screenshare | Use Meet/Discord | Build WebRTC | XL effort, orthogonal to diagramming |
 | Export first, not AI first | Export in Phase 1 | AI as priority | Can't use a tool that traps your data |
-| Versioning over comments | Versioning in Phase 4 | Comments first | Personal use: "what did this look like before?" > async discussion |
+| Versioning over comments | Versioning in Phase 5 | Comments first | Personal use: "what did this look like before?" > async discussion |
+| Axios over fetch | axios with configured instance | Raw `fetch()` everywhere | Interceptors, base URL config, cleaner error handling, `withCredentials` by default |
 | Snapshot versioning | Full JSONB snapshots | Event-sourced diffs | Simpler, storage is cheap for personal volume |
+| Static SPA over Next.js | Vite + React Router in Phase 3 | Keep Next.js | No feature requires SSR; Next.js adds unnecessary server complexity for a tool behind auth |
 | MCP as differentiator | Explore in Phase 5 | Skip AI integration | Unique angle: AI agents creating diagrams on own server |
 
 ---
