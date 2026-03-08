@@ -41,7 +41,7 @@ export class InMemoryUserRepository implements UserRepository {
   }
 
   async listAll(): Promise<Omit<User, "passwordHash">[]> {
-    return this.store.map(({ passwordHash: _, ...rest }) => rest);
+    return this.store.map(({ passwordHash: _passwordHash, ...rest }) => rest);
   }
 
   async adminUpdate(id: string, data: { role?: UserRole; disabled?: boolean }): Promise<User | null> {

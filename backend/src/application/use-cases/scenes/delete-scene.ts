@@ -20,7 +20,7 @@ export class DeleteSceneUseCase {
     const siblings = await this.scenes.findByDiagram(scene.diagramId);
     if (siblings.length <= 1) {
       const err = new Error("Cannot delete the only scene");
-      (err as any).status = 400;
+      (err as Error & { status: number }).status = 400;
       throw err;
     }
 
