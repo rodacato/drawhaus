@@ -40,6 +40,19 @@ export function BoardToolbarTrigger({
         <path d="M16 3.13a4 4 0 010 7.75" />
       </svg>
       {userCount} online
+      <svg
+        width="10"
+        height="10"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={`transition-transform ${open ? "rotate-180" : ""}`}
+      >
+        <path d="M6 9l6 6 6-6" />
+      </svg>
     </button>
   );
 }
@@ -117,7 +130,7 @@ export function BoardToolbarPanel({
   return (
     <div
       ref={panelRef}
-      className="fixed right-4 top-14 z-30 w-80 rounded-2xl bg-white shadow-2xl border border-gray-100 overflow-hidden"
+      className="absolute left-0 top-full mt-2 z-30 w-80 rounded-2xl bg-white shadow-2xl border border-gray-100 overflow-hidden"
     >
       {/* Tabs */}
       <div className="flex border-b border-gray-100">
