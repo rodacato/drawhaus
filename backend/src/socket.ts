@@ -239,11 +239,9 @@ export function setupSocketServer(httpServer: HttpServer): Server {
       ({
         roomId,
         elements,
-        appState,
       }: {
         roomId: string;
         elements: unknown[];
-        appState: Record<string, unknown>;
       }) => {
         if (!socket.rooms.has(roomId)) return;
         if (!canEdit(socket, roomId)) return;
@@ -254,7 +252,6 @@ export function setupSocketServer(httpServer: HttpServer): Server {
           fromUserId: (socket.data as SocketData).userId,
           fromSocketId: socket.id,
           elements,
-          appState,
         });
       }
     );
