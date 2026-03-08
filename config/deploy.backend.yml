@@ -1,0 +1,56 @@
+service: drawhaus-backend
+
+image: ghcr.io/rodacato/drawhaus-backend
+
+servers:
+  web:
+    hosts:
+      - <%= ENV["HOST_IP"] %>
+    options:
+      publish: "127.0.0.1:4001:4000"
+
+registry:
+  server: ghcr.io
+  username: rodacato
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  context: backend/
+  dockerfile: Dockerfile
+  target: production
+  arch: amd64
+  cache:
+    type: gha
+
+env:
+  clear:
+    PORT: 4000
+    NODE_ENV: production
+    FILES_PATH: /data/files
+  secret:
+    - DATABASE_URL
+    - SESSION_SECRET
+    - FRONTEND_URL
+
+volumes:
+  - drawhaus-uploads:/data/files
+
+healthcheck:
+  path: /health
+  port: 4000
+  interval: 10
+
+accessories:
+  postgres:
+    image: postgres:16-alpine
+    host: <%= ENV["HOST_IP"] %>
+    port: "127.0.0.1:5433:5432"
+    env:
+      clear:
+        POSTGRES_USER: drawhaus
+        POSTGRES_DB: drawhaus_production
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - drawhaus-pgdata:/var/lib/postgresql/data
