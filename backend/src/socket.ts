@@ -170,7 +170,7 @@ export function setupSocketServer(httpServer: HttpServer): Server {
           });
         }
 
-        socket.emit("room-joined", { roomId, role });
+        socket.emit("room-joined", { roomId, role, userId: authUser.id });
 
         io.to(roomId).emit("room-presence", {
           roomId,
@@ -221,7 +221,7 @@ export function setupSocketServer(httpServer: HttpServer): Server {
           });
         }
 
-        socket.emit("room-joined", { roomId, role: link.role });
+        socket.emit("room-joined", { roomId, role: link.role, userId: guestId });
 
         io.to(roomId).emit("room-presence", {
           roomId,
@@ -252,6 +252,33 @@ export function setupSocketServer(httpServer: HttpServer): Server {
           fromUserId: (socket.data as SocketData).userId,
           fromSocketId: socket.id,
           elements,
+        });
+      }
+    );
+
+    // Viewport broadcast (for follow mode)
+    socket.on(
+      "viewport-update",
+      ({
+        roomId,
+        scrollX,
+        scrollY,
+        zoom,
+      }: {
+        roomId: string;
+        scrollX: number;
+        scrollY: number;
+        zoom: number;
+      }) => {
+        if (!socket.rooms.has(roomId)) return;
+        if (!checkRateLimit(socket, "viewport", RATE_LIMIT_MAX_CURSOR)) return;
+
+        const data = socket.data as SocketData;
+        socket.to(roomId).emit("viewport-updated", {
+          userId: data.userId,
+          scrollX,
+          scrollY,
+          zoom,
         });
       }
     );
