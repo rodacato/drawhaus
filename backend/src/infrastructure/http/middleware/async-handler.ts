@@ -1,9 +1,12 @@
 import type { Request, RequestHandler, Response } from "express";
 import { DomainError } from "../../../domain/errors";
 import { domainErrorToStatus } from "./error-mapper";
+import { logger } from "../../logger";
+
+import type { UserRole } from "../../../domain/entities/user";
 
 export type AuthedRequest = Request & {
-  authUser: { id: string; email: string; name: string };
+  authUser: { id: string; email: string; name: string; role: UserRole; disabled: boolean };
 };
 
 export function asyncRoute(
@@ -15,7 +18,7 @@ export function asyncRoute(
         res.status(domainErrorToStatus(error)).json({ error: error.message });
         return;
       }
-      console.error("Route failed", error);
+      (req.log ?? logger).error(error, "Route failed");
       res.status(500).json({ error: "Internal server error" });
     });
   };
@@ -30,7 +33,7 @@ export function asyncPublicRoute(
         res.status(domainErrorToStatus(error)).json({ error: error.message });
         return;
       }
-      console.error("Route failed", error);
+      (req.log ?? logger).error(error, "Route failed");
       res.status(500).json({ error: "Internal server error" });
     });
   };

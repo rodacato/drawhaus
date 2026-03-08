@@ -1,6 +1,7 @@
 import type { Server, Socket } from "socket.io";
 import type { SaveSceneUseCase } from "../../../application/use-cases/realtime/save-scene";
 import { type SocketData, canEdit, checkRateLimit, RATE_LIMIT_MAX_SCENE } from "../helpers";
+import { logger } from "../../logger";
 
 export function registerSceneHandlers(
   io: Server,
@@ -41,7 +42,7 @@ export function registerSceneHandlers(
         await useCases.saveScene.execute(roomId, elements, appState);
         socket.emit("scene-saved", { roomId });
       } catch (error: unknown) {
-        console.error("save-scene failed", error);
+        logger.error(error, "save-scene failed");
         socket.emit("room-error", { message: "Save failed" });
       }
     },

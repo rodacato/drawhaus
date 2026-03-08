@@ -4,6 +4,7 @@ import type { JoinRoomUseCase } from "../../../application/use-cases/realtime/jo
 import type { JoinRoomGuestUseCase } from "../../../application/use-cases/realtime/join-room-guest";
 import { type SocketData, getRoomPresenceUsers } from "../helpers";
 import { config } from "../../config";
+import { logger } from "../../logger";
 
 export function registerRoomHandlers(
   io: Server,
@@ -37,7 +38,7 @@ export function registerRoomHandlers(
         users: getRoomPresenceUsers(io, roomId),
       });
     } catch (error: unknown) {
-      console.error("join-room failed", error);
+      logger.error(error, "join-room failed");
       socket.emit("room-error", { message: "Join failed" });
     }
   });
@@ -76,7 +77,7 @@ export function registerRoomHandlers(
         users: getRoomPresenceUsers(io, roomId),
       });
     } catch (error: unknown) {
-      console.error("join-room-guest failed", error);
+      logger.error(error, "join-room-guest failed");
       socket.emit("room-error", { message: "Invalid or expired share link" });
     }
   });
