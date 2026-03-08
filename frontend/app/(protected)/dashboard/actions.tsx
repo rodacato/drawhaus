@@ -4,7 +4,15 @@ import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 import { ui } from "@/lib/ui";
 
-export default function DashboardActions() {
+type Folder = { id: string; name: string };
+
+export default function DashboardActions({
+  currentFolderId,
+  folders: _folders,
+}: {
+  currentFolderId: string | null;
+  folders: Folder[];
+}) {
   const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -21,7 +29,7 @@ export default function DashboardActions() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title: "Untitled" }),
+        body: JSON.stringify({ title: "Untitled", folderId: currentFolderId }),
       });
 
       if (response.status === 404) {
@@ -74,6 +82,7 @@ export default function DashboardActions() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
+          folderId: currentFolderId,
           elements: data.elements,
           appState: data.appState ?? {},
         }),
