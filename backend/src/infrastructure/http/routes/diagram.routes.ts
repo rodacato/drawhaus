@@ -9,6 +9,8 @@ import { asyncRoute } from "../middleware/async-handler";
 
 const createSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
+  elements: z.array(z.unknown()).optional(),
+  appState: z.record(z.string(), z.unknown()).optional(),
 });
 
 const patchSchema = z
@@ -63,6 +65,8 @@ export function createDiagramRoutes(
     const diagram = await useCases.create.execute({
       ownerId: req.authUser.id,
       title: parsed.data.title,
+      elements: parsed.data.elements,
+      appState: parsed.data.appState,
     });
     return res.status(201).json({ diagram: formatDiagram(diagram) });
   }));

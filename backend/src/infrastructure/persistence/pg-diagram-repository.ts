@@ -63,13 +63,19 @@ export class PgDiagramRepository implements DiagramRepository {
     return rows[0].owner_id === userId ? "owner" : (rows[0].role ?? "viewer");
   }
 
-  async create(data: { title: string; ownerId: string }): Promise<Diagram> {
-    const { rows } = await pool.query<DiagramRow>(
-      `INSERT INTO diagrams (owner_id, title)
-       VALUES ($1, $2)
-       RETURNING id, owner_id, title, elements, app_state, created_at, updated_at`,
-      [data.ownerId, data.title],
-    );
+  async create(data: { title: string; ownerId: string; elements?: unknown[]; appState?: Record<string, unknown> }): Promise<Diagram> {
+    const hasScene = data.elements !== undefined;
+    const sql = hasScene
+      ? `INSERT INTO diagrams (owner_id, title, elements, app_state)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, owner_id, title, elements, app_state, created_at, updated_at`
+      : `INSERT INTO diagrams (owner_id, title)
+         VALUES ($1, $2)
+         RETURNING id, owner_id, title, elements, app_state, created_at, updated_at`;
+    const params = hasScene
+      ? [data.ownerId, data.title, JSON.stringify(data.elements), JSON.stringify(data.appState ?? {})]
+      : [data.ownerId, data.title];
+    const { rows } = await pool.query<DiagramRow>(sql, params);
     return toDomain(rows[0]);
   }
 

@@ -25,13 +25,13 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     return member?.role ?? null;
   }
 
-  async create(data: { title: string; ownerId: string }): Promise<Diagram> {
+  async create(data: { title: string; ownerId: string; elements?: unknown[]; appState?: Record<string, unknown> }): Promise<Diagram> {
     const diagram: Diagram = {
       id: crypto.randomUUID(),
       ownerId: data.ownerId,
       title: data.title,
-      elements: [],
-      appState: {},
+      elements: data.elements ?? [],
+      appState: data.appState ?? {},
       createdAt: new Date(),
       updatedAt: new Date(),
     };

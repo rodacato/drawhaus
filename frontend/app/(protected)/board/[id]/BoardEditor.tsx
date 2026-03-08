@@ -6,6 +6,7 @@ import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "./BoardSidebar";
+import { ExportMenu } from "@/components/ExportMenu";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
 
 type BoardEditorProps = {
@@ -108,6 +109,9 @@ export default function BoardEditor({
               onClose={() => collab.setToolbarOpen(false)}
             />
           )}
+        </div>
+        <div className="pointer-events-auto">
+          <ExportMenu excalidrawApiRef={collab.excalidrawApiRef} />
         </div>
         <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
       </div>
