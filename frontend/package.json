@@ -7,7 +7,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "typecheck": "tsc --noEmit -p tsconfig.vite.json"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
@@ -23,6 +23,8 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@vitejs/plugin-react": "^5.1.4",
+    "@typescript-eslint/eslint-plugin": "^7",
+    "@typescript-eslint/parser": "^7",
     "eslint": "^8",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
