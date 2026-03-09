@@ -24,7 +24,7 @@ registry:
 
 builder:
   context: backend/
-  dockerfile: Dockerfile
+  dockerfile: backend/Dockerfile
   target: production
   arch: amd64
   cache:
