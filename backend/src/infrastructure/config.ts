@@ -23,4 +23,5 @@ export const config = {
   sessionTtlDays: 30,
   cookieName: "drawhaus_session",
   cookieDomain: process.env.COOKIE_DOMAIN as string | undefined,
+  honeybadgerApiKey: process.env.HONEYBADGER_API_KEY as string | undefined,
 } as const;
