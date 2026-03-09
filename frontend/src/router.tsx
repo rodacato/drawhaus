@@ -11,6 +11,7 @@ import { Settings } from "@/pages/Settings";
 import { AdminDashboard } from "@/pages/AdminDashboard";
 import { AdminUsers } from "@/pages/AdminUsers";
 import { AdminSettings } from "@/pages/AdminSettings";
+import { Setup } from "@/pages/Setup";
 import { Share } from "@/pages/Share";
 import { Embed } from "@/pages/Embed";
 import { NotFound } from "@/pages/NotFound";
@@ -41,6 +42,7 @@ export function AppRouter() {
       </Route>
 
       {/* Public routes */}
+      <Route path="/setup" element={<Setup />} />
       <Route path="/share/:token" element={<Share />} />
       <Route path="/embed/:token" element={<Embed />} />
 
