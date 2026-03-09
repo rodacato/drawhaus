@@ -82,5 +82,8 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Boot accessories (if not running)
+        run: kamal accessory boot all -c config/deploy.backend.yml 2>/dev/null || true
+
       - name: Deploy with Kamal
         run: kamal deploy -c config/deploy.backend.yml
