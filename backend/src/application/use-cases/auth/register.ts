@@ -12,6 +12,11 @@ export class RegisterUseCase {
     private siteSettings?: SiteSettingsRepository,
   ) {}
 
+  async needsSetup(): Promise<boolean> {
+    const count = await this.users.count();
+    return count === 0;
+  }
+
   async execute(input: { email: string; name: string; password: string }) {
     const email = input.email.toLowerCase();
     const existing = await this.users.findByEmail(email);

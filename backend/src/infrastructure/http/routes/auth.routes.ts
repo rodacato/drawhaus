@@ -56,6 +56,11 @@ export function createAuthRoutes(
 ) {
   const router = Router();
 
+  router.get("/setup-status", asyncPublicRoute(async (_req, res) => {
+    const needsSetup = await useCases.register.needsSetup();
+    return res.status(200).json({ needsSetup });
+  }));
+
   router.post("/register", asyncPublicRoute(async (req, res) => {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });

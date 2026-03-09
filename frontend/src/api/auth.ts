@@ -16,4 +16,7 @@ export const authApi = {
 
   changePassword: (currentPassword: string, newPassword: string) =>
     api.post("/api/auth/change-password", { currentPassword, newPassword }).then((r) => r.data),
+
+  getSetupStatus: () =>
+    api.get("/api/auth/setup-status").then((r) => r.data as { needsSetup: boolean }),
 };
