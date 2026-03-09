@@ -13,6 +13,7 @@
     "test:integration": "tsx --test --test-concurrency=1 'src/__tests__/integration/**/*.test.ts'"
   },
   "dependencies": {
+    "@honeybadger-io/js": "^6.12.3",
     "bcryptjs": "^3.0.3",
     "cookie": "^1.1.1",
     "cors": "^2.8.5",

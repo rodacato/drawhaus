@@ -1,3 +1,4 @@
+import Honeybadger from "@honeybadger-io/js";
 import express from "express";
 import cors from "cors";
 import { createServer } from "http";
@@ -6,6 +7,14 @@ import { initSchema } from "./infrastructure/db";
 import { logger } from "./infrastructure/logger";
 import { requestId } from "./infrastructure/http/middleware/request-id";
 import { requestLogger } from "./infrastructure/http/middleware/request-logger";
+
+// --- Honeybadger (must be configured before other imports) ---
+if (config.honeybadgerApiKey) {
+  Honeybadger.configure({
+    apiKey: config.honeybadgerApiKey,
+    environment: config.nodeEnv,
+  });
+}
 
 // --- Repositories ---
 import { PgUserRepository } from "./infrastructure/persistence/pg-user-repository";
@@ -166,6 +175,11 @@ app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes,
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
 app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, getSettings, updateSettings, getMetrics }, requireAuth));
+
+// --- Honeybadger error handler (must be after all routes) ---
+if (config.honeybadgerApiKey) {
+  app.use(Honeybadger.errorHandler);
+}
 
 // ============================================================
 // Start
