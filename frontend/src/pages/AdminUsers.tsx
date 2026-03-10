@@ -5,6 +5,28 @@ import { ui } from "@/lib/ui";
 
 type AdminUser = { id: string; email: string; name: string; role: "user" | "admin"; disabled: boolean; createdAt: string };
 
+function ToggleSwitch({ checked, onChange, disabled }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onChange}
+      disabled={disabled}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:opacity-50 ${
+        checked ? "bg-primary" : "bg-border"
+      }`}
+    >
+      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${checked ? "translate-x-5" : "translate-x-0"}`} />
+    </button>
+  );
+}
+
+const roleBadgeColors: Record<string, string> = {
+  admin: "bg-primary/10 text-primary ring-primary/20",
+  user: "bg-surface text-text-secondary ring-border",
+  editor: "bg-accent-coral/10 text-accent-coral ring-accent-coral/20",
+  viewer: "bg-accent-yellow/10 text-accent-yellow ring-accent-yellow/20",
+};
+
 export function AdminUsers() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -32,44 +54,81 @@ export function AdminUsers() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className={ui.h1}>Users</h1>
-        <p className={ui.subtitle}>Manage user roles and access.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className={ui.h1}>User Management</h1>
+          <p className={ui.subtitle}>Manage user roles and access.</p>
+        </div>
       </div>
       <div className={ui.card}>
         {error && <p className={`${ui.alertError} mb-4`}>{error}</p>}
         {users.length === 0 ? (
           <div className={ui.empty}>No users found.</div>
         ) : (
-          <div className="divide-y divide-border">
-            {users.map((user) => {
-              const isSelf = user.id === currentUser?.id;
-              const isPending = pending === user.id;
-              return (
-                <div key={user.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-text-primary">{user.name}</span>
-                      <span className={ui.badge}>{user.role}</span>
-                      {user.disabled && <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-200">disabled</span>}
-                      {isSelf && <span className="text-xs text-text-muted">(you)</span>}
-                    </div>
-                    <p className={ui.muted}>{user.email}</p>
-                  </div>
-                  {!isSelf && (
-                    <div className="flex items-center gap-2">
-                      <select className="rounded-lg border border-border bg-surface px-2 py-1 text-sm" value={user.role} onChange={(e) => updateUser(user.id, { role: e.target.value })} disabled={isPending}>
-                        <option value="user">user</option>
-                        <option value="admin">admin</option>
-                      </select>
-                      <button className={`${ui.btn} ${user.disabled ? ui.btnPrimary : ui.btnDanger} h-8 px-3 text-xs`} onClick={() => updateUser(user.id, { disabled: !user.disabled })} disabled={isPending} type="button">
-                        {isPending ? "..." : user.disabled ? "Enable" : "Disable"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="pb-3 font-medium text-text-muted">Name</th>
+                  <th className="pb-3 font-medium text-text-muted">Email</th>
+                  <th className="pb-3 font-medium text-text-muted">Role</th>
+                  <th className="pb-3 font-medium text-text-muted">Status</th>
+                  <th className="pb-3 font-medium text-text-muted">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {users.map((user) => {
+                  const isSelf = user.id === currentUser?.id;
+                  const isPending = pending === user.id;
+                  const badgeColor = roleBadgeColors[user.role] ?? roleBadgeColors.user;
+                  return (
+                    <tr key={user.id} className="transition hover:bg-surface/50">
+                      <td className="py-3 pr-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                            {user.name?.charAt(0)?.toUpperCase() ?? "?"}
+                          </div>
+                          <span className="font-medium text-text-primary">
+                            {user.name}
+                            {isSelf && <span className="ml-1.5 text-xs text-text-muted">(you)</span>}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 pr-4 text-text-secondary">{user.email}</td>
+                      <td className="py-3 pr-4">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ring-1 ring-inset ${badgeColor}`}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4">
+                        {!isSelf ? (
+                          <ToggleSwitch
+                            checked={!user.disabled}
+                            onChange={() => updateUser(user.id, { disabled: !user.disabled })}
+                            disabled={isPending}
+                          />
+                        ) : (
+                          <span className="text-xs text-text-muted">Active</span>
+                        )}
+                      </td>
+                      <td className="py-3">
+                        {!isSelf && (
+                          <select
+                            className="rounded-lg border border-border bg-surface px-2 py-1.5 text-sm text-text-primary transition focus:border-primary focus:ring-2 focus:ring-primary/25"
+                            value={user.role}
+                            onChange={(e) => updateUser(user.id, { role: e.target.value })}
+                            disabled={isPending}
+                          >
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
