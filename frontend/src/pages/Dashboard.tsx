@@ -121,6 +121,14 @@ export function Dashboard() {
     } catch { /* silent */ }
   }
 
+  async function deleteDiagram(diagramId: string, title: string) {
+    if (!window.confirm(`Delete "${title || "Untitled"}"? This cannot be undone.`)) return;
+    try {
+      await diagramsApi.delete(diagramId);
+      loadData();
+    } catch { /* silent */ }
+  }
+
   if (loading) {
     return <div className="flex min-h-[50vh] items-center justify-center text-sm text-text-muted">Loading...</div>;
   }
@@ -175,8 +183,8 @@ export function Dashboard() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {diagrams.map((diagram) => (
-                <article className="group overflow-hidden rounded-xl border border-border bg-surface" key={diagram.id}>
-                  <Link to={`/board/${diagram.id}`} className="block">
+                <article className="group relative rounded-xl border border-border bg-surface" key={diagram.id}>
+                  <Link to={`/board/${diagram.id}`} className="block overflow-hidden rounded-t-xl">
                     <div className="aspect-4/3 bg-gray-50">
                       {diagram.thumbnail ? (
                         <img src={diagram.thumbnail} alt={diagram.title || "Untitled"} className="h-full w-full object-contain" />
@@ -185,14 +193,21 @@ export function Dashboard() {
                       )}
                     </div>
                   </Link>
-                  <div className="flex items-center justify-between p-3">
-                    <div className="min-w-0 flex-1">
-                      <h2 className="truncate text-sm font-semibold text-text">{diagram.title || "Untitled"}</h2>
-                      <p className="text-xs text-text-secondary">{diagram.updatedAt ?? diagram.updated_at ?? "unknown"}</p>
-                    </div>
-                    <div className="ml-2 flex shrink-0 items-center gap-1">
-                      <MoveToMenu diagramId={diagram.id} folders={folders} currentFolderId={diagram.folderId} onMove={moveDiagram} />
-                    </div>
+                  {/* Hover actions — top-right overlay */}
+                  <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <MoveToMenu diagramId={diagram.id} folders={folders} currentFolderId={diagram.folderId} onMove={moveDiagram} />
+                    <button
+                      onClick={() => deleteDiagram(diagram.id, diagram.title)}
+                      className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white shadow-md transition hover:bg-red-600"
+                      title="Delete diagram"
+                      type="button"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
+                    </button>
+                  </div>
+                  <div className="p-3">
+                    <h2 className="truncate text-sm font-semibold text-text">{diagram.title || "Untitled"}</h2>
+                    <p className="mt-1 text-xs text-text-secondary">{new Date(diagram.updatedAt ?? diagram.updated_at ?? "").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
                   </div>
                 </article>
               ))}
@@ -204,25 +219,44 @@ export function Dashboard() {
   );
 }
 
-// Inline MoveToMenu component
+// Inline MoveToMenu component — uses fixed positioning so it isn't clipped by card overflow
 function MoveToMenu({ diagramId, folders, currentFolderId, onMove }: { diagramId: string; folders: Folder[]; currentFolderId: string | null; onMove: (id: string, folderId: string | null) => void }) {
   const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const options = [{ id: null as string | null, name: "Unfiled" }, ...folders].filter((f) => f.id !== currentFolderId);
   if (options.length === 0) return null;
 
+  function toggle() {
+    if (!open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 4, left: rect.right });
+    }
+    setOpen(!open);
+  }
+
   return (
-    <div className="relative">
-      <button onClick={() => setOpen(!open)} className="rounded-lg border border-border bg-surface px-2 py-1 text-xs text-text-secondary hover:bg-surface-raised transition" type="button">Move to...</button>
-      {open && (
+    <>
+      <button
+        ref={btnRef}
+        onClick={toggle}
+        className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-dark/80 text-white shadow-md transition hover:bg-surface-dark"
+        title="Move to folder"
+        type="button"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
+      </button>
+      {open && pos && (
         <>
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full z-40 mt-1 w-44 rounded-lg border border-border bg-surface-raised py-1 shadow-lg">
+          <div className="fixed inset-0 z-50" onClick={() => setOpen(false)} />
+          <div className="fixed z-50 w-44 rounded-lg border border-border bg-surface-raised shadow-xl" style={{ top: pos.top, left: pos.left - 176 }}>
+            <p className="border-b border-border px-3 py-1.5 text-xs font-semibold text-text-muted">Move to folder</p>
             {options.map((opt) => (
               <button key={opt.id ?? "unfiled"} onClick={() => { setOpen(false); onMove(diagramId, opt.id); }} className="w-full px-3 py-1.5 text-left text-sm text-text-secondary hover:bg-surface transition" type="button">{opt.name}</button>
             ))}
           </div>
         </>
       )}
-    </div>
+    </>
   );
 }
