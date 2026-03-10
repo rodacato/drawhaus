@@ -37,3 +37,6 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+docs/designs
+docs/generated_screen
