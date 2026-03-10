@@ -7,7 +7,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 1. Landing Page (Public Marketing)
 
 **Designs:** `landing_page/`, `landing_page_light_mode/`
-**Status:** Not implemented — no public landing page exists.
+**Status:** Markup done (`LandingPage.tsx`). Route `/` shows landing for unauthenticated, redirects to dashboard if logged in.
 
 ### What to build
 
@@ -31,7 +31,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 2. Dashboard — Enhanced Sidebar & Card Features
 
 **Designs:** `dashboard/`, `dashboard_light_mode/`
-**Status:** Partially implemented — sidebar nav and diagram grid exist but lack several design features.
+**Status:** Markup complete — all design elements present (starred, recent, tags, grid/list toggle, card menu). Backend logic needed for starred/tags/duplicate.
 
 ### Missing features
 
@@ -99,7 +99,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 4. Comments Panel — Enhanced Thread UI
 
 **Designs:** `comments_panel/`, `comments_panel_light_mode/`
-**Status:** Basic comments panel exists. Missing several features.
+**Status:** Markup complete — tabs (Open/Resolved/All), threaded replies, like/resolve buttons, rich input toolbar all present. Backend needed for resolve workflow and nested replies.
 
 ### Missing features
 
@@ -138,7 +138,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 5. Share / Collaboration Modal — Enhanced
 
 **Designs:** `share_collaboration_modal/`, `share_modal_light_mode/`
-**Status:** Share links work. Modal UI needs enhancement.
+**Status:** Markup complete (`ShareModal.tsx`) — role selector, expiration picker, link preview with copy, active links list with revoke. Backend needed for link management API.
 
 ### Missing features
 
@@ -166,7 +166,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 6. User Settings — Additional Sections
 
 **Designs:** `user_settings/`, `user_settings_light_mode/`
-**Status:** Redesigned with tabs. Some sections placeholder-only.
+**Status:** Complete — Profile, Security (with danger zone), Billing (self-hosted placeholder), and Preferences (theme picker) tabs all implemented.
 
 ### Missing features
 
@@ -185,7 +185,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 7. Admin Panel — Additional Features
 
 **Designs:** `admin_panel/`, `admin_panel_light_mode/`
-**Status:** Redesigned with metric cards and table. Some features missing.
+**Status:** Markup complete — metric cards with decorative shapes, invite user button, enhanced table with toggle switches. Backend needed for invite flow, analytics, backup.
 
 ### Missing features
 
@@ -225,7 +225,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 8. Guest Join — Enhanced
 
 **Designs:** `guest_join/`, `guest_join_light_mode/`
-**Status:** Redesigned with session preview card. Minor enhancements possible.
+**Status:** Complete — full design with session preview, live session badge, workspace label, branding footer, role badge, and terms text.
 
 ### Missing features
 
@@ -243,12 +243,9 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 9. Social Authentication (OAuth)
 
 **Designs:** `login_register/`, `login_register_light_mode/`
-**Status:** Not implemented.
+**Status:** Markup complete — Google and Apple buttons visible on Login/Register pages. Backend OAuth flow not implemented.
 
-### What to build
-
-- Google OAuth button ("Continue with Google")
-- Apple OAuth button ("Continue with Apple")
+### What to build (backend)
 - "or" divider between social and email/password forms
 - Backend: OAuth2 flow with passport.js or similar
   - `GET /api/auth/google` → redirect to Google
@@ -262,7 +259,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 10. Forgot Password Flow
 
 **Designs:** `login_register/` shows a "Forgot?" link on password field.
-**Status:** Not implemented.
+**Status:** "Forgot?" link markup present on Login page. Backend flow not implemented.
 
 ### What to build
 
@@ -276,29 +273,44 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 
 ---
 
+## Implementation Status
+
+### Legend
+- **Markup** = UI/HTML is in place but functionality is not wired (visual-only placeholder)
+- **Done** = Fully functional
+- **Backend** = Needs backend API/DB work to become functional
+
 ## Implementation Priority Order
 
-| Priority | Feature | Effort | Impact |
-|----------|---------|--------|--------|
-| P0 | ~~Dark/Light theme toggle~~ | Done | High |
-| P0 | ~~Page redesigns (auth, settings, admin)~~ | Done | High |
-| P1 | Comment resolution + tabs (Open/Resolved) | Medium | High |
-| P1 | Nested comment replies / threads | Medium | High |
-| P1 | Share modal enhanced UI (role selector, expiry, link management) | Medium | High |
-| P1 | Starred / Favorite diagrams | Small | Medium |
-| P1 | Grid / List view toggle | Small | Medium |
-| P2 | Landing page (public marketing) | Large | High |
-| P2 | Forgot password flow | Medium | Medium |
-| P2 | Diagram duplicate action | Small | Medium |
-| P2 | Category tags on diagrams | Medium | Medium |
-| P2 | Board collapsible sidebar | Medium | Medium |
-| P2 | Account deletion (backend + UI) | Small | Medium |
-| P3 | Social OAuth (Google, Apple) | Large | Medium |
-| P3 | Admin invite user flow | Medium | Medium |
-| P3 | Admin analytics dashboard | Large | Low |
-| P3 | Admin backup & logs | Large | Low |
-| P3 | Comment reactions (likes) | Small | Low |
-| P3 | @mention in comments | Medium | Low |
-| P3 | Export CSV from admin | Small | Low |
-| P3 | Board zoom controls custom UI | Small | Low |
-| P3 | Scene tab drag-to-reorder | Medium | Low |
+| Priority | Feature | Status | Remaining Work |
+|----------|---------|--------|----------------|
+| P0 | ~~Dark/Light theme toggle~~ | **Done** | — |
+| P0 | ~~Page redesigns (auth, settings, admin)~~ | **Done** | — |
+| P0 | ~~Landing page~~ | **Markup** | Static content only, no conditional deploy features |
+| P0 | ~~Social login buttons (Google/Apple)~~ | **Markup** | Backend: OAuth2 flow |
+| P0 | ~~Share modal (role selector, expiry, links)~~ | **Markup** | Backend: link management API |
+| P0 | ~~Comment tabs (Open/Resolved/All)~~ | **Markup** | Backend: `resolved` field on comments |
+| P0 | ~~Comment threaded replies~~ | **Markup** | Backend: `parent_id` on comments |
+| P0 | ~~Comment like/resolve buttons~~ | **Markup** | Backend: reactions + resolve API |
+| P0 | ~~Starred / Favorite diagrams~~ | **Markup** | Backend: `starred` field + API |
+| P0 | ~~Grid / List view toggle~~ | **Markup** | List view rendering (grid works) |
+| P0 | ~~Category tags on diagram cards~~ | **Markup** | Backend: tags CRUD + assignment |
+| P0 | ~~Admin invite user button~~ | **Markup** | Backend: invite API + email |
+| P0 | ~~Billing tab in settings~~ | **Markup** | Placeholder (self-hosted = free) |
+| P0 | ~~Guest join enhanced design~~ | **Done** | — |
+| P1 | Comment resolution workflow | Backend | `PATCH /api/comments/:id/resolve`, DB migration |
+| P1 | Nested comment replies | Backend | `parent_id` FK, API changes |
+| P1 | Share link expiration | Backend | `expires_at` on share_links, validation |
+| P1 | Share link revocation | Backend | `DELETE /api/share/:id` |
+| P2 | Forgot password flow | Backend | Reset token table, SMTP, new routes |
+| P2 | Diagram duplicate action | Backend | `POST /api/diagrams/:id/duplicate` |
+| P2 | Board collapsible sidebar | Frontend | New component in Board page |
+| P2 | Account deletion | Backend | `DELETE /api/auth/account`, cascade |
+| P3 | Social OAuth (Google, Apple) | Backend | passport.js integration |
+| P3 | Admin analytics dashboard | Full | Charts library + API |
+| P3 | Admin backup & logs | Full | DB dump API + log viewer |
+| P3 | Comment reactions (likes) | Backend | `comment_reactions` table |
+| P3 | @mention in comments | Full | User search + notification |
+| P3 | Export CSV from admin | Frontend | Client-side CSV generation |
+| P3 | Board zoom controls custom UI | Frontend | Excalidraw API integration |
+| P3 | Scene tab drag-to-reorder | Frontend | Drag-and-drop library |
