@@ -11,6 +11,7 @@ import { ChangePasswordUseCase } from "../../application/use-cases/auth/change-p
 import { AcceptInviteUseCase } from "../../application/use-cases/auth/accept-invite";
 import { ForgotPasswordUseCase } from "../../application/use-cases/auth/forgot-password";
 import { ResetPasswordUseCase } from "../../application/use-cases/auth/reset-password";
+import { DeleteAccountUseCase } from "../../application/use-cases/auth/delete-account";
 import { createAuthRoutes } from "../../infrastructure/http/routes/auth.routes";
 import { createRequireAuth } from "../../infrastructure/http/middleware/require-auth";
 import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
@@ -40,11 +41,12 @@ function createApp() {
   const acceptInvite = new AcceptInviteUseCase(users, sessions, invitations, hasher);
   const forgotPassword = new ForgotPasswordUseCase(users, passwordResets, emailService);
   const resetPassword = new ResetPasswordUseCase(users, sessions, passwordResets, hasher);
+  const deleteAccount = new DeleteAccountUseCase(users, hasher);
   const requireAuth = createRequireAuth(getCurrentUser);
 
   const app = express();
   app.use(express.json());
-  app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword }, requireAuth));
+  app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount }, requireAuth));
   return app;
 }
 

@@ -10,6 +10,7 @@ import type { ChangePasswordUseCase } from "../../../application/use-cases/auth/
 import type { AcceptInviteUseCase } from "../../../application/use-cases/auth/accept-invite";
 import type { ForgotPasswordUseCase } from "../../../application/use-cases/auth/forgot-password";
 import type { ResetPasswordUseCase } from "../../../application/use-cases/auth/reset-password";
+import type { DeleteAccountUseCase } from "../../../application/use-cases/auth/delete-account";
 import { asyncPublicRoute, asyncRoute } from "../middleware/async-handler";
 import { config } from "../../config";
 
@@ -49,6 +50,10 @@ const resetPasswordSchema = z.object({
   newPassword: z.string().min(8).max(128),
 });
 
+const deleteAccountSchema = z.object({
+  password: z.string().min(1).max(128),
+});
+
 function getCookieOptions() {
   const isProduction = config.nodeEnv === "production";
   return {
@@ -72,6 +77,7 @@ export function createAuthRoutes(
     acceptInvite: AcceptInviteUseCase;
     forgotPassword: ForgotPasswordUseCase;
     resetPassword: ResetPasswordUseCase;
+    deleteAccount: DeleteAccountUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
 ) {
@@ -173,6 +179,23 @@ export function createAuthRoutes(
     if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
 
     await useCases.resetPassword.execute(parsed.data);
+    return res.status(200).json({ success: true });
+  }));
+
+  // --- Delete account ---
+
+  router.delete("/account", requireAuth, asyncRoute(async (req, res) => {
+    const parsed = deleteAccountSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Password is required" });
+
+    await useCases.deleteAccount.execute(req.authUser.id, parsed.data.password);
+    res.clearCookie(config.cookieName, {
+      httpOnly: true,
+      sameSite: config.nodeEnv === "production" ? "none" as const : "lax" as const,
+      secure: config.nodeEnv === "production",
+      path: "/",
+      ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
+    });
     return res.status(200).json({ success: true });
   }));
 

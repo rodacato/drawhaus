@@ -30,6 +30,11 @@ export function Settings() {
   const [passwordStatus, setPasswordStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [passwordPending, setPasswordPending] = useState(false);
 
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteStatus, setDeleteStatus] = useState<{ type: "error"; message: string } | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
+
   function switchTab(tab: Tab) {
     setActiveTab(tab);
     setSearchParams(tab === "profile" ? {} : { tab });
@@ -71,6 +76,21 @@ export function Settings() {
       setPasswordStatus({ type: "error", message: msg === "Unauthorized" ? "Current password is incorrect" : msg });
     } finally {
       setPasswordPending(false);
+    }
+  }
+
+  async function handleDeleteAccount(e: React.FormEvent) {
+    e.preventDefault();
+    setDeletePending(true);
+    setDeleteStatus(null);
+    try {
+      await authApi.deleteAccount(deletePassword);
+      navigate("/login");
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Account deletion failed";
+      setDeleteStatus({ type: "error", message: msg === "Unauthorized" ? "Password is incorrect" : msg });
+    } finally {
+      setDeletePending(false);
     }
   }
 
@@ -201,7 +221,19 @@ export function Settings() {
               <div className="rounded-2xl border border-danger/30 bg-danger/5 p-6">
                 <h2 className="text-lg font-semibold text-danger">Danger Zone</h2>
                 <p className="mt-1 text-sm text-text-secondary">Once you delete your account, there is no going back. Please be certain.</p>
-                <button type="button" className={`${ui.btn} ${ui.btnDanger} mt-4`}>Delete Account</button>
+                {!deleteConfirmOpen ? (
+                  <button type="button" className={`${ui.btn} ${ui.btnDanger} mt-4`} onClick={() => setDeleteConfirmOpen(true)}>Delete Account</button>
+                ) : (
+                  <form onSubmit={handleDeleteAccount} className="mt-4 space-y-3">
+                    <p className="text-sm font-medium text-danger">Enter your password to confirm account deletion:</p>
+                    <input className={ui.input} type="password" placeholder="Your password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} required autoFocus />
+                    {deleteStatus && <p className={ui.alertError}>{deleteStatus.message}</p>}
+                    <div className="flex gap-2">
+                      <button type="submit" className={`${ui.btn} ${ui.btnDanger}`} disabled={deletePending}>{deletePending ? "Deleting..." : "Permanently Delete"}</button>
+                      <button type="button" className={`${ui.btn} ${ui.btnSecondary}`} onClick={() => { setDeleteConfirmOpen(false); setDeletePassword(""); setDeleteStatus(null); }}>Cancel</button>
+                    </div>
+                  </form>
+                )}
               </div>
             </>
           )}

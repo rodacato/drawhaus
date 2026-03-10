@@ -51,4 +51,8 @@ export class InMemoryUserRepository implements UserRepository {
     if (data.disabled !== undefined) user.disabled = data.disabled;
     return user;
   }
+
+  async delete(id: string): Promise<void> {
+    this.store = this.store.filter((u) => u.id !== id);
+  }
 }
