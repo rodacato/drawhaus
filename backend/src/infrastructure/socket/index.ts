@@ -30,6 +30,10 @@ export function setupSocketServer(
       origin: config.frontendUrl,
       credentials: true,
     },
+    perMessageDeflate: {
+      threshold: 1024, // only compress messages larger than 1KB
+      zlibDeflateOptions: { level: 6 },
+    },
   });
 
   io.on("connection", (socket) => {

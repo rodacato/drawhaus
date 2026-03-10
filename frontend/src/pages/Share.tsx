@@ -29,7 +29,7 @@ export function Share() {
       setData({
         diagramId: d.diagramId ?? d.id,
         title: d.title ?? "",
-        role: res.role ?? d.role ?? "viewer",
+        role: res.share?.role ?? res.role ?? d.role ?? "viewer",
         elements: d.elements ?? [],
         appState: d.appState ?? d.app_state ?? {},
       });

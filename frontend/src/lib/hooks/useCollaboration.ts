@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { createSocket } from "@/lib/services/socket";
-import { mergeElements, jsonSafe, THROTTLE_MS, CURSOR_THROTTLE_MS, SAVE_DEBOUNCE_MS } from "@/lib/collaboration";
+import { mergeElements, jsonSafe, getAdaptiveThrottleMs, CURSOR_THROTTLE_MS, SAVE_DEBOUNCE_MS } from "@/lib/collaboration";
 import type { SaveState, ConnectionState, PresenceUser, CursorInfo, ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 import { diagramsApi } from "@/api/diagrams";
 import { api } from "@/api/client";
@@ -372,8 +372,9 @@ export function useCollaboration({
       if (!canEdit) return;
 
       setSaveState("pending");
+      const throttleMs = getAdaptiveThrottleMs(elements.length);
       const elapsed = now - lastEmitTime.current;
-      if (elapsed >= THROTTLE_MS) {
+      if (elapsed >= throttleMs) {
         lastEmitTime.current = now;
         socketRef.current?.emit("scene-update", {
           roomId: diagramId,
@@ -389,7 +390,7 @@ export function useCollaboration({
             sceneId: activeSceneIdRef.current,
             elements: [...(excalidrawApiRef.current?.getSceneElements?.() ?? elements)],
           });
-        }, THROTTLE_MS - elapsed);
+        }, throttleMs - elapsed);
       }
 
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -501,10 +502,13 @@ export function useCollaboration({
     } catch { /* ignore */ }
   }, [diagramId]);
 
-  const mappedPresenceUsers: PresenceUserWithSelf[] = presenceUsers.map((u) => ({
-    ...u,
-    isSelf: u.userId === selfUserId,
-  }));
+  const mappedPresenceUsers: PresenceUserWithSelf[] = useMemo(
+    () => presenceUsers.map((u) => ({
+      ...u,
+      isSelf: u.userId === selfUserId,
+    })),
+    [presenceUsers, selfUserId],
+  );
 
   const saveLabel = {
     idle: "Ready",
