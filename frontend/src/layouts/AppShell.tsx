@@ -4,11 +4,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { ui } from "@/lib/ui";
 
 export function AppShell() {
-  const { user, logout } = useAuth();
-
-  async function handleLogout() {
-    await logout();
-  }
+  const { user } = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
@@ -22,13 +18,6 @@ export function AppShell() {
           </Link>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <button
-              className={`${ui.btn} ${ui.btnSecondary} h-8 px-3 text-xs`}
-              onClick={handleLogout}
-              type="button"
-            >
-              Logout
-            </button>
           </div>
         </div>
       </header>
