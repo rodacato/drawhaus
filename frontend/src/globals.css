@@ -2,14 +2,14 @@
 
 @theme {
   /* Brand colors — docs/branding/BRANDING.md */
-  --color-primary: #2563EB;
-  --color-primary-hover: #1d4ed8;
+  --color-primary: #0EA5E9;
+  --color-primary-hover: #0284c7;
+  --color-accent-coral: #E95B2D;
   --color-accent-yellow: #FBBF24;
-  --color-accent-teal: #14B8A6;
   --color-accent-orange: #F97316;
 
   /* Surfaces */
-  --color-surface: #F8F6F3;
+  --color-surface: #F8FAF3;
   --color-surface-raised: #ffffff;
   --color-surface-dark: #111827;
 
@@ -28,7 +28,7 @@
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
-  --color-info: #3B82F6;
+  --color-info: #3B87F6;
 
   /* Typography */
   --font-family-heading: "Sora", system-ui, sans-serif;

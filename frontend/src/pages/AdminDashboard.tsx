@@ -28,6 +28,7 @@ export function AdminDashboard() {
       <div className="grid grid-cols-2 gap-4">
         <Link to="/admin/users" className={`${ui.card} block hover:border-primary transition-colors`}><h2 className={ui.h2}>Users</h2><p className={ui.muted}>Manage users, roles, and access.</p></Link>
         <Link to="/admin/settings" className={`${ui.card} block hover:border-primary transition-colors`}><h2 className={ui.h2}>Site Settings</h2><p className={ui.muted}>Registration, instance name, and more.</p></Link>
+        <Link to="/admin/style-guide" className={`${ui.card} block hover:border-primary transition-colors`}><h2 className={ui.h2}>Style Guide</h2><p className={ui.muted}>Brand colors, typography, logos, and UI components.</p></Link>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import { Settings } from "@/pages/Settings";
 import { AdminDashboard } from "@/pages/AdminDashboard";
 import { AdminUsers } from "@/pages/AdminUsers";
 import { AdminSettings } from "@/pages/AdminSettings";
+import { AdminStyleGuide } from "@/pages/AdminStyleGuide";
 import { Setup } from "@/pages/Setup";
 import { Share } from "@/pages/Share";
 import { Embed } from "@/pages/Embed";
@@ -35,6 +36,7 @@ export function AppRouter() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/style-guide" element={<AdminStyleGuide />} />
           </Route>
         </Route>
         {/* Board is full-screen, no AppShell */}
