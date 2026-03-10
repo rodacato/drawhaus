@@ -44,6 +44,7 @@ export type CollaborationState = {
   renameScene: (sceneId: string, name: string) => Promise<void>;
   // Refs & callbacks for Excalidraw integration
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
+  socketRef: React.MutableRefObject<import("socket.io-client").Socket | null>;
   onExcalidrawApi: (api: ExcalidrawApi) => void;
   onChange: (elements: readonly unknown[], appState: Record<string, unknown>) => void;
   onPointerMove: (e: { clientX: number; clientY: number }) => void;
@@ -517,6 +518,7 @@ export function useCollaboration({
     deleteScene,
     renameScene,
     excalidrawApiRef,
+    socketRef,
     onExcalidrawApi,
     onChange,
     onPointerMove,
