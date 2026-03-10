@@ -40,21 +40,24 @@ export function AdminDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={ui.h1}>Admin Panel</h1>
-          <p className={ui.subtitle}>Manage your Drawhaus instance.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-text-primary">Admin Dashboard</h1>
+          <p className={ui.subtitle}>Welcome back. Here is what is happening with your Drawhaus instance today.</p>
         </div>
+        <button type="button" className={`${ui.btn} ${ui.btnPrimary} gap-2`}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+          Invite User
+        </button>
       </div>
       {metrics && (
         <div className="grid grid-cols-3 gap-4">
           {metricCards.map((card) => (
-            <div key={card.key} className={`${ui.card} relative overflow-hidden`}>
-              <div className="flex items-center gap-3">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${card.bg} ${card.color}`}>
-                  {card.icon}
-                </div>
-                <div>
-                  <p className={ui.muted}>{card.label}</p>
-                  <p className="text-2xl font-bold text-text-primary">{metrics[card.key]}</p>
+            <div key={card.key} className={`${ui.card} group relative overflow-hidden`}>
+              <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-primary/5 transition-colors group-hover:bg-primary/10" />
+              <div className="relative z-10">
+                <div className={`mb-2 ${card.color}`}>{card.icon}</div>
+                <p className={ui.muted}>{card.label}</p>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <p className="text-3xl font-bold text-text-primary">{metrics[card.key].toLocaleString()}</p>
                 </div>
               </div>
             </div>

@@ -15,6 +15,7 @@ import { AdminStyleGuide } from "@/pages/AdminStyleGuide";
 import { Setup } from "@/pages/Setup";
 import { Share } from "@/pages/Share";
 import { Embed } from "@/pages/Embed";
+import { LandingPage } from "@/pages/LandingPage";
 import { NotFound } from "@/pages/NotFound";
 
 export function AppRouter() {
@@ -26,10 +27,12 @@ export function AppRouter() {
         <Route path="/register" element={<Register />} />
       </Route>
 
+      {/* Public landing page — redirects to dashboard if authenticated */}
+      <Route path="/" element={<LandingPage />} />
+
       {/* Protected routes - redirect to login if not authenticated */}
       <Route element={<ProtectedLayout />}>
         <Route element={<AppShell />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/settings" element={<Settings />} />
           <Route element={<AdminLayout />}>

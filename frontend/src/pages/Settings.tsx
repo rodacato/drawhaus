@@ -4,7 +4,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { authApi } from "@/api/auth";
 import { ui } from "@/lib/ui";
 
-type Tab = "profile" | "security" | "preferences";
+type Tab = "profile" | "security" | "billing" | "preferences";
 
 export function Settings() {
   const { user, refreshUser } = useAuth();
@@ -71,6 +71,11 @@ export function Settings() {
       id: "security",
       label: "Security",
       icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
+    },
+    {
+      id: "billing",
+      label: "Billing",
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>,
     },
     {
       id: "preferences",
@@ -140,6 +145,26 @@ export function Settings() {
                 <button type="button" className={`${ui.btn} ${ui.btnDanger} mt-4`}>Delete Account</button>
               </div>
             </>
+          )}
+
+          {activeTab === "billing" && (
+            <div className={ui.card}>
+              <div className="flex items-center gap-2 mb-4">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>
+                <h2 className={ui.h2}>Billing & Plan</h2>
+              </div>
+              <div className="rounded-xl border border-border bg-surface p-6 text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
+                </div>
+                <h3 className="text-lg font-semibold text-text-primary">Self-Hosted Instance</h3>
+                <p className="mt-2 text-sm text-text-secondary">You are running Drawhaus on your own infrastructure. No billing information required.</p>
+                <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-success/10 px-3 py-1 text-xs font-medium text-success">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  Community Edition — Free forever
+                </div>
+              </div>
+            </div>
           )}
 
           {activeTab === "preferences" && (
