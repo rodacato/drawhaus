@@ -11,6 +11,7 @@ import { CommentIndicators } from "@/components/CommentIndicators";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
 import { useComments } from "@/lib/hooks/useComments";
 import { shareApi } from "@/api/share";
+import { diagramsApi } from "@/api/diagrams";
 import type { ExcalidrawElement } from "@/lib/types";
 
 type BoardEditorProps = {
@@ -23,13 +24,16 @@ type BoardEditorProps = {
 
 export default function BoardEditor({
   diagramId,
-  title,
+  title: initialTitle,
   userEmail,
   initialElements,
   initialAppState,
 }: BoardEditorProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [commentsPanelOpen, setCommentsPanelOpen] = useState(false);
+  const [diagramTitle, setDiagramTitle] = useState(initialTitle);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
 
   const collab = useCollaboration({
     diagramId,
@@ -115,6 +119,24 @@ export default function BoardEditor({
     setCommentsPanelOpen(true);
   }, [handleHighlightElement]);
 
+  function startEditingTitle() {
+    if (!canEdit) return;
+    setTitleDraft(diagramTitle || "");
+    setEditingTitle(true);
+  }
+
+  async function saveTitle() {
+    setEditingTitle(false);
+    const newTitle = titleDraft.trim();
+    if (!newTitle || newTitle === diagramTitle) return;
+    setDiagramTitle(newTitle);
+    try {
+      await diagramsApi.update(diagramId, { title: newTitle });
+    } catch { /* revert on error */
+      setDiagramTitle(diagramTitle);
+    }
+  }
+
   return (
     <div className="relative h-screen w-screen">
       <BoardSidebar
@@ -123,54 +145,79 @@ export default function BoardEditor({
         onToggle={() => setSidebarOpen((prev) => !prev)}
       />
 
-      <div className="pointer-events-none fixed left-16 top-3 z-20 flex items-center gap-3">
-        <div className="pointer-events-auto rounded-lg bg-white px-4 py-2 shadow-sm">
-          <span className="text-lg font-medium text-[#1b1b1f]">{title || "Untitled"}</span>
+      <div className="pointer-events-none fixed left-16 top-3 z-20 flex flex-col gap-1">
+        {/* Row 1: Title, Export, Comments, Users Online — all h-10 */}
+        <div className="flex h-10 items-stretch gap-3">
+          <div className="pointer-events-auto flex min-w-[250px] items-center rounded-lg bg-white px-4 shadow-sm">
+            {editingTitle ? (
+              <input
+                className="w-full border-b border-blue-400 bg-transparent text-lg font-medium text-[#1b1b1f] outline-none"
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onBlur={saveTitle}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveTitle();
+                  if (e.key === "Escape") setEditingTitle(false);
+                }}
+                autoFocus
+              />
+            ) : (
+              <button
+                className="text-left text-lg font-medium text-[#1b1b1f] hover:text-blue-600 transition-colors"
+                onClick={startEditingTitle}
+                title={canEdit ? "Click to rename" : undefined}
+              >
+                {diagramTitle || "Untitled"}
+              </button>
+            )}
+          </div>
+          <div className="pointer-events-auto flex">
+            <ExportMenu excalidrawApiRef={collab.excalidrawApiRef} />
+          </div>
+          <button
+            onClick={() => setCommentsPanelOpen((prev) => !prev)}
+            className={`pointer-events-auto flex items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-medium shadow-sm transition ${
+              commentsPanelOpen
+                ? "bg-blue-100 text-blue-700"
+                : "bg-white text-gray-600 hover:bg-gray-50"
+            }`}
+            title="Toggle comments (Cmd+/)"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 3a1 1 0 011-1h8a1 1 0 011 1v6a1 1 0 01-1 1H5l-2 2V10H3a1 1 0 01-1-1V3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+            </svg>
+            {comments.threads.filter((t) => !t.resolved).length > 0 && (
+              <span className="rounded-full bg-blue-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                {comments.threads.filter((t) => !t.resolved).length}
+              </span>
+            )}
+          </button>
+          <div className="pointer-events-auto relative flex">
+            <BoardToolbarTrigger
+              open={collab.toolbarOpen}
+              onToggle={() => collab.setToolbarOpen(!collab.toolbarOpen)}
+              userCount={collab.presenceUsers.length || 1}
+            />
+            {collab.toolbarOpen && (
+              <BoardToolbarPanel
+                presenceUsers={collab.presenceUsers}
+                followingUserId={collab.followingUserId}
+                onFollow={collab.setFollowingUserId}
+                onCreateShareLink={handleCreateShareLink}
+                onClose={() => collab.setToolbarOpen(false)}
+              />
+            )}
+          </div>
+          <div className="flex items-center">
+            <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
+          </div>
         </div>
+        {/* Row 2: Save status */}
         {canEdit && (
-          <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}>
+          <div className={`pointer-events-auto w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}>
             {collab.saveLabel}
           </div>
         )}
-        <div className="pointer-events-auto relative">
-          <BoardToolbarTrigger
-            open={collab.toolbarOpen}
-            onToggle={() => collab.setToolbarOpen(!collab.toolbarOpen)}
-            userCount={collab.presenceUsers.length || 1}
-          />
-          {collab.toolbarOpen && (
-            <BoardToolbarPanel
-              presenceUsers={collab.presenceUsers}
-              followingUserId={collab.followingUserId}
-              onFollow={collab.setFollowingUserId}
-              onCreateShareLink={handleCreateShareLink}
-              onClose={() => collab.setToolbarOpen(false)}
-            />
-          )}
-        </div>
-        <div className="pointer-events-auto">
-          <ExportMenu excalidrawApiRef={collab.excalidrawApiRef} />
-        </div>
-        {/* Comments toggle button */}
-        <button
-          onClick={() => setCommentsPanelOpen((prev) => !prev)}
-          className={`pointer-events-auto flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium shadow-sm transition ${
-            commentsPanelOpen
-              ? "bg-blue-100 text-blue-700"
-              : "bg-white text-gray-600 hover:bg-gray-50"
-          }`}
-          title="Toggle comments (Cmd+/)"
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 3a1 1 0 011-1h8a1 1 0 011 1v6a1 1 0 01-1 1H5l-2 2V10H3a1 1 0 01-1-1V3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-          </svg>
-          {comments.threads.filter((t) => !t.resolved).length > 0 && (
-            <span className="rounded-full bg-blue-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-              {comments.threads.filter((t) => !t.resolved).length}
-            </span>
-          )}
-        </button>
-        <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
       </div>
 
       {collab.followingUserId && (
@@ -187,6 +234,15 @@ export default function BoardEditor({
         excalidrawApiRef={collab.excalidrawApiRef}
         onClickIndicator={handleClickIndicator}
       />
+
+      {/* Scene loading overlay */}
+      {collab.switchingScene && (
+        <div className="pointer-events-none fixed inset-0 z-30 flex items-center justify-center bg-white/60">
+          <div className="rounded-lg bg-white px-4 py-2 text-sm text-gray-500 shadow-sm">
+            Loading scene...
+          </div>
+        </div>
+      )}
 
       <div className="flex h-full w-full">
         <div className="flex-1" onPointerMove={collab.onPointerMove}>
@@ -217,6 +273,7 @@ export default function BoardEditor({
           <SceneTabBar
             scenes={collab.scenes}
             activeSceneId={collab.activeSceneId}
+            switchingScene={collab.switchingScene}
             canEdit={canEdit}
             onSwitch={collab.switchScene}
             onCreate={collab.createScene}
