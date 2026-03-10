@@ -163,40 +163,148 @@ drawhaus/
 
 ## Deployment
 
-Drawhaus deploys with [Kamal](https://kamal-deploy.org/) to any server with Docker.
+Drawhaus uses a split deployment model:
 
-### Setup
-
-1. Copy the production env template:
-   ```bash
-   cp .env.production.example .env.production
-   ```
-
-2. Fill in your values (server IP, database URL, session secret, etc.)
-
-3. Deploy:
-   ```bash
-   kamal setup -c config/deploy.backend.yml
-   ```
+- **Frontend** — Static SPA on **Cloudflare Pages** (auto-deploys from Git)
+- **Backend** — Docker container on your server via **Kamal** (deploys via GitHub Actions)
+- **Database** — PostgreSQL on the same server (managed as a Kamal accessory)
 
 ### Architecture
 
 ```
-                    Cloudflare Tunnel
-                          │
-        ┌─────────────────┼─────────────────┐
-        │                 │                  │
-   Cloudflare Pages    Kamal Proxy        (DNS)
-   (static SPA)       (Traefik/Thruster)
-        │                 │
-   React + Vite      Express + Socket.IO
-                          │
-                      PostgreSQL
+          ┌──────────────────────────────────────────┐
+          │            Cloudflare Network             │
+          │                                          │
+          │   Cloudflare Pages    Cloudflare Tunnel  │
+          │   (static SPA)        (secure proxy)     │
+          └──────┬───────────────────┬───────────────┘
+                 │                   │
+          draw.yourdomain.com   api.yourdomain.com
+                 │                   │
+          React + Vite         Kamal Proxy (Thruster)
+          (CDN-served)               │
+                               Express + Socket.IO
+                                     │
+                                 PostgreSQL
 ```
 
-- **Frontend**: Static SPA on Cloudflare Pages
-- **Backend**: Docker container managed by Kamal
-- **Database**: PostgreSQL on the same server (Kamal accessory)
+### Prerequisites
+
+- A VPS or dedicated server with Docker installed
+- A domain name with DNS managed by Cloudflare
+- A Cloudflare account (free tier works)
+- A GitHub account (for GHCR container registry)
+
+### Step 1: Backend setup
+
+1. **Create a `deploy` user on your server** with Docker access:
+   ```bash
+   ssh root@YOUR_SERVER
+   adduser deploy
+   usermod -aG docker deploy
+   ```
+
+2. **Copy and fill in the production env file**:
+   ```bash
+   cp .env.production.example .env.production
+   ```
+   Fill in all values — see the Environment Variables section below for details.
+
+3. **First deploy with Kamal** (from your local machine):
+   ```bash
+   kamal setup -c config/deploy.backend.yml
+   ```
+   This provisions the server: boots PostgreSQL, builds the Docker image, and starts the backend.
+
+4. **Subsequent deploys** happen automatically via GitHub Actions when you push to the `production` branch. You can also trigger manually from the Actions tab.
+
+### Step 2: Frontend setup (Cloudflare Pages)
+
+1. Go to **Cloudflare Dashboard → Workers & Pages → Create → Pages → Connect to Git**
+2. Select your `drawhaus` repository
+3. Configure the build:
+
+   | Setting | Value |
+   |---------|-------|
+   | Production branch | `production` |
+   | Build command | `cd frontend && npm ci && npm run build` |
+   | Build output directory | `frontend/dist` |
+   | Root directory | `/` (leave empty) |
+
+4. Add **environment variables** (Settings → Environment Variables):
+
+   | Variable | Value |
+   |----------|-------|
+   | `VITE_API_URL` | `https://api.yourdomain.com` |
+   | `VITE_WS_URL` | `https://api.yourdomain.com` |
+   | `NODE_VERSION` | `22` |
+
+5. (Optional) Add a **custom domain** under the Custom Domains tab (e.g. `draw.yourdomain.com`)
+
+Cloudflare Pages will auto-deploy on every push to `production`.
+
+### Step 3: Cloudflare Tunnel (optional but recommended)
+
+If you don't want to expose your server's IP directly, set up a Cloudflare Tunnel to proxy traffic to your backend:
+
+```bash
+# On your server
+cloudflared tunnel create drawhaus
+cloudflared tunnel route dns drawhaus api.yourdomain.com
+cloudflared tunnel run drawhaus
+```
+
+### Deploy workflow
+
+The normal deploy flow is:
+
+```bash
+# 1. Develop on feature branches, merge to master
+git checkout master && git pull
+
+# 2. When ready to deploy, push master to production
+git push origin master:production
+```
+
+This triggers:
+- **GitHub Actions** ([build-push.yml](.github/workflows/build-push.yml)): builds the backend Docker image, pushes to GHCR, and deploys via Kamal
+- **Cloudflare Pages**: detects the push and builds/deploys the frontend SPA
+
+### GitHub Actions secrets
+
+For the backend deploy workflow to work, configure these secrets in your GitHub repo (Settings → Secrets and variables → Actions):
+
+| Secret | Description |
+|--------|-------------|
+| `HOST_IP` | Your server's IP address |
+| `SSH_PRIVATE_KEY` | SSH key for the `deploy` user on your server |
+| `DATABASE_URL` | PostgreSQL connection string (e.g. `postgres://drawhaus:PASSWORD@localhost:5433/drawhaus_production`) |
+| `SESSION_SECRET` | Random string for session signing (`openssl rand -hex 32`) |
+| `FRONTEND_URL` | Your frontend URL (e.g. `https://draw.yourdomain.com`) |
+| `COOKIE_DOMAIN` | Parent domain for cookies (e.g. `.yourdomain.com`) |
+| `POSTGRES_PASSWORD` | PostgreSQL password (`openssl rand -hex 32`) |
+| `HONEYBADGER_API_KEY` | (Optional) Honeybadger error monitoring key |
+| `RESEND_API_KEY` | (Optional) Resend API key for emails — without it, emails log to console |
+| `FROM_EMAIL` | (Optional) Sender address for transactional emails |
+
+### Manual deploy commands
+
+```bash
+# Deploy backend manually (from local machine)
+kamal deploy -c config/deploy.backend.yml
+
+# Check backend status
+kamal details -c config/deploy.backend.yml
+
+# View backend logs
+kamal app logs -c config/deploy.backend.yml
+
+# Rollback backend to previous version
+kamal rollback -c config/deploy.backend.yml
+
+# Force re-deploy frontend on Cloudflare Pages
+# Go to Cloudflare Dashboard → Pages → drawhaus → Deployments → Retry deployment
+```
 
 ---
 
