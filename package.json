@@ -7,7 +7,7 @@
     "backend"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
+    "dev": "concurrently -n fe,be -c blue,green \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",
     "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
