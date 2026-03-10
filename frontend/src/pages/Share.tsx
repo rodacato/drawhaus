@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { shareApi } from "@/api/share";
 import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
 import { CursorOverlay } from "@/components/CursorOverlay";
@@ -127,9 +127,8 @@ function ShareViewInner({ shareToken, data }: { shareToken: string; data: ShareD
             <span className="text-lg font-bold tracking-tight text-text-primary font-[family-name:var(--font-family-heading)]">Drawhaus</span>
           </div>
           <div className="flex gap-6 text-sm text-text-muted">
-            <a href="#" className="hover:text-primary transition-colors">Help Center</a>
-            <a href="#" className="hover:text-primary transition-colors">Terms</a>
-            <a href="#" className="hover:text-primary transition-colors">Privacy</a>
+            <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
           </div>
         </div>
       </div>

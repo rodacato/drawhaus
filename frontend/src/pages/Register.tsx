@@ -184,8 +184,8 @@ export function Register() {
             <div className="text-center">
               <p className="text-xs text-text-muted">
                 By continuing, you agree to our{" "}
-                <a href="#" className="text-text-secondary underline">Terms</a> and{" "}
-                <a href="#" className="text-text-secondary underline">Privacy Policy</a>.
+                <Link to="/terms" className="text-text-secondary underline">Terms</Link> and{" "}
+                <Link to="/privacy" className="text-text-secondary underline">Privacy Policy</Link>.
               </p>
             </div>
           </>

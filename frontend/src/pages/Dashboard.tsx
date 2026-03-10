@@ -328,7 +328,7 @@ export function Dashboard() {
                 </Link>
                 <button
                   onClick={async () => { await logout(); navigate("/login"); }}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition hover:bg-error/10 hover:text-error"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-error/70 transition hover:bg-error/10 hover:text-error"
                   title="Log out"
                   type="button"
                 >
