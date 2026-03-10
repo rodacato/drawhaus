@@ -93,6 +93,7 @@ export async function initSchema(): Promise<void> {
     CREATE TABLE IF NOT EXISTS comment_threads (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       diagram_id UUID NOT NULL REFERENCES diagrams(id) ON DELETE CASCADE,
+      scene_id UUID REFERENCES scenes(id) ON DELETE CASCADE,
       element_id TEXT NOT NULL,
       author_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       body TEXT NOT NULL,
@@ -103,8 +104,12 @@ export async function initSchema(): Promise<void> {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
+    -- Migration: add scene_id to existing comment_threads (must run before index creation)
+    ALTER TABLE comment_threads ADD COLUMN IF NOT EXISTS scene_id UUID REFERENCES scenes(id) ON DELETE CASCADE;
+
     CREATE INDEX IF NOT EXISTS comment_threads_diagram_id_idx ON comment_threads (diagram_id);
     CREATE INDEX IF NOT EXISTS comment_threads_element_id_idx ON comment_threads (diagram_id, element_id);
+    CREATE INDEX IF NOT EXISTS comment_threads_scene_id_idx ON comment_threads (diagram_id, scene_id);
 
     CREATE TABLE IF NOT EXISTS comment_replies (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
