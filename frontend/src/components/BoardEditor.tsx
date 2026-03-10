@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
 import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
@@ -47,22 +47,27 @@ export default function BoardEditor({
 
   const canEdit = collab.userRole === "owner" || collab.userRole === "editor";
 
-  // Track selected element for comments
-  const selectedElementId = useMemo(() => {
-    const api = collab.excalidrawApiRef.current;
-    if (!api) return null;
-    const appState = api.getAppState();
-    const selected = appState.selectedElementIds as Record<string, boolean> | undefined;
-    if (!selected) return null;
-    const ids = Object.keys(selected).filter((k) => selected[k]);
-    return ids.length === 1 ? ids[0] : null;
-  }, [collab.excalidrawApiRef]);
+  // Track selected element and current elements reactively via onChange
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [currentElements, setCurrentElements] = useState<unknown[]>(initialElements);
 
-  // Track current elements for the panel
-  const currentElements = useMemo(() => {
-    const api = collab.excalidrawApiRef.current;
-    return api ? api.getSceneElements() : initialElements;
-  }, [collab.excalidrawApiRef, initialElements]);
+  // Wrap collab.onChange to also track selection/elements for comments
+  const originalOnChange = collab.onChange;
+  const handleChange = useCallback(
+    (elements: readonly unknown[], appState: Record<string, unknown>) => {
+      originalOnChange(elements, appState);
+      // Update selected element
+      const selected = appState.selectedElementIds as Record<string, boolean> | undefined;
+      if (selected) {
+        const ids = Object.keys(selected).filter((k) => selected[k]);
+        setSelectedElementId(ids.length === 1 ? ids[0] : null);
+      } else {
+        setSelectedElementId(null);
+      }
+      setCurrentElements([...elements]);
+    },
+    [originalOnChange],
+  );
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -249,7 +254,7 @@ export default function BoardEditor({
           <ExcalidrawCanvas
             excalidrawAPI={collab.onExcalidrawApi}
             initialData={collab.initialData}
-            onChange={collab.onChange}
+            onChange={handleChange}
           />
         </div>
 
