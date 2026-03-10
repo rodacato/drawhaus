@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { authApi } from "@/api/auth";
@@ -7,8 +8,9 @@ import { ui } from "@/lib/ui";
 type Tab = "profile" | "security" | "billing" | "preferences";
 
 export function Settings() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
 
   const [name, setName] = useState(user?.name ?? "");
@@ -93,7 +95,7 @@ export function Settings() {
 
       <div className="flex gap-6">
         {/* Sidebar navigation */}
-        <nav className="w-48 shrink-0 space-y-1">
+        <nav className="w-48 shrink-0 flex flex-col gap-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -109,6 +111,16 @@ export function Settings() {
               {tab.label}
             </button>
           ))}
+          <div className="mt-2 border-t border-border pt-2">
+            <button
+              onClick={async () => { await logout(); navigate("/login"); }}
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-error/70 transition hover:bg-error/10 hover:text-error"
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+              Log out
+            </button>
+          </div>
         </nav>
 
         {/* Content area */}
