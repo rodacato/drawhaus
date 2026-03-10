@@ -43,6 +43,7 @@ import { ChangePasswordUseCase } from "./application/use-cases/auth/change-passw
 import { AcceptInviteUseCase } from "./application/use-cases/auth/accept-invite";
 import { ForgotPasswordUseCase } from "./application/use-cases/auth/forgot-password";
 import { ResetPasswordUseCase } from "./application/use-cases/auth/reset-password";
+import { DeleteAccountUseCase } from "./application/use-cases/auth/delete-account";
 
 // --- Use Cases: Diagrams ---
 import { CreateDiagramUseCase } from "./application/use-cases/diagrams/create-diagram";
@@ -97,6 +98,7 @@ import { CreateCommentUseCase } from "./application/use-cases/comments/create-co
 import { ReplyCommentUseCase } from "./application/use-cases/comments/reply-comment";
 import { ResolveCommentUseCase } from "./application/use-cases/comments/resolve-comment";
 import { DeleteCommentUseCase } from "./application/use-cases/comments/delete-comment";
+import { ToggleLikeUseCase } from "./application/use-cases/comments/toggle-like";
 
 // --- Use Cases: Realtime ---
 import { JoinRoomUseCase } from "./application/use-cases/realtime/join-room";
@@ -145,6 +147,7 @@ const changePassword = new ChangePasswordUseCase(userRepo, hasher);
 const acceptInvite = new AcceptInviteUseCase(userRepo, sessionRepo, invitationRepo, hasher);
 const forgotPassword = new ForgotPasswordUseCase(userRepo, passwordResetRepo, emailService);
 const resetPassword = new ResetPasswordUseCase(userRepo, sessionRepo, passwordResetRepo, hasher);
+const deleteAccount = new DeleteAccountUseCase(userRepo, hasher);
 
 // Diagrams
 const createDiagram = new CreateDiagramUseCase(diagramRepo);
@@ -199,6 +202,7 @@ const createComment = new CreateCommentUseCase(commentRepo, diagramRepo);
 const replyComment = new ReplyCommentUseCase(commentRepo, diagramRepo);
 const resolveComment = new ResolveCommentUseCase(commentRepo, diagramRepo);
 const deleteComment = new DeleteCommentUseCase(commentRepo, diagramRepo);
+const toggleLike = new ToggleLikeUseCase(commentRepo, diagramRepo);
 
 // Realtime
 const joinRoom = new JoinRoomUseCase(sessionRepo, diagramRepo, sceneRepo);
@@ -223,10 +227,10 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword }, requireAuth));
+app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount }, requireAuth));
 app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, toggleStar, duplicate: duplicateDiagram, move: moveDiagram }, requireAuth, tagRepo));
 app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes, get: getScene, create: createScene, rename: renameScene, delete: deleteScene }, requireAuth));
-app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: listComments, create: createComment, reply: replyComment, resolve: resolveComment, delete: deleteComment }, requireAuth));
+app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: listComments, create: createComment, reply: replyComment, resolve: resolveComment, delete: deleteComment, toggleLike }, requireAuth));
 app.use("/api/tags", createTagRoutes({ create: createTag, list: listTags, delete: deleteTag, update: updateTag, assign: assignTag, unassign: unassignTag }, requireAuth));
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));

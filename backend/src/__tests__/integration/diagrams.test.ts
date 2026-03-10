@@ -11,6 +11,7 @@ import { ChangePasswordUseCase } from "../../application/use-cases/auth/change-p
 import { AcceptInviteUseCase } from "../../application/use-cases/auth/accept-invite";
 import { ForgotPasswordUseCase } from "../../application/use-cases/auth/forgot-password";
 import { ResetPasswordUseCase } from "../../application/use-cases/auth/reset-password";
+import { DeleteAccountUseCase } from "../../application/use-cases/auth/delete-account";
 import { CreateDiagramUseCase } from "../../application/use-cases/diagrams/create-diagram";
 import { GetDiagramUseCase } from "../../application/use-cases/diagrams/get-diagram";
 import { ListDiagramsUseCase } from "../../application/use-cases/diagrams/list-diagrams";
@@ -59,6 +60,7 @@ function createApp() {
     acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
     forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
     resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
+    deleteAccount: new DeleteAccountUseCase(users, hasher),
   }, requireAuth));
   const folders = new InMemoryFolderRepository();
   app.use("/api/diagrams", createDiagramRoutes({

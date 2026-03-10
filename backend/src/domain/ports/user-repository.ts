@@ -8,4 +8,5 @@ export interface UserRepository {
   count(): Promise<number>;
   listAll(): Promise<Omit<User, "passwordHash">[]>;
   adminUpdate(id: string, data: { role?: UserRole; disabled?: boolean }): Promise<User | null>;
+  delete(id: string): Promise<void>;
 }

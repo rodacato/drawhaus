@@ -126,4 +126,8 @@ export class PgUserRepository implements UserRepository {
     );
     return rows[0] ? toDomain(rows[0]) : null;
   }
+
+  async delete(id: string): Promise<void> {
+    await pool.query("DELETE FROM users WHERE id = $1", [id]);
+  }
 }
