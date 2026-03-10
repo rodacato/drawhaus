@@ -111,19 +111,21 @@ export function Settings() {
               {tab.label}
             </button>
           ))}
-          <div className="mt-2 border-t border-border pt-2">
-            {user?.role === "admin" && (
+          {user?.role === "admin" && (
+            <div className="mt-2 border-t border-border pt-2">
               <Link
                 to="/admin"
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-accent-coral/70 transition hover:bg-accent-coral/10 hover:text-accent-coral"
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-text-secondary transition hover:bg-surface-raised"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
                 Admin Panel
               </Link>
-            )}
+            </div>
+          )}
+          <div className="mt-2 border-t border-border pt-2">
             <button
               onClick={async () => { await logout(); navigate("/login"); }}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-error/70 transition hover:bg-error/10 hover:text-error"
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-text-secondary transition hover:bg-surface-raised"
               type="button"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
