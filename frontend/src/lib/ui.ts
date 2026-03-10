@@ -29,9 +29,9 @@ export const ui = {
 
   // Feedback
   alertError:
-    "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700",
+    "rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error",
   alertSuccess:
-    "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700",
+    "rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-sm text-success",
   badge:
     "inline-flex items-center rounded-full bg-surface px-3 py-1 text-xs font-medium text-text-secondary ring-1 ring-inset ring-border",
 

@@ -1,5 +1,6 @@
 import { Link, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ui } from "@/lib/ui";
 
 export function AppShell() {
@@ -31,6 +32,7 @@ export function AppShell() {
                 Admin
               </Link>
             )}
+            <ThemeToggle />
             <span className={ui.badge}>{user?.email}</span>
             <button
               className={`${ui.btn} ${ui.btnSecondary} h-8 px-3 text-xs`}
