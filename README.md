@@ -1,78 +1,47 @@
-# Drawhaus
+<p align="center">
+  <img src="docs/branding/logo_stacked_light.svg" alt="Drawhaus" height="120" />
+</p>
 
-Self-hosted collaborative whiteboard MVP (Excalidraw-based) built with an AI-first workflow.
+<h3 align="center">Your whiteboard, on your server.</h3>
 
-## Getting Started
+<p align="center">
+  Self-hosted collaborative diagramming tool built on Excalidraw.<br/>
+  Real-time collaboration. No subscription. Your data, your rules.
+</p>
+
+---
+
+## What is Drawhaus?
+
+Drawhaus is a self-hosted Excalidraw alternative for developers and small teams who want full control over their diagramming tool. No SaaS, no $6/mo subscription — just deploy it on your server and own your data.
+
+### Ships today
+
+- Full Excalidraw editor with real-time collaboration
+- Auth (register / login / logout) with admin panel
+- Diagram CRUD with auto-save
+- Live presence — cursors, user list, viewport follow
+- Share links with roles (editor / viewer) and expiration
+- Guest access via share tokens
+- Production deployment via Kamal + Cloudflare Tunnel
+
+## Quick Start
 
 ### Prerequisites
+
 - Node.js 22+
 - npm 10+
 
-### Install dependencies
+### Install & run
 
 ```bash
 npm install
-```
-
-### Run locally (both services)
-
-```bash
 npm run dev
 ```
 
 This starts:
-- **Frontend** (Next.js) at http://localhost:3000
-- **Backend** (Express) at http://localhost:4000
-
-### Run services individually
-
-```bash
-npm run dev:frontend   # Next.js only
-npm run dev:backend    # Express only
-```
-
-### Current backend API
-
-- `GET /health`
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `GET /api/auth/me`
-
-### Current frontend routes
-
-- `/login`
-- `/register`
-- `/dashboard` (protected)
-
-### Lint
-
-```bash
-npm run lint
-```
-
-### Type-check
-
-```bash
-npm run typecheck
-```
-
-### Build
-
-```bash
-npm run build
-```
-
-### CI Expectations
-
-On every PR (and pushes to `master`/`main`), GitHub Actions runs:
-- install (`npm ci`)
-- lint (`npm run lint`)
-- typecheck (`npm run typecheck`)
-- backend tests (`npm run test --workspace=backend`)
-- build (`npm run build`)
-
-PRs should only be merged when CI is green.
+- **Frontend** at http://localhost:3000
+- **Backend** at http://localhost:4000
 
 ### Docker (local dev)
 
@@ -80,75 +49,69 @@ PRs should only be merged when CI is green.
 docker compose up
 ```
 
-This boots:
-- Frontend on `http://localhost:3300`
-- Backend on `http://localhost:4300`
-- PostgreSQL on `localhost:5643` (`drawhaus/drawhaus`)
+Boots frontend (`localhost:3300`), backend (`localhost:4300`), and PostgreSQL (`localhost:5643`).
 
-### Dev Container (recommended for consistent setup)
+### Dev Container
 
-1. Open this repo in VS Code.
-2. Run `Dev Containers: Reopen in Container`.
-3. Wait for the post-install script to finish (`.devcontainer/post-install.sh`).
-4. Start both apps:
+1. Open in VS Code
+2. `Dev Containers: Reopen in Container`
+3. `npm run dev`
 
-```bash
-npm run dev
-```
+## Commands
 
-Inside the container:
-- Frontend: http://localhost:3000
-- Backend: http://localhost:4000
-- PostgreSQL: `db:5432` (also forwarded to localhost:5432)
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start both services |
+| `npm run dev:frontend` | Frontend only |
+| `npm run dev:backend` | Backend only |
+| `npm run lint` | Lint all workspaces |
+| `npm run typecheck` | Type-check all workspaces |
+| `npm run build` | Production build |
+
+## API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Health check |
+| `POST` | `/api/auth/register` | Create account |
+| `POST` | `/api/auth/login` | Sign in |
+| `POST` | `/api/auth/logout` | Sign out |
+| `GET` | `/api/auth/me` | Current user |
+
+## Routes
+
+| Path | Access |
+|------|--------|
+| `/setup` | First-time admin creation |
+| `/login` | Public |
+| `/register` | Public |
+| `/dashboard` | Authenticated |
+| `/board/:id` | Authenticated |
+| `/settings` | Authenticated |
+| `/admin` | Admin only |
+| `/share/:token` | Public (via share link) |
+
+## Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 18 + Vite + React Router |
+| Editor | Excalidraw |
+| Backend | Express + Socket.IO |
+| Database | PostgreSQL |
+| Deployment | Kamal + Cloudflare Tunnel |
+| CI | GitHub Actions |
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for the full feature plan.
+
+## Branding
+
+See [docs/branding/BRANDING.md](docs/branding/BRANDING.md) for the brand guide, assets, and design tokens.
 
 ---
 
-## Goal
-Build a working MVP mainly for personal use, friends, and coworkers, with minimal manual coding.
-
-## Core Stack (Planned)
-- Next.js 14 (frontend) — `frontend/`
-- Express + Socket.IO (backend) — `backend/`
-- PostgreSQL (database)
-- Docker Compose + Caddy (deployment)
-- GitHub Actions (CI/CD automation)
-
-Reference architecture and implementation details: [BUILD-YOUR-OWN.md](/Users/rodacato/Workspace/rodacato/drawhaus/BUILD-YOUR-OWN.md)
-
-## How AI Should Operate In This Repo
-- Primary behavior and decision style: [IDENTITY.md](/Users/rodacato/Workspace/rodacato/drawhaus/IDENTITY.md)
-- Multi-perspective advice and debate: [EXPERTS.md](/Users/rodacato/Workspace/rodacato/drawhaus/EXPERTS.md)
-- Agent operating rules: [AGENTS.md](/Users/rodacato/Workspace/rodacato/drawhaus/AGENTS.md)
-
-When in doubt, or when requested, use the expert panel to get recommendations, risks, and fallback plans before implementing.
-
-## MVP Scope (Initial)
-- Auth (register/login/logout/me)
-- Diagram CRUD
-- Board editor page with autosave
-- Basic real-time collaboration via rooms
-- Share link (read-only)
-- Dockerized local development
-
-## Delivery Workflow (Low-Touch)
-1. Create GitHub Issue for each feature/bug.
-2. Define acceptance criteria and test steps in the issue.
-3. Use Copilot agents to implement issue-scoped PRs.
-4. Run GitHub Actions for validation on every PR.
-5. Merge small PRs after CI passes.
-
-## Suggested GitHub Project Setup
-- Labels: `mvp`, `backend`, `frontend`, `realtime`, `security`, `infra`, `docs`
-- Milestones: `P0-MVP`, `P1-Collab`, `P2-Polish`
-- Issue template fields:
-  - problem,
-  - scope,
-  - acceptance criteria,
-  - out of scope,
-  - test plan.
-
-## Principles
-- Keep it simple and shippable.
-- Prefer proven patterns over novelty.
-- Protect auth and permissions in every API/socket path.
-- Document decisions briefly and move forward.
+<p align="center">
+  <sub>Built by <a href="https://github.com/rodacato">@rodacato</a> — an indie builder who'd rather self-host than subscribe.</sub>
+</p>
