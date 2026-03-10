@@ -5,6 +5,7 @@ import { pool } from "../db";
 type ThreadRow = {
   id: string;
   diagram_id: string;
+  scene_id: string | null;
   element_id: string;
   author_id: string;
   author_name: string;
@@ -29,6 +30,7 @@ function threadToDomain(row: ThreadRow, replies: CommentReply[]): CommentThread 
   return {
     id: row.id,
     diagramId: row.diagram_id,
+    sceneId: row.scene_id,
     elementId: row.element_id,
     authorId: row.author_id,
     authorName: row.author_name,
@@ -54,7 +56,7 @@ function replyToDomain(row: ReplyRow): CommentReply {
 }
 
 const THREAD_SELECT = `
-  SELECT ct.id, ct.diagram_id, ct.element_id, ct.author_id, u.name AS author_name,
+  SELECT ct.id, ct.diagram_id, ct.scene_id, ct.element_id, ct.author_id, u.name AS author_name,
          ct.body, ct.resolved, ct.resolved_by, ct.resolved_at, ct.created_at, ct.updated_at
   FROM comment_threads ct
   JOIN users u ON u.id = ct.author_id`;
@@ -65,11 +67,16 @@ const REPLY_SELECT = `
   JOIN users u ON u.id = cr.author_id`;
 
 export class PgCommentRepository implements CommentRepository {
-  async findByDiagram(diagramId: string): Promise<CommentThread[]> {
-    const { rows: threadRows } = await pool.query<ThreadRow>(
-      `${THREAD_SELECT} WHERE ct.diagram_id = $1 ORDER BY ct.created_at`,
-      [diagramId],
-    );
+  async findByDiagram(diagramId: string, sceneId?: string | null): Promise<CommentThread[]> {
+    const { rows: threadRows } = sceneId
+      ? await pool.query<ThreadRow>(
+          `${THREAD_SELECT} WHERE ct.diagram_id = $1 AND (ct.scene_id = $2 OR ct.scene_id IS NULL) ORDER BY ct.created_at`,
+          [diagramId, sceneId],
+        )
+      : await pool.query<ThreadRow>(
+          `${THREAD_SELECT} WHERE ct.diagram_id = $1 ORDER BY ct.created_at`,
+          [diagramId],
+        );
     if (threadRows.length === 0) return [];
 
     const threadIds = threadRows.map((t) => t.id);
@@ -103,11 +110,11 @@ export class PgCommentRepository implements CommentRepository {
     return threadToDomain(threadRows[0], replyRows.map(replyToDomain));
   }
 
-  async createThread(data: { diagramId: string; elementId: string; authorId: string; body: string }): Promise<CommentThread> {
+  async createThread(data: { diagramId: string; sceneId?: string | null; elementId: string; authorId: string; body: string }): Promise<CommentThread> {
     const { rows } = await pool.query<{ id: string }>(
-      `INSERT INTO comment_threads (diagram_id, element_id, author_id, body)
-       VALUES ($1, $2, $3, $4) RETURNING id`,
-      [data.diagramId, data.elementId, data.authorId, data.body],
+      `INSERT INTO comment_threads (diagram_id, scene_id, element_id, author_id, body)
+       VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+      [data.diagramId, data.sceneId ?? null, data.elementId, data.authorId, data.body],
     );
     return (await this.findThreadById(rows[0].id))!;
   }

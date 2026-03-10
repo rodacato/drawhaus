@@ -5,6 +5,7 @@ import type { CommentThread, CommentReply } from "@/lib/types";
 
 export type UseCommentsOptions = {
   diagramId: string;
+  sceneId: string | null;
   socketRef: React.MutableRefObject<Socket | null>;
 };
 
@@ -19,15 +20,17 @@ export type UseCommentsState = {
   refresh: () => Promise<void>;
 };
 
-export function useComments({ diagramId, socketRef }: UseCommentsOptions): UseCommentsState {
+export function useComments({ diagramId, sceneId, socketRef }: UseCommentsOptions): UseCommentsState {
   const [threads, setThreads] = useState<CommentThread[]>([]);
   const [loading, setLoading] = useState(true);
   const diagramIdRef = useRef(diagramId);
   diagramIdRef.current = diagramId;
+  const sceneIdRef = useRef(sceneId);
+  sceneIdRef.current = sceneId;
 
   const refresh = useCallback(async () => {
     try {
-      const data = await commentsApi.list(diagramIdRef.current);
+      const data = await commentsApi.list(diagramIdRef.current, sceneIdRef.current);
       setThreads(data.threads ?? []);
     } catch {
       // silent
@@ -36,10 +39,10 @@ export function useComments({ diagramId, socketRef }: UseCommentsOptions): UseCo
     }
   }, []);
 
-  // Load on mount
+  // Load on mount and when scene changes
   useEffect(() => {
     refresh();
-  }, [refresh, diagramId]);
+  }, [refresh, diagramId, sceneId]);
 
   // Socket listeners for real-time updates
   useEffect(() => {
@@ -48,6 +51,8 @@ export function useComments({ diagramId, socketRef }: UseCommentsOptions): UseCo
 
     function onCreated({ thread }: { roomId: string; thread: CommentThread }) {
       if (thread.diagramId !== diagramIdRef.current) return;
+      // Only show comments for current scene (or general comments)
+      if (thread.sceneId && sceneIdRef.current && thread.sceneId !== sceneIdRef.current) return;
       setThreads((prev) => {
         if (prev.some((t) => t.id === thread.id)) return prev;
         return [...prev, thread];
@@ -89,10 +94,11 @@ export function useComments({ diagramId, socketRef }: UseCommentsOptions): UseCo
 
   const createThread = useCallback(async (elementId: string, body: string) => {
     const socket = socketRef.current;
+    const currentSceneId = sceneIdRef.current;
     if (socket) {
-      socket.emit("comment-create", { roomId: diagramIdRef.current, elementId, body });
+      socket.emit("comment-create", { roomId: diagramIdRef.current, elementId, body, sceneId: currentSceneId });
     } else {
-      const data = await commentsApi.create(diagramIdRef.current, { elementId, body });
+      const data = await commentsApi.create(diagramIdRef.current, { elementId, body, sceneId: currentSceneId });
       setThreads((prev) => [...prev, data.thread]);
     }
   }, [socketRef]);

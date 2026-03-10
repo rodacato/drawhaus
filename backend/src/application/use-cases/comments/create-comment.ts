@@ -9,9 +9,9 @@ export class CreateCommentUseCase {
     private diagrams: DiagramRepository,
   ) {}
 
-  async execute(diagramId: string, userId: string, elementId: string, body: string): Promise<CommentThread> {
+  async execute(diagramId: string, userId: string, elementId: string, body: string, sceneId?: string | null): Promise<CommentThread> {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
     if (!role) throw new NotFoundError("Diagram");
-    return this.comments.createThread({ diagramId, elementId, authorId: userId, body });
+    return this.comments.createThread({ diagramId, sceneId: sceneId ?? null, elementId, authorId: userId, body });
   }
 }

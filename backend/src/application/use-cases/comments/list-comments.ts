@@ -9,9 +9,9 @@ export class ListCommentsUseCase {
     private diagrams: DiagramRepository,
   ) {}
 
-  async execute(diagramId: string, userId: string): Promise<CommentThread[]> {
+  async execute(diagramId: string, userId: string, sceneId?: string | null): Promise<CommentThread[]> {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
     if (!role) throw new NotFoundError("Diagram");
-    return this.comments.findByDiagram(diagramId);
+    return this.comments.findByDiagram(diagramId, sceneId);
   }
 }

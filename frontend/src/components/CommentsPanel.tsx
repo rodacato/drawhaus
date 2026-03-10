@@ -5,6 +5,8 @@ type CommentsPanelProps = {
   threads: CommentThread[];
   elements: readonly unknown[];
   selectedElementId: string | null;
+  showIndicators: boolean;
+  onToggleIndicators: () => void;
   onCreateThread: (elementId: string, body: string) => Promise<void>;
   onReply: (threadId: string, body: string) => Promise<void>;
   onResolve: (threadId: string, resolved: boolean) => Promise<void>;
@@ -44,6 +46,8 @@ export function CommentsPanel({
   threads,
   elements,
   selectedElementId,
+  showIndicators,
+  onToggleIndicators,
   onCreateThread,
   onReply,
   onResolve,
@@ -93,9 +97,30 @@ export function CommentsPanel({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
         <h2 className="text-sm font-semibold text-gray-900">Comments</h2>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600" title="Close">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={onToggleIndicators}
+            className={`rounded p-1 transition ${showIndicators ? "text-blue-600 hover:bg-blue-50" : "text-gray-300 hover:bg-gray-100 hover:text-gray-500"}`}
+            title={showIndicators ? "Hide indicators on canvas" : "Show indicators on canvas"}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              {showIndicators ? (
+                <>
+                  <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5"/>
+                </>
+              ) : (
+                <>
+                  <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                  <path d="M3 13L13 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </>
+              )}
+            </svg>
+          </button>
+          <button onClick={onClose} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600" title="Close">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

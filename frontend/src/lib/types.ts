@@ -20,6 +20,7 @@ export type ExcalidrawElement = {
 export type CommentThread = {
   id: string;
   diagramId: string;
+  sceneId: string | null;
   elementId: string;
   authorId: string;
   authorName: string;

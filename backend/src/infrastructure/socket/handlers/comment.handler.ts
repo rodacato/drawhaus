@@ -21,12 +21,12 @@ export function registerCommentHandlers(
 ) {
   socket.on(
     "comment-create",
-    async ({ roomId, elementId, body }: { roomId: string; elementId: string; body: string }) => {
+    async ({ roomId, elementId, body, sceneId }: { roomId: string; elementId: string; body: string; sceneId?: string }) => {
       try {
         if (!socket.rooms.has(roomId)) return;
         if (!checkRateLimit(socket, "comment", RATE_LIMIT_MAX_COMMENT)) return;
         const data = socket.data as SocketData;
-        const thread = await useCases.createComment.execute(roomId, data.userId, elementId, body);
+        const thread = await useCases.createComment.execute(roomId, data.userId, elementId, body, sceneId);
         socket.to(roomId).emit("comment-created", { roomId, thread });
         socket.emit("comment-created", { roomId, thread });
       } catch (error: unknown) {
