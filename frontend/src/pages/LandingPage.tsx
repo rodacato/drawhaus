@@ -33,14 +33,9 @@ export function LandingPage() {
       {/* Sticky nav */}
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-surface/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <img src="/logo-icon.svg" className="h-7 w-7" alt="Drawhaus" />
-            <span className="font-sora text-lg font-semibold tracking-tight">Drawhaus</span>
-          </div>
-
-          <div className="hidden items-center gap-6 md:flex">
-            <a href="#features" className="text-sm text-text-secondary transition hover:text-text-primary">Features</a>
-            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="text-sm text-text-secondary transition hover:text-text-primary">GitHub</a>
+          <div className="flex items-center gap-3">
+            <img src="/logo-icon.svg" className="h-9 w-9" alt="Drawhaus" />
+            <span className="font-sora text-xl font-semibold tracking-tight">Drawhaus</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -272,7 +267,8 @@ export function LandingPage() {
 
           <div className="flex flex-wrap items-center gap-6 text-sm text-text-secondary">
             <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-text-primary">GitHub</a>
-            <a href={EXCALIDRAW_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-text-primary">Excalidraw</a>
+            <Link to="/privacy" className="transition hover:text-text-primary">Privacy</Link>
+            <Link to="/terms" className="transition hover:text-text-primary">Terms</Link>
           </div>
 
           <p className="text-xs text-text-muted">

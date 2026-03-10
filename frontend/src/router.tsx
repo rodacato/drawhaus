@@ -11,6 +11,8 @@ import { Setup } from "@/pages/Setup";
 import { Share } from "@/pages/Share";
 import { Embed } from "@/pages/Embed";
 import { LandingPage } from "@/pages/LandingPage";
+import { Privacy } from "@/pages/Privacy";
+import { Terms } from "@/pages/Terms";
 import { NotFound } from "@/pages/NotFound";
 
 export function AppRouter() {
@@ -46,6 +48,8 @@ export function AppRouter() {
       <Route path="/setup" element={<Setup />} />
       <Route path="/share/:token" element={<Share />} />
       <Route path="/embed/:token" element={<Embed />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
 
       {/* Catch-all */}
       <Route path="*" element={<NotFound />} />
