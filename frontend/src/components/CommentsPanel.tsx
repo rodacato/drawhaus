@@ -26,8 +26,18 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-function elementExists(elements: readonly unknown[], elementId: string): boolean {
-  return (elements as ExcalidrawElement[]).some((e) => e.id === elementId);
+function findElement(elements: readonly unknown[], elementId: string): ExcalidrawElement | undefined {
+  return (elements as ExcalidrawElement[]).find((e) => e.id === elementId);
+}
+
+function elementLabel(el: ExcalidrawElement): string {
+  const type = (el.type as string) ?? "element";
+  // If it's text, show a preview
+  if (type === "text" && "text" in el && typeof el.text === "string") {
+    const preview = el.text.slice(0, 30);
+    return preview.length < el.text.length ? `"${preview}..."` : `"${preview}"`;
+  }
+  return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
 export function CommentsPanel({
@@ -55,10 +65,10 @@ export function CommentsPanel({
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault();
-    if (!selectedElementId || !newBody.trim()) return;
+    if (!newBody.trim()) return;
     setPending(true);
     try {
-      await onCreateThread(selectedElementId, newBody.trim());
+      await onCreateThread(selectedElementId ?? "__general__", newBody.trim());
       setNewBody("");
     } finally {
       setPending(false);
@@ -104,11 +114,12 @@ export function CommentsPanel({
       </div>
 
       {/* New comment form */}
-      {selectedElementId && (
-        <form onSubmit={handleCreate} className="border-b border-gray-100 px-4 py-3">
-          <p className="mb-2 text-xs text-gray-500">
-            Comment on selected element
-          </p>
+      <form onSubmit={handleCreate} className="border-b border-gray-100 px-4 py-3">
+        <p className="mb-2 text-xs text-gray-500">
+          {selectedElementId
+            ? (() => { const sel = findElement(elements, selectedElementId); return sel ? `Comment on: ${elementLabel(sel)}` : "Comment on selected element"; })()
+            : "General comment"}
+        </p>
           <textarea
             className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
             rows={2}
@@ -116,15 +127,14 @@ export function CommentsPanel({
             value={newBody}
             onChange={(e) => setNewBody(e.target.value)}
           />
-          <button
-            type="submit"
-            disabled={pending || !newBody.trim()}
-            className="mt-2 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            Comment
-          </button>
-        </form>
-      )}
+        <button
+          type="submit"
+          disabled={pending || !newBody.trim()}
+          className="mt-2 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          Comment
+        </button>
+      </form>
 
       {/* Thread list */}
       <div className="flex-1 overflow-y-auto">
@@ -134,7 +144,9 @@ export function CommentsPanel({
           </div>
         )}
         {filtered.map((thread) => {
-          const exists = elementExists(elements, thread.elementId);
+          const isGeneral = thread.elementId === "__general__";
+          const el = isGeneral ? undefined : findElement(elements, thread.elementId);
+          const exists = isGeneral || !!el;
           return (
             <div key={thread.id} className={`border-b border-gray-100 px-4 py-3 ${thread.resolved ? "opacity-60" : ""}`}>
               {/* Thread header */}
@@ -143,6 +155,11 @@ export function CommentsPanel({
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-gray-900">{thread.authorName}</span>
                     <span className="text-[10px] text-gray-400">{timeAgo(thread.createdAt)}</span>
+                    {isGeneral ? (
+                      <span className="text-[10px] text-gray-400">General</span>
+                    ) : el ? (
+                      <span className="text-[10px] text-gray-400">{elementLabel(el)}</span>
+                    ) : null}
                   </div>
                   <p className="mt-1 text-sm text-gray-700">{thread.body}</p>
                   {!exists && (
@@ -150,7 +167,7 @@ export function CommentsPanel({
                   )}
                 </div>
                 <div className="flex gap-1">
-                  {exists && (
+                  {!isGeneral && exists && (
                     <button
                       onClick={() => onHighlightElement(thread.elementId)}
                       className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
