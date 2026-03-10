@@ -33,10 +33,10 @@ export function Register() {
   return (
     <div className="grid min-h-screen place-items-center bg-surface px-4 py-8">
       <section className={`${ui.card} w-full max-w-md space-y-6`}>
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-widest text-accent">Drawhaus</p>
+        <div className="space-y-2 text-center">
+          <img src="/logo-icon.svg" alt="Drawhaus" className="mx-auto h-10 w-10" />
           <h1 className={ui.h1}>Create account</h1>
-          <p className="text-sm text-text-secondary">Register to start using Drawhaus.</p>
+          <p className="text-sm text-text-secondary">Start diagramming on your own server.</p>
         </div>
         <form className="space-y-4" onSubmit={onSubmit}>
           <label className={ui.label}>
@@ -56,9 +56,9 @@ export function Register() {
             {pending ? "Please wait..." : "Create account"}
           </button>
         </form>
-        <p className="text-sm text-text-secondary">
+        <p className="text-center text-sm text-text-secondary">
           Already have an account?{" "}
-          <Link className="font-semibold text-accent hover:text-accent-hover" to="/login">Login</Link>
+          <Link className="font-semibold text-primary hover:text-primary-hover" to="/login">Sign in</Link>
         </p>
       </section>
     </div>

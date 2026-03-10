@@ -71,7 +71,7 @@ function ShareViewInner({ shareToken, data }: { shareToken: string; data: ShareD
       <div className="grid min-h-screen place-items-center bg-surface px-4 py-8">
         <div className={`${ui.card} ${ui.centerNarrow} space-y-4`}>
           <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-widest text-accent">Drawhaus</p>
+            <img src="/logo-icon.svg" alt="Drawhaus" className="h-8 w-8" />
             <h1 className={ui.h1}>{data.title || "Shared Diagram"}</h1>
             <p className={ui.subtitle}>{canEdit ? "Enter your name to join and collaborate." : "Enter your name to view this diagram."}</p>
           </div>

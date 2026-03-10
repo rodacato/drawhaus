@@ -133,12 +133,12 @@ export function Dashboard() {
           <input className={ui.input} type="search" placeholder="Search diagrams..." value={sidebarSearch} onChange={(e) => setSidebarSearch(e.target.value)} />
         </form>
         <nav className="space-y-1">
-          <button onClick={() => navTo(undefined)} className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${isAll ? "bg-accent/10 font-medium text-accent" : "text-text-secondary hover:bg-surface-raised"}`} type="button">All Diagrams</button>
-          <button onClick={() => navTo(null)} className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${isUnfiled ? "bg-accent/10 font-medium text-accent" : "text-text-secondary hover:bg-surface-raised"}`} type="button">Unfiled</button>
+          <button onClick={() => navTo(undefined)} className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${isAll ? "bg-primary/10 font-medium text-primary" : "text-text-secondary hover:bg-surface-raised"}`} type="button">All Diagrams</button>
+          <button onClick={() => navTo(null)} className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${isUnfiled ? "bg-primary/10 font-medium text-primary" : "text-text-secondary hover:bg-surface-raised"}`} type="button">Unfiled</button>
           <div className="pt-2">
             <div className="flex items-center justify-between px-3 pb-1">
               <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">Folders</span>
-              <button onClick={() => setCreatingFolder(true)} className="text-xs text-accent hover:text-accent-hover" type="button">+ New</button>
+              <button onClick={() => setCreatingFolder(true)} className="text-xs text-primary hover:text-primary-hover" type="button">+ New</button>
             </div>
             {creatingFolder && (
               <form onSubmit={(e) => { e.preventDefault(); createFolder(); }} className="px-1 pb-1">
@@ -147,7 +147,7 @@ export function Dashboard() {
             )}
             {folders.map((folder) => (
               <div key={folder.id} className="group flex items-center">
-                <button onClick={() => navTo(folder.id)} className={`flex-1 rounded-lg px-3 py-2 text-left text-sm transition ${folderId === folder.id ? "bg-accent/10 font-medium text-accent" : "text-text-secondary hover:bg-surface-raised"}`} type="button">{folder.name}</button>
+                <button onClick={() => navTo(folder.id)} className={`flex-1 rounded-lg px-3 py-2 text-left text-sm transition ${folderId === folder.id ? "bg-primary/10 font-medium text-primary" : "text-text-secondary hover:bg-surface-raised"}`} type="button">{folder.name}</button>
                 <button onClick={() => deleteFolder(folder.id)} className="hidden rounded px-1 text-xs text-text-muted hover:text-red-600 group-hover:block" title="Delete folder" type="button">x</button>
               </div>
             ))}

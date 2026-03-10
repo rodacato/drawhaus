@@ -52,10 +52,10 @@ export function Setup() {
   return (
     <div className="grid min-h-screen place-items-center bg-surface px-4 py-8">
       <section className={`${ui.card} w-full max-w-md space-y-6`}>
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-widest text-accent">Drawhaus</p>
+        <div className="space-y-2 text-center">
+          <img src="/logo-icon.svg" alt="Drawhaus" className="mx-auto h-10 w-10" />
           <h1 className={ui.h1}>Setup</h1>
-          <p className="text-sm text-text-secondary">Create the administrator account to get started.</p>
+          <p className="text-sm text-text-secondary">Create the admin account to get started.</p>
         </div>
         <form className="space-y-4" onSubmit={onSubmit}>
           <label className={ui.label}>
