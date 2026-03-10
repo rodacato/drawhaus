@@ -2,9 +2,26 @@ import { useEffect, useState } from "react";
 import { adminApi } from "@/api/admin";
 import { ui } from "@/lib/ui";
 
+function ToggleSwitch({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      disabled={disabled}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:opacity-50 ${
+        checked ? "bg-primary" : "bg-border"
+      }`}
+    >
+      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${checked ? "translate-x-5" : "translate-x-0"}`} />
+    </button>
+  );
+}
+
 export function AdminSettings() {
   const [instanceName, setInstanceName] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
   const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [pending, setPending] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -13,7 +30,9 @@ export function AdminSettings() {
     adminApi.getSettings().then((data) => {
       const s = data.settings ?? data;
       setInstanceName(s.instanceName ?? "");
+      setAdminEmail(s.adminEmail ?? "");
       setRegistrationOpen(s.registrationOpen ?? false);
+      setMaintenanceMode(s.maintenanceMode ?? false);
       setLoaded(true);
     }).catch(() => {});
   }, []);
@@ -41,17 +60,39 @@ export function AdminSettings() {
         <h1 className={ui.h1}>Site Settings</h1>
         <p className={ui.subtitle}>Configure your Drawhaus instance.</p>
       </div>
-      <div className={ui.card}>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <label className={ui.label}>Instance Name<input className={ui.input} type="text" value={instanceName} onChange={(e) => setInstanceName(e.target.value)} required maxLength={100} /></label>
-          <label className="flex items-center gap-3 text-sm font-medium text-text-secondary">
-            <input type="checkbox" checked={registrationOpen} onChange={(e) => setRegistrationOpen(e.target.checked)} className="h-4 w-4 rounded border-border text-primary focus:ring-primary/25" />
-            Allow new user registration
-          </label>
-          {status && <p className={status.type === "error" ? ui.alertError : "text-sm text-green-600"}>{status.message}</p>}
-          <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`} disabled={pending}>{pending ? "Saving..." : "Save Settings"}</button>
-        </form>
-      </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className={ui.card}>
+          <h2 className={ui.h2}>General</h2>
+          <div className="mt-4 space-y-4">
+            <label className={ui.label}>Instance Name<input className={ui.input} type="text" value={instanceName} onChange={(e) => setInstanceName(e.target.value)} required maxLength={100} /></label>
+            <label className={ui.label}>Admin Contact Email<input className={ui.input} type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} placeholder="admin@example.com" /></label>
+          </div>
+        </div>
+
+        <div className={ui.card}>
+          <h2 className={ui.h2}>Access & Security</h2>
+          <div className="mt-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-text-primary">Allow Registration</p>
+                <p className={ui.muted}>New users can create accounts on this instance.</p>
+              </div>
+              <ToggleSwitch checked={registrationOpen} onChange={setRegistrationOpen} />
+            </div>
+            <div className="border-t border-border" />
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-text-primary">Maintenance Mode</p>
+                <p className={ui.muted}>Only admins can access the instance while enabled.</p>
+              </div>
+              <ToggleSwitch checked={maintenanceMode} onChange={setMaintenanceMode} />
+            </div>
+          </div>
+        </div>
+
+        {status && <p className={status.type === "error" ? ui.alertError : ui.alertSuccess}>{status.message}</p>}
+        <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`} disabled={pending}>{pending ? "Saving..." : "Save Changes"}</button>
+      </form>
     </div>
   );
 }
