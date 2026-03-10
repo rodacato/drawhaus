@@ -5,6 +5,8 @@ import type { AdminUpdateUserUseCase } from "../../../application/use-cases/admi
 import type { GetSiteSettingsUseCase } from "../../../application/use-cases/admin/get-site-settings";
 import type { UpdateSiteSettingsUseCase } from "../../../application/use-cases/admin/update-site-settings";
 import type { GetMetricsUseCase } from "../../../application/use-cases/admin/get-metrics";
+import type { InviteUserUseCase } from "../../../application/use-cases/admin/invite-user";
+import type { InvitationRepository } from "../../../domain/ports/invitation-repository";
 import { asyncRoute } from "../middleware/async-handler";
 import { requireAdmin } from "../middleware/require-admin";
 
@@ -18,6 +20,11 @@ const updateSettingsSchema = z.object({
   instanceName: z.string().trim().min(1).max(100).optional(),
 }).refine((v) => Object.keys(v).length > 0, { message: "At least one field is required" });
 
+const inviteSchema = z.object({
+  email: z.string().trim().email(),
+  role: z.enum(["user", "admin"]).optional().default("user"),
+});
+
 export function createAdminRoutes(
   useCases: {
     listUsers: ListUsersUseCase;
@@ -25,8 +32,10 @@ export function createAdminRoutes(
     getSettings: GetSiteSettingsUseCase;
     updateSettings: UpdateSiteSettingsUseCase;
     getMetrics: GetMetricsUseCase;
+    inviteUser: InviteUserUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
+  invitationRepo: InvitationRepository,
 ) {
   const router = Router();
 
@@ -63,6 +72,24 @@ export function createAdminRoutes(
   router.get("/metrics", asyncRoute(async (_req, res) => {
     const metrics = await useCases.getMetrics.execute();
     return res.json({ metrics });
+  }));
+
+  router.post("/invite", asyncRoute(async (req, res) => {
+    const parsed = inviteSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+
+    const invitation = await useCases.inviteUser.execute({
+      email: parsed.data.email,
+      role: parsed.data.role,
+      invitedBy: req.authUser.id,
+      inviterName: req.authUser.name,
+    });
+    return res.status(201).json({ invitation });
+  }));
+
+  router.get("/invitations", asyncRoute(async (_req, res) => {
+    const invitations = await invitationRepo.listPending();
+    return res.json({ invitations });
   }));
 
   return router;

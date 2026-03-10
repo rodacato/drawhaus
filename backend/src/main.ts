@@ -26,9 +26,12 @@ import { PgFolderRepository } from "./infrastructure/persistence/pg-folder-repos
 import { PgSceneRepository } from "./infrastructure/persistence/pg-scene-repository";
 import { PgCommentRepository } from "./infrastructure/persistence/pg-comment-repository";
 import { PgTagRepository } from "./infrastructure/persistence/pg-tag-repository";
+import { PgInvitationRepository } from "./infrastructure/persistence/pg-invitation-repository";
+import { PgPasswordResetRepository } from "./infrastructure/persistence/pg-password-reset-repository";
 
 // --- Services ---
 import { BcryptHasher } from "./infrastructure/services/bcrypt-hasher";
+import { ResendEmailService } from "./infrastructure/services/email-service";
 
 // --- Use Cases: Auth ---
 import { RegisterUseCase } from "./application/use-cases/auth/register";
@@ -37,6 +40,9 @@ import { LogoutUseCase } from "./application/use-cases/auth/logout";
 import { GetCurrentUserUseCase } from "./application/use-cases/auth/get-current-user";
 import { UpdateProfileUseCase } from "./application/use-cases/auth/update-profile";
 import { ChangePasswordUseCase } from "./application/use-cases/auth/change-password";
+import { AcceptInviteUseCase } from "./application/use-cases/auth/accept-invite";
+import { ForgotPasswordUseCase } from "./application/use-cases/auth/forgot-password";
+import { ResetPasswordUseCase } from "./application/use-cases/auth/reset-password";
 
 // --- Use Cases: Diagrams ---
 import { CreateDiagramUseCase } from "./application/use-cases/diagrams/create-diagram";
@@ -68,6 +74,7 @@ import { AdminUpdateUserUseCase } from "./application/use-cases/admin/update-use
 import { GetSiteSettingsUseCase } from "./application/use-cases/admin/get-site-settings";
 import { UpdateSiteSettingsUseCase } from "./application/use-cases/admin/update-site-settings";
 import { GetMetricsUseCase } from "./application/use-cases/admin/get-metrics";
+import { InviteUserUseCase } from "./application/use-cases/admin/invite-user";
 
 // --- Use Cases: Scenes ---
 import { ListScenesUseCase } from "./application/use-cases/scenes/list-scenes";
@@ -123,7 +130,10 @@ const folderRepo = new PgFolderRepository();
 const sceneRepo = new PgSceneRepository();
 const commentRepo = new PgCommentRepository();
 const tagRepo = new PgTagRepository();
+const invitationRepo = new PgInvitationRepository();
+const passwordResetRepo = new PgPasswordResetRepository();
 const hasher = new BcryptHasher();
+const emailService = new ResendEmailService();
 
 // Auth
 const register = new RegisterUseCase(userRepo, sessionRepo, hasher, siteSettingsRepo);
@@ -132,6 +142,9 @@ const logout = new LogoutUseCase(sessionRepo);
 const getCurrentUser = new GetCurrentUserUseCase(sessionRepo);
 const updateProfile = new UpdateProfileUseCase(userRepo);
 const changePassword = new ChangePasswordUseCase(userRepo, hasher);
+const acceptInvite = new AcceptInviteUseCase(userRepo, sessionRepo, invitationRepo, hasher);
+const forgotPassword = new ForgotPasswordUseCase(userRepo, passwordResetRepo, emailService);
+const resetPassword = new ResetPasswordUseCase(userRepo, sessionRepo, passwordResetRepo, hasher);
 
 // Diagrams
 const createDiagram = new CreateDiagramUseCase(diagramRepo);
@@ -163,6 +176,7 @@ const adminUpdateUser = new AdminUpdateUserUseCase(userRepo, sessionRepo);
 const getSettings = new GetSiteSettingsUseCase(siteSettingsRepo);
 const updateSettings = new UpdateSiteSettingsUseCase(siteSettingsRepo);
 const getMetrics = new GetMetricsUseCase();
+const inviteUser = new InviteUserUseCase(userRepo, invitationRepo, siteSettingsRepo, emailService);
 
 // Scenes
 const listScenes = new ListScenesUseCase(sceneRepo, diagramRepo);
@@ -209,14 +223,14 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword }, requireAuth));
+app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword }, requireAuth));
 app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, toggleStar, duplicate: duplicateDiagram, move: moveDiagram }, requireAuth, tagRepo));
 app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes, get: getScene, create: createScene, rename: renameScene, delete: deleteScene }, requireAuth));
 app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: listComments, create: createComment, reply: replyComment, resolve: resolveComment, delete: deleteComment }, requireAuth));
 app.use("/api/tags", createTagRoutes({ create: createTag, list: listTags, delete: deleteTag, update: updateTag, assign: assignTag, unassign: unassignTag }, requireAuth));
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
-app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, getSettings, updateSettings, getMetrics }, requireAuth));
+app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, getSettings, updateSettings, getMetrics, inviteUser }, requireAuth, invitationRepo));
 
 // --- Honeybadger error handler (must be after all routes) ---
 if (config.honeybadgerApiKey) {

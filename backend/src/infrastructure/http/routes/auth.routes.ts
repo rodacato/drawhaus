@@ -7,6 +7,9 @@ import type { LogoutUseCase } from "../../../application/use-cases/auth/logout";
 import type { GetCurrentUserUseCase } from "../../../application/use-cases/auth/get-current-user";
 import type { UpdateProfileUseCase } from "../../../application/use-cases/auth/update-profile";
 import type { ChangePasswordUseCase } from "../../../application/use-cases/auth/change-password";
+import type { AcceptInviteUseCase } from "../../../application/use-cases/auth/accept-invite";
+import type { ForgotPasswordUseCase } from "../../../application/use-cases/auth/forgot-password";
+import type { ResetPasswordUseCase } from "../../../application/use-cases/auth/reset-password";
 import { asyncPublicRoute, asyncRoute } from "../middleware/async-handler";
 import { config } from "../../config";
 
@@ -31,6 +34,21 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(8).max(128),
 });
 
+const acceptInviteSchema = z.object({
+  token: z.string().min(1),
+  name: z.string().trim().min(1).max(100),
+  password: z.string().min(8).max(128),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().trim().email(),
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  newPassword: z.string().min(8).max(128),
+});
+
 function getCookieOptions() {
   const isProduction = config.nodeEnv === "production";
   return {
@@ -51,6 +69,9 @@ export function createAuthRoutes(
     getCurrentUser: GetCurrentUserUseCase;
     updateProfile: UpdateProfileUseCase;
     changePassword: ChangePasswordUseCase;
+    acceptInvite: AcceptInviteUseCase;
+    forgotPassword: ForgotPasswordUseCase;
+    resetPassword: ResetPasswordUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
 ) {
@@ -113,6 +134,45 @@ export function createAuthRoutes(
     if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
 
     await useCases.changePassword.execute(req.authUser.id, parsed.data);
+    return res.status(200).json({ success: true });
+  }));
+
+  // --- Invite acceptance ---
+
+  router.get("/invite/:token", asyncPublicRoute(async (req, res) => {
+    const result = await useCases.acceptInvite.resolve(req.params.token as string);
+    return res.status(200).json(result);
+  }));
+
+  router.post("/accept-invite", asyncPublicRoute(async (req, res) => {
+    const parsed = acceptInviteSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+
+    const result = await useCases.acceptInvite.execute(parsed.data);
+    res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
+    return res.status(201).json({ user: result.user });
+  }));
+
+  // --- Forgot / Reset password ---
+
+  router.post("/forgot-password", asyncPublicRoute(async (req, res) => {
+    const parsed = forgotPasswordSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+
+    await useCases.forgotPassword.execute(parsed.data.email);
+    return res.status(200).json({ success: true });
+  }));
+
+  router.get("/reset-password/:token", asyncPublicRoute(async (req, res) => {
+    const result = await useCases.resetPassword.validate(req.params.token as string);
+    return res.status(200).json(result);
+  }));
+
+  router.post("/reset-password", asyncPublicRoute(async (req, res) => {
+    const parsed = resetPasswordSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+
+    await useCases.resetPassword.execute(parsed.data);
     return res.status(200).json({ success: true });
   }));
 

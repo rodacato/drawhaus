@@ -12,4 +12,10 @@ export const adminApi = {
 
   updateSettings: (data: { instanceName?: string; registrationOpen?: boolean }) =>
     api.patch("/api/admin/settings", data).then((r) => r.data),
+
+  inviteUser: (email: string, role: string = "user") =>
+    api.post("/api/admin/invite", { email, role }).then((r) => r.data),
+
+  listInvitations: () =>
+    api.get("/api/admin/invitations").then((r) => r.data),
 };

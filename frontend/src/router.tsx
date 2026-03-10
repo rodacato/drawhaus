@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { ProtectedLayout } from "@/layouts/ProtectedLayout";
 import { AppShell } from "@/layouts/AppShell";
@@ -11,9 +11,16 @@ import { Setup } from "@/pages/Setup";
 import { Share } from "@/pages/Share";
 import { Embed } from "@/pages/Embed";
 import { LandingPage } from "@/pages/LandingPage";
+import { ForgotPassword } from "@/pages/ForgotPassword";
+import { ResetPassword } from "@/pages/ResetPassword";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { NotFound } from "@/pages/NotFound";
+
+function InviteRedirect() {
+  const { token } = useParams();
+  return <Navigate to={`/register?invite=${token}`} replace />;
+}
 
 export function AppRouter() {
   return (
@@ -22,7 +29,12 @@ export function AppRouter() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Route>
+
+      {/* Invite link redirect */}
+      <Route path="/invite/:token" element={<InviteRedirect />} />
 
       {/* Public landing page — redirects to dashboard if authenticated */}
       <Route path="/" element={<LandingPage />} />
