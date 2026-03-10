@@ -121,6 +121,13 @@ export async function initSchema(): Promise<void> {
 
     CREATE INDEX IF NOT EXISTS comment_replies_thread_id_idx ON comment_replies (thread_id);
 
+    CREATE TABLE IF NOT EXISTS comment_reactions (
+      thread_id UUID NOT NULL REFERENCES comment_threads(id) ON DELETE CASCADE,
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (thread_id, user_id)
+    );
+
     CREATE TABLE IF NOT EXISTS tags (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

@@ -288,6 +288,7 @@ export default function BoardEditor({
             onReply={comments.addReply}
             onResolve={comments.resolveThread}
             onDelete={comments.deleteThread}
+            onToggleLike={comments.toggleLike}
             onHighlightElement={handleHighlightElement}
             onClose={() => setCommentsPanelOpen(false)}
           />

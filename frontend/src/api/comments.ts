@@ -15,4 +15,7 @@ export const commentsApi = {
 
   delete: (diagramId: string, threadId: string) =>
     api.delete(`/api/diagrams/${diagramId}/comments/${threadId}`).then((r) => r.data),
+
+  toggleLike: (diagramId: string, threadId: string) =>
+    api.post(`/api/diagrams/${diagramId}/comments/${threadId}/like`).then((r) => r.data as { liked: boolean; likeCount: number }),
 };
