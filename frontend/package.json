@@ -15,16 +15,17 @@
     "react": "^18",
     "react-dom": "^18",
     "react-router-dom": "^7.13.1",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "socket.io-msgpack-parser": "^3.0.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@vitejs/plugin-react": "^5.1.4",
     "@typescript-eslint/eslint-plugin": "^7",
     "@typescript-eslint/parser": "^7",
+    "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^8",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
