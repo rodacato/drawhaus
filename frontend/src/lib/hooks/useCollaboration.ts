@@ -38,6 +38,7 @@ export type CollaborationState = {
   lastSavedAt: string | null;
   scenes: SceneInfo[];
   activeSceneId: string | null;
+  switchingScene: boolean;
   switchScene: (sceneId: string) => void;
   createScene: (name?: string) => Promise<void>;
   deleteScene: (sceneId: string) => Promise<void>;
@@ -68,6 +69,7 @@ export function useCollaboration({
   const [toolbarOpen, setToolbarOpen] = useState(false);
   const [scenes, setScenes] = useState<SceneInfo[]>([]);
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
+  const [switchingScene, setSwitchingScene] = useState(false);
   const activeSceneIdRef = useRef<string | null>(null);
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -314,7 +316,10 @@ export function useCollaboration({
   }, [diagramId]);
 
   const persistScene = useCallback(
-    async (elements: unknown[], appState: Record<string, unknown>) => {
+    async (elements: unknown[], appState: Record<string, unknown>, forSceneId: string | null) => {
+      // Safety: never save to the wrong scene
+      if (forSceneId && forSceneId !== activeSceneIdRef.current) return;
+
       setSaveState("saving");
       try {
         const sanitizedAppState = jsonSafe({ ...appState, collaborators: undefined });
@@ -388,8 +393,9 @@ export function useCollaboration({
       }
 
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      const capturedSceneId = activeSceneIdRef.current;
       debounceTimer.current = setTimeout(() => {
-        persistScene([...elements], appState);
+        persistScene([...elements], appState, capturedSceneId);
       }, SAVE_DEBOUNCE_MS);
     },
     [diagramId, persistScene, canEdit]
@@ -423,9 +429,28 @@ export function useCollaboration({
   const switchScene = useCallback(async (sceneId: string) => {
     if (sceneId === activeSceneIdRef.current) return;
 
+    // Cancel pending debounce/throttle so old scene data doesn't overwrite the new scene
+    if (debounceTimer.current) { clearTimeout(debounceTimer.current); debounceTimer.current = null; }
+    if (throttleTimer.current) { clearTimeout(throttleTimer.current); throttleTimer.current = null; }
+
+    // Save current scene elements before leaving
+    const currentSceneId = activeSceneIdRef.current;
+    if (currentSceneId && excalidrawApiRef.current && socketRef.current?.connected) {
+      const currentElements = excalidrawApiRef.current.getSceneElements?.() ?? [];
+      const currentAppState = excalidrawApiRef.current.getAppState?.() ?? {};
+      const sanitizedAppState = jsonSafe({ ...currentAppState, collaborators: undefined });
+      socketRef.current.emit("save-scene", {
+        roomId: diagramId,
+        sceneId: currentSceneId,
+        elements: jsonSafe([...currentElements]),
+        appState: sanitizedAppState,
+      });
+    }
+
     // Tell socket to switch sub-rooms
     socketRef.current?.emit("switch-scene", { roomId: diagramId, sceneId });
     setActiveSceneId(sceneId);
+    setSwitchingScene(true);
 
     // Fetch scene data from REST
     try {
@@ -436,7 +461,9 @@ export function useCollaboration({
         elements: scene.elements ?? [],
       });
       requestAnimationFrame(() => { applyingRemoteCounter.current -= 1; });
-    } catch { /* ignore */ }
+    } catch { /* ignore */ } finally {
+      setSwitchingScene(false);
+    }
   }, [diagramId]);
 
   const createScene = useCallback(async (name?: string) => {
@@ -513,6 +540,7 @@ export function useCollaboration({
     lastSavedAt: lastSavedAt.current,
     scenes,
     activeSceneId,
+    switchingScene,
     switchScene,
     createScene,
     deleteScene,
