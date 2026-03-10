@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { authApi } from "@/api/auth";
@@ -112,6 +112,15 @@ export function Settings() {
             </button>
           ))}
           <div className="mt-2 border-t border-border pt-2">
+            {user?.role === "admin" && (
+              <Link
+                to="/admin"
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-accent-coral/70 transition hover:bg-accent-coral/10 hover:text-accent-coral"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                Admin Panel
+              </Link>
+            )}
             <button
               onClick={async () => { await logout(); navigate("/login"); }}
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-error/70 transition hover:bg-error/10 hover:text-error"
