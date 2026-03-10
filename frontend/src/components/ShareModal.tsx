@@ -137,6 +137,7 @@ export function ShareModal({
   const [links, setLinks] = useState<ShareLink[]>([]);
   const [loadingLinks, setLoadingLinks] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   const loadLinks = useCallback(async () => {
     if (!diagramId) return;
@@ -203,12 +204,24 @@ export function ShareModal({
     }
   }, [loadLinks]);
 
+  const handleCopyExistingLink = useCallback(async (token: string) => {
+    const url = `${window.location.origin}/share/${token}`;
+    await navigator.clipboard.writeText(url);
+    setCopiedToken(token);
+  }, []);
+
   // Reset copied state after 2 seconds
   useEffect(() => {
     if (!copied) return;
     const t = setTimeout(() => setCopied(false), 2000);
     return () => clearTimeout(t);
   }, [copied]);
+
+  useEffect(() => {
+    if (!copiedToken) return;
+    const t = setTimeout(() => setCopiedToken(null), 2000);
+    return () => clearTimeout(t);
+  }, [copiedToken]);
 
   if (!open) return null;
 
@@ -274,7 +287,6 @@ export function ShareModal({
                   >
                     <option value="viewer">Viewer</option>
                     <option value="editor">Editor</option>
-                    <option value="commenter">Commenter</option>
                   </select>
                 </label>
 
@@ -403,14 +415,25 @@ export function ShareModal({
                           </p>
                         </div>
 
-                        {/* Action button */}
-                        <button
-                          onClick={() => handleDeleteLink(link.token)}
-                          className="rounded-lg p-2 text-text-muted transition hover:bg-error/10 hover:text-error"
-                          aria-label="Delete link"
-                        >
-                          <IconTrash size={15} />
-                        </button>
+                        {/* Actions */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleCopyExistingLink(link.token)}
+                            className={`rounded-lg p-2 transition ${copiedToken === link.token ? "text-success" : "text-text-muted hover:bg-primary/10 hover:text-primary"}`}
+                            aria-label="Copy link"
+                            title="Copy link"
+                          >
+                            {copiedToken === link.token ? <IconCheck size={15} /> : <IconCopy size={15} />}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteLink(link.token)}
+                            className="rounded-lg p-2 text-text-muted transition hover:bg-error/10 hover:text-error"
+                            aria-label="Delete link"
+                            title="Delete link"
+                          >
+                            <IconTrash size={15} />
+                          </button>
+                        </div>
                       </div>
                     );
                   })
