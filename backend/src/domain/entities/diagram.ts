@@ -6,6 +6,7 @@ export type Diagram = {
   elements: unknown[];
   appState: Record<string, unknown>;
   thumbnail: string | null;
+  starred: boolean;
   createdAt: Date;
   updatedAt: Date;
 };

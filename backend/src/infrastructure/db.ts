@@ -134,5 +134,6 @@ export async function initSchema(): Promise<void> {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS disabled BOOLEAN NOT NULL DEFAULT false;
     ALTER TABLE diagrams ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES folders(id) ON DELETE SET NULL;
     ALTER TABLE diagrams ADD COLUMN IF NOT EXISTS thumbnail TEXT;
+    ALTER TABLE diagrams ADD COLUMN IF NOT EXISTS starred BOOLEAN NOT NULL DEFAULT false;
   `);
 }

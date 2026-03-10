@@ -7,6 +7,8 @@ import type { SearchDiagramsUseCase } from "../../../application/use-cases/diagr
 import type { UpdateDiagramUseCase } from "../../../application/use-cases/diagrams/update-diagram";
 import type { DeleteDiagramUseCase } from "../../../application/use-cases/diagrams/delete-diagram";
 import type { UpdateThumbnailUseCase } from "../../../application/use-cases/diagrams/update-thumbnail";
+import type { ToggleStarUseCase } from "../../../application/use-cases/diagrams/toggle-star";
+import type { DuplicateDiagramUseCase } from "../../../application/use-cases/diagrams/duplicate-diagram";
 import type { MoveDiagramUseCase } from "../../../application/use-cases/folders/move-diagram";
 import { asyncRoute } from "../middleware/async-handler";
 import type { Diagram } from "../../../domain/entities/diagram";
@@ -41,6 +43,7 @@ function formatDiagram(d: Diagram) {
     elements: d.elements,
     appState: d.appState,
     thumbnail: d.thumbnail,
+    starred: d.starred,
     createdAt: d.createdAt.toISOString(),
     updatedAt: d.updatedAt.toISOString(),
   };
@@ -55,6 +58,8 @@ export function createDiagramRoutes(
     update: UpdateDiagramUseCase;
     updateThumbnail: UpdateThumbnailUseCase;
     delete: DeleteDiagramUseCase;
+    toggleStar: ToggleStarUseCase;
+    duplicate: DuplicateDiagramUseCase;
     move: MoveDiagramUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
@@ -107,6 +112,18 @@ export function createDiagramRoutes(
     if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
     await useCases.move.execute(String(req.params.id), req.authUser.id, parsed.data.folderId);
     return res.json({ success: true });
+  }));
+
+  router.patch("/:id/star", asyncRoute(async (req, res) => {
+    const starred = req.body?.starred;
+    if (typeof starred !== "boolean") return res.status(400).json({ error: "starred is required" });
+    await useCases.toggleStar.execute(String(req.params.id), req.authUser.id, starred);
+    return res.json({ success: true });
+  }));
+
+  router.post("/:id/duplicate", asyncRoute(async (req, res) => {
+    const diagram = await useCases.duplicate.execute(String(req.params.id), req.authUser.id);
+    return res.status(201).json({ diagram: formatDiagram(diagram) });
   }));
 
   router.patch("/:id", asyncRoute(async (req, res) => {

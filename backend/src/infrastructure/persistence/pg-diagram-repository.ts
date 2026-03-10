@@ -10,6 +10,7 @@ type DiagramRow = {
   elements: unknown[];
   app_state: Record<string, unknown>;
   thumbnail: string | null;
+  starred: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -19,7 +20,7 @@ type AccessRow = {
   role: "editor" | "viewer" | null;
 };
 
-const COLS = "id, owner_id, folder_id, title, elements, app_state, thumbnail, created_at, updated_at";
+const COLS = "id, owner_id, folder_id, title, elements, app_state, thumbnail, starred, created_at, updated_at";
 
 function toDomain(row: DiagramRow): Diagram {
   return {
@@ -30,6 +31,7 @@ function toDomain(row: DiagramRow): Diagram {
     elements: row.elements,
     appState: row.app_state,
     thumbnail: row.thumbnail,
+    starred: row.starred,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -151,5 +153,9 @@ export class PgDiagramRepository implements DiagramRepository {
 
   async delete(id: string): Promise<void> {
     await pool.query("DELETE FROM diagrams WHERE id = $1", [id]);
+  }
+
+  async toggleStar(id: string, starred: boolean): Promise<void> {
+    await pool.query("UPDATE diagrams SET starred = $1 WHERE id = $2", [starred, id]);
   }
 }

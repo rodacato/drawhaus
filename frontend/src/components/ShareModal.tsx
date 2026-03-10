@@ -1,21 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { ui } from "@/lib/ui";
+import { shareApi } from "@/api/share";
+
+type ShareLink = {
+  token: string;
+  diagramId: string;
+  role: string;
+  expiresAt: string | null;
+  createdAt: string;
+};
 
 interface ShareModalProps {
   open: boolean;
   onClose: () => void;
   diagramId: string;
-  onCreateLink?: (role: string, expiresAt?: string) => Promise<{ token: string } | null>;
-  existingLinks?: Array<{
-    id: string;
-    token: string;
-    role: string;
-    expiresAt?: string | null;
-    createdAt: string;
-    views?: number;
-  }>;
-  onDeleteLink?: (linkId: string) => void;
 }
 
 /* ── Feather-style SVG icons ─────────────────────────────── */
@@ -107,11 +106,6 @@ function IconLink({ size = 16 }: { size?: number }) {
 
 /* ── Helpers ──────────────────────────────────────────────── */
 
-function generateMockToken(): string {
-  const seg = () => Math.random().toString(36).substring(2, 6);
-  return `${seg()}-${seg()}`;
-}
-
 function isExpired(expiresAt?: string | null): boolean {
   if (!expiresAt) return false;
   return new Date(expiresAt) < new Date();
@@ -135,14 +129,36 @@ export function ShareModal({
   open,
   onClose,
   diagramId,
-  onCreateLink,
-  existingLinks,
-  onDeleteLink,
 }: ShareModalProps) {
   const [selectedRole, setSelectedRole] = useState("viewer");
-  const [expiresAt, setExpiresAt] = useState("");
+  const [expiresIn, setExpiresIn] = useState("");
   const [copied, setCopied] = useState(false);
-  const [mockToken] = useState(() => generateMockToken());
+  const [createdToken, setCreatedToken] = useState<string | null>(null);
+  const [links, setLinks] = useState<ShareLink[]>([]);
+  const [loadingLinks, setLoadingLinks] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  const loadLinks = useCallback(async () => {
+    if (!diagramId) return;
+    setLoadingLinks(true);
+    try {
+      const data = await shareApi.list(diagramId);
+      setLinks(data.links ?? []);
+    } catch {
+      // silently fail — user sees empty list
+    } finally {
+      setLoadingLinks(false);
+    }
+  }, [diagramId]);
+
+  // Load links when modal opens
+  useEffect(() => {
+    if (open) {
+      loadLinks();
+      setCreatedToken(null);
+      setCopied(false);
+    }
+  }, [open, loadLinks]);
 
   // Close on Escape
   useEffect(() => {
@@ -154,13 +170,38 @@ export function ShareModal({
     return () => document.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
-  const mockUrl = `${window.location.origin}/share/${mockToken}`;
+  const linkUrl = createdToken
+    ? `${window.location.origin}/share/${createdToken}`
+    : `${window.location.origin}/share/...`;
 
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(mockUrl).then(() => {
+  const handleCreateAndCopy = useCallback(async () => {
+    if (creating) return;
+    setCreating(true);
+    try {
+      const days = expiresIn.trim() ? parseInt(expiresIn.trim(), 10) : undefined;
+      const expiresInHours = days && !isNaN(days) ? days * 24 : undefined;
+      const data = await shareApi.create(diagramId, selectedRole, expiresInHours);
+      const token = data.shareLink?.token ?? data.token;
+      setCreatedToken(token);
+      const url = `${window.location.origin}/share/${token}`;
+      await navigator.clipboard.writeText(url);
       setCopied(true);
-    });
-  }, [mockUrl]);
+      await loadLinks();
+    } catch {
+      // could show error toast
+    } finally {
+      setCreating(false);
+    }
+  }, [creating, diagramId, selectedRole, expiresIn, loadLinks]);
+
+  const handleDeleteLink = useCallback(async (token: string) => {
+    try {
+      await shareApi.deleteLink(token);
+      await loadLinks();
+    } catch {
+      // silently fail
+    }
+  }, [loadLinks]);
 
   // Reset copied state after 2 seconds
   useEffect(() => {
@@ -170,28 +211,6 @@ export function ShareModal({
   }, [copied]);
 
   if (!open) return null;
-
-  /* ── Default example links when no existingLinks prop ── */
-  const defaultLinks: ShareModalProps["existingLinks"] = [
-    {
-      id: "demo-1",
-      token: "abcd-efgh",
-      role: "editor",
-      expiresAt: null,
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      views: undefined,
-    },
-    {
-      id: "demo-2",
-      token: "ijkl-mnop",
-      role: "viewer",
-      expiresAt: "2026-10-31T23:59:59Z",
-      createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      views: 12,
-    },
-  ];
-
-  const links = existingLinks ?? defaultLinks;
 
   const sectionLabel =
     "mb-3 text-[11px] font-semibold uppercase tracking-widest text-text-muted";
@@ -262,7 +281,7 @@ export function ShareModal({
                 {/* Expiration input */}
                 <label className="block space-y-1.5">
                   <span className="text-xs font-medium text-text-secondary">
-                    Expiration
+                    Expires in (days)
                   </span>
                   <div className="relative">
                     <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
@@ -270,9 +289,9 @@ export function ShareModal({
                     </span>
                     <input
                       type="text"
-                      placeholder="Select date..."
-                      value={expiresAt}
-                      onChange={(e) => setExpiresAt(e.target.value)}
+                      placeholder="e.g. 7"
+                      value={expiresIn}
+                      onChange={(e) => setExpiresIn(e.target.value)}
                       className={`${ui.input} pl-8`}
                     />
                   </div>
@@ -286,11 +305,12 @@ export function ShareModal({
                     <IconLink size={14} />
                   </span>
                   <span className="truncate font-[family-name:var(--font-family-mono)] text-xs text-text-muted">
-                    {mockUrl}
+                    {linkUrl}
                   </span>
                 </div>
                 <button
-                  onClick={handleCopy}
+                  onClick={handleCreateAndCopy}
+                  disabled={creating}
                   className={`${ui.btn} ${ui.btnPrimary} shrink-0 gap-1.5`}
                 >
                   {copied ? (
@@ -298,6 +318,8 @@ export function ShareModal({
                       <IconCheck size={14} />
                       Copied!
                     </>
+                  ) : creating ? (
+                    "Creating..."
                   ) : (
                     <>
                       <IconCopy size={14} />
@@ -313,112 +335,86 @@ export function ShareModal({
               <p className={sectionLabel}>Active Links</p>
 
               <div className="space-y-2">
-                {links.map((link) => {
-                  const isEditor = link.role === "editor";
-                  const expired = isExpired(link.expiresAt);
-                  const isDefault = !existingLinks;
-                  const showViews = link.views != null && link.views > 0;
+                {loadingLinks ? (
+                  <p className="py-4 text-center text-sm text-text-muted">
+                    Loading...
+                  </p>
+                ) : links.length === 0 ? (
+                  <p className="py-4 text-center text-sm text-text-muted">
+                    No active links
+                  </p>
+                ) : (
+                  links.map((link) => {
+                    const isEditor = link.role === "editor";
+                    const expired = isExpired(link.expiresAt);
 
-                  /* Badge text */
-                  let badgeText: string;
-                  let badgeClass: string;
-                  if (expired) {
-                    badgeText = "Expired";
-                    badgeClass =
-                      "bg-error/10 text-error ring-error/20";
-                  } else if (link.expiresAt) {
-                    const d = new Date(link.expiresAt);
-                    badgeText = `Expires ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
-                    badgeClass =
-                      "bg-warning/10 text-warning ring-warning/20";
-                  } else {
-                    badgeText = "Active";
-                    badgeClass =
-                      "bg-success/10 text-success ring-success/20";
-                  }
+                    /* Badge text */
+                    let badgeText: string;
+                    let badgeClass: string;
+                    if (expired) {
+                      badgeText = "Expired";
+                      badgeClass =
+                        "bg-error/10 text-error ring-error/20";
+                    } else if (link.expiresAt) {
+                      const d = new Date(link.expiresAt);
+                      badgeText = `Expires ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+                      badgeClass =
+                        "bg-warning/10 text-warning ring-warning/20";
+                    } else {
+                      badgeText = "Active";
+                      badgeClass =
+                        "bg-success/10 text-success ring-success/20";
+                    }
 
-                  /* Meta line */
-                  const metaParts: string[] = [];
-                  if (isDefault && link.id === "demo-1") {
-                    metaParts.push("Created 2 days ago");
-                  } else if (isDefault && link.id === "demo-2") {
-                    metaParts.push("Created 5 hours ago");
-                  } else {
-                    metaParts.push(formatRelativeDate(link.createdAt));
-                  }
-                  if (showViews) {
-                    metaParts.push(`${link.views} views`);
-                  }
-
-                  return (
-                    <div
-                      key={link.id}
-                      className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 transition hover:border-border/80"
-                    >
-                      {/* Icon circle */}
+                    return (
                       <div
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                          isEditor
-                            ? "bg-primary/10 text-primary"
-                            : "bg-accent-coral/10 text-accent-coral"
-                        }`}
+                        key={link.token}
+                        className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 transition hover:border-border/80"
                       >
-                        {isEditor ? (
-                          <IconEdit size={14} />
-                        ) : (
-                          <IconEye size={14} />
-                        )}
-                      </div>
-
-                      {/* Text content */}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-text-primary">
-                            {isDefault && link.id === "demo-1"
-                              ? "Editor Link"
-                              : isDefault && link.id === "demo-2"
-                                ? "Public Viewer"
-                                : `${link.role.charAt(0).toUpperCase() + link.role.slice(1)} Link`}
-                          </span>
-                          <span
-                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${badgeClass}`}
-                          >
-                            {badgeText}
-                          </span>
+                        {/* Icon circle */}
+                        <div
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                            isEditor
+                              ? "bg-primary/10 text-primary"
+                              : "bg-accent-coral/10 text-accent-coral"
+                          }`}
+                        >
+                          {isEditor ? (
+                            <IconEdit size={14} />
+                          ) : (
+                            <IconEye size={14} />
+                          )}
                         </div>
-                        <p className="mt-0.5 text-xs text-text-muted">
-                          {metaParts.join(" \u00B7 ")}
-                        </p>
-                      </div>
 
-                      {/* Action button */}
-                      {isDefault && link.id === "demo-1" ? (
+                        {/* Text content */}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-text-primary">
+                              {link.role.charAt(0).toUpperCase() + link.role.slice(1)} Link
+                            </span>
+                            <span
+                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${badgeClass}`}
+                            >
+                              {badgeText}
+                            </span>
+                          </div>
+                          <p className="mt-0.5 text-xs text-text-muted">
+                            {formatRelativeDate(link.createdAt)}
+                          </p>
+                        </div>
+
+                        {/* Action button */}
                         <button
-                          onClick={() => onDeleteLink?.(link.id)}
+                          onClick={() => handleDeleteLink(link.token)}
                           className="rounded-lg p-2 text-text-muted transition hover:bg-error/10 hover:text-error"
                           aria-label="Delete link"
                         >
                           <IconTrash size={15} />
                         </button>
-                      ) : isDefault && link.id === "demo-2" ? (
-                        <button
-                          onClick={() => onDeleteLink?.(link.id)}
-                          className={`${ui.btn} h-8 px-3 text-xs border border-border text-text-secondary hover:bg-error/10 hover:text-error hover:border-error/30 transition`}
-                        >
-                          Revoke
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => onDeleteLink?.(link.id)}
-                          className="rounded-lg p-2 text-text-muted transition hover:bg-error/10 hover:text-error"
-                          aria-label="Delete link"
-                        >
-                          <IconTrash size={15} />
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </section>
           </div>

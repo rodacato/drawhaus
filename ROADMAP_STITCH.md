@@ -31,7 +31,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 2. Dashboard — Enhanced Sidebar & Card Features
 
 **Designs:** `dashboard/`, `dashboard_light_mode/`
-**Status:** Markup complete — all design elements present (starred, recent, tags, grid/list toggle, card menu). Backend logic needed for starred/tags/duplicate.
+**Status:** Starred toggle, duplicate, recent, grid/list view, and share modal all wired to real API. Tags still need backend CRUD.
 
 ### Missing features
 
@@ -99,7 +99,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 4. Comments Panel — Enhanced Thread UI
 
 **Designs:** `comments_panel/`, `comments_panel_light_mode/`
-**Status:** Markup complete — tabs (Open/Resolved/All), threaded replies, like/resolve buttons, rich input toolbar all present. Backend needed for resolve workflow and nested replies.
+**Status:** Fully functional — tabs filter by resolved status, threaded replies work, resolve/unresolve works. Backend already had full support. Likes/reactions still need backend table.
 
 ### Missing features
 
@@ -138,7 +138,7 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 ## 5. Share / Collaboration Modal — Enhanced
 
 **Designs:** `share_collaboration_modal/`, `share_modal_light_mode/`
-**Status:** Markup complete (`ShareModal.tsx`) — role selector, expiration picker, link preview with copy, active links list with revoke. Backend needed for link management API.
+**Status:** Fully functional — create/list/delete share links wired to real API. Role selector, expiration (in days), copy link, revoke all working.
 
 ### Missing features
 
@@ -288,22 +288,24 @@ This document tracks features visible in the design mockups (`docs/designs/`) th
 | P0 | ~~Page redesigns (auth, settings, admin)~~ | **Done** | — |
 | P0 | ~~Landing page~~ | **Markup** | Static content only, no conditional deploy features |
 | P0 | ~~Social login buttons (Google/Apple)~~ | **Markup** | Backend: OAuth2 flow |
-| P0 | ~~Share modal (role selector, expiry, links)~~ | **Markup** | Backend: link management API |
-| P0 | ~~Comment tabs (Open/Resolved/All)~~ | **Markup** | Backend: `resolved` field on comments |
-| P0 | ~~Comment threaded replies~~ | **Markup** | Backend: `parent_id` on comments |
-| P0 | ~~Comment like/resolve buttons~~ | **Markup** | Backend: reactions + resolve API |
-| P0 | ~~Starred / Favorite diagrams~~ | **Markup** | Backend: `starred` field + API |
-| P0 | ~~Grid / List view toggle~~ | **Markup** | List view rendering (grid works) |
+| P0 | ~~Share modal (role selector, expiry, links)~~ | **Done** | Wired to real API: create, list, delete links |
+| P0 | ~~Comment tabs (Open/Resolved/All)~~ | **Done** | Backend already had `resolved` field + API |
+| P0 | ~~Comment threaded replies~~ | **Done** | Backend already had `comment_replies` table + API |
+| P0 | ~~Comment like/resolve buttons~~ | **Markup** | Resolve: done. Likes: needs `comment_reactions` table |
+| P0 | ~~Starred / Favorite diagrams~~ | **Done** | DB `starred` column + API + toggle in UI |
+| P0 | ~~Grid / List view toggle~~ | **Done** | Both views render, preference persisted in localStorage |
 | P0 | ~~Category tags on diagram cards~~ | **Markup** | Backend: tags CRUD + assignment |
 | P0 | ~~Admin invite user button~~ | **Markup** | Backend: invite API + email |
 | P0 | ~~Billing tab in settings~~ | **Markup** | Placeholder (self-hosted = free) |
 | P0 | ~~Guest join enhanced design~~ | **Done** | — |
-| P1 | Comment resolution workflow | Backend | `PATCH /api/comments/:id/resolve`, DB migration |
-| P1 | Nested comment replies | Backend | `parent_id` FK, API changes |
-| P1 | Share link expiration | Backend | `expires_at` on share_links, validation |
-| P1 | Share link revocation | Backend | `DELETE /api/share/:id` |
+| P0 | ~~Recent diagrams sidebar~~ | **Done** | Shows 10 most recently updated diagrams |
+| P0 | ~~Diagram duplicate action~~ | **Done** | `POST /api/diagrams/:id/duplicate` + UI wired |
+| P1 | ~~Comment resolution workflow~~ | **Done** | Already existed: `PATCH /api/comments/:id/resolve` |
+| P1 | ~~Nested comment replies~~ | **Done** | Already existed: `comment_replies` table + API |
+| P1 | ~~Share link expiration~~ | **Done** | Already existed: `expires_at` on share_links |
+| P1 | ~~Share link revocation~~ | **Done** | Already existed: `DELETE /api/share/link/:token` |
 | P2 | Forgot password flow | Backend | Reset token table, SMTP, new routes |
-| P2 | Diagram duplicate action | Backend | `POST /api/diagrams/:id/duplicate` |
+| P2 | ~~Diagram duplicate action~~ | **Done** | `POST /api/diagrams/:id/duplicate` |
 | P2 | Board collapsible sidebar | Frontend | New component in Board page |
 | P2 | Account deletion | Backend | `DELETE /api/auth/account`, cascade |
 | P3 | Social OAuth (Google, Apple) | Backend | passport.js integration |
