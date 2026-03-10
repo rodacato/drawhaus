@@ -34,12 +34,86 @@ function findElement(elements: readonly unknown[], elementId: string): Excalidra
 
 function elementLabel(el: ExcalidrawElement): string {
   const type = (el.type as string) ?? "element";
-  // If it's text, show a preview
   if (type === "text" && "text" in el && typeof el.text === "string") {
     const preview = el.text.slice(0, 30);
     return preview.length < el.text.length ? `"${preview}..."` : `"${preview}"`;
   }
   return type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+function shortId(id: string): string {
+  return id.slice(0, 4).toUpperCase();
+}
+
+/* Feather-style inline SVG icons at 16px */
+function IconFilter() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+  );
+}
+
+function IconThumbUp() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
+      <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+    </svg>
+  );
+}
+
+function IconReply() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 17 4 12 9 7" />
+      <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+    </svg>
+  );
+}
+
+function IconCheck() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function IconPointer() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+    </svg>
+  );
+}
+
+function IconAtSign() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
+    </svg>
+  );
+}
+
+function IconSmile() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+      <line x1="9" y1="9" x2="9.01" y2="9" />
+      <line x1="15" y1="9" x2="15.01" y2="9" />
+    </svg>
+  );
+}
+
+function IconPaperclip() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+    </svg>
+  );
 }
 
 export function CommentsPanel({
@@ -92,15 +166,27 @@ export function CommentsPanel({
     }
   }
 
+  const tabItems: { key: Filter; label: string }[] = [
+    { key: "open", label: "Open" },
+    { key: "resolved", label: "Resolved" },
+    { key: "all", label: "All" },
+  ];
+
   return (
-    <div className="pointer-events-auto flex h-full w-80 flex-col border-l border-gray-200 bg-white shadow-lg">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-        <h2 className="text-sm font-semibold text-gray-900">Comments</h2>
+    <div className="pointer-events-auto flex h-full w-80 flex-col border-l border-border bg-surface shadow-lg">
+      {/* Header with filter button */}
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <h2 className="text-sm font-semibold text-text-primary">Comments</h2>
         <div className="flex items-center gap-1.5">
           <button
+            className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary"
+            title="Filter comments"
+          >
+            <IconFilter />
+          </button>
+          <button
             onClick={onToggleIndicators}
-            className={`rounded p-1 transition ${showIndicators ? "text-blue-600 hover:bg-blue-50" : "text-gray-300 hover:bg-gray-100 hover:text-gray-500"}`}
+            className={`rounded p-1 transition ${showIndicators ? "text-primary hover:bg-primary/10" : "text-text-muted hover:bg-surface-raised hover:text-text-secondary"}`}
             title={showIndicators ? "Hide indicators on canvas" : "Show indicators on canvas"}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -117,54 +203,81 @@ export function CommentsPanel({
               )}
             </svg>
           </button>
-          <button onClick={onClose} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600" title="Close">
+          <button onClick={onClose} className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary" title="Close">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-1 border-b border-gray-100 px-4 py-2">
-        {(["open", "resolved", "all"] as Filter[]).map((f) => (
+      {/* Comment Tabs */}
+      <div className="flex border-b border-border">
+        {tabItems.map((tab) => (
           <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition ${
-              filter === f ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"
+            key={tab.key}
+            onClick={() => setFilter(tab.key)}
+            className={`flex-1 border-b-2 px-3 py-2 text-xs font-medium transition ${
+              filter === tab.key
+                ? "border-primary text-primary"
+                : "border-transparent text-text-muted hover:text-text-secondary"
             }`}
           >
-            {f}
+            {tab.label}
           </button>
         ))}
       </div>
 
-      {/* New comment form */}
-      <form onSubmit={handleCreate} className="border-b border-gray-100 px-4 py-3">
-        <p className="mb-2 text-xs text-gray-500">
+      {/* Enhanced comment input */}
+      <form onSubmit={handleCreate} className="border-b border-border px-4 py-3">
+        <p className="mb-2 text-xs text-text-muted">
           {selectedElementId
             ? (() => { const sel = findElement(elements, selectedElementId); return sel ? `Comment on: ${elementLabel(sel)}` : "Comment on selected element"; })()
             : "General comment"}
         </p>
-          <textarea
-            className="w-full resize-none rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
-            rows={2}
-            placeholder="Add a comment..."
-            value={newBody}
-            onChange={(e) => setNewBody(e.target.value)}
-          />
-        <button
-          type="submit"
-          disabled={pending || !newBody.trim()}
-          className="mt-2 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          Comment
-        </button>
+        <textarea
+          className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none placeholder:text-text-muted focus:border-primary focus:ring-1 focus:ring-primary"
+          rows={2}
+          placeholder="Add a comment..."
+          value={newBody}
+          onChange={(e) => setNewBody(e.target.value)}
+        />
+        <div className="mt-2 flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary"
+              title="Mention someone"
+            >
+              <IconAtSign />
+            </button>
+            <button
+              type="button"
+              className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary"
+              title="Add emoji"
+            >
+              <IconSmile />
+            </button>
+            <button
+              type="button"
+              className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary"
+              title="Attach file"
+            >
+              <IconPaperclip />
+            </button>
+          </div>
+          <button
+            type="submit"
+            disabled={pending || !newBody.trim()}
+            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+          >
+            Post
+          </button>
+        </div>
       </form>
 
       {/* Thread list */}
       <div className="flex-1 overflow-y-auto">
         {filtered.length === 0 && (
-          <div className="px-4 py-8 text-center text-xs text-gray-400">
+          <div className="px-4 py-8 text-center text-xs text-text-muted">
             {filter === "open" ? "No open comments" : filter === "resolved" ? "No resolved comments" : "No comments yet"}
           </div>
         )}
@@ -173,71 +286,108 @@ export function CommentsPanel({
           const el = isGeneral ? undefined : findElement(elements, thread.elementId);
           const exists = isGeneral || !!el;
           return (
-            <div key={thread.id} className={`border-b border-gray-100 px-4 py-3 ${thread.resolved ? "opacity-60" : ""}`}>
-              {/* Thread header */}
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1">
+            <div key={thread.id} className={`border-b border-border px-4 py-3 ${thread.resolved ? "opacity-60" : ""}`}>
+              {/* Enhanced comment card */}
+              <div className="flex items-start gap-2.5">
+                {/* Avatar circle */}
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  {thread.authorName.charAt(0).toUpperCase()}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  {/* Author + timestamp */}
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-gray-900">{thread.authorName}</span>
-                    <span className="text-[10px] text-gray-400">{timeAgo(thread.createdAt)}</span>
-                    {isGeneral ? (
-                      <span className="text-[10px] text-gray-400">General</span>
-                    ) : el ? (
-                      <span className="text-[10px] text-gray-400">{elementLabel(el)}</span>
-                    ) : null}
+                    <span className="text-xs font-semibold text-text-primary">{thread.authorName}</span>
+                    <span className="text-[10px] text-text-muted">{timeAgo(thread.createdAt)}</span>
                   </div>
-                  <p className="mt-1 text-sm text-gray-700">{thread.body}</p>
+
+                  {/* Element badge */}
+                  {!isGeneral && el && (
+                    <button
+                      onClick={() => onHighlightElement(thread.elementId)}
+                      className="mt-1 inline-flex items-center gap-1 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:text-primary"
+                      title="Focus element"
+                    >
+                      <IconPointer />
+                      ON ELEMENT #{shortId(thread.elementId)}
+                    </button>
+                  )}
+                  {isGeneral && (
+                    <span className="mt-1 inline-block text-[10px] text-text-muted">General</span>
+                  )}
+
+                  {/* Comment text */}
+                  <p className="mt-1 text-sm text-text-secondary">{thread.body}</p>
+
                   {!exists && (
                     <p className="mt-1 text-[10px] italic text-amber-500">Element removed</p>
                   )}
-                </div>
-                <div className="flex gap-1">
-                  {!isGeneral && exists && (
+
+                  {/* Action buttons row */}
+                  <div className="mt-2 flex items-center gap-1">
                     <button
-                      onClick={() => onHighlightElement(thread.elementId)}
-                      className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                      title="Focus element"
+                      type="button"
+                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-text-muted hover:bg-surface-raised hover:text-text-secondary"
+                      title="Like"
                     >
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="3" stroke="currentColor" strokeWidth="1.5"/><path d="M7 1v2M7 11v2M1 7h2M11 7h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      <IconThumbUp />
+                      <span>0</span>
                     </button>
-                  )}
-                  <button
-                    onClick={() => onResolve(thread.id, !thread.resolved)}
-                    className={`rounded p-1 hover:bg-gray-100 ${thread.resolved ? "text-green-500" : "text-gray-400 hover:text-green-500"}`}
-                    title={thread.resolved ? "Unresolve" : "Resolve"}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.5 7l2.5 2.5L10.5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  </button>
-                  <button
-                    onClick={() => onDelete(thread.id)}
-                    className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-500"
-                    title="Delete"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 4l6 6M10 4l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setReplyingTo(thread.id)}
+                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-text-muted hover:bg-surface-raised hover:text-text-secondary"
+                      title="Reply"
+                    >
+                      <IconReply />
+                      <span>Reply</span>
+                    </button>
+                    <div className="flex-1" />
+                    <button
+                      onClick={() => onResolve(thread.id, !thread.resolved)}
+                      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] hover:bg-surface-raised ${thread.resolved ? "text-green-500" : "text-text-muted hover:text-green-500"}`}
+                      title={thread.resolved ? "Unresolve" : "Resolve"}
+                    >
+                      <IconCheck />
+                      <span>{thread.resolved ? "Resolved" : "Resolve"}</span>
+                    </button>
+                    <button
+                      onClick={() => onDelete(thread.id)}
+                      className="rounded p-0.5 text-text-muted hover:bg-surface-raised hover:text-red-500"
+                      title="Delete"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 4l6 6M10 4l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Replies */}
+              {/* Nested replies */}
               {thread.replies.length > 0 && (
-                <div className="mt-2 space-y-2 border-l-2 border-gray-100 pl-3">
+                <div className="mt-3 space-y-3 border-l-2 border-border pl-4">
                   {thread.replies.map((reply) => (
-                    <div key={reply.id}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-900">{reply.authorName}</span>
-                        <span className="text-[10px] text-gray-400">{timeAgo(reply.createdAt)}</span>
+                    <div key={reply.id} className="flex items-start gap-2">
+                      {/* Reply avatar */}
+                      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                        {reply.authorName.charAt(0).toUpperCase()}
                       </div>
-                      <p className="text-sm text-gray-700">{reply.body}</p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-text-primary">{reply.authorName}</span>
+                          <span className="text-[10px] text-text-muted">{timeAgo(reply.createdAt)}</span>
+                        </div>
+                        <p className="mt-0.5 text-sm text-text-secondary">{reply.body}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
 
               {/* Reply form */}
-              {replyingTo === thread.id ? (
-                <form onSubmit={(e) => handleReply(e, thread.id)} className="mt-2">
+              {replyingTo === thread.id && (
+                <form onSubmit={(e) => handleReply(e, thread.id)} className="mt-3 border-l-2 border-border pl-4">
                   <textarea
-                    className="w-full resize-none rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-900 outline-none focus:border-blue-400"
+                    className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-text-primary outline-none placeholder:text-text-muted focus:border-primary"
                     rows={2}
                     placeholder="Reply..."
                     value={replyBody}
@@ -248,26 +398,19 @@ export function CommentsPanel({
                     <button
                       type="submit"
                       disabled={pending || !replyBody.trim()}
-                      className="rounded bg-blue-600 px-2 py-1 text-[10px] font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                      className="rounded bg-primary px-2.5 py-1 text-[10px] font-medium text-white hover:bg-primary/90 disabled:opacity-50"
                     >
                       Reply
                     </button>
                     <button
                       type="button"
                       onClick={() => { setReplyingTo(null); setReplyBody(""); }}
-                      className="rounded px-2 py-1 text-[10px] text-gray-500 hover:bg-gray-100"
+                      className="rounded px-2 py-1 text-[10px] text-text-muted hover:bg-surface-raised"
                     >
                       Cancel
                     </button>
                   </div>
                 </form>
-              ) : (
-                <button
-                  onClick={() => setReplyingTo(thread.id)}
-                  className="mt-2 text-xs text-blue-600 hover:text-blue-700"
-                >
-                  Reply
-                </button>
               )}
             </div>
           );

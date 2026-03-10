@@ -72,38 +72,64 @@ function ShareViewInner({ shareToken, data }: { shareToken: string; data: ShareD
         <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-accent-coral/10 blur-3xl" />
 
-        <div className="relative w-full max-w-md space-y-0 overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-sm">
+        <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-2xl">
           {/* Session preview header */}
-          <div className="relative h-40 bg-gradient-to-br from-primary/20 via-surface-dark to-accent-coral/20">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="rounded-full bg-surface-raised/80 px-3 py-1 text-xs font-medium text-text-secondary backdrop-blur">
+          <div className="p-1">
+            <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-gradient-to-br from-primary/20 via-surface-dark to-accent-coral/20">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-3/4 w-3/4 rounded-lg border-2 border-dashed border-border/50 flex items-center justify-center">
+                  <svg className="text-text-muted/30" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></svg>
+                </div>
+              </div>
+              {/* Live session badge */}
+              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                 Live Session
               </div>
             </div>
           </div>
 
-          <div className="space-y-4 p-6">
-            <div className="space-y-1">
-              <h1 className={ui.h1}>{data.title || "Shared Diagram"}</h1>
-              <p className={ui.subtitle}>{canEdit ? "Enter your name to join and collaborate." : "Enter your name to view this diagram."}</p>
+          <div className="space-y-5 px-8 pb-8 pt-4">
+            <div className="space-y-1 text-center">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary">Drawhaus Workspace</p>
+              <h1 className="text-2xl font-bold tracking-tight text-text-primary">{data.title || "Shared Diagram"}</h1>
+              <p className="text-sm text-text-muted">{canEdit ? "You've been invited to collaborate." : "You've been invited to view this diagram."}</p>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); handleJoin(); }} className="space-y-3">
+            <form onSubmit={(e) => { e.preventDefault(); handleJoin(); }} className="space-y-4">
               <label className={ui.label}>
-                Your name
+                Your Name
                 <div className="relative">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                  <input className={`${ui.input} pl-10`} type="text" placeholder="Guest" value={guestName} onChange={(e) => setGuestName(e.target.value)} maxLength={50} autoFocus />
+                  <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                  <input className={`${ui.input} h-12 pl-11 text-base`} type="text" placeholder="Enter your name to join" value={guestName} onChange={(e) => setGuestName(e.target.value)} maxLength={50} autoFocus />
                 </div>
               </label>
-              <button type="submit" className={`${ui.btn} ${ui.btnPrimary} w-full gap-2`}>
+              <button type="submit" className={`${ui.btn} ${ui.btnPrimary} h-12 w-full gap-2 text-base shadow-lg shadow-primary/20`}>
                 {canEdit ? "Join Session" : "View Diagram"}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
               </button>
             </form>
-            <div className="flex items-center justify-between">
-              <p className={ui.muted}>Viewing as <span className="font-medium capitalize">{data.role}</span></p>
-              <img src="/logo-icon.svg" alt="Drawhaus" className="h-5 w-5 opacity-50" />
+            <div className="flex flex-col items-center gap-3 pt-1">
+              <div className="flex items-center gap-2 rounded-full bg-surface px-3 py-1.5 ring-1 ring-inset ring-border">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                <span className="text-xs font-medium uppercase tracking-tight text-text-muted">Viewing as {data.role}</span>
+              </div>
+              <p className="text-center text-[11px] text-text-muted/60 px-4 leading-relaxed">
+                By joining, you agree to the workspace terms and real-time collaboration protocols.
+              </p>
             </div>
+          </div>
+        </div>
+
+        {/* Branding footer */}
+        <div className="mt-10 flex flex-col items-center gap-3 opacity-60">
+          <div className="flex items-center gap-2">
+            <img src="/logo-icon.svg" alt="" className="h-6 w-6" />
+            <span className="text-lg font-bold tracking-tight text-text-primary font-[family-name:var(--font-family-heading)]">Drawhaus</span>
+          </div>
+          <div className="flex gap-6 text-sm text-text-muted">
+            <a href="#" className="hover:text-primary transition-colors">Help Center</a>
+            <a href="#" className="hover:text-primary transition-colors">Terms</a>
+            <a href="#" className="hover:text-primary transition-colors">Privacy</a>
           </div>
         </div>
       </div>
