@@ -1,10 +1,10 @@
 import { api } from "./client";
 
 export const commentsApi = {
-  list: (diagramId: string) =>
-    api.get(`/api/diagrams/${diagramId}/comments`).then((r) => r.data),
+  list: (diagramId: string, sceneId?: string | null) =>
+    api.get(`/api/diagrams/${diagramId}/comments`, { params: sceneId ? { sceneId } : undefined }).then((r) => r.data),
 
-  create: (diagramId: string, data: { elementId: string; body: string }) =>
+  create: (diagramId: string, data: { elementId: string; body: string; sceneId?: string | null }) =>
     api.post(`/api/diagrams/${diagramId}/comments`, data).then((r) => r.data),
 
   reply: (diagramId: string, threadId: string, data: { body: string }) =>

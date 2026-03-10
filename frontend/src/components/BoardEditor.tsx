@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
 import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
@@ -31,6 +31,7 @@ export default function BoardEditor({
 }: BoardEditorProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [commentsPanelOpen, setCommentsPanelOpen] = useState(false);
+  const [showCommentIndicators, setShowCommentIndicators] = useState(true);
   const [diagramTitle, setDiagramTitle] = useState(initialTitle);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
@@ -43,30 +44,46 @@ export default function BoardEditor({
     initialAppState,
   });
 
-  const comments = useComments({ diagramId, socketRef: collab.socketRef });
+  const comments = useComments({ diagramId, sceneId: collab.activeSceneId, socketRef: collab.socketRef });
 
   const canEdit = collab.userRole === "owner" || collab.userRole === "editor";
 
+  const commentsPanelRef = useRef(commentsPanelOpen);
+  commentsPanelRef.current = commentsPanelOpen;
+
   // Track selected element and current elements reactively via onChange
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
-  const [currentElements, setCurrentElements] = useState<unknown[]>(initialElements);
+  const selectedElementIdRef = useRef<string | null>(null);
+  const currentElementsRef = useRef<readonly unknown[]>(initialElements);
+  const [currentElementsVersion, setCurrentElementsVersion] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _elemVer = currentElementsVersion; // subscribe to version bumps
+  const currentElements = currentElementsRef.current;
 
   // Wrap collab.onChange to also track selection/elements for comments
-  const originalOnChange = collab.onChange;
+  const onChangeRef = useRef(collab.onChange);
+  onChangeRef.current = collab.onChange;
   const handleChange = useCallback(
     (elements: readonly unknown[], appState: Record<string, unknown>) => {
-      originalOnChange(elements, appState);
-      // Update selected element
+      onChangeRef.current(elements, appState);
+      // Update selected element — only setState if it actually changed
       const selected = appState.selectedElementIds as Record<string, boolean> | undefined;
+      let newId: string | null = null;
       if (selected) {
         const ids = Object.keys(selected).filter((k) => selected[k]);
-        setSelectedElementId(ids.length === 1 ? ids[0] : null);
-      } else {
-        setSelectedElementId(null);
+        newId = ids.length === 1 ? ids[0] : null;
       }
-      setCurrentElements([...elements]);
+      if (newId !== selectedElementIdRef.current) {
+        selectedElementIdRef.current = newId;
+        setSelectedElementId(newId);
+      }
+      currentElementsRef.current = elements;
+      // Bump version only when comments panel is open
+      if (commentsPanelRef.current) {
+        setCurrentElementsVersion((v) => v + 1);
+      }
     },
-    [originalOnChange],
+    [],
   );
 
   useEffect(() => {
@@ -234,11 +251,13 @@ export default function BoardEditor({
       )}
 
       <CursorOverlay cursors={collab.cursors} />
-      <CommentIndicators
-        elementsWithComments={comments.elementsWithComments}
-        excalidrawApiRef={collab.excalidrawApiRef}
-        onClickIndicator={handleClickIndicator}
-      />
+      {showCommentIndicators && (
+        <CommentIndicators
+          elementsWithComments={comments.elementsWithComments}
+          excalidrawApiRef={collab.excalidrawApiRef}
+          onClickIndicator={handleClickIndicator}
+        />
+      )}
 
       {/* Scene loading overlay */}
       {collab.switchingScene && (
@@ -263,6 +282,8 @@ export default function BoardEditor({
             threads={comments.threads}
             elements={currentElements}
             selectedElementId={selectedElementId}
+            showIndicators={showCommentIndicators}
+            onToggleIndicators={() => setShowCommentIndicators((v) => !v)}
             onCreateThread={comments.createThread}
             onReply={comments.addReply}
             onResolve={comments.resolveThread}

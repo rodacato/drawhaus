@@ -11,6 +11,7 @@ import type { CommentThread, CommentReply } from "../../../domain/entities/comme
 const createSchema = z.object({
   elementId: z.string().min(1).max(200),
   body: z.string().trim().min(1).max(5000),
+  sceneId: z.string().uuid().optional(),
 });
 
 const replySchema = z.object({
@@ -36,6 +37,7 @@ function formatThread(t: CommentThread) {
   return {
     id: t.id,
     diagramId: t.diagramId,
+    sceneId: t.sceneId,
     elementId: t.elementId,
     authorId: t.authorId,
     authorName: t.authorName,
@@ -62,9 +64,10 @@ export function createCommentRoutes(
   const router = Router({ mergeParams: true });
   router.use(requireAuth);
 
-  // GET /api/diagrams/:diagramId/comments
+  // GET /api/diagrams/:diagramId/comments?sceneId=xxx
   router.get("/", asyncRoute(async (req, res) => {
-    const threads = await useCases.list.execute(String(req.params.diagramId), req.authUser.id);
+    const sceneId = typeof req.query.sceneId === "string" ? req.query.sceneId : undefined;
+    const threads = await useCases.list.execute(String(req.params.diagramId), req.authUser.id, sceneId);
     return res.json({ threads: threads.map(formatThread) });
   }));
 
@@ -77,6 +80,7 @@ export function createCommentRoutes(
       req.authUser.id,
       parsed.data.elementId,
       parsed.data.body,
+      parsed.data.sceneId,
     );
     return res.status(201).json({ thread: formatThread(thread) });
   }));
