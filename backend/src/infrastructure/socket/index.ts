@@ -1,5 +1,6 @@
 import type { Server as HttpServer } from "http";
 import { Server } from "socket.io";
+import msgpackParser from "socket.io-msgpack-parser";
 import type { JoinRoomUseCase } from "../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../application/use-cases/realtime/join-room-guest";
 import type { SaveSceneUseCase } from "../../application/use-cases/realtime/save-scene";
@@ -26,6 +27,7 @@ export function setupSocketServer(
   },
 ): Server {
   const io = new Server(httpServer, {
+    parser: msgpackParser,
     cors: {
       origin: config.frontendUrl,
       credentials: true,
