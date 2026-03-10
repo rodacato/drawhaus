@@ -1,7 +1,7 @@
 export const ui = {
   // Layout
-  page: "min-h-screen px-4 py-8 sm:px-6 lg:px-8",
-  center: "mx-auto w-full max-w-5xl",
+  page: "flex-1 px-4 py-8 sm:px-6 lg:px-8",
+  center: "mx-auto w-full max-w-[1600px]",
   centerNarrow: "mx-auto w-full max-w-lg",
 
   // Cards / Panels
