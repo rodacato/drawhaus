@@ -63,12 +63,12 @@ wordmark. Do not place other elements within this boundary.
 
 | Role | Hex | Preview |
 |------|-----|---------|
-| Primary Blue | `#2563EB` | ![#2563EB](https://placehold.co/24x24/2563EB/2563EB) |
+| Accent Coral | `#E95B2D` | ![#E95B2D](https://placehold.co/24x24/E95B2D/E95B2D) |
 | Accent Yellow | `#FBBF24` | ![#FBBF24](https://placehold.co/24x24/FBBF24/FBBF24) |
-| Accent Teal | `#14B8A6` | ![#14B8A6](https://placehold.co/24x24/14B8A6/14B8A6) |
+| Primary Blue | `#0EA5E9` | ![#0EA5E9](https://placehold.co/24x24/0EA5E9/0EA5E9) |
 | Accent Orange | `#F97316` | ![#F97316](https://placehold.co/24x24/F97316/F97316) |
 | Dark Base | `#111827` | ![#111827](https://placehold.co/24x24/111827/111827) |
-| Light Base | `#F8F6F3` | ![#F8F6F3](https://placehold.co/24x24/F8F6F3/F8F6F3) |
+| Light Base | `#F8FAF3` | ![#F8FAF3](https://placehold.co/24x24/F8FAF3/F8FAF3) |
 
 ### Semantic States
 
@@ -77,13 +77,13 @@ wordmark. Do not place other elements within this boundary.
 | Success | `#10B981` | Confirmations, saved states |
 | Warning | `#F59E0B` | Caution, pending actions |
 | Error | `#EF4444` | Errors, destructive actions |
-| Info | `#3B82F6` | Tips, informational messages |
+| Info | `#3B87F6` | Tips, informational messages |
 
 ### Usage Rules
 
-- **Primary Blue** is the main interactive color — buttons, links, active states
+- **Accent Coral** is the primary brand accent — logo, hero elements, CTAs
 - **Accent Yellow** is for highlights and callouts — use sparingly
-- **Accent Teal** is for secondary actions and success-adjacent UI
+- **Primary Blue** is the main interactive color — buttons, links, active states
 - **Accent Orange** is for badges, tags, and attention-grabbing elements
 - **Dark Base** is the default background in dark mode
 - **Light Base** is the default background in light mode (warm off-white, not pure white)
@@ -156,6 +156,12 @@ that stay out of the way.
 | "Enterprise-grade collaboration" | "Real-time collab, self-hosted" |
 | "Leverage our powerful platform" | "Draw diagrams. Own your data." |
 
+### Brand Descriptor
+
+> **Diagrams & Whiteboards. Self-Hosted.**
+
+Used as a subtitle beneath the logo in marketing materials, hero sections, and social banners.
+
 ### Tagline
 
 > **"Your whiteboard, on your server."**
@@ -173,18 +179,18 @@ Alternatives:
 ```css
 :root {
   /* Core */
-  --color-primary: #2563EB;
+  --color-accent-coral: #E95B2D;
   --color-accent-yellow: #FBBF24;
-  --color-accent-teal: #14B8A6;
+  --color-primary: #0EA5E9;
   --color-accent-orange: #F97316;
   --color-bg-dark: #111827;
-  --color-bg-light: #F8F6F3;
+  --color-bg-light: #F8FAF3;
 
   /* States */
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
-  --color-info: #3B82F6;
+  --color-info: #3B87F6;
 
   /* Typography */
   --font-heading: 'Sora', system-ui, sans-serif;
@@ -197,20 +203,20 @@ Alternatives:
 
 ```js
 colors: {
-  primary: '#2563EB',
+  primary: '#0EA5E9',
   accent: {
+    coral: '#E95B2D',
     yellow: '#FBBF24',
-    teal: '#14B8A6',
     orange: '#F97316',
   },
   base: {
     dark: '#111827',
-    light: '#F8F6F3',
+    light: '#F8FAF3',
   },
   success: '#10B981',
   warning: '#F59E0B',
   error: '#EF4444',
-  info: '#3B82F6',
+  info: '#3B87F6',
 },
 fontFamily: {
   heading: ['Sora', 'system-ui', 'sans-serif'],
