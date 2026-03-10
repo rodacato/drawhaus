@@ -8,6 +8,9 @@ import { LogoutUseCase } from "../../application/use-cases/auth/logout";
 import { GetCurrentUserUseCase } from "../../application/use-cases/auth/get-current-user";
 import { UpdateProfileUseCase } from "../../application/use-cases/auth/update-profile";
 import { ChangePasswordUseCase } from "../../application/use-cases/auth/change-password";
+import { AcceptInviteUseCase } from "../../application/use-cases/auth/accept-invite";
+import { ForgotPasswordUseCase } from "../../application/use-cases/auth/forgot-password";
+import { ResetPasswordUseCase } from "../../application/use-cases/auth/reset-password";
 import { CreateDiagramUseCase } from "../../application/use-cases/diagrams/create-diagram";
 import { GetDiagramUseCase } from "../../application/use-cases/diagrams/get-diagram";
 import { ListDiagramsUseCase } from "../../application/use-cases/diagrams/list-diagrams";
@@ -26,6 +29,9 @@ import { InMemorySessionRepository } from "../fakes/in-memory-session-repository
 import { InMemoryDiagramRepository } from "../fakes/in-memory-diagram-repository";
 import { InMemoryFolderRepository } from "../fakes/in-memory-folder-repository";
 import { FakeHasher } from "../fakes/fake-hasher";
+import { InMemoryInvitationRepository } from "../fakes/in-memory-invitation-repository";
+import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-reset-repository";
+import { NoopEmailService } from "../fakes/noop-email-service";
 
 let diagrams: InMemoryDiagramRepository;
 
@@ -40,6 +46,9 @@ function createApp() {
 
   const app = express();
   app.use(express.json());
+  const invitations = new InMemoryInvitationRepository();
+  const passwordResets = new InMemoryPasswordResetRepository();
+  const emailService = new NoopEmailService();
   app.use("/api/auth", createAuthRoutes({
     register: new RegisterUseCase(users, sessions, hasher),
     login: new LoginUseCase(users, sessions, hasher),
@@ -47,6 +56,9 @@ function createApp() {
     getCurrentUser,
     updateProfile: new UpdateProfileUseCase(users),
     changePassword: new ChangePasswordUseCase(users, hasher),
+    acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
+    forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
+    resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
   }, requireAuth));
   const folders = new InMemoryFolderRepository();
   app.use("/api/diagrams", createDiagramRoutes({

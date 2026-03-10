@@ -24,4 +24,6 @@ export const config = {
   cookieName: "drawhaus_session",
   cookieDomain: process.env.COOKIE_DOMAIN as string | undefined,
   honeybadgerApiKey: process.env.HONEYBADGER_API_KEY as string | undefined,
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  fromEmail: process.env.FROM_EMAIL ?? "noreply@drawhaus.app",
 } as const;

@@ -41,6 +41,8 @@ env:
     - FRONTEND_URL
     - COOKIE_DOMAIN
     - HONEYBADGER_API_KEY
+    - RESEND_API_KEY
+    - FROM_EMAIL
 
 volumes:
   - drawhaus-uploads:/data/files
