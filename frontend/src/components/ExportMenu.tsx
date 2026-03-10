@@ -100,12 +100,20 @@ export function ExportMenu({ excalidrawApiRef }: ExportMenuProps) {
   }, [getSceneData]);
 
   return (
-    <div ref={menuRef} className="relative">
+    <div ref={menuRef} className="relative flex h-full">
       <button
         onClick={() => setOpen(!open)}
-        className="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-[#1b1b1f] shadow-sm hover:bg-gray-50 transition-colors"
+        className="flex items-center rounded-lg bg-white px-3 text-sm font-medium text-[#1b1b1f] shadow-sm hover:bg-gray-50 transition-colors"
+        title="Export"
       >
-        {status ?? "Export"}
+        {status ? (
+          <span className="text-xs">{status}</span>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v7M4 6l3-4 3 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 10v1a1 1 0 001 1h8a1 1 0 001-1v-1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
       </button>
 
       {open && (

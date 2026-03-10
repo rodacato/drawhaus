@@ -13,7 +13,7 @@ export function BoardToolbarTrigger({
   return (
     <button
       onClick={onToggle}
-      className={`pointer-events-auto flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm transition ${
+      className={`pointer-events-auto flex items-center gap-1.5 rounded-lg px-3 text-xs font-medium shadow-sm transition ${
         open
           ? "bg-indigo-600 text-white"
           : "bg-white/90 text-[#1b1b1f] hover:bg-indigo-50"
