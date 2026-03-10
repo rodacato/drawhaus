@@ -16,3 +16,27 @@ export type ExcalidrawElement = {
   version: number;
   [key: string]: unknown;
 };
+
+export type CommentThread = {
+  id: string;
+  diagramId: string;
+  elementId: string;
+  authorId: string;
+  authorName: string;
+  body: string;
+  resolved: boolean;
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  replies: CommentReply[];
+};
+
+export type CommentReply = {
+  id: string;
+  threadId: string;
+  authorId: string;
+  authorName: string;
+  body: string;
+  createdAt: string;
+};
