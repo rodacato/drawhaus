@@ -90,6 +90,32 @@ export async function initSchema(): Promise<void> {
     -- Seed default row if missing
     INSERT INTO site_settings (id) VALUES (true) ON CONFLICT DO NOTHING;
 
+    CREATE TABLE IF NOT EXISTS comment_threads (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      diagram_id UUID NOT NULL REFERENCES diagrams(id) ON DELETE CASCADE,
+      element_id TEXT NOT NULL,
+      author_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      body TEXT NOT NULL,
+      resolved BOOLEAN NOT NULL DEFAULT false,
+      resolved_by UUID REFERENCES users(id) ON DELETE SET NULL,
+      resolved_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS comment_threads_diagram_id_idx ON comment_threads (diagram_id);
+    CREATE INDEX IF NOT EXISTS comment_threads_element_id_idx ON comment_threads (diagram_id, element_id);
+
+    CREATE TABLE IF NOT EXISTS comment_replies (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      thread_id UUID NOT NULL REFERENCES comment_threads(id) ON DELETE CASCADE,
+      author_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      body TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS comment_replies_thread_id_idx ON comment_replies (thread_id);
+
     CREATE INDEX IF NOT EXISTS share_links_diagram_id_idx ON share_links (diagram_id);
     CREATE INDEX IF NOT EXISTS diagrams_owner_id_idx ON diagrams (owner_id);
     CREATE INDEX IF NOT EXISTS diagrams_folder_id_idx ON diagrams (folder_id);
