@@ -1,17 +1,12 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { ProtectedLayout } from "@/layouts/ProtectedLayout";
-import { AdminLayout } from "@/layouts/AdminLayout";
 import { AppShell } from "@/layouts/AppShell";
 import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
 import { Dashboard } from "@/pages/Dashboard";
 import { Board } from "@/pages/Board";
 import { Settings } from "@/pages/Settings";
-import { AdminDashboard } from "@/pages/AdminDashboard";
-import { AdminUsers } from "@/pages/AdminUsers";
-import { AdminSettings } from "@/pages/AdminSettings";
-import { AdminStyleGuide } from "@/pages/AdminStyleGuide";
 import { Setup } from "@/pages/Setup";
 import { Share } from "@/pages/Share";
 import { Embed } from "@/pages/Embed";
@@ -36,16 +31,16 @@ export function AppRouter() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route element={<AppShell />}>
           <Route path="/settings" element={<Settings />} />
-          <Route element={<AdminLayout />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/style-guide" element={<AdminStyleGuide />} />
-          </Route>
         </Route>
         {/* Board is full-screen, no AppShell */}
         <Route path="/board/:id" element={<Board />} />
       </Route>
+
+      {/* Redirect old admin routes to settings tabs */}
+      <Route path="/admin" element={<Navigate to="/settings?tab=admin-overview" replace />} />
+      <Route path="/admin/users" element={<Navigate to="/settings?tab=admin-users" replace />} />
+      <Route path="/admin/settings" element={<Navigate to="/settings?tab=admin-site" replace />} />
+      <Route path="/admin/style-guide" element={<Navigate to="/settings?tab=admin-style" replace />} />
 
       {/* Public routes */}
       <Route path="/setup" element={<Setup />} />

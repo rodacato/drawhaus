@@ -1,17 +1,23 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { authApi } from "@/api/auth";
 import { ui } from "@/lib/ui";
+import { AdminUsers } from "@/pages/AdminUsers";
+import { AdminSettings as AdminSiteSettings } from "@/pages/AdminSettings";
+import { AdminStyleGuide } from "@/pages/AdminStyleGuide";
+import { AdminOverview } from "@/pages/AdminDashboard";
 
-type Tab = "profile" | "security" | "billing" | "preferences";
+type Tab = "profile" | "security" | "billing" | "preferences" | "admin-overview" | "admin-users" | "admin-site" | "admin-style";
 
 export function Settings() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = (searchParams.get("tab") as Tab) || "profile";
   const { user, refreshUser, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
@@ -23,6 +29,11 @@ export function Settings() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordStatus, setPasswordStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [passwordPending, setPasswordPending] = useState(false);
+
+  function switchTab(tab: Tab) {
+    setActiveTab(tab);
+    setSearchParams(tab === "profile" ? {} : { tab });
+  }
 
   async function handleProfileSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,7 +74,9 @@ export function Settings() {
     }
   }
 
-  const tabs: { id: Tab; label: string; icon: JSX.Element }[] = [
+  const isAdmin = user?.role === "admin";
+
+  const userTabs: { id: Tab; label: string; icon: JSX.Element }[] = [
     {
       id: "profile",
       label: "Profile",
@@ -86,6 +99,46 @@ export function Settings() {
     },
   ];
 
+  const adminTabs: { id: Tab; label: string; icon: JSX.Element }[] = [
+    {
+      id: "admin-overview",
+      label: "Overview",
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>,
+    },
+    {
+      id: "admin-users",
+      label: "Users",
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+    },
+    {
+      id: "admin-site",
+      label: "Site Settings",
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>,
+    },
+    {
+      id: "admin-style",
+      label: "Style Guide",
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>,
+    },
+  ];
+
+  function NavItem({ tab }: { tab: { id: Tab; label: string; icon: JSX.Element } }) {
+    return (
+      <button
+        onClick={() => switchTab(tab.id)}
+        className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition ${
+          activeTab === tab.id
+            ? "bg-primary/10 font-medium text-primary"
+            : "text-text-secondary hover:bg-surface-raised"
+        }`}
+        type="button"
+      >
+        {tab.icon}
+        {tab.label}
+      </button>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -96,32 +149,15 @@ export function Settings() {
       <div className="flex gap-6">
         {/* Sidebar navigation */}
         <nav className="w-48 shrink-0 flex flex-col gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition ${
-                activeTab === tab.id
-                  ? "bg-primary/10 font-medium text-primary"
-                  : "text-text-secondary hover:bg-surface-raised"
-              }`}
-              type="button"
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-          {user?.role === "admin" && (
+          {userTabs.map((tab) => <NavItem key={tab.id} tab={tab} />)}
+
+          {isAdmin && (
             <div className="mt-2 border-t border-border pt-2">
-              <Link
-                to="/admin"
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-text-secondary transition hover:bg-surface-raised"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-                Admin Panel
-              </Link>
+              <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-text-muted">Admin</p>
+              {adminTabs.map((tab) => <NavItem key={tab.id} tab={tab} />)}
             </div>
           )}
+
           <div className="mt-2 border-t border-border pt-2">
             <button
               onClick={async () => { await logout(); navigate("/login"); }}
@@ -217,6 +253,12 @@ export function Settings() {
               </div>
             </div>
           )}
+
+          {/* Admin tabs */}
+          {activeTab === "admin-overview" && <AdminOverview onNavigate={switchTab} />}
+          {activeTab === "admin-users" && <AdminUsers />}
+          {activeTab === "admin-site" && <AdminSiteSettings />}
+          {activeTab === "admin-style" && <AdminStyleGuide />}
         </div>
       </div>
     </div>
