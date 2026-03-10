@@ -256,7 +256,7 @@ export function Dashboard() {
   }
 
   const navBtnClass = (active: boolean) =>
-    `flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${active ? "bg-accent-coral/10 font-medium text-accent-coral" : "text-text-secondary hover:bg-surface"}`;
+    `flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${active ? "bg-primary/10 font-medium text-primary" : "text-text-secondary hover:bg-surface"}`;
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface">
@@ -265,9 +265,7 @@ export function Dashboard() {
         <div className="p-6">
           {/* Brand */}
           <Link to="/dashboard" className="mb-10 flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-coral">
-              <img src="/logo-icon.svg" alt="" className="h-6 w-6 brightness-0 invert" />
-            </div>
+            <img src="/logo-icon.svg" alt="" className="h-10 w-10 shrink-0" />
             <div>
               <h1 className="font-[family-name:var(--font-family-heading)] text-xl font-bold tracking-tight text-text-primary">Drawhaus</h1>
               <p className="text-xs text-text-muted">Diagram Workspace</p>
@@ -293,7 +291,7 @@ export function Dashboard() {
             <div className="pb-2 pt-4 px-3 text-[10px] font-bold uppercase tracking-wider text-text-muted">Folders</div>
             {folders.map((folder) => (
               <div key={folder.id} className="group flex items-center">
-                <button onClick={() => navTo(folder.id)} className={`flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${folderId === folder.id ? "bg-accent-coral/10 font-medium text-accent-coral" : "text-text-secondary hover:bg-surface"}`} type="button">
+                <button onClick={() => navTo(folder.id)} className={`flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${folderId === folder.id ? "bg-primary/10 font-medium text-primary" : "text-text-secondary hover:bg-surface"}`} type="button">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
                   <span className="text-sm">{folder.name}</span>
                 </button>

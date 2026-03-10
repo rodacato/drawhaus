@@ -2,6 +2,11 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import pkg from "../../../package.json";
+
+const GITHUB_URL = "https://github.com/rodacato/drawhaus";
+const EXCALIDRAW_URL = "https://excalidraw.com";
+const EXCALIDRAW_GITHUB = "https://github.com/excalidraw/excalidraw";
 
 export function LandingPage() {
   const { user, loading } = useAuth();
@@ -22,7 +27,7 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-surface text-text-primary">
       {/* Decorative blobs */}
-      <div className="pointer-events-none absolute left-1/4 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-accent-coral/10 blur-3xl" />
+      <div className="pointer-events-none absolute left-1/4 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute right-0 top-40 h-[400px] w-[400px] rounded-full bg-primary/10 blur-3xl" />
 
       {/* Sticky nav */}
@@ -35,8 +40,7 @@ export function LandingPage() {
 
           <div className="hidden items-center gap-6 md:flex">
             <a href="#features" className="text-sm text-text-secondary transition hover:text-text-primary">Features</a>
-            <a href="#" className="text-sm text-text-secondary transition hover:text-text-primary">Docs</a>
-            <a href="#" className="text-sm text-text-secondary transition hover:text-text-primary">GitHub</a>
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="text-sm text-text-secondary transition hover:text-text-primary">GitHub</a>
           </div>
 
           <div className="flex items-center gap-3">
@@ -49,7 +53,7 @@ export function LandingPage() {
             </Link>
             <Link
               to="/register"
-              className="rounded-lg bg-accent-coral px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
             >
               Get Started
             </Link>
@@ -65,15 +69,15 @@ export function LandingPage() {
             {/* Version badge */}
             <div className="flex w-fit items-center gap-2 rounded-full border border-border bg-surface-raised px-4 py-1.5 text-sm text-text-secondary">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-coral opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-accent-coral" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
               </span>
-              v2.0 Now Available
+              v{pkg.version} Now Available
             </div>
 
             <h1 className="font-sora text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
               Your whiteboard,{" "}
-              <span className="bg-gradient-to-r from-accent-coral to-primary bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary to-info bg-clip-text text-transparent">
                 on your server.
               </span>
             </h1>
@@ -87,7 +91,7 @@ export function LandingPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 to="/register"
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-coral px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
               >
                 Get Started
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -96,27 +100,20 @@ export function LandingPage() {
                 </svg>
               </Link>
               <a
-                href="#"
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-border px-6 py-3 text-sm font-semibold text-text-secondary transition hover:bg-surface-raised hover:text-text-primary"
               >
-                Self-host now
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
+                View on GitHub
               </a>
-            </div>
-
-            {/* Trust text */}
-            <div className="flex items-center gap-3 pt-4">
-              <div className="flex -space-x-2">
-                <div className="h-8 w-8 rounded-full border-2 border-surface bg-primary/20" />
-                <div className="h-8 w-8 rounded-full border-2 border-surface bg-accent-coral/20" />
-                <div className="h-8 w-8 rounded-full border-2 border-surface bg-primary/30" />
-              </div>
-              <p className="text-sm text-text-muted">Trusted by 2,000+ teams</p>
             </div>
           </div>
 
           {/* Right column — screenshot placeholder */}
           <div className="relative">
-            <div className="pointer-events-none absolute -inset-4 rounded-2xl bg-gradient-to-br from-accent-coral/20 via-primary/20 to-transparent blur-2xl" />
+            <div className="pointer-events-none absolute -inset-4 rounded-2xl bg-gradient-to-br from-primary/20 via-info/20 to-transparent blur-2xl" />
             <div className="relative overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-xl">
               <div className="flex items-center gap-2 border-b border-border px-4 py-3">
                 <div className="h-3 w-3 rounded-full bg-error/60" />
@@ -168,8 +165,8 @@ export function LandingPage() {
           </div>
 
           {/* Contextual comments */}
-          <div className="group rounded-xl border border-border bg-surface-raised p-6 transition hover:border-accent-coral/30 hover:shadow-lg">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-accent-coral/10 text-accent-coral transition group-hover:scale-110">
+          <div className="group rounded-xl border border-border bg-surface-raised p-6 transition hover:border-primary/30 hover:shadow-lg">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition group-hover:scale-110">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
@@ -215,7 +212,7 @@ export function LandingPage() {
 
       {/* CTA section */}
       <section className="mx-auto max-w-6xl px-6 py-16">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-accent-coral p-12 text-center text-white">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-info p-12 text-center text-white">
           <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-white/10 blur-3xl" />
           <h2 className="font-sora text-3xl font-bold tracking-tight sm:text-4xl">
             Ready to take control?
@@ -231,12 +228,37 @@ export function LandingPage() {
               Deploy Now
             </Link>
             <a
-              href="#"
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="rounded-lg border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              Read the Docs
+              View on GitHub
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* Excalidraw attribution */}
+      <section className="mx-auto max-w-6xl px-6 py-8">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-surface-raised px-6 py-8 text-center">
+          <p className="text-sm text-text-muted">Powered by open source</p>
+          <p className="max-w-md text-text-secondary">
+            Drawhaus is built on top of{" "}
+            <a href={EXCALIDRAW_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
+              Excalidraw
+            </a>
+            , the incredible open-source whiteboard. Huge thanks to the Excalidraw team and community.
+          </p>
+          <a
+            href={EXCALIDRAW_GITHUB}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition hover:text-text-primary"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
+            excalidraw/excalidraw
+          </a>
         </div>
       </section>
 
@@ -249,10 +271,8 @@ export function LandingPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-6 text-sm text-text-secondary">
-            <a href="#" className="transition hover:text-text-primary">Privacy Policy</a>
-            <a href="#" className="transition hover:text-text-primary">Terms of Service</a>
-            <a href="#" className="transition hover:text-text-primary">GitHub</a>
-            <a href="#" className="transition hover:text-text-primary">Discord</a>
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-text-primary">GitHub</a>
+            <a href={EXCALIDRAW_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-text-primary">Excalidraw</a>
           </div>
 
           <p className="text-xs text-text-muted">
