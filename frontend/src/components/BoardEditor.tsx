@@ -2,9 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
 import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
-import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
+import { FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "@/components/BoardSidebar";
-import { ExportMenu } from "@/components/ExportMenu";
 import { SceneTabBar } from "@/components/SceneTabBar";
 import { CommentsPanel } from "@/components/CommentsPanel";
 import { CommentIndicators } from "@/components/CommentIndicators";
@@ -29,7 +28,6 @@ export default function BoardEditor({
   initialElements,
   initialAppState,
 }: BoardEditorProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [commentsPanelOpen, setCommentsPanelOpen] = useState(false);
   const [showCommentIndicators, setShowCommentIndicators] = useState(true);
   const [diagramTitle, setDiagramTitle] = useState(initialTitle);
@@ -86,12 +84,9 @@ export default function BoardEditor({
     [],
   );
 
+  // Keyboard shortcut: Cmd+/ to toggle comments
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
-        e.preventDefault();
-        setSidebarOpen((prev) => !prev);
-      }
       if ((e.metaKey || e.ctrlKey) && e.key === "/") {
         e.preventDefault();
         setCommentsPanelOpen((prev) => !prev);
@@ -126,7 +121,6 @@ export default function BoardEditor({
     const elements = api.getSceneElements() as ExcalidrawElement[];
     const el = elements.find((e) => e.id === elementId);
     if (!el) return;
-    // Select and scroll to the element
     api.updateScene({
       appState: {
         selectedElementIds: { [elementId]: true },
@@ -159,17 +153,29 @@ export default function BoardEditor({
     }
   }
 
+  const unresolvedCount = comments.threads.filter((t) => !t.resolved).length;
+
   return (
     <div className="relative h-screen w-screen">
+      {/* Sidebar — slim icon bar + expandable panels */}
       <BoardSidebar
         userEmail={userEmail}
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen((prev) => !prev)}
+        excalidrawApiRef={collab.excalidrawApiRef}
+        commentCount={unresolvedCount}
+        commentsPanelOpen={commentsPanelOpen}
+        onToggleComments={() => setCommentsPanelOpen((prev) => !prev)}
+        presenceUsers={collab.presenceUsers}
+        followingUserId={collab.followingUserId}
+        onFollow={collab.setFollowingUserId}
+        onCreateShareLink={handleCreateShareLink}
+        canEdit={canEdit}
+        onCreateScene={collab.createScene}
       />
 
+      {/* Top bar — minimal: title + save status + connection */}
       <div className="pointer-events-none fixed left-16 top-3 z-20 flex flex-col gap-1">
-        {/* Row 1: Title, Export, Comments, Users Online — all h-10 */}
         <div className="flex h-10 items-stretch gap-3">
+          {/* Title */}
           <div className="pointer-events-auto flex min-w-[250px] items-center rounded-lg bg-white px-4 shadow-sm">
             {editingTitle ? (
               <input
@@ -193,48 +199,12 @@ export default function BoardEditor({
               </button>
             )}
           </div>
-          <div className="pointer-events-auto flex">
-            <ExportMenu excalidrawApiRef={collab.excalidrawApiRef} />
-          </div>
-          <button
-            onClick={() => setCommentsPanelOpen((prev) => !prev)}
-            className={`pointer-events-auto flex items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-medium shadow-sm transition ${
-              commentsPanelOpen
-                ? "bg-blue-100 text-blue-700"
-                : "bg-white text-gray-600 hover:bg-gray-50"
-            }`}
-            title="Toggle comments (Cmd+/)"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 3a1 1 0 011-1h8a1 1 0 011 1v6a1 1 0 01-1 1H5l-2 2V10H3a1 1 0 01-1-1V3z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-            </svg>
-            {comments.threads.filter((t) => !t.resolved).length > 0 && (
-              <span className="rounded-full bg-blue-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
-                {comments.threads.filter((t) => !t.resolved).length}
-              </span>
-            )}
-          </button>
-          <div className="pointer-events-auto relative flex">
-            <BoardToolbarTrigger
-              open={collab.toolbarOpen}
-              onToggle={() => collab.setToolbarOpen(!collab.toolbarOpen)}
-              userCount={collab.presenceUsers.length || 1}
-            />
-            {collab.toolbarOpen && (
-              <BoardToolbarPanel
-                presenceUsers={collab.presenceUsers}
-                followingUserId={collab.followingUserId}
-                onFollow={collab.setFollowingUserId}
-                onCreateShareLink={handleCreateShareLink}
-                onClose={() => collab.setToolbarOpen(false)}
-              />
-            )}
-          </div>
-          <div className="flex items-center">
+          {/* Connection badge */}
+          <div className="pointer-events-auto flex items-center">
             <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
           </div>
         </div>
-        {/* Row 2: Save status */}
+        {/* Save status */}
         {canEdit && (
           <div className={`pointer-events-auto w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}>
             {collab.saveLabel}
@@ -268,7 +238,8 @@ export default function BoardEditor({
         </div>
       )}
 
-      <div className="flex h-full w-full">
+      {/* Canvas + comments panel */}
+      <div className="flex h-full w-full pl-14">
         <div className="flex-1" onPointerMove={collab.onPointerMove}>
           <ExcalidrawCanvas
             excalidrawAPI={collab.onExcalidrawApi}
@@ -295,6 +266,7 @@ export default function BoardEditor({
         )}
       </div>
 
+      {/* Scene tab bar */}
       {collab.scenes.length > 0 && (
         <div className="pointer-events-none fixed bottom-3 left-1/2 z-20 -translate-x-1/2">
           <SceneTabBar
