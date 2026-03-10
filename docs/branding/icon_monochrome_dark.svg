@@ -1,6 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  
-  <path d="M160 112 H320 Q384 112 400 176 V336 Q384 400 320 400 H160 Q112 400 112 336 V176 Q112 112 160 112 Z"
-        fill="#111827"/>
-  <path d="M224 288 L256 256 L304 304 V360 H224 Z" fill="#FFFFFF" opacity="0.98"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100">
+  <!-- All shapes in white for dark backgrounds -->
+  <path d="M20 20 L80 20 L80 60 Q80 80 60 80 L20 80 Z" fill="#F8FAF3" opacity="0.15"/>
+  <path d="M20 20 L50 20 L50 50 L20 50 Z" fill="#F8FAF3" opacity="0.6"/>
+  <path d="M20 50 L50 50 L50 80 L20 80 Z" fill="#F8FAF3"/>
+  <circle cx="65" cy="65" r="10" fill="#F8FAF3" opacity="0.4"/>
+  <circle cx="65" cy="65" r="4" fill="#F8FAF3"/>
 </svg>

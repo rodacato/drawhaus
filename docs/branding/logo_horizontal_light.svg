@@ -1,15 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="420" viewBox="0 0 1400 420">
   <rect width="1400" height="420" fill="#F8FAF3"/>
-  <g transform="translate(72,34) scale(0.55)">
-    <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#F8FAF3"/>
-  <path d="M160 112 H320 Q384 112 400 176 V336 Q384 400 320 400 H160 Q112 400 112 336 V176 Q112 112 160 112 Z"
-        fill="#111827" opacity="0.92"/>
-  <path d="M112 176 L240 304 L112 336 Z" fill="#0EA5E9" />
-  <path d="M272 112 L400 112 L400 240 Z" fill="#FBBF24" />
-  <path d="M224 288 L256 256 L304 304 V360 H224 Z" fill="#F8FAF3" opacity="0.95"/>
-  <circle cx="320" cy="360" r="20" fill="#F97316" />
-</svg>
+  <g transform="translate(80,60) scale(3)">
+    <path d="M20 20 L80 20 L80 60 Q80 80 60 80 L20 80 Z" fill="#111827"/>
+    <path d="M20 20 L50 20 L50 50 L20 50 Z" fill="#FBBF24"/>
+    <path d="M20 50 L50 50 L50 80 L20 80 Z" fill="#2563EB"/>
+    <circle cx="65" cy="65" r="10" fill="#F8FAF3"/>
+    <circle cx="65" cy="65" r="4" fill="#111827"/>
   </g>
-  <text x="420" y="255" font-family="Sora, Inter, ui-sans-serif, system-ui" font-size="170" font-weight="700" fill="#111827">Drawhaus</text>
+  <text x="420" y="270" font-family="Sora, Inter, ui-sans-serif, system-ui" font-size="170" font-weight="700" fill="#111827">Drawhaus</text>
 </svg>
