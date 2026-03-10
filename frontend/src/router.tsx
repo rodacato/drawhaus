@@ -32,8 +32,9 @@ export function AppRouter() {
 
       {/* Protected routes - redirect to login if not authenticated */}
       <Route element={<ProtectedLayout />}>
+        {/* Dashboard is full-screen with its own sidebar/header (Stitch layout) */}
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route element={<AppShell />}>
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/settings" element={<Settings />} />
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<AdminDashboard />} />
