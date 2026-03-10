@@ -121,6 +121,24 @@ export async function initSchema(): Promise<void> {
 
     CREATE INDEX IF NOT EXISTS comment_replies_thread_id_idx ON comment_replies (thread_id);
 
+    CREATE TABLE IF NOT EXISTS tags (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      color TEXT NOT NULL DEFAULT '#6B7280',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE(owner_id, name)
+    );
+
+    CREATE TABLE IF NOT EXISTS diagram_tags (
+      diagram_id UUID NOT NULL REFERENCES diagrams(id) ON DELETE CASCADE,
+      tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+      PRIMARY KEY (diagram_id, tag_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS tags_owner_id_idx ON tags (owner_id);
+    CREATE INDEX IF NOT EXISTS diagram_tags_tag_id_idx ON diagram_tags (tag_id);
+
     CREATE INDEX IF NOT EXISTS share_links_diagram_id_idx ON share_links (diagram_id);
     CREATE INDEX IF NOT EXISTS diagrams_owner_id_idx ON diagrams (owner_id);
     CREATE INDEX IF NOT EXISTS diagrams_folder_id_idx ON diagrams (folder_id);

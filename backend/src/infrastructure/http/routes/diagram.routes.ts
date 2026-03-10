@@ -12,6 +12,8 @@ import type { DuplicateDiagramUseCase } from "../../../application/use-cases/dia
 import type { MoveDiagramUseCase } from "../../../application/use-cases/folders/move-diagram";
 import { asyncRoute } from "../middleware/async-handler";
 import type { Diagram } from "../../../domain/entities/diagram";
+import type { Tag } from "../../../domain/entities/tag";
+import type { TagRepository } from "../../../domain/ports/tag-repository";
 
 const createSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
@@ -34,7 +36,7 @@ const moveSchema = z.object({
   folderId: z.string().uuid().nullable(),
 });
 
-function formatDiagram(d: Diagram) {
+function formatDiagram(d: Diagram, tags?: Tag[]) {
   return {
     id: d.id,
     ownerId: d.ownerId,
@@ -46,6 +48,7 @@ function formatDiagram(d: Diagram) {
     starred: d.starred,
     createdAt: d.createdAt.toISOString(),
     updatedAt: d.updatedAt.toISOString(),
+    tags: tags ? tags.map((t) => ({ id: t.id, name: t.name, color: t.color })) : [],
   };
 }
 
@@ -63,6 +66,7 @@ export function createDiagramRoutes(
     move: MoveDiagramUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
+  tagRepo?: TagRepository,
 ) {
   const router = Router();
   router.use(requireAuth);
@@ -71,18 +75,30 @@ export function createDiagramRoutes(
   router.get("/search", asyncRoute(async (req, res) => {
     const q = String(req.query.q ?? "");
     const diagrams = await useCases.search.execute(req.authUser.id, q);
-    return res.json({ diagrams: diagrams.map(formatDiagram) });
+    if (tagRepo && diagrams.length > 0) {
+      const tagsMap = await tagRepo.listForDiagrams(diagrams.map((d) => d.id));
+      return res.json({ diagrams: diagrams.map((d) => formatDiagram(d, tagsMap.get(d.id))) });
+    }
+    return res.json({ diagrams: diagrams.map((d) => formatDiagram(d)) });
   }));
 
   router.get("/", asyncRoute(async (req, res) => {
     const folderParam = req.query.folderId;
     const folderId = folderParam === "null" ? null : (typeof folderParam === "string" ? folderParam : undefined);
     const diagrams = await useCases.list.execute(req.authUser.id, folderId);
-    return res.json({ diagrams: diagrams.map(formatDiagram) });
+    if (tagRepo && diagrams.length > 0) {
+      const tagsMap = await tagRepo.listForDiagrams(diagrams.map((d) => d.id));
+      return res.json({ diagrams: diagrams.map((d) => formatDiagram(d, tagsMap.get(d.id))) });
+    }
+    return res.json({ diagrams: diagrams.map((d) => formatDiagram(d)) });
   }));
 
   router.get("/:id", asyncRoute(async (req, res) => {
     const diagram = await useCases.get.execute(String(req.params.id), req.authUser.id);
+    if (tagRepo) {
+      const tags = await tagRepo.listForDiagram(diagram.id);
+      return res.json({ diagram: formatDiagram(diagram, tags) });
+    }
     return res.json({ diagram: formatDiagram(diagram) });
   }));
 
