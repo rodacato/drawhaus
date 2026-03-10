@@ -24,6 +24,7 @@ import { PgShareRepository } from "./infrastructure/persistence/pg-share-reposit
 import { PgSiteSettingsRepository } from "./infrastructure/persistence/pg-site-settings-repository";
 import { PgFolderRepository } from "./infrastructure/persistence/pg-folder-repository";
 import { PgSceneRepository } from "./infrastructure/persistence/pg-scene-repository";
+import { PgCommentRepository } from "./infrastructure/persistence/pg-comment-repository";
 
 // --- Services ---
 import { BcryptHasher } from "./infrastructure/services/bcrypt-hasher";
@@ -72,6 +73,13 @@ import { CreateSceneUseCase } from "./application/use-cases/scenes/create-scene"
 import { RenameSceneUseCase } from "./application/use-cases/scenes/rename-scene";
 import { DeleteSceneUseCase } from "./application/use-cases/scenes/delete-scene";
 
+// --- Use Cases: Comments ---
+import { ListCommentsUseCase } from "./application/use-cases/comments/list-comments";
+import { CreateCommentUseCase } from "./application/use-cases/comments/create-comment";
+import { ReplyCommentUseCase } from "./application/use-cases/comments/reply-comment";
+import { ResolveCommentUseCase } from "./application/use-cases/comments/resolve-comment";
+import { DeleteCommentUseCase } from "./application/use-cases/comments/delete-comment";
+
 // --- Use Cases: Realtime ---
 import { JoinRoomUseCase } from "./application/use-cases/realtime/join-room";
 import { JoinRoomGuestUseCase } from "./application/use-cases/realtime/join-room-guest";
@@ -84,6 +92,7 @@ import { createFolderRoutes } from "./infrastructure/http/routes/folder.routes";
 import { createShareRoutes } from "./infrastructure/http/routes/share.routes";
 import { createAdminRoutes } from "./infrastructure/http/routes/admin.routes";
 import { createSceneRoutes } from "./infrastructure/http/routes/scene.routes";
+import { createCommentRoutes } from "./infrastructure/http/routes/comment.routes";
 import { createRequireAuth } from "./infrastructure/http/middleware/require-auth";
 
 // --- Socket ---
@@ -100,6 +109,7 @@ const shareRepo = new PgShareRepository();
 const siteSettingsRepo = new PgSiteSettingsRepository();
 const folderRepo = new PgFolderRepository();
 const sceneRepo = new PgSceneRepository();
+const commentRepo = new PgCommentRepository();
 const hasher = new BcryptHasher();
 
 // Auth
@@ -146,6 +156,13 @@ const createScene = new CreateSceneUseCase(sceneRepo, diagramRepo);
 const renameScene = new RenameSceneUseCase(sceneRepo, diagramRepo);
 const deleteScene = new DeleteSceneUseCase(sceneRepo, diagramRepo);
 
+// Comments
+const listComments = new ListCommentsUseCase(commentRepo, diagramRepo);
+const createComment = new CreateCommentUseCase(commentRepo, diagramRepo);
+const replyComment = new ReplyCommentUseCase(commentRepo, diagramRepo);
+const resolveComment = new ResolveCommentUseCase(commentRepo, diagramRepo);
+const deleteComment = new DeleteCommentUseCase(commentRepo, diagramRepo);
+
 // Realtime
 const joinRoom = new JoinRoomUseCase(sessionRepo, diagramRepo, sceneRepo);
 const joinRoomGuest = new JoinRoomGuestUseCase(shareRepo, diagramRepo, sceneRepo);
@@ -172,6 +189,7 @@ app.get("/health", (_req, res) => {
 app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword }, requireAuth));
 app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, move: moveDiagram }, requireAuth));
 app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes, get: getScene, create: createScene, rename: renameScene, delete: deleteScene }, requireAuth));
+app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: listComments, create: createComment, reply: replyComment, resolve: resolveComment, delete: deleteComment }, requireAuth));
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
 app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, getSettings, updateSettings, getMetrics }, requireAuth));
@@ -188,7 +206,7 @@ if (config.honeybadgerApiKey) {
 async function startServer(): Promise<void> {
   await initSchema();
   const httpServer = createServer(app);
-  setupSocketServer(httpServer, { joinRoom, joinRoomGuest, saveScene });
+  setupSocketServer(httpServer, { joinRoom, joinRoomGuest, saveScene, createComment, replyComment, resolveComment, deleteComment });
 
   httpServer.listen(config.port, () => {
     logger.info({ port: config.port }, `Backend running on http://localhost:${config.port}`);
