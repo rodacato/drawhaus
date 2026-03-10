@@ -13,18 +13,21 @@ export function AppShell() {
     <>
       <header className="border-b border-border bg-surface-raised">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <span className="text-sm font-semibold tracking-tight text-text-primary">
-            Drawhaus
-          </span>
+          <Link to="/dashboard" className="flex items-center gap-2.5">
+            <img src="/logo-icon.svg" alt="" className="h-7 w-7" />
+            <span className="font-[family-name:var(--font-family-heading)] text-sm font-semibold tracking-tight text-text-primary">
+              Drawhaus
+            </span>
+          </Link>
           <div className="flex items-center gap-3">
-            <Link to="/dashboard" className="text-sm text-text-secondary hover:text-text-primary transition-colors">
+            <Link to="/dashboard" className="text-sm text-text-secondary hover:text-primary transition-colors">
               Dashboard
             </Link>
-            <Link to="/settings" className="text-sm text-text-secondary hover:text-text-primary transition-colors">
+            <Link to="/settings" className="text-sm text-text-secondary hover:text-primary transition-colors">
               Settings
             </Link>
             {user?.role === "admin" && (
-              <Link to="/admin" className="text-sm text-text-secondary hover:text-text-primary transition-colors">
+              <Link to="/admin" className="text-sm text-text-secondary hover:text-primary transition-colors">
                 Admin
               </Link>
             )}

@@ -1,32 +1,39 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: "Geist";
-  src: url("/fonts/GeistVF.woff") format("woff");
-  font-weight: 100 900;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Geist Mono";
-  src: url("/fonts/GeistMonoVF.woff") format("woff");
-  font-weight: 100 900;
-  font-display: swap;
-}
-
 @theme {
-  --color-surface: #f8f9fc;
+  /* Brand colors — docs/branding/BRANDING.md */
+  --color-primary: #2563EB;
+  --color-primary-hover: #1d4ed8;
+  --color-accent-yellow: #FBBF24;
+  --color-accent-teal: #14B8A6;
+  --color-accent-orange: #F97316;
+
+  /* Surfaces */
+  --color-surface: #F8F6F3;
   --color-surface-raised: #ffffff;
+  --color-surface-dark: #111827;
+
+  /* Borders */
   --color-border: #e2e8f0;
   --color-border-muted: #e2e8f0cc;
+
+  /* Text */
   --color-text-primary: #0f172a;
   --color-text-secondary: #475569;
   --color-text-muted: #94a3b8;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
+
   --color-danger: #dc2626;
-  --font-family-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-family-mono: "Geist Mono", ui-monospace, monospace;
+
+  /* Semantic states */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+
+  /* Typography */
+  --font-family-heading: "Sora", system-ui, sans-serif;
+  --font-family-sans: "Inter", system-ui, sans-serif;
+  --font-family-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 @layer base {
@@ -36,6 +43,10 @@
     background-color: var(--color-surface);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-family-heading);
   }
 }
 

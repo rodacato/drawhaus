@@ -45,7 +45,7 @@ export function AdminSettings() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className={ui.label}>Instance Name<input className={ui.input} type="text" value={instanceName} onChange={(e) => setInstanceName(e.target.value)} required maxLength={100} /></label>
           <label className="flex items-center gap-3 text-sm font-medium text-text-secondary">
-            <input type="checkbox" checked={registrationOpen} onChange={(e) => setRegistrationOpen(e.target.checked)} className="h-4 w-4 rounded border-border text-accent focus:ring-accent/25" />
+            <input type="checkbox" checked={registrationOpen} onChange={(e) => setRegistrationOpen(e.target.checked)} className="h-4 w-4 rounded border-border text-primary focus:ring-primary/25" />
             Allow new user registration
           </label>
           {status && <p className={status.type === "error" ? ui.alertError : "text-sm text-green-600"}>{status.message}</p>}

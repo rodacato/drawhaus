@@ -7,7 +7,7 @@ export const ui = {
   // Cards / Panels
   card: "rounded-2xl border border-border bg-surface-raised p-6 shadow-sm",
 
-  // Typography
+  // Typography (headings use Sora via CSS base layer)
   h1: "text-2xl font-semibold tracking-tight text-text-primary",
   h2: "text-lg font-semibold text-text-primary",
   subtitle: "mt-1 text-sm text-text-secondary",
@@ -16,12 +16,12 @@ export const ui = {
   // Form
   label: "block space-y-1.5 text-sm font-medium text-text-secondary",
   input:
-    "block h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-text-primary outline-none transition placeholder:text-text-muted focus:border-accent focus:ring-2 focus:ring-accent/25",
+    "block h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-text-primary outline-none transition placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/25",
 
   // Buttons
-  btn: "inline-flex items-center justify-center rounded-lg px-4 h-10 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  btn: "inline-flex items-center justify-center rounded-lg px-4 h-10 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   btnPrimary:
-    "bg-accent text-white hover:bg-accent-hover shadow-sm",
+    "bg-primary text-white hover:bg-primary-hover shadow-sm",
   btnSecondary:
     "border border-border bg-surface-raised text-text-primary hover:bg-surface",
   btnDanger:
@@ -30,6 +30,8 @@ export const ui = {
   // Feedback
   alertError:
     "rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700",
+  alertSuccess:
+    "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700",
   badge:
     "inline-flex items-center rounded-full bg-surface px-3 py-1 text-xs font-medium text-text-secondary ring-1 ring-inset ring-border",
 

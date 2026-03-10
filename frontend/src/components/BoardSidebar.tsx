@@ -59,7 +59,7 @@ export function BoardSidebar({ userEmail, isOpen, onToggle }: BoardSidebarProps)
         </div>
 
         <div className="border-b border-white/10 p-3">
-          <button onClick={createDiagram} disabled={creating} className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-accent font-mono text-xs font-medium text-white transition hover:bg-accent-hover disabled:opacity-50" type="button">
+          <button onClick={createDiagram} disabled={creating} className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-primary font-mono text-xs font-medium text-white transition hover:bg-primary-hover disabled:opacity-50" type="button">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
             {creating ? "Creating..." : "New diagram"}
           </button>
