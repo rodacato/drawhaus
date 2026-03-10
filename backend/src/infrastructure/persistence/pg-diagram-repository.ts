@@ -89,18 +89,18 @@ export class PgDiagramRepository implements DiagramRepository {
     return rows[0].owner_id === userId ? "owner" : (rows[0].role ?? "viewer");
   }
 
-  async create(data: { title: string; ownerId: string; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown> }): Promise<Diagram> {
+  async create(data: { title: string; ownerId: string; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown>; thumbnail?: string | null }): Promise<Diagram> {
     const folderId = data.folderId ?? null;
     const hasScene = data.elements !== undefined;
 
     const sql = hasScene
-      ? `INSERT INTO diagrams (owner_id, folder_id, title, elements, app_state)
-         VALUES ($1, $2, $3, $4, $5) RETURNING ${COLS}`
-      : `INSERT INTO diagrams (owner_id, folder_id, title)
-         VALUES ($1, $2, $3) RETURNING ${COLS}`;
+      ? `INSERT INTO diagrams (owner_id, folder_id, title, elements, app_state, thumbnail)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${COLS}`
+      : `INSERT INTO diagrams (owner_id, folder_id, title, thumbnail)
+         VALUES ($1, $2, $3, $4) RETURNING ${COLS}`;
     const params = hasScene
-      ? [data.ownerId, folderId, data.title, JSON.stringify(data.elements), JSON.stringify(data.appState ?? {})]
-      : [data.ownerId, folderId, data.title];
+      ? [data.ownerId, folderId, data.title, JSON.stringify(data.elements), JSON.stringify(data.appState ?? {}), data.thumbnail ?? null]
+      : [data.ownerId, folderId, data.title, data.thumbnail ?? null];
 
     const { rows } = await pool.query<DiagramRow>(sql, params);
     return toDomain(rows[0]);

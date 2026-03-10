@@ -15,6 +15,7 @@ export class DuplicateDiagramUseCase {
       folderId: original.folderId,
       elements: original.elements,
       appState: original.appState,
+      thumbnail: original.thumbnail,
     });
   }
 }
