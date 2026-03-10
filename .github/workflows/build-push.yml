@@ -61,6 +61,8 @@ jobs:
       COOKIE_DOMAIN: ${{ secrets.COOKIE_DOMAIN }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
 
     steps:
       - name: Checkout
