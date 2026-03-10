@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { diagramsApi } from "@/api/diagrams";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -18,22 +18,36 @@ export function BoardSidebar({ userEmail, isOpen, onToggle }: BoardSidebarProps)
   const [diagrams, setDiagrams] = useState<Diagram[]>([]);
   const [creating, setCreating] = useState(false);
 
+  const refreshList = useCallback(() => {
+    diagramsApi.list().then((res) => {
+      setDiagrams(Array.isArray(res) ? res : res.diagrams ?? []);
+    }).catch(() => {});
+  }, []);
+
   useEffect(() => {
-    if (isOpen) {
-      diagramsApi.list().then((res) => {
-        setDiagrams(Array.isArray(res) ? res : res.diagrams ?? []);
-      }).catch(() => {});
-    }
-  }, [isOpen]);
+    if (isOpen) refreshList();
+  }, [isOpen, refreshList]);
 
   async function createDiagram() {
+    if (!window.confirm("Leave current diagram and create a new one?")) return;
     setCreating(true);
     try {
       const payload = await diagramsApi.create({ title: "Untitled" });
       const id = payload.diagram?.id;
-      if (id) navigate(`/board/${id}`);
+      if (id) {
+        refreshList();
+        // Full page navigation to ensure Board remounts with the new diagram
+        window.location.href = `/board/${id}`;
+      }
     } catch { /* silent */ }
     finally { setCreating(false); }
+  }
+
+  function handleDiagramClick(e: React.MouseEvent, diagramId: string) {
+    if (diagramId === currentId) return;
+    e.preventDefault();
+    if (!window.confirm("Leave current diagram? Unsaved changes will be lost.")) return;
+    window.location.href = `/board/${diagramId}`;
   }
 
   async function handleLogout() {
@@ -74,7 +88,11 @@ export function BoardSidebar({ userEmail, isOpen, onToggle }: BoardSidebarProps)
                 const isActive = d.id === currentId;
                 return (
                   <li key={d.id}>
-                    <Link to={`/board/${d.id}`} className={`flex flex-col rounded-lg px-3 py-2 transition ${isActive ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white/80"}`}>
+                    <Link
+                      to={`/board/${d.id}`}
+                      onClick={(e) => handleDiagramClick(e, d.id)}
+                      className={`flex flex-col rounded-lg px-3 py-2 transition ${isActive ? "bg-white/10 text-white" : "text-white/60 hover:bg-white/5 hover:text-white/80"}`}
+                    >
                       <span className="truncate font-mono text-sm">{d.title || "Untitled"}</span>
                       <span className="font-mono text-[10px] text-white/30">{d.updatedAt ?? d.updated_at ?? ""}</span>
                     </Link>
