@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { commentsApi } from "@/api/comments";
 import type { CommentThread, CommentReply } from "@/lib/types";
@@ -92,58 +92,78 @@ export function useComments({ diagramId, sceneId, socketRef }: UseCommentsOption
     };
   }, [socketRef]);
 
+  /** Emit via socket if connected, otherwise call the REST fallback. */
+  const emitOrFallback = useCallback(
+    async (event: string, payload: Record<string, unknown>, fallback: () => Promise<void>) => {
+      const socket = socketRef.current;
+      if (socket) {
+        socket.emit(event, { roomId: diagramIdRef.current, ...payload });
+      } else {
+        await fallback();
+      }
+    },
+    [socketRef],
+  );
+
   const createThread = useCallback(async (elementId: string, body: string) => {
-    const socket = socketRef.current;
     const currentSceneId = sceneIdRef.current;
-    if (socket) {
-      socket.emit("comment-create", { roomId: diagramIdRef.current, elementId, body, sceneId: currentSceneId });
-    } else {
-      const data = await commentsApi.create(diagramIdRef.current, { elementId, body, sceneId: currentSceneId });
-      setThreads((prev) => [...prev, data.thread]);
-    }
-  }, [socketRef]);
+    await emitOrFallback(
+      "comment-create",
+      { elementId, body, sceneId: currentSceneId },
+      async () => {
+        const data = await commentsApi.create(diagramIdRef.current, { elementId, body, sceneId: currentSceneId });
+        setThreads((prev) => [...prev, data.thread]);
+      },
+    );
+  }, [emitOrFallback]);
 
   const addReply = useCallback(async (threadId: string, body: string) => {
-    const socket = socketRef.current;
-    if (socket) {
-      socket.emit("comment-reply", { roomId: diagramIdRef.current, threadId, body });
-    } else {
-      const data = await commentsApi.reply(diagramIdRef.current, threadId, { body });
-      setThreads((prev) =>
-        prev.map((t) => (t.id === threadId ? { ...t, replies: [...t.replies, data.reply] } : t)),
-      );
-    }
-  }, [socketRef]);
+    await emitOrFallback(
+      "comment-reply",
+      { threadId, body },
+      async () => {
+        const data = await commentsApi.reply(diagramIdRef.current, threadId, { body });
+        setThreads((prev) =>
+          prev.map((t) => (t.id === threadId ? { ...t, replies: [...t.replies, data.reply] } : t)),
+        );
+      },
+    );
+  }, [emitOrFallback]);
 
   const resolveThread = useCallback(async (threadId: string, resolved: boolean) => {
-    const socket = socketRef.current;
-    if (socket) {
-      socket.emit("comment-resolve", { roomId: diagramIdRef.current, threadId, resolved });
-    } else {
-      await commentsApi.resolve(diagramIdRef.current, threadId, resolved);
-      setThreads((prev) =>
-        prev.map((t) => (t.id === threadId ? { ...t, resolved } : t)),
-      );
-    }
-  }, [socketRef]);
+    await emitOrFallback(
+      "comment-resolve",
+      { threadId, resolved },
+      async () => {
+        await commentsApi.resolve(diagramIdRef.current, threadId, resolved);
+        setThreads((prev) =>
+          prev.map((t) => (t.id === threadId ? { ...t, resolved } : t)),
+        );
+      },
+    );
+  }, [emitOrFallback]);
 
   const deleteThread = useCallback(async (threadId: string) => {
-    const socket = socketRef.current;
-    if (socket) {
-      socket.emit("comment-delete", { roomId: diagramIdRef.current, threadId });
-    } else {
-      await commentsApi.delete(diagramIdRef.current, threadId);
-      setThreads((prev) => prev.filter((t) => t.id !== threadId));
-    }
-  }, [socketRef]);
+    await emitOrFallback(
+      "comment-delete",
+      { threadId },
+      async () => {
+        await commentsApi.delete(diagramIdRef.current, threadId);
+        setThreads((prev) => prev.filter((t) => t.id !== threadId));
+      },
+    );
+  }, [emitOrFallback]);
 
   // Derive elements with comments count
-  const elementsWithComments = new Map<string, number>();
-  for (const t of threads) {
-    if (!t.resolved) {
-      elementsWithComments.set(t.elementId, (elementsWithComments.get(t.elementId) ?? 0) + 1);
+  const elementsWithComments = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const t of threads) {
+      if (!t.resolved) {
+        map.set(t.elementId, (map.get(t.elementId) ?? 0) + 1);
+      }
     }
-  }
+    return map;
+  }, [threads]);
 
   return {
     threads,
