@@ -121,7 +121,7 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
       </div>
       {collab.scenes.length > 0 && (
         <div className="pointer-events-none fixed bottom-3 left-1/2 z-20 -translate-x-1/2">
-          <SceneTabBar scenes={collab.scenes} activeSceneId={collab.activeSceneId} canEdit={canEdit} onSwitch={collab.switchScene} onCreate={collab.createScene} onDelete={collab.deleteScene} onRename={collab.renameScene} />
+          <SceneTabBar scenes={collab.scenes} activeSceneId={collab.activeSceneId} switchingScene={collab.switchingScene} canEdit={canEdit} onSwitch={collab.switchScene} onCreate={collab.createScene} onDelete={collab.deleteScene} onRename={collab.renameScene} />
         </div>
       )}
     </div>
