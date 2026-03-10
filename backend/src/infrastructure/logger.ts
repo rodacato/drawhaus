@@ -6,5 +6,15 @@ export const logger = pino({
   level: process.env.LOG_LEVEL ?? (isProduction ? "info" : "debug"),
   ...(isProduction
     ? {}
-    : { transport: { target: "pino-pretty", options: { colorize: true } } }),
+    : {
+        transport: {
+          target: "pino-pretty",
+          options: {
+            colorize: true,
+            ignore: "pid,hostname",
+            translateTime: "HH:MM:ss",
+            messageFormat: "{msg}",
+          },
+        },
+      }),
 });
