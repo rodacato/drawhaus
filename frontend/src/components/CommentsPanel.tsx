@@ -21,6 +21,7 @@ type CommentsPanelProps = {
   onReply: (threadId: string, body: string) => Promise<void>;
   onResolve: (threadId: string, resolved: boolean) => Promise<void>;
   onDelete: (threadId: string) => Promise<void>;
+  onToggleLike: (threadId: string) => Promise<void>;
   onHighlightElement: (elementId: string) => void;
   onClose: () => void;
 };
@@ -65,6 +66,7 @@ export function CommentsPanel({
   onReply,
   onResolve,
   onDelete,
+  onToggleLike,
   onHighlightElement,
   onClose,
 }: CommentsPanelProps) {
@@ -266,11 +268,12 @@ export function CommentsPanel({
                   <div className="mt-2 flex items-center gap-1">
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-text-muted hover:bg-surface-raised hover:text-text-secondary"
-                      title="Like"
+                      onClick={() => onToggleLike(thread.id)}
+                      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] ${thread.likedByMe ? "text-primary bg-primary/10" : "text-text-muted hover:bg-surface-raised hover:text-text-secondary"}`}
+                      title={thread.likedByMe ? "Unlike" : "Like"}
                     >
                       <IconThumbUp />
-                      <span>0</span>
+                      <span>{thread.likeCount || 0}</span>
                     </button>
                     <button
                       type="button"

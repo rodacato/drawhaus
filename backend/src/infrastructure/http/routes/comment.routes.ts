@@ -5,6 +5,7 @@ import type { CreateCommentUseCase } from "../../../application/use-cases/commen
 import type { ReplyCommentUseCase } from "../../../application/use-cases/comments/reply-comment";
 import type { ResolveCommentUseCase } from "../../../application/use-cases/comments/resolve-comment";
 import type { DeleteCommentUseCase } from "../../../application/use-cases/comments/delete-comment";
+import type { ToggleLikeUseCase } from "../../../application/use-cases/comments/toggle-like";
 import { asyncRoute } from "../middleware/async-handler";
 import type { CommentThread, CommentReply } from "../../../domain/entities/comment";
 
@@ -48,6 +49,8 @@ function formatThread(t: CommentThread) {
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),
     replies: t.replies.map(formatReply),
+    likeCount: t.likeCount,
+    likedByMe: t.likedByMe,
   };
 }
 
@@ -58,6 +61,7 @@ export function createCommentRoutes(
     reply: ReplyCommentUseCase;
     resolve: ResolveCommentUseCase;
     delete: DeleteCommentUseCase;
+    toggleLike: ToggleLikeUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
 ) {
@@ -113,6 +117,12 @@ export function createCommentRoutes(
   router.delete("/:threadId", asyncRoute(async (req, res) => {
     await useCases.delete.execute(String(req.params.threadId), req.authUser.id);
     return res.json({ success: true });
+  }));
+
+  // POST /api/diagrams/:diagramId/comments/:threadId/like
+  router.post("/:threadId/like", asyncRoute(async (req, res) => {
+    const result = await useCases.toggleLike.execute(String(req.params.threadId), req.authUser.id);
+    return res.json(result);
   }));
 
   return router;

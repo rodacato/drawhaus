@@ -15,6 +15,8 @@ type ThreadRow = {
   resolved_at: string | null;
   created_at: string;
   updated_at: string;
+  like_count: string;
+  liked_by_me: boolean;
 };
 
 type ReplyRow = {
@@ -41,6 +43,8 @@ function threadToDomain(row: ThreadRow, replies: CommentReply[]): CommentThread 
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
     replies,
+    likeCount: parseInt(row.like_count ?? "0", 10),
+    likedByMe: row.liked_by_me ?? false,
   };
 }
 
@@ -66,8 +70,28 @@ const REPLY_SELECT = `
   FROM comment_replies cr
   JOIN users u ON u.id = cr.author_id`;
 
+type LikeRow = { thread_id: string; like_count: string; liked_by_me: boolean };
+
 export class PgCommentRepository implements CommentRepository {
-  async findByDiagram(diagramId: string, sceneId?: string | null): Promise<CommentThread[]> {
+  private async loadLikes(threadIds: string[], currentUserId?: string): Promise<Map<string, { count: number; likedByMe: boolean }>> {
+    if (threadIds.length === 0) return new Map();
+    const { rows } = await pool.query<LikeRow>(
+      `SELECT cr.thread_id,
+              count(*)::text AS like_count,
+              bool_or(cr.user_id = $2) AS liked_by_me
+       FROM comment_reactions cr
+       WHERE cr.thread_id = ANY($1)
+       GROUP BY cr.thread_id`,
+      [threadIds, currentUserId ?? "00000000-0000-0000-0000-000000000000"],
+    );
+    const map = new Map<string, { count: number; likedByMe: boolean }>();
+    for (const row of rows) {
+      map.set(row.thread_id, { count: parseInt(row.like_count, 10), likedByMe: row.liked_by_me });
+    }
+    return map;
+  }
+
+  async findByDiagram(diagramId: string, sceneId?: string | null, currentUserId?: string): Promise<CommentThread[]> {
     const { rows: threadRows } = sceneId
       ? await pool.query<ThreadRow>(
           `${THREAD_SELECT} WHERE ct.diagram_id = $1 AND (ct.scene_id = $2 OR ct.scene_id IS NULL) ORDER BY ct.created_at`,
@@ -80,10 +104,13 @@ export class PgCommentRepository implements CommentRepository {
     if (threadRows.length === 0) return [];
 
     const threadIds = threadRows.map((t) => t.id);
-    const { rows: replyRows } = await pool.query<ReplyRow>(
-      `${REPLY_SELECT} WHERE cr.thread_id = ANY($1) ORDER BY cr.created_at`,
-      [threadIds],
-    );
+    const [{ rows: replyRows }, likes] = await Promise.all([
+      pool.query<ReplyRow>(
+        `${REPLY_SELECT} WHERE cr.thread_id = ANY($1) ORDER BY cr.created_at`,
+        [threadIds],
+      ),
+      this.loadLikes(threadIds, currentUserId),
+    ]);
 
     const repliesByThread = new Map<string, CommentReply[]>();
     for (const row of replyRows) {
@@ -92,22 +119,35 @@ export class PgCommentRepository implements CommentRepository {
       repliesByThread.set(row.thread_id, list);
     }
 
-    return threadRows.map((row) => threadToDomain(row, repliesByThread.get(row.id) ?? []));
+    return threadRows.map((row) => {
+      const like = likes.get(row.id);
+      return threadToDomain(
+        { ...row, like_count: String(like?.count ?? 0), liked_by_me: like?.likedByMe ?? false },
+        repliesByThread.get(row.id) ?? [],
+      );
+    });
   }
 
-  async findThreadById(id: string): Promise<CommentThread | null> {
+  async findThreadById(id: string, currentUserId?: string): Promise<CommentThread | null> {
     const { rows: threadRows } = await pool.query<ThreadRow>(
       `${THREAD_SELECT} WHERE ct.id = $1 LIMIT 1`,
       [id],
     );
     if (!threadRows[0]) return null;
 
-    const { rows: replyRows } = await pool.query<ReplyRow>(
-      `${REPLY_SELECT} WHERE cr.thread_id = $1 ORDER BY cr.created_at`,
-      [id],
-    );
+    const [{ rows: replyRows }, likes] = await Promise.all([
+      pool.query<ReplyRow>(
+        `${REPLY_SELECT} WHERE cr.thread_id = $1 ORDER BY cr.created_at`,
+        [id],
+      ),
+      this.loadLikes([id], currentUserId),
+    ]);
 
-    return threadToDomain(threadRows[0], replyRows.map(replyToDomain));
+    const like = likes.get(id);
+    return threadToDomain(
+      { ...threadRows[0], like_count: String(like?.count ?? 0), liked_by_me: like?.likedByMe ?? false },
+      replyRows.map(replyToDomain),
+    );
   }
 
   async createThread(data: { diagramId: string; sceneId?: string | null; elementId: string; authorId: string; body: string }): Promise<CommentThread> {
@@ -158,5 +198,19 @@ export class PgCommentRepository implements CommentRepository {
 
   async deleteReply(id: string): Promise<void> {
     await pool.query("DELETE FROM comment_replies WHERE id = $1", [id]);
+  }
+
+  async toggleLike(threadId: string, userId: string): Promise<boolean> {
+    const { rows } = await pool.query<{ exists: boolean }>(
+      `SELECT EXISTS(SELECT 1 FROM comment_reactions WHERE thread_id = $1 AND user_id = $2)`,
+      [threadId, userId],
+    );
+    if (rows[0].exists) {
+      await pool.query("DELETE FROM comment_reactions WHERE thread_id = $1 AND user_id = $2", [threadId, userId]);
+      return false;
+    } else {
+      await pool.query("INSERT INTO comment_reactions (thread_id, user_id) VALUES ($1, $2)", [threadId, userId]);
+      return true;
+    }
   }
 }

@@ -17,6 +17,7 @@ export type UseCommentsState = {
   addReply: (threadId: string, body: string) => Promise<void>;
   resolveThread: (threadId: string, resolved: boolean) => Promise<void>;
   deleteThread: (threadId: string) => Promise<void>;
+  toggleLike: (threadId: string) => Promise<void>;
   refresh: () => Promise<void>;
 };
 
@@ -154,6 +155,13 @@ export function useComments({ diagramId, sceneId, socketRef }: UseCommentsOption
     );
   }, [emitOrFallback]);
 
+  const toggleLike = useCallback(async (threadId: string) => {
+    const data = await commentsApi.toggleLike(diagramIdRef.current, threadId);
+    setThreads((prev) =>
+      prev.map((t) => (t.id === threadId ? { ...t, likeCount: data.likeCount, likedByMe: data.liked } : t)),
+    );
+  }, []);
+
   // Derive elements with comments count
   const elementsWithComments = useMemo(() => {
     const map = new Map<string, number>();
@@ -173,6 +181,7 @@ export function useComments({ diagramId, sceneId, socketRef }: UseCommentsOption
     addReply,
     resolveThread,
     deleteThread,
+    toggleLike,
     refresh,
   };
 }

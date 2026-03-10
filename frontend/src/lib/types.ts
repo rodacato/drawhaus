@@ -31,6 +31,8 @@ export type CommentThread = {
   createdAt: string;
   updatedAt: string;
   replies: CommentReply[];
+  likeCount: number;
+  likedByMe: boolean;
 };
 
 export type CommentReply = {
