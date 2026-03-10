@@ -2,6 +2,9 @@ service: drawhaus-backend
 
 image: ghcr.io/rodacato/drawhaus-backend
 
+ssh:
+  user: deploy
+
 servers:
   web:
     hosts:
