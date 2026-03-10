@@ -6,6 +6,7 @@ import { tagsApi, type Tag } from "@/api/tags";
 import { useAuth } from "@/contexts/AuthContext";
 import { ui } from "@/lib/ui";
 import { ShareModal } from "@/components/ShareModal";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type Diagram = { id: string; title: string; folderId: string | null; thumbnail: string | null; starred?: boolean; tags?: Tag[]; updatedAt?: string; updated_at?: string };
 type Folder = { id: string; name: string };
@@ -356,6 +357,7 @@ export function Dashboard() {
             </div>
           </form>
           <div className="ml-8 flex items-center gap-3">
+            <ThemeToggle />
             <button className="flex items-center gap-2 rounded-xl bg-surface px-4 py-2.5 text-sm font-semibold transition hover:bg-surface-raised border border-border" onClick={() => fileInputRef.current?.click()} disabled={actionPending} type="button">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               <span>Import</span>
