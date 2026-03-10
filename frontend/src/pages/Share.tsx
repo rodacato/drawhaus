@@ -68,18 +68,43 @@ function ShareViewInner({ shareToken, data }: { shareToken: string; data: ShareD
 
   if (!joined) {
     return (
-      <div className="grid min-h-screen place-items-center bg-surface px-4 py-8">
-        <div className={`${ui.card} ${ui.centerNarrow} space-y-4`}>
-          <div className="space-y-1">
-            <img src="/logo-icon.svg" alt="Drawhaus" className="h-8 w-8" />
-            <h1 className={ui.h1}>{data.title || "Shared Diagram"}</h1>
-            <p className={ui.subtitle}>{canEdit ? "Enter your name to join and collaborate." : "Enter your name to view this diagram."}</p>
+      <div className="relative grid min-h-screen place-items-center bg-surface px-4 py-8 overflow-hidden">
+        <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-accent-coral/10 blur-3xl" />
+
+        <div className="relative w-full max-w-md space-y-0 overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-sm">
+          {/* Session preview header */}
+          <div className="relative h-40 bg-gradient-to-br from-primary/20 via-surface-dark to-accent-coral/20">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="rounded-full bg-surface-raised/80 px-3 py-1 text-xs font-medium text-text-secondary backdrop-blur">
+                Live Session
+              </div>
+            </div>
           </div>
-          <form onSubmit={(e) => { e.preventDefault(); handleJoin(); }} className="space-y-3">
-            <label className={ui.label}>Your name<input className={ui.input} type="text" placeholder="Guest" value={guestName} onChange={(e) => setGuestName(e.target.value)} maxLength={50} autoFocus /></label>
-            <button type="submit" className={`${ui.btn} ${ui.btnPrimary} w-full`}>{canEdit ? "Join & Edit" : "View Diagram"}</button>
-          </form>
-          <p className={ui.muted}>Access: <span className="font-medium">{data.role}</span></p>
+
+          <div className="space-y-4 p-6">
+            <div className="space-y-1">
+              <h1 className={ui.h1}>{data.title || "Shared Diagram"}</h1>
+              <p className={ui.subtitle}>{canEdit ? "Enter your name to join and collaborate." : "Enter your name to view this diagram."}</p>
+            </div>
+            <form onSubmit={(e) => { e.preventDefault(); handleJoin(); }} className="space-y-3">
+              <label className={ui.label}>
+                Your name
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                  <input className={`${ui.input} pl-10`} type="text" placeholder="Guest" value={guestName} onChange={(e) => setGuestName(e.target.value)} maxLength={50} autoFocus />
+                </div>
+              </label>
+              <button type="submit" className={`${ui.btn} ${ui.btnPrimary} w-full gap-2`}>
+                {canEdit ? "Join Session" : "View Diagram"}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+              </button>
+            </form>
+            <div className="flex items-center justify-between">
+              <p className={ui.muted}>Viewing as <span className="font-medium capitalize">{data.role}</span></p>
+              <img src="/logo-icon.svg" alt="Drawhaus" className="h-5 w-5 opacity-50" />
+            </div>
+          </div>
         </div>
       </div>
     );
