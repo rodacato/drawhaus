@@ -9,7 +9,7 @@ export const authApi = {
 
   logout: () => api.post("/api/auth/logout").then((r) => r.data),
 
-  getMe: () => api.get("/api/auth/me").then((r) => r.data),
+  getMe: () => api.get("/api/auth/me").then((r) => r.data.user),
 
   updateProfile: (data: { name?: string; email?: string }) =>
     api.patch("/api/auth/me", data).then((r) => r.data),

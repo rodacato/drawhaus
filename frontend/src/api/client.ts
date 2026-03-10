@@ -12,6 +12,7 @@ api.interceptors.response.use(
       err.response?.status === 401 &&
       !window.location.pathname.startsWith("/login") &&
       !window.location.pathname.startsWith("/register") &&
+      !window.location.pathname.startsWith("/setup") &&
       !window.location.pathname.startsWith("/share") &&
       !window.location.pathname.startsWith("/embed")
     ) {
