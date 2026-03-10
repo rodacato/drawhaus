@@ -15,6 +15,8 @@ import { UpdateDiagramUseCase } from "../../application/use-cases/diagrams/updat
 import { DeleteDiagramUseCase } from "../../application/use-cases/diagrams/delete-diagram";
 import { SearchDiagramsUseCase } from "../../application/use-cases/diagrams/search-diagrams";
 import { UpdateThumbnailUseCase } from "../../application/use-cases/diagrams/update-thumbnail";
+import { ToggleStarUseCase } from "../../application/use-cases/diagrams/toggle-star";
+import { DuplicateDiagramUseCase } from "../../application/use-cases/diagrams/duplicate-diagram";
 import { MoveDiagramUseCase } from "../../application/use-cases/folders/move-diagram";
 import { createAuthRoutes } from "../../infrastructure/http/routes/auth.routes";
 import { createDiagramRoutes } from "../../infrastructure/http/routes/diagram.routes";
@@ -55,6 +57,8 @@ function createApp() {
     update: new UpdateDiagramUseCase(diagrams),
     updateThumbnail: new UpdateThumbnailUseCase(diagrams),
     delete: new DeleteDiagramUseCase(diagrams),
+    toggleStar: new ToggleStarUseCase(diagrams),
+    duplicate: new DuplicateDiagramUseCase(diagrams),
     move: new MoveDiagramUseCase(diagrams, folders),
   }, requireAuth));
   return app;

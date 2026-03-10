@@ -11,4 +11,5 @@ export interface DiagramRepository {
   updateThumbnail(id: string, thumbnail: string): Promise<void>;
   search(userId: string, query: string): Promise<Diagram[]>;
   delete(id: string): Promise<void>;
+  toggleStar(id: string, starred: boolean): Promise<void>;
 }

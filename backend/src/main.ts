@@ -45,6 +45,8 @@ import { SearchDiagramsUseCase } from "./application/use-cases/diagrams/search-d
 import { UpdateDiagramUseCase } from "./application/use-cases/diagrams/update-diagram";
 import { DeleteDiagramUseCase } from "./application/use-cases/diagrams/delete-diagram";
 import { UpdateThumbnailUseCase } from "./application/use-cases/diagrams/update-thumbnail";
+import { ToggleStarUseCase } from "./application/use-cases/diagrams/toggle-star";
+import { DuplicateDiagramUseCase } from "./application/use-cases/diagrams/duplicate-diagram";
 
 // --- Use Cases: Folders ---
 import { CreateFolderUseCase } from "./application/use-cases/folders/create-folder";
@@ -128,6 +130,8 @@ const searchDiagrams = new SearchDiagramsUseCase(diagramRepo);
 const updateDiagram = new UpdateDiagramUseCase(diagramRepo);
 const deleteDiagram = new DeleteDiagramUseCase(diagramRepo);
 const updateThumbnail = new UpdateThumbnailUseCase(diagramRepo);
+const toggleStar = new ToggleStarUseCase(diagramRepo);
+const duplicateDiagram = new DuplicateDiagramUseCase(diagramRepo);
 
 // Folders
 const createFolder = new CreateFolderUseCase(folderRepo);
@@ -187,7 +191,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword }, requireAuth));
-app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, move: moveDiagram }, requireAuth));
+app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, toggleStar, duplicate: duplicateDiagram, move: moveDiagram }, requireAuth));
 app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes, get: getScene, create: createScene, rename: renameScene, delete: deleteScene }, requireAuth));
 app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: listComments, create: createComment, reply: replyComment, resolve: resolveComment, delete: deleteComment }, requireAuth));
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));

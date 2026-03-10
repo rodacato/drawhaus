@@ -38,6 +38,7 @@ export class InMemoryDiagramRepository implements DiagramRepository {
       elements: data.elements ?? [],
       appState: data.appState ?? {},
       thumbnail: null,
+      starred: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -83,5 +84,10 @@ export class InMemoryDiagramRepository implements DiagramRepository {
 
   async delete(id: string): Promise<void> {
     this.store = this.store.filter((d) => d.id !== id);
+  }
+
+  async toggleStar(id: string, starred: boolean): Promise<void> {
+    const diagram = this.store.find((d) => d.id === id);
+    if (diagram) diagram.starred = starred;
   }
 }

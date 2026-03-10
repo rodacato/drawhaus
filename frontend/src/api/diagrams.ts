@@ -24,4 +24,10 @@ export const diagramsApi = {
 
   delete: (id: string) =>
     api.delete(`/api/diagrams/${id}`).then((r) => r.data),
+
+  duplicate: (id: string) =>
+    api.post(`/api/diagrams/${id}/duplicate`).then((r) => r.data),
+
+  toggleStar: (id: string, starred: boolean) =>
+    api.patch(`/api/diagrams/${id}/star`, { starred }).then((r) => r.data),
 };
