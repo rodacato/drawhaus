@@ -25,6 +25,7 @@ import { PgSiteSettingsRepository } from "./infrastructure/persistence/pg-site-s
 import { PgFolderRepository } from "./infrastructure/persistence/pg-folder-repository";
 import { PgSceneRepository } from "./infrastructure/persistence/pg-scene-repository";
 import { PgCommentRepository } from "./infrastructure/persistence/pg-comment-repository";
+import { PgTagRepository } from "./infrastructure/persistence/pg-tag-repository";
 
 // --- Services ---
 import { BcryptHasher } from "./infrastructure/services/bcrypt-hasher";
@@ -75,6 +76,14 @@ import { CreateSceneUseCase } from "./application/use-cases/scenes/create-scene"
 import { RenameSceneUseCase } from "./application/use-cases/scenes/rename-scene";
 import { DeleteSceneUseCase } from "./application/use-cases/scenes/delete-scene";
 
+// --- Use Cases: Tags ---
+import { CreateTagUseCase } from "./application/use-cases/tags/create-tag";
+import { ListTagsUseCase } from "./application/use-cases/tags/list-tags";
+import { DeleteTagUseCase } from "./application/use-cases/tags/delete-tag";
+import { UpdateTagUseCase } from "./application/use-cases/tags/update-tag";
+import { AssignTagUseCase } from "./application/use-cases/tags/assign-tag";
+import { UnassignTagUseCase } from "./application/use-cases/tags/unassign-tag";
+
 // --- Use Cases: Comments ---
 import { ListCommentsUseCase } from "./application/use-cases/comments/list-comments";
 import { CreateCommentUseCase } from "./application/use-cases/comments/create-comment";
@@ -95,6 +104,7 @@ import { createShareRoutes } from "./infrastructure/http/routes/share.routes";
 import { createAdminRoutes } from "./infrastructure/http/routes/admin.routes";
 import { createSceneRoutes } from "./infrastructure/http/routes/scene.routes";
 import { createCommentRoutes } from "./infrastructure/http/routes/comment.routes";
+import { createTagRoutes } from "./infrastructure/http/routes/tag.routes";
 import { createRequireAuth } from "./infrastructure/http/middleware/require-auth";
 
 // --- Socket ---
@@ -112,6 +122,7 @@ const siteSettingsRepo = new PgSiteSettingsRepository();
 const folderRepo = new PgFolderRepository();
 const sceneRepo = new PgSceneRepository();
 const commentRepo = new PgCommentRepository();
+const tagRepo = new PgTagRepository();
 const hasher = new BcryptHasher();
 
 // Auth
@@ -160,6 +171,14 @@ const createScene = new CreateSceneUseCase(sceneRepo, diagramRepo);
 const renameScene = new RenameSceneUseCase(sceneRepo, diagramRepo);
 const deleteScene = new DeleteSceneUseCase(sceneRepo, diagramRepo);
 
+// Tags
+const createTag = new CreateTagUseCase(tagRepo);
+const listTags = new ListTagsUseCase(tagRepo);
+const deleteTag = new DeleteTagUseCase(tagRepo);
+const updateTag = new UpdateTagUseCase(tagRepo);
+const assignTag = new AssignTagUseCase(tagRepo, diagramRepo);
+const unassignTag = new UnassignTagUseCase(tagRepo, diagramRepo);
+
 // Comments
 const listComments = new ListCommentsUseCase(commentRepo, diagramRepo);
 const createComment = new CreateCommentUseCase(commentRepo, diagramRepo);
@@ -191,9 +210,10 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword }, requireAuth));
-app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, toggleStar, duplicate: duplicateDiagram, move: moveDiagram }, requireAuth));
+app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, toggleStar, duplicate: duplicateDiagram, move: moveDiagram }, requireAuth, tagRepo));
 app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes, get: getScene, create: createScene, rename: renameScene, delete: deleteScene }, requireAuth));
 app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: listComments, create: createComment, reply: replyComment, resolve: resolveComment, delete: deleteComment }, requireAuth));
+app.use("/api/tags", createTagRoutes({ create: createTag, list: listTags, delete: deleteTag, update: updateTag, assign: assignTag, unassign: unassignTag }, requireAuth));
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
 app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, getSettings, updateSettings, getMetrics }, requireAuth));
