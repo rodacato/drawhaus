@@ -1,5 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { adminApi } from "@/api/admin";
 import { ui } from "@/lib/ui";
@@ -30,105 +29,12 @@ const metricCards = [
   },
 ];
 
-// --- Invite User Modal ---
-
-function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [pending, setPending] = useState(false);
-  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const [role, setRole] = useState("user");
-
-  useEffect(() => {
-    if (!open) { setStatus(null); setRole("user"); }
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose]);
-
-  if (!open) return null;
-
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPending(true);
-    setStatus(null);
-
-    const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") ?? "");
-
-    try {
-      await adminApi.inviteUser(email, role);
-      setStatus({ type: "success", message: `Invitation sent to ${email}` });
-      (event.target as HTMLFormElement).reset();
-    } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Failed to send invitation";
-      setStatus({ type: "error", message: msg });
-    } finally {
-      setPending(false);
-    }
-  }
-
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className={`${ui.card} relative z-10 w-full max-w-md space-y-5 shadow-2xl`}>
-        <div className="flex items-center justify-between">
-          <h2 className={ui.h2}>Invite User</h2>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 text-text-muted hover:text-text-primary transition-colors">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-          </button>
-        </div>
-
-        <p className={ui.muted}>Send an invitation email to add a new user to your Drawhaus instance.</p>
-
-        <form className="space-y-4" onSubmit={onSubmit}>
-          <label className={ui.label}>
-            <span>Email address</span>
-            <input className={ui.input} type="email" name="email" placeholder="colleague@company.com" required />
-          </label>
-          <label className={ui.label}>
-            <span>Role</span>
-            <select
-              className={ui.input}
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </label>
-
-          {status && (
-            <p className={status.type === "error" ? ui.alertError : ui.alertSuccess}>
-              {status.message}
-            </p>
-          )}
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className={`${ui.btn} ${ui.btnSecondary}`}>
-              Cancel
-            </button>
-            <button type="submit" disabled={pending} className={`${ui.btn} ${ui.btnPrimary} gap-2`}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13" /><path d="M22 2l-7 20-4-9-9-4 20-7z" /></svg>
-              {pending ? "Sending..." : "Send Invitation"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
 // --- Components ---
 
 type TabId = "admin-overview" | "admin-users" | "admin-site" | "admin-style";
 
 export function AdminOverview({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
-  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     adminApi.getMetrics().then((data) => setMetrics(data.metrics ?? data)).catch(() => {});
@@ -136,15 +42,9 @@ export function AdminOverview({ onNavigate }: { onNavigate: (tab: TabId) => void
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-text-primary">Admin Dashboard</h1>
-          <p className={ui.subtitle}>Welcome back. Here is what is happening with your Drawhaus instance today.</p>
-        </div>
-        <button type="button" className={`${ui.btn} ${ui.btnPrimary} gap-2`} onClick={() => setInviteOpen(true)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-          Invite User
-        </button>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-text-primary">Admin Dashboard</h1>
+        <p className={ui.subtitle}>Welcome back. Here is what is happening with your Drawhaus instance today.</p>
       </div>
       {metrics && (
         <div className="grid grid-cols-3 gap-4">
@@ -198,14 +98,12 @@ export function AdminOverview({ onNavigate }: { onNavigate: (tab: TabId) => void
         </button>
       </div>
 
-      <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </div>
   );
 }
 
 export function AdminDashboard() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
-  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     adminApi.getMetrics().then((data) => setMetrics(data.metrics ?? data)).catch(() => {});
@@ -213,15 +111,9 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-text-primary">Admin Dashboard</h1>
-          <p className={ui.subtitle}>Welcome back. Here is what is happening with your Drawhaus instance today.</p>
-        </div>
-        <button type="button" className={`${ui.btn} ${ui.btnPrimary} gap-2`} onClick={() => setInviteOpen(true)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-          Invite User
-        </button>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-text-primary">Admin Dashboard</h1>
+        <p className={ui.subtitle}>Welcome back. Here is what is happening with your Drawhaus instance today.</p>
       </div>
       {metrics && (
         <div className="grid grid-cols-3 gap-4">
@@ -275,7 +167,6 @@ export function AdminDashboard() {
         </Link>
       </div>
 
-      <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </div>
   );
 }
