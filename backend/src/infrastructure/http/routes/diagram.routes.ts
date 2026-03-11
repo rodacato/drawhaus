@@ -17,6 +17,7 @@ import type { TagRepository } from "../../../domain/ports/tag-repository";
 
 const createSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
+  workspaceId: z.string().uuid().nullable().optional(),
   folderId: z.string().uuid().nullable().optional(),
   elements: z.array(z.unknown()).optional(),
   appState: z.record(z.string(), z.unknown()).optional(),
@@ -40,6 +41,7 @@ function formatDiagram(d: Diagram, tags?: Tag[]) {
   return {
     id: d.id,
     ownerId: d.ownerId,
+    workspaceId: d.workspaceId,
     folderId: d.folderId,
     title: d.title,
     elements: d.elements,
@@ -85,7 +87,8 @@ export function createDiagramRoutes(
   router.get("/", asyncRoute(async (req, res) => {
     const folderParam = req.query.folderId;
     const folderId = folderParam === "null" ? null : (typeof folderParam === "string" ? folderParam : undefined);
-    const diagrams = await useCases.list.execute(req.authUser.id, folderId);
+    const workspaceId = typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
+    const diagrams = await useCases.list.execute(req.authUser.id, folderId, workspaceId);
     if (tagRepo && diagrams.length > 0) {
       const tagsMap = await tagRepo.listForDiagrams(diagrams.map((d) => d.id));
       return res.json({ diagrams: diagrams.map((d) => formatDiagram(d, tagsMap.get(d.id))) });
@@ -109,6 +112,7 @@ export function createDiagramRoutes(
     const diagram = await useCases.create.execute({
       ownerId: req.authUser.id,
       title: parsed.data.title,
+      workspaceId: parsed.data.workspaceId,
       folderId: parsed.data.folderId,
       elements: parsed.data.elements,
       appState: parsed.data.appState,

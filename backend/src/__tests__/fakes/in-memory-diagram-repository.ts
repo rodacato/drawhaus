@@ -29,10 +29,11 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     return member?.role ?? null;
   }
 
-  async create(data: { title: string; ownerId: string; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown> }): Promise<Diagram> {
+  async create(data: { title: string; ownerId: string; workspaceId?: string | null; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown> }): Promise<Diagram> {
     const diagram: Diagram = {
       id: crypto.randomUUID(),
       ownerId: data.ownerId,
+      workspaceId: data.workspaceId ?? null,
       folderId: data.folderId ?? null,
       title: data.title,
       elements: data.elements ?? [],
@@ -68,6 +69,11 @@ export class InMemoryDiagramRepository implements DiagramRepository {
   async moveTo(id: string, folderId: string | null): Promise<void> {
     const diagram = this.store.find((d) => d.id === id);
     if (diagram) diagram.folderId = folderId;
+  }
+
+  async moveToWorkspace(id: string, workspaceId: string | null): Promise<void> {
+    const diagram = this.store.find((d) => d.id === id);
+    if (diagram) { diagram.workspaceId = workspaceId; diagram.folderId = null; }
   }
 
   async search(userId: string, query: string): Promise<Diagram[]> {

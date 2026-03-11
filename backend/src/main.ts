@@ -30,6 +30,7 @@ import { PgInvitationRepository } from "./infrastructure/persistence/pg-invitati
 import { PgPasswordResetRepository } from "./infrastructure/persistence/pg-password-reset-repository";
 import { PgOAuthTokenRepository } from "./infrastructure/persistence/pg-oauth-token-repository";
 import { PgDriveBackupRepository } from "./infrastructure/persistence/pg-drive-backup-repository";
+import { PgWorkspaceRepository } from "./infrastructure/persistence/pg-workspace-repository";
 
 // --- Services ---
 import { BcryptHasher } from "./infrastructure/services/bcrypt-hasher";
@@ -60,6 +61,17 @@ import { DeleteDiagramUseCase } from "./application/use-cases/diagrams/delete-di
 import { UpdateThumbnailUseCase } from "./application/use-cases/diagrams/update-thumbnail";
 import { ToggleStarUseCase } from "./application/use-cases/diagrams/toggle-star";
 import { DuplicateDiagramUseCase } from "./application/use-cases/diagrams/duplicate-diagram";
+
+// --- Use Cases: Workspaces ---
+import { CreateWorkspaceUseCase } from "./application/use-cases/workspaces/create-workspace";
+import { ListWorkspacesUseCase } from "./application/use-cases/workspaces/list-workspaces";
+import { GetWorkspaceUseCase } from "./application/use-cases/workspaces/get-workspace";
+import { UpdateWorkspaceUseCase } from "./application/use-cases/workspaces/update-workspace";
+import { DeleteWorkspaceUseCase } from "./application/use-cases/workspaces/delete-workspace";
+import { AddWorkspaceMemberUseCase, UpdateWorkspaceMemberRoleUseCase, RemoveWorkspaceMemberUseCase } from "./application/use-cases/workspaces/manage-members";
+import { InviteToWorkspaceUseCase } from "./application/use-cases/workspaces/invite-to-workspace";
+import { AcceptWorkspaceInviteUseCase } from "./application/use-cases/workspaces/accept-workspace-invite";
+import { EnsurePersonalWorkspaceUseCase } from "./application/use-cases/workspaces/ensure-personal-workspace";
 
 // --- Use Cases: Folders ---
 import { CreateFolderUseCase } from "./application/use-cases/folders/create-folder";
@@ -130,6 +142,7 @@ import { createSceneRoutes } from "./infrastructure/http/routes/scene.routes";
 import { createCommentRoutes } from "./infrastructure/http/routes/comment.routes";
 import { createTagRoutes } from "./infrastructure/http/routes/tag.routes";
 import { createDriveRoutes } from "./infrastructure/http/routes/drive.routes";
+import { createWorkspaceRoutes } from "./infrastructure/http/routes/workspace.routes";
 import { createRequireAuth } from "./infrastructure/http/middleware/require-auth";
 
 // --- Socket ---
@@ -152,6 +165,7 @@ const invitationRepo = new PgInvitationRepository();
 const passwordResetRepo = new PgPasswordResetRepository();
 const oauthTokenRepo = new PgOAuthTokenRepository();
 const driveBackupRepo = new PgDriveBackupRepository();
+const workspaceRepo = new PgWorkspaceRepository();
 const hasher = new BcryptHasher();
 const emailService = new ResendEmailService();
 const driveService = new GoogleDriveServiceImpl();
@@ -176,10 +190,23 @@ const getDiagram = new GetDiagramUseCase(diagramRepo);
 const listDiagrams = new ListDiagramsUseCase(diagramRepo);
 const searchDiagrams = new SearchDiagramsUseCase(diagramRepo);
 const updateDiagram = new UpdateDiagramUseCase(diagramRepo);
-const deleteDiagram = new DeleteDiagramUseCase(diagramRepo);
+const deleteDiagram = new DeleteDiagramUseCase(diagramRepo, workspaceRepo);
 const updateThumbnail = new UpdateThumbnailUseCase(diagramRepo);
 const toggleStar = new ToggleStarUseCase(diagramRepo);
 const duplicateDiagram = new DuplicateDiagramUseCase(diagramRepo);
+
+// Workspaces
+const createWorkspace = new CreateWorkspaceUseCase(workspaceRepo, siteSettingsRepo);
+const listWorkspaces = new ListWorkspacesUseCase(workspaceRepo);
+const getWorkspace = new GetWorkspaceUseCase(workspaceRepo);
+const updateWorkspace = new UpdateWorkspaceUseCase(workspaceRepo);
+const deleteWorkspace = new DeleteWorkspaceUseCase(workspaceRepo);
+const addWorkspaceMember = new AddWorkspaceMemberUseCase(workspaceRepo, siteSettingsRepo);
+const updateWorkspaceMemberRole = new UpdateWorkspaceMemberRoleUseCase(workspaceRepo);
+const removeWorkspaceMember = new RemoveWorkspaceMemberUseCase(workspaceRepo);
+const inviteToWorkspace = new InviteToWorkspaceUseCase(workspaceRepo, siteSettingsRepo, emailService);
+const acceptWorkspaceInvite = new AcceptWorkspaceInviteUseCase(workspaceRepo);
+const ensurePersonalWorkspace = new EnsurePersonalWorkspaceUseCase(workspaceRepo);
 
 // Folders
 const createFolder = new CreateFolderUseCase(folderRepo);
@@ -264,6 +291,7 @@ app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes,
 app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: listComments, create: createComment, reply: replyComment, resolve: resolveComment, delete: deleteComment, toggleLike }, requireAuth));
 app.use("/api/tags", createTagRoutes({ create: createTag, list: listTags, delete: deleteTag, update: updateTag, assign: assignTag, unassign: unassignTag }, requireAuth));
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
+app.use("/api/workspaces", createWorkspaceRoutes({ create: createWorkspace, list: listWorkspaces, get: getWorkspace, update: updateWorkspace, delete: deleteWorkspace, addMember: addWorkspaceMember, updateMemberRole: updateWorkspaceMemberRole, removeMember: removeWorkspaceMember, invite: inviteToWorkspace, acceptInvite: acceptWorkspaceInvite, ensurePersonal: ensurePersonalWorkspace }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
 app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, deleteUser: adminDeleteUser, getSettings, updateSettings, getMetrics, inviteUser }, requireAuth, invitationRepo));
 app.use("/api/drive", createDriveRoutes({ getDriveStatus, toggleDriveBackup, disconnectDrive, exportToDrive, listDriveFiles, importFromDrive }, tokenRefresher, requireAuth));
