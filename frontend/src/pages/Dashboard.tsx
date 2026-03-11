@@ -32,7 +32,6 @@ export function Dashboard() {
   const [sidebarView, setSidebarView] = useState<SidebarView>("all");
   const [shareModalDiagramId, setShareModalDiagramId] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<Tag[]>([]);
-  const [tagModalDiagramId, setTagModalDiagramId] = useState<string | null>(null);
   const [driveImportOpen, setDriveImportOpen] = useState(false);
 
   const folderIdParam = searchParams.get("folderId");
@@ -104,7 +103,6 @@ export function Dashboard() {
   const isAll = sidebarView === "all" && !searchQuery;
   const isRecent = sidebarView === "recent";
   const isStarred = sidebarView === "starred";
-  const isUnfiled = sidebarView === "unfiled";
 
   function navTo(fId?: string | null) {
     if (fId === undefined) { setSearchParams({}); setSidebarView("all"); }

@@ -46,7 +46,6 @@ export function DiagramCard({
   onRename,
   onToggleTag,
   onCreateTag,
-  onDeleteTag,
 }: DiagramCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [moveSubOpen, setMoveSubOpen] = useState(false);

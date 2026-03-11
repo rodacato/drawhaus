@@ -1,10 +1,8 @@
 import { Link, Outlet } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ui } from "@/lib/ui";
 
 export function AppShell() {
-  const { user } = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
