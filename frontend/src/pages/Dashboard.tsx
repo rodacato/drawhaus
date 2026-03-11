@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ShareModal } from "@/components/ShareModal";
 import { DriveImportModal } from "@/components/DriveImportModal";
+import { Drawer } from "@/components/Drawer";
+import { WorkspaceSettingsContent } from "@/components/WorkspaceSettingsContent";
 import { DashboardSidebar, WorkspaceToolbar, WorkspaceView, GeneralView } from "@/components/dashboard";
 
 type Diagram = { id: string; title: string; folderId: string | null; thumbnail: string | null; starred?: boolean; tags?: Tag[]; updatedAt?: string; updated_at?: string };
@@ -30,6 +32,7 @@ export function Dashboard() {
   const [shareModalDiagramId, setShareModalDiagramId] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [driveImportOpen, setDriveImportOpen] = useState(false);
+  const [settingsWorkspaceId, setSettingsWorkspaceId] = useState<string | null>(null);
 
   // Workspaces
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -335,6 +338,7 @@ export function Dashboard() {
         }}
         onStatusMessage={(msg) => { setActionStatus(msg); setTimeout(() => setActionStatus(null), 3000); }}
         onLogout={logout}
+        onOpenWorkspaceSettings={(id) => setSettingsWorkspaceId(id)}
       />
 
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -384,7 +388,14 @@ export function Dashboard() {
             />
           )}
 
-          {actionStatus && <p className="mb-6 rounded-lg border border-border bg-surface-raised px-3 py-2 text-sm text-text-secondary">{actionStatus}</p>}
+          {actionStatus && (
+            <div className="pointer-events-none fixed inset-x-0 top-6 z-[60] flex justify-center">
+              <div className="pointer-events-auto flex items-center gap-2 rounded-xl bg-text-primary px-4 py-2.5 text-sm font-medium text-surface shadow-lg">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-400"><polyline points="20 6 9 17 4 12" /></svg>
+                {actionStatus}
+              </div>
+            </div>
+          )}
 
           {isWorkspaceView && folders.length > 0 ? (
             <WorkspaceView
@@ -414,6 +425,45 @@ export function Dashboard() {
         <ShareModal open onClose={() => setShareModalDiagramId(null)} diagramId={shareModalDiagramId} />
       )}
       <DriveImportModal open={driveImportOpen} onClose={() => setDriveImportOpen(false)} onImported={(id) => navigate(`/board/${id}`)} />
+
+      <Drawer
+        open={!!settingsWorkspaceId}
+        onClose={() => setSettingsWorkspaceId(null)}
+        title="Workspace Settings"
+        subtitle={workspaces.find((w) => w.id === settingsWorkspaceId)?.name}
+        icon={
+          settingsWorkspaceId ? (
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg"
+              style={{
+                backgroundColor: (workspaces.find((w) => w.id === settingsWorkspaceId)?.color ?? "#6366f1") + "20",
+                color: workspaces.find((w) => w.id === settingsWorkspaceId)?.color ?? "#6366f1",
+              }}
+            >
+              {workspaces.find((w) => w.id === settingsWorkspaceId)?.icon || workspaces.find((w) => w.id === settingsWorkspaceId)?.name.charAt(0).toUpperCase()}
+            </div>
+          ) : undefined
+        }
+      >
+        {settingsWorkspaceId && (
+          <WorkspaceSettingsContent
+            workspaceId={settingsWorkspaceId}
+            onClose={() => setSettingsWorkspaceId(null)}
+            onStatusMessage={(msg) => { setActionStatus(msg); setTimeout(() => setActionStatus(null), 3000); }}
+            onWorkspaceUpdated={() => {
+              workspacesApi.list().then((res) => {
+                const ws = res.workspaces ?? [];
+                setWorkspaces(ws);
+                // If the active workspace was deleted, fall back to personal
+                if (!ws.some((w) => w.id === activeWorkspaceId)) {
+                  const personal = ws.find((w) => w.isPersonal);
+                  if (personal) setActiveWorkspaceId(personal.id);
+                }
+              }).catch(() => {});
+            }}
+          />
+        )}
+      </Drawer>
     </div>
   );
 }

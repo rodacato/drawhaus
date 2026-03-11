@@ -16,7 +16,6 @@ import { ResetPassword } from "@/pages/ResetPassword";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { NotFound } from "@/pages/NotFound";
-import { WorkspaceSettings } from "@/pages/WorkspaceSettings";
 import { WorkspaceInvite } from "@/pages/WorkspaceInvite";
 
 function InviteRedirect() {
@@ -48,9 +47,8 @@ export function AppRouter() {
         <Route element={<AppShell />}>
           <Route path="/settings" element={<Settings />} />
         </Route>
-        {/* Board and workspace settings are full-screen, no AppShell */}
+        {/* Board is full-screen, no AppShell */}
         <Route path="/board/:id" element={<Board />} />
-        <Route path="/workspace/:id/settings" element={<WorkspaceSettings />} />
       </Route>
 
       {/* Redirect old admin routes to settings tabs */}
