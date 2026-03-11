@@ -4,7 +4,7 @@
 
 ---
 
-## What's Been Built (v0.1–v0.6)
+## What's Been Built (v0.1–v0.7)
 
 Everything below is shipped and working in production.
 
@@ -70,17 +70,24 @@ Everything below is shipped and working in production.
 - Admin delete user with confirmation modal
 - Embeddable link support for diagrams
 
+### Workspaces (v0.7)
+- Multi-tenant workspace support for separating diagrams by client/project
+- Personal workspace auto-created per user (can't be deleted or shared)
+- Workspace CRUD: name, description, color, emoji/text icon
+- Workspace roles: admin (full control), editor (edit diagrams), viewer (read-only)
+- Member management: invite by email, accept flow with login/register redirect
+- Workspace-scoped folders and diagrams
+- Access control: `findAccessRole` checks owner > diagram member > workspace member
+- Dashboard sidebar: workspace switcher with settings cog per workspace
+- Workspace settings page: identity, members list with role dropdown, danger zone
+- Admin-configurable limits: max 5 workspaces per user, max 5 members per workspace
+- Production migration: standalone SQL script for existing data normalization
+
 ---
 
 ## What's Next
 
-### Workspaces
-
-> In progress — multi-tenant workspace support.
-
-<!-- TODO: fill in workspace implementation details once complete -->
-
-- Backup All to Google Drive: bulk sync all diagrams in active workspace to Drive with folder structure and real-time progress (POST returning 202, socket.io progress events, concurrency limit of 3). Depends on workspaces being complete.
+- Backup All to Google Drive: bulk sync all diagrams in active workspace to Drive with folder structure and real-time progress (POST returning 202, socket.io progress events, concurrency limit of 3).
 
 ### v1.0 Gate — Security Hardening
 
@@ -225,6 +232,9 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 | Setup wizard over manual .env | Wizard for feature config, env for infra | Reduces deploy friction; validates credentials before saving |
 | No CSRF tokens | SameSite=Lax + CORS origin lock + httpOnly cookies | SPA architecture already mitigates CSRF; tokens add complexity without value |
 | No migration system (v1.0) | Inline `initSchema()` with idempotent DDL | Single operator; `CREATE IF NOT EXISTS` is sufficient; revisit if team grows |
+| Workspaces over per-diagram collaborators | Workspace-level access | Contractor use case: separate clients cleanly, share all diagrams in a workspace at once instead of one by one |
+| Tags per-user, not per-workspace | Personal organization | Industry standard; tags are a personal view, not shared state |
+| Lazy personal workspace | Created on first `/api/workspaces` list call | No migration code in app; existing users get personal workspace on next login |
 
 ---
 
