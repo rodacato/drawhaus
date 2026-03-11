@@ -4,6 +4,44 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
+## v0.7.0 — Workspaces, Drive & Dashboard Overhaul (2026-03)
+
+### Added
+- **Google Drive integration**: OAuth scope upgrade, export/import diagrams to/from Drive, auto-backup on save, integrations tab with sync badge
+- **Google OAuth login** with account linking
+- **Multi-tenant workspaces**: personal workspace per user, workspace CRUD (name, description, color, icon), roles (admin/editor/viewer), member invites with email accept flow
+- **Workspace-scoped folders and diagrams** with `findAccessRole` access control (owner > diagram member > workspace member)
+- **Dashboard sidebar**: workspace switcher with settings cog, workspace settings page (identity, members, danger zone)
+- **Admin-configurable limits**: max 5 workspaces/user, max 5 members/workspace
+- **Dashboard UX overhaul**: Recent as default landing view, cross-workspace Recent/Starred views, workspace-scoped toolbar (New Diagram, New Folder, Import, Drive, grid/list toggle)
+- **Folder sections**: folders rendered as content sections sorted alphabetically, per-folder diagram creation, "Uncategorized" section, folder deletion with non-empty guard
+- **Category tags**: full CRUD API + assign/unassign to diagrams
+- **Account deletion** with password confirmation and cascade
+- **Comment reactions** (likes) with toggle
+- **Board collapsible sidebar**: slim icon bar + expandable panels
+- **Admin delete user** with confirmation modal
+- **Embeddable link support** for diagrams
+- **Toast notification system**: `useToast()` hook with success, error, and info variants
+- **Confirm dialog system**: `useConfirm()` hook with promise-based API and danger variant
+- **Production migration script** for existing data normalization to workspaces
+- **Style guide**: documented Toast, ConfirmDialog, Drawer, Theme Toggle, Color Picker, Connection Badges with categorized TOC
+
+### Improved
+- Replaced all `window.confirm()` and `window.alert()` with polished UI dialogs
+- Success/error feedback on all destructive actions across Dashboard, WorkspaceSettings, and AdminUsers
+- Refactored Dashboard.tsx into reusable components: DashboardSidebar, WorkspaceToolbar, WorkspaceView, GeneralView, FolderSection, DiagramGrid, NewDiagramCard
+- Removed "All Diagrams" nav — Recent/Starred are now read-only global views
+- Moved Invite User button from admin overview to users page
+- Added `.env.example` and wired docker-compose to use `.env`
+
+### Fixed
+- Google OAuth secrets missing from Kamal deploy config
+- Unhandled errors not reported to Honeybadger from async route handlers
+- ESLint errors and warnings cleanup
+- Workspace SQL bug in dashboard queries
+
+---
+
 ## v0.6.0 — Design Stitch & Polish (2026-03)
 
 ### Added
