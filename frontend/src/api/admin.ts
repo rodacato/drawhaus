@@ -8,6 +8,9 @@ export const adminApi = {
   updateUser: (id: string, data: { role?: string; disabled?: boolean }) =>
     api.patch(`/api/admin/users/${id}`, data).then((r) => r.data),
 
+  deleteUser: (id: string) =>
+    api.delete(`/api/admin/users/${id}`).then((r) => r.data),
+
   getSettings: () => api.get("/api/admin/settings").then((r) => r.data),
 
   updateSettings: (data: { instanceName?: string; registrationOpen?: boolean }) =>

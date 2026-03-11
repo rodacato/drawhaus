@@ -6,6 +6,7 @@ import type { GetSiteSettingsUseCase } from "../../../application/use-cases/admi
 import type { UpdateSiteSettingsUseCase } from "../../../application/use-cases/admin/update-site-settings";
 import type { GetMetricsUseCase } from "../../../application/use-cases/admin/get-metrics";
 import type { InviteUserUseCase } from "../../../application/use-cases/admin/invite-user";
+import type { AdminDeleteUserUseCase } from "../../../application/use-cases/admin/delete-user";
 import type { InvitationRepository } from "../../../domain/ports/invitation-repository";
 import { asyncRoute } from "../middleware/async-handler";
 import { requireAdmin } from "../middleware/require-admin";
@@ -33,6 +34,7 @@ export function createAdminRoutes(
     updateSettings: UpdateSiteSettingsUseCase;
     getMetrics: GetMetricsUseCase;
     inviteUser: InviteUserUseCase;
+    deleteUser: AdminDeleteUserUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
   invitationRepo: InvitationRepository,
@@ -54,6 +56,12 @@ export function createAdminRoutes(
     const targetId = req.params.id as string;
     const user = await useCases.updateUser.execute(targetId, req.authUser.id, parsed.data);
     return res.json({ user });
+  }));
+
+  router.delete("/users/:id", asyncRoute(async (req, res) => {
+    const targetId = req.params.id as string;
+    await useCases.deleteUser.execute(targetId, req.authUser.id);
+    return res.json({ success: true });
   }));
 
   router.get("/settings", asyncRoute(async (_req, res) => {

@@ -77,6 +77,7 @@ import { DeleteLinkUseCase } from "./application/use-cases/share/delete-link";
 // --- Use Cases: Admin ---
 import { ListUsersUseCase } from "./application/use-cases/admin/list-users";
 import { AdminUpdateUserUseCase } from "./application/use-cases/admin/update-user";
+import { AdminDeleteUserUseCase } from "./application/use-cases/admin/delete-user";
 import { GetSiteSettingsUseCase } from "./application/use-cases/admin/get-site-settings";
 import { UpdateSiteSettingsUseCase } from "./application/use-cases/admin/update-site-settings";
 import { GetMetricsUseCase } from "./application/use-cases/admin/get-metrics";
@@ -196,6 +197,7 @@ const deleteLink = new DeleteLinkUseCase(shareRepo);
 // Admin
 const listUsers = new ListUsersUseCase(userRepo);
 const adminUpdateUser = new AdminUpdateUserUseCase(userRepo, sessionRepo);
+const adminDeleteUser = new AdminDeleteUserUseCase(userRepo, sessionRepo);
 const getSettings = new GetSiteSettingsUseCase(siteSettingsRepo);
 const updateSettings = new UpdateSiteSettingsUseCase(siteSettingsRepo);
 const getMetrics = new GetMetricsUseCase();
@@ -263,7 +265,7 @@ app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: listCom
 app.use("/api/tags", createTagRoutes({ create: createTag, list: listTags, delete: deleteTag, update: updateTag, assign: assignTag, unassign: unassignTag }, requireAuth));
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
-app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, getSettings, updateSettings, getMetrics, inviteUser }, requireAuth, invitationRepo));
+app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, deleteUser: adminDeleteUser, getSettings, updateSettings, getMetrics, inviteUser }, requireAuth, invitationRepo));
 app.use("/api/drive", createDriveRoutes({ getDriveStatus, toggleDriveBackup, disconnectDrive, exportToDrive, listDriveFiles, importFromDrive }, tokenRefresher, requireAuth));
 
 // --- Honeybadger error handler (must be after all routes) ---
