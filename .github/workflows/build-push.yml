@@ -63,6 +63,9 @@ jobs:
       HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
 
     steps:
       - name: Checkout

@@ -95,6 +95,9 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `RESEND_API_KEY` | No | — | Resend API key for emails. If blank, emails log to console |
 | `FROM_EMAIL` | No | `noreply@drawhaus.dev` | Sender address for transactional emails |
 | `HONEYBADGER_API_KEY` | No | — | Error monitoring (optional) |
+| `GOOGLE_CLIENT_ID` | No | — | Google OAuth client ID. Leave blank to disable Google login |
+| `GOOGLE_CLIENT_SECRET` | No | — | Google OAuth client secret |
+| `GOOGLE_REDIRECT_URI` | No | — | Google OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/google/callback`) |
 
 ### Frontend
 
@@ -286,6 +289,9 @@ For the backend deploy workflow to work, configure these secrets in your GitHub 
 | `HONEYBADGER_API_KEY` | (Optional) Honeybadger error monitoring key |
 | `RESEND_API_KEY` | (Optional) Resend API key for emails — without it, emails log to console |
 | `FROM_EMAIL` | (Optional) Sender address for transactional emails |
+| `GOOGLE_CLIENT_ID` | (Optional) Google OAuth client ID — leave blank to disable Google login |
+| `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth client secret |
+| `GOOGLE_REDIRECT_URI` | (Optional) Google OAuth redirect URI (e.g. `https://api.yourdomain.com/api/auth/google/callback`) |
 
 ### Manual deploy commands
 
