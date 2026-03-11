@@ -46,6 +46,9 @@ env:
     - HONEYBADGER_API_KEY
     - RESEND_API_KEY
     - FROM_EMAIL
+    - GOOGLE_CLIENT_ID
+    - GOOGLE_CLIENT_SECRET
+    - GOOGLE_REDIRECT_URI
 
 volumes:
   - drawhaus-uploads:/data/files

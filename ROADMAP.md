@@ -67,7 +67,7 @@ Small items from the design mockups that still need implementation.
 | ~~1~~ | ~~Category tags~~ | ~~Done~~ | ~~Full CRUD API + UI wired~~ |
 | ~~2~~ | ~~Account deletion~~ | ~~Done~~ | ~~`DELETE /api/auth/account` with password confirmation, cascade~~ |
 | ~~3~~ | ~~Comment reactions~~ | ~~Done~~ | ~~`comment_reactions` table + toggle like endpoint~~ |
-| 4 | Board collapsible sidebar | Frontend | Slim icon bar (w-14) expanding to full sidebar (w-64) on hover |
+| ~~4~~ | ~~Board collapsible sidebar~~ | ~~Done~~ | ~~Slim icon bar (w-14) with expandable panels (w-64) on click~~ |
 | 5 | Admin analytics | Full | Charts (recharts) for user growth, diagram creation, active sessions |
 | 6 | Admin backup & logs | Full | Manual backup trigger, DB dump download, log viewer |
 | 7 | Export CSV from admin | Frontend | Client-side CSV generation from user table |
