@@ -83,6 +83,18 @@ Everything below is shipped and working in production.
 - Admin-configurable limits: max 5 workspaces per user, max 5 members per workspace
 - Production migration: standalone SQL script for existing data normalization
 
+### Dashboard UX Overhaul (v0.7)
+- Removed "All Diagrams" nav — Recent is now the default landing view
+- Recent and Starred fetch diagrams across all workspaces (cross-workspace global views)
+- Recent/Starred are read-only views (no create CTAs)
+- Workspace-scoped toolbar: New Diagram, New Folder, Import, Drive, grid/list toggle
+- Folders rendered as content sections (not sidebar items), sorted alphabetically
+- Per-folder diagram creation via inline action button
+- "Uncategorized" section for diagrams not in any folder
+- Folder deletion with non-empty guard (blocking alert)
+- Always-visible folder action buttons (create diagram, delete)
+- Refactored Dashboard.tsx into reusable components: DashboardSidebar, WorkspaceToolbar, WorkspaceView, GeneralView, FolderSection, DiagramGrid, NewDiagramCard
+
 ---
 
 ## What's Next
