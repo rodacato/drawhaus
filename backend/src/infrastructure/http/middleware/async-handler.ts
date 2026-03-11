@@ -1,4 +1,5 @@
 import type { Request, RequestHandler, Response } from "express";
+import Honeybadger from "@honeybadger-io/js";
 import { DomainError } from "../../../domain/errors";
 import { domainErrorToStatus } from "./error-mapper";
 import { logger } from "../../logger";
@@ -19,6 +20,9 @@ export function asyncRoute(
         return;
       }
       (req.log ?? logger).error(error, "Route failed");
+      Honeybadger.notify(error instanceof Error ? error : new Error(String(error)), {
+        context: { method: req.method, url: req.originalUrl },
+      });
       res.status(500).json({ error: "Internal server error" });
     });
   };
@@ -34,6 +38,9 @@ export function asyncPublicRoute(
         return;
       }
       (req.log ?? logger).error(error, "Route failed");
+      Honeybadger.notify(error instanceof Error ? error : new Error(String(error)), {
+        context: { method: req.method, url: req.originalUrl },
+      });
       res.status(500).json({ error: "Internal server error" });
     });
   };
