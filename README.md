@@ -56,10 +56,11 @@ This starts:
 ### Option 2: Docker Compose
 
 ```bash
+cp .env.example .env   # edit .env to add Google OAuth keys, etc.
 docker compose up
 ```
 
-Starts everything — frontend, backend, and PostgreSQL:
+Docker Compose reads `.env` automatically. Starts everything — frontend, backend, and PostgreSQL:
 
 | Service  | URL                     |
 |----------|-------------------------|
@@ -105,8 +106,9 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 |----------|----------|---------|-------------|
 | `VITE_API_URL` | No | — | Backend URL. Leave empty in dev (Vite proxy handles it) |
 | `VITE_WS_URL` | No | — | WebSocket URL. Leave empty in dev |
+| `VITE_GOOGLE_API_KEY` | No | — | Google Picker API key for Drive file browser. Leave blank to disable |
 
-> See `.env.production.example` for the full production template.
+> **Local dev:** Copy `.env.example` to `.env` — Docker Compose loads it automatically. See `.env.production.example` for the production template.
 
 ---
 
@@ -240,6 +242,7 @@ Drawhaus uses a split deployment model:
    |----------|-------|
    | `VITE_API_URL` | `https://api.yourdomain.com` |
    | `VITE_WS_URL` | `https://api.yourdomain.com` |
+   | `VITE_GOOGLE_API_KEY` | Your Google Picker API key (optional — enables Drive file picker) |
    | `NODE_VERSION` | `22` |
 
 5. (Optional) Add a **custom domain** under the Custom Domains tab (e.g. `draw.yourdomain.com`)
