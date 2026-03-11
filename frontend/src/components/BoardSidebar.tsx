@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { driveApi } from "@/api/drive";
 import type { ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 
 /* ───────────────────────── types ───────────────────────── */
@@ -205,7 +206,70 @@ function ExportPanel({ excalidrawApiRef }: { excalidrawApiRef: React.RefObject<E
         </span>
         <div><div className="font-medium">Copy PNG</div><div className="text-xs text-gray-400">To clipboard</div></div>
       </button>
+      <DriveExportButton getSceneData={getSceneData} onStatus={setStatus} />
     </div>
+  );
+}
+
+function DriveExportButton({
+  getSceneData,
+  onStatus,
+}: {
+  getSceneData: () => { elements: unknown[]; appState: unknown; files: unknown } | null;
+  onStatus: (msg: string | null) => void;
+}) {
+  const [driveConnected, setDriveConnected] = useState<boolean | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    driveApi.getStatus().then((s) => setDriveConnected(s.connected)).catch(() => setDriveConnected(false));
+  }, []);
+
+  if (driveConnected === null || driveConnected === false) return null;
+
+  async function handleDriveExport() {
+    const data = getSceneData();
+    if (!data) return;
+    setExporting(true);
+    onStatus(null);
+    try {
+      const content = JSON.stringify({
+        type: "excalidraw",
+        version: 2,
+        source: "drawhaus",
+        elements: data.elements,
+        appState: data.appState,
+      }, null, 2);
+
+      const result = await driveApi.export({
+        format: "excalidraw",
+        targetFolderId: "root",
+        content,
+        fileName: `diagram-${new Date().toISOString().slice(0, 10)}.excalidraw`,
+      });
+      if (result.webViewLink) {
+        onStatus("Saved to Drive!");
+      } else {
+        onStatus("Saved to Drive!");
+      }
+    } catch {
+      onStatus("Drive export failed");
+    } finally {
+      setExporting(false);
+      setTimeout(() => onStatus(null), 3000);
+    }
+  }
+
+  return (
+    <>
+      <div className="my-2 border-t border-gray-100" />
+      <button onClick={handleDriveExport} disabled={exporting} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50 disabled:opacity-50">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-500">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" /></svg>
+        </span>
+        <div><div className="font-medium">{exporting ? "Saving..." : "Google Drive"}</div><div className="text-xs text-gray-400">Export to Drive</div></div>
+      </button>
+    </>
   );
 }
 
