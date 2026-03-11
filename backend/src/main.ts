@@ -29,10 +29,13 @@ import { PgTagRepository } from "./infrastructure/persistence/pg-tag-repository"
 import { PgInvitationRepository } from "./infrastructure/persistence/pg-invitation-repository";
 import { PgPasswordResetRepository } from "./infrastructure/persistence/pg-password-reset-repository";
 import { PgOAuthTokenRepository } from "./infrastructure/persistence/pg-oauth-token-repository";
+import { PgDriveBackupRepository } from "./infrastructure/persistence/pg-drive-backup-repository";
 
 // --- Services ---
 import { BcryptHasher } from "./infrastructure/services/bcrypt-hasher";
 import { ResendEmailService } from "./infrastructure/services/email-service";
+import { GoogleDriveServiceImpl } from "./infrastructure/services/google-drive-service";
+import { GoogleTokenRefresher } from "./infrastructure/services/google-token-refresh";
 
 // --- Use Cases: Auth ---
 import { RegisterUseCase } from "./application/use-cases/auth/register";
@@ -107,6 +110,13 @@ import { JoinRoomUseCase } from "./application/use-cases/realtime/join-room";
 import { JoinRoomGuestUseCase } from "./application/use-cases/realtime/join-room-guest";
 import { SaveSceneUseCase } from "./application/use-cases/realtime/save-scene";
 
+// --- Use Cases: Drive ---
+import { SyncToDriveUseCase } from "./application/use-cases/drive/sync-to-drive";
+import { ExportToDriveUseCase } from "./application/use-cases/drive/export-to-drive";
+import { GetDriveStatusUseCase } from "./application/use-cases/drive/get-drive-status";
+import { ToggleDriveBackupUseCase } from "./application/use-cases/drive/toggle-drive-backup";
+import { DisconnectDriveUseCase } from "./application/use-cases/drive/disconnect-drive";
+
 // --- HTTP Routes ---
 import { createAuthRoutes } from "./infrastructure/http/routes/auth.routes";
 import { createDiagramRoutes } from "./infrastructure/http/routes/diagram.routes";
@@ -116,6 +126,7 @@ import { createAdminRoutes } from "./infrastructure/http/routes/admin.routes";
 import { createSceneRoutes } from "./infrastructure/http/routes/scene.routes";
 import { createCommentRoutes } from "./infrastructure/http/routes/comment.routes";
 import { createTagRoutes } from "./infrastructure/http/routes/tag.routes";
+import { createDriveRoutes } from "./infrastructure/http/routes/drive.routes";
 import { createRequireAuth } from "./infrastructure/http/middleware/require-auth";
 
 // --- Socket ---
@@ -137,8 +148,11 @@ const tagRepo = new PgTagRepository();
 const invitationRepo = new PgInvitationRepository();
 const passwordResetRepo = new PgPasswordResetRepository();
 const oauthTokenRepo = new PgOAuthTokenRepository();
+const driveBackupRepo = new PgDriveBackupRepository();
 const hasher = new BcryptHasher();
 const emailService = new ResendEmailService();
+const driveService = new GoogleDriveServiceImpl();
+const tokenRefresher = new GoogleTokenRefresher(oauthTokenRepo);
 
 // Auth
 const register = new RegisterUseCase(userRepo, sessionRepo, hasher, siteSettingsRepo);
@@ -213,6 +227,13 @@ const joinRoom = new JoinRoomUseCase(sessionRepo, diagramRepo, sceneRepo);
 const joinRoomGuest = new JoinRoomGuestUseCase(shareRepo, diagramRepo, sceneRepo);
 const saveScene = new SaveSceneUseCase(sceneRepo);
 
+// Drive
+const syncToDrive = new SyncToDriveUseCase(driveService, driveBackupRepo, tokenRefresher, diagramRepo, folderRepo);
+const exportToDrive = new ExportToDriveUseCase(driveService, tokenRefresher);
+const getDriveStatus = new GetDriveStatusUseCase(oauthTokenRepo, driveBackupRepo);
+const toggleDriveBackup = new ToggleDriveBackupUseCase(driveBackupRepo, oauthTokenRepo);
+const disconnectDrive = new DisconnectDriveUseCase(driveBackupRepo);
+
 // Middleware
 const requireAuth = createRequireAuth(getCurrentUser);
 
@@ -239,6 +260,7 @@ app.use("/api/tags", createTagRoutes({ create: createTag, list: listTags, delete
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
 app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, getSettings, updateSettings, getMetrics, inviteUser }, requireAuth, invitationRepo));
+app.use("/api/drive", createDriveRoutes({ getDriveStatus, toggleDriveBackup, disconnectDrive, exportToDrive }, tokenRefresher, requireAuth));
 
 // --- Honeybadger error handler (must be after all routes) ---
 if (config.honeybadgerApiKey) {
@@ -252,7 +274,7 @@ if (config.honeybadgerApiKey) {
 async function startServer(): Promise<void> {
   await initSchema();
   const httpServer = createServer(app);
-  setupSocketServer(httpServer, { joinRoom, joinRoomGuest, saveScene, createComment, replyComment, resolveComment, deleteComment });
+  setupSocketServer(httpServer, { joinRoom, joinRoomGuest, saveScene, syncToDrive, createComment, replyComment, resolveComment, deleteComment });
 
   httpServer.listen(config.port, () => {
     logger.info({ port: config.port }, `Backend running on http://localhost:${config.port}`);

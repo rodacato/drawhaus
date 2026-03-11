@@ -1,12 +1,13 @@
 import type { Server, Socket } from "socket.io";
 import type { SaveSceneUseCase } from "../../../application/use-cases/realtime/save-scene";
+import type { SyncToDriveUseCase } from "../../../application/use-cases/drive/sync-to-drive";
 import { type SocketData, canEdit, checkRateLimit, RATE_LIMIT_MAX_SCENE } from "../helpers";
 import { logger } from "../../logger";
 
 export function registerSceneHandlers(
   io: Server,
   socket: Socket,
-  useCases: { saveScene: SaveSceneUseCase },
+  useCases: { saveScene: SaveSceneUseCase; syncToDrive?: SyncToDriveUseCase },
 ) {
   socket.on(
     "scene-update",
@@ -50,6 +51,23 @@ export function registerSceneHandlers(
 
         await useCases.saveScene.execute(targetSceneId, elements, appState);
         socket.emit("scene-saved", { roomId, sceneId: targetSceneId });
+
+        // Fire-and-forget: sync to Google Drive if enabled
+        const userId = (socket.data as SocketData).userId;
+        if (useCases.syncToDrive && userId) {
+          useCases.syncToDrive
+            .execute(userId, roomId, targetSceneId, elements, appState)
+            .then((result) => {
+              if (result.synced || result.error) {
+                socket.emit("drive-sync-status", {
+                  sceneId: targetSceneId,
+                  synced: result.synced,
+                  error: result.error,
+                });
+              }
+            })
+            .catch(() => { /* already logged inside SyncToDriveUseCase */ });
+        }
       } catch (error: unknown) {
         logger.error(error, "save-scene failed");
         socket.emit("room-error", { message: "Save failed" });

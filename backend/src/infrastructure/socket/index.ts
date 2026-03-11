@@ -4,6 +4,7 @@ import msgpackParser from "socket.io-msgpack-parser";
 import type { JoinRoomUseCase } from "../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../application/use-cases/realtime/join-room-guest";
 import type { SaveSceneUseCase } from "../../application/use-cases/realtime/save-scene";
+import type { SyncToDriveUseCase } from "../../application/use-cases/drive/sync-to-drive";
 import type { CreateCommentUseCase } from "../../application/use-cases/comments/create-comment";
 import type { ReplyCommentUseCase } from "../../application/use-cases/comments/reply-comment";
 import type { ResolveCommentUseCase } from "../../application/use-cases/comments/resolve-comment";
@@ -20,6 +21,7 @@ export function setupSocketServer(
     joinRoom: JoinRoomUseCase;
     joinRoomGuest: JoinRoomGuestUseCase;
     saveScene: SaveSceneUseCase;
+    syncToDrive: SyncToDriveUseCase;
     createComment: CreateCommentUseCase;
     replyComment: ReplyCommentUseCase;
     resolveComment: ResolveCommentUseCase;
@@ -48,6 +50,7 @@ export function setupSocketServer(
     });
     registerSceneHandlers(io, socket, {
       saveScene: useCases.saveScene,
+      syncToDrive: useCases.syncToDrive,
     });
     registerCursorHandlers(socket);
     registerCommentHandlers(io, socket, {
