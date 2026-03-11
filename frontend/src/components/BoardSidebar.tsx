@@ -289,6 +289,9 @@ function SharePanel({
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareLoading, setShareLoading] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+  const [embedSnippet, setEmbedSnippet] = useState<string | null>(null);
+  const [embedCopied, setEmbedCopied] = useState(false);
+  const [embedLoading, setEmbedLoading] = useState(false);
 
   const selfUser = presenceUsers.find((u) => u.isSelf);
   const otherUsers = presenceUsers.filter((u) => !u.isSelf);
@@ -372,6 +375,41 @@ function SharePanel({
           <div className="mt-2 rounded-lg bg-gray-50 p-2.5">
             <p className="break-all text-[11px] text-gray-500 font-mono">{shareUrl}</p>
             {shareCopied && <p className="mt-1 text-[11px] font-medium text-emerald-600">Copied!</p>}
+          </div>
+        )}
+      </div>
+
+      {/* Embed */}
+      <div>
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Embed</h3>
+        <button
+          onClick={async () => {
+            setEmbedLoading(true);
+            setEmbedCopied(false);
+            try {
+              const url = await onCreateShareLink("viewer");
+              if (url) {
+                const embedUrl = url.replace("/share/", "/embed/");
+                const snippet = `<iframe src="${embedUrl}" width="100%" height="400" style="border:none;border-radius:8px;" loading="lazy"></iframe>`;
+                setEmbedSnippet(snippet);
+                await navigator.clipboard.writeText(snippet);
+                setEmbedCopied(true);
+                setTimeout(() => setEmbedCopied(false), 2000);
+              }
+            } catch { /* silent */ }
+            finally { setEmbedLoading(false); }
+          }}
+          disabled={embedLoading}
+          className="flex h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-gray-50 text-xs font-medium text-gray-600 transition hover:bg-gray-100 disabled:opacity-50"
+          type="button"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
+          {embedLoading ? "Generating..." : "Copy embed code"}
+        </button>
+        {embedSnippet && (
+          <div className="mt-2 rounded-lg bg-gray-50 p-2.5">
+            <p className="break-all text-[11px] text-gray-500 font-mono">{embedSnippet}</p>
+            {embedCopied && <p className="mt-1 text-[11px] font-medium text-emerald-600">Copied!</p>}
           </div>
         )}
       </div>

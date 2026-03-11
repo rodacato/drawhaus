@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { diagramsApi } from "@/api/diagrams";
 import { foldersApi } from "@/api/folders";
+import { shareApi } from "@/api/share";
 import { tagsApi, type Tag } from "@/api/tags";
 import { useAuth } from "@/contexts/AuthContext";
 import { ui } from "@/lib/ui";
@@ -209,6 +210,25 @@ export function Dashboard() {
     try {
       await diagramsApi.toggleStar(diagramId, starred);
       setDiagrams((prev) => prev.map((d) => d.id === diagramId ? { ...d, starred } : d));
+    } catch { /* silent */ }
+  }
+
+  async function embedDiagram(diagramId: string) {
+    try {
+      const cacheKey = `drawhaus_share_${diagramId}_viewer`;
+      let url = localStorage.getItem(cacheKey);
+      if (!url) {
+        const payload = await shareApi.create(diagramId, "viewer");
+        const token = payload.shareLink?.token;
+        if (!token) return;
+        url = `${window.location.origin}/share/${token}`;
+        try { localStorage.setItem(cacheKey, url); } catch { /* quota */ }
+      }
+      const embedUrl = url.replace("/share/", "/embed/");
+      const snippet = `<iframe src="${embedUrl}" width="100%" height="400" style="border:none;border-radius:8px;" loading="lazy"></iframe>`;
+      await navigator.clipboard.writeText(snippet);
+      setActionStatus("Embed code copied!");
+      setTimeout(() => setActionStatus(null), 2000);
     } catch { /* silent */ }
   }
 
@@ -432,7 +452,7 @@ export function Dashboard() {
           ) : viewMode === "list" ? (
             <div className="divide-y divide-border rounded-lg border border-border bg-surface-raised">
               {displayDiagrams.map((diagram) => (
-                <DiagramListRow key={diagram.id} diagram={diagram} onRename={renameDiagram} onToggleStar={toggleStar} onShare={setShareModalDiagramId} onDuplicate={duplicateDiagram} onDelete={deleteDiagram} />
+                <DiagramListRow key={diagram.id} diagram={diagram} onRename={renameDiagram} onToggleStar={toggleStar} onShare={setShareModalDiagramId} onEmbed={embedDiagram} onDuplicate={duplicateDiagram} onDelete={deleteDiagram} />
               ))}
             </div>
           ) : (
@@ -448,6 +468,7 @@ export function Dashboard() {
                   onDuplicate={duplicateDiagram}
                   onToggleStar={toggleStar}
                   onShare={(id) => setShareModalDiagramId(id)}
+                  onEmbed={embedDiagram}
                   onRename={renameDiagram}
                   onToggleTag={toggleTag}
                   onCreateTag={createTag}
