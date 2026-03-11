@@ -5,7 +5,7 @@ import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { DriveSyncBadge, type DriveSyncState } from "@/components/DriveSyncBadge";
 import { FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "@/components/BoardSidebar";
-import { SceneTabBar } from "@/components/SceneTabBar";
+// SceneTabBar removed — scenes managed from sidebar
 import { CommentsPanel } from "@/components/CommentsPanel";
 import { CommentIndicators } from "@/components/CommentIndicators";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
@@ -182,8 +182,8 @@ export default function BoardEditor({
   const unresolvedCount = comments.threads.filter((t) => !t.resolved).length;
 
   return (
-    <div className="relative h-screen w-screen">
-      {/* Sidebar — slim icon bar + expandable panels */}
+    <div className="flex h-screen w-screen">
+      {/* Sidebar — icon bar + expandable drawer (pushes canvas) */}
       <BoardSidebar
         userEmail={userEmail}
         excalidrawApiRef={collab.excalidrawApiRef}
@@ -198,76 +198,79 @@ export default function BoardEditor({
         onCreateScene={collab.createScene}
       />
 
-      {/* Top bar — minimal: title + save status + connection */}
-      <div className="pointer-events-none fixed left-16 top-3 z-20 flex flex-col gap-1">
-        <div className="flex h-10 items-stretch gap-3">
-          {/* Title */}
-          <div className="pointer-events-auto flex min-w-[250px] items-center rounded-lg bg-white px-4 shadow-sm">
-            {editingTitle ? (
-              <input
-                className="w-full border-b border-blue-400 bg-transparent text-lg font-medium text-[#1b1b1f] outline-none"
-                value={titleDraft}
-                onChange={(e) => setTitleDraft(e.target.value)}
-                onBlur={saveTitle}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveTitle();
-                  if (e.key === "Escape") setEditingTitle(false);
-                }}
-                autoFocus
-              />
-            ) : (
-              <button
-                className="text-left text-lg font-medium text-[#1b1b1f] hover:text-blue-600 transition-colors"
-                onClick={startEditingTitle}
-                title={canEdit ? "Click to rename" : undefined}
-              >
-                {diagramTitle || "Untitled"}
-              </button>
-            )}
+      {/* Main content area */}
+      <div className="relative flex-1 flex h-full min-w-0">
+        {/* Top bar — floats over canvas */}
+        <div className="pointer-events-none absolute left-2 top-3 z-20 flex flex-col gap-1">
+          <div className="flex h-10 items-stretch gap-3">
+            {/* Title */}
+            <div className="pointer-events-auto flex min-w-[250px] items-center rounded-lg bg-white px-4 shadow-sm">
+              {editingTitle ? (
+                <input
+                  className="w-full border-b border-blue-400 bg-transparent text-lg font-medium text-[#1b1b1f] outline-none"
+                  value={titleDraft}
+                  onChange={(e) => setTitleDraft(e.target.value)}
+                  onBlur={saveTitle}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveTitle();
+                    if (e.key === "Escape") setEditingTitle(false);
+                  }}
+                  autoFocus
+                />
+              ) : (
+                <button
+                  className="text-left text-lg font-medium text-[#1b1b1f] hover:text-blue-600 transition-colors"
+                  onClick={startEditingTitle}
+                  title={canEdit ? "Click to rename" : undefined}
+                >
+                  {diagramTitle || "Untitled"}
+                </button>
+              )}
+            </div>
+            {/* Connection badge */}
+            <div className="pointer-events-auto flex items-center">
+              <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
+            </div>
           </div>
-          {/* Connection & Drive sync badges */}
+          {/* Save status + Drive sync */}
           <div className="pointer-events-auto flex items-center gap-2">
-            <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
+            {canEdit && (
+              <div className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}>
+                {collab.saveLabel}
+              </div>
+            )}
             <DriveSyncBadge state={driveSyncState} error={driveSyncError} />
           </div>
         </div>
-        {/* Save status */}
-        {canEdit && (
-          <div className={`pointer-events-auto w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}>
-            {collab.saveLabel}
+
+        {collab.followingUserId && (
+          <FollowingBanner
+            presenceUsers={collab.presenceUsers}
+            followingUserId={collab.followingUserId}
+            onStop={() => collab.setFollowingUserId(null)}
+          />
+        )}
+
+        <CursorOverlay cursors={collab.cursors} />
+        {showCommentIndicators && (
+          <CommentIndicators
+            elementsWithComments={comments.elementsWithComments}
+            excalidrawApiRef={collab.excalidrawApiRef}
+            onClickIndicator={handleClickIndicator}
+          />
+        )}
+
+        {/* Scene loading overlay */}
+        {collab.switchingScene && (
+          <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-white/60">
+            <div className="rounded-lg bg-white px-4 py-2 text-sm text-gray-500 shadow-sm">
+              Loading scene...
+            </div>
           </div>
         )}
-      </div>
 
-      {collab.followingUserId && (
-        <FollowingBanner
-          presenceUsers={collab.presenceUsers}
-          followingUserId={collab.followingUserId}
-          onStop={() => collab.setFollowingUserId(null)}
-        />
-      )}
-
-      <CursorOverlay cursors={collab.cursors} />
-      {showCommentIndicators && (
-        <CommentIndicators
-          elementsWithComments={comments.elementsWithComments}
-          excalidrawApiRef={collab.excalidrawApiRef}
-          onClickIndicator={handleClickIndicator}
-        />
-      )}
-
-      {/* Scene loading overlay */}
-      {collab.switchingScene && (
-        <div className="pointer-events-none fixed inset-0 z-30 flex items-center justify-center bg-white/60">
-          <div className="rounded-lg bg-white px-4 py-2 text-sm text-gray-500 shadow-sm">
-            Loading scene...
-          </div>
-        </div>
-      )}
-
-      {/* Canvas + comments panel */}
-      <div className="flex h-full w-full pl-14">
-        <div className="flex-1" onPointerMove={collab.onPointerMove}>
+        {/* Canvas */}
+        <div className="flex-1 h-full" onPointerMove={collab.onPointerMove}>
           <ExcalidrawCanvas
             excalidrawAPI={collab.onExcalidrawApi}
             initialData={collab.initialData}
@@ -275,6 +278,7 @@ export default function BoardEditor({
           />
         </div>
 
+        {/* Comments panel */}
         {commentsPanelOpen && (
           <CommentsPanel
             threads={comments.threads}
@@ -292,22 +296,6 @@ export default function BoardEditor({
           />
         )}
       </div>
-
-      {/* Scene tab bar */}
-      {collab.scenes.length > 0 && (
-        <div className="pointer-events-none fixed bottom-3 left-1/2 z-20 -translate-x-1/2">
-          <SceneTabBar
-            scenes={collab.scenes}
-            activeSceneId={collab.activeSceneId}
-            switchingScene={collab.switchingScene}
-            canEdit={canEdit}
-            onSwitch={collab.switchScene}
-            onCreate={collab.createScene}
-            onDelete={collab.deleteScene}
-            onRename={collab.renameScene}
-          />
-        </div>
-      )}
     </div>
   );
 }
