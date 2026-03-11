@@ -1,7 +1,7 @@
 import { api } from "./client";
 
 export const diagramsApi = {
-  list: (params?: { folderId?: string }) =>
+  list: (params?: { folderId?: string; workspaceId?: string }) =>
     api.get("/api/diagrams", { params }).then((r) => r.data),
 
   search: (q: string) =>
@@ -10,7 +10,7 @@ export const diagramsApi = {
   get: (id: string) =>
     api.get(`/api/diagrams/${id}`).then((r) => r.data),
 
-  create: (data: { title?: string; elements?: unknown; folderId?: string }) =>
+  create: (data: { title?: string; elements?: unknown; folderId?: string; workspaceId?: string }) =>
     api.post("/api/diagrams", data).then((r) => r.data),
 
   update: (id: string, data: { title?: string; elements?: unknown; appState?: unknown }) =>

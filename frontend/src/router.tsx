@@ -16,6 +16,8 @@ import { ResetPassword } from "@/pages/ResetPassword";
 import { Privacy } from "@/pages/Privacy";
 import { Terms } from "@/pages/Terms";
 import { NotFound } from "@/pages/NotFound";
+import { WorkspaceSettings } from "@/pages/WorkspaceSettings";
+import { WorkspaceInvite } from "@/pages/WorkspaceInvite";
 
 function InviteRedirect() {
   const { token } = useParams();
@@ -46,8 +48,9 @@ export function AppRouter() {
         <Route element={<AppShell />}>
           <Route path="/settings" element={<Settings />} />
         </Route>
-        {/* Board is full-screen, no AppShell */}
+        {/* Board and workspace settings are full-screen, no AppShell */}
         <Route path="/board/:id" element={<Board />} />
+        <Route path="/workspace/:id/settings" element={<WorkspaceSettings />} />
       </Route>
 
       {/* Redirect old admin routes to settings tabs */}
@@ -55,6 +58,9 @@ export function AppRouter() {
       <Route path="/admin/users" element={<Navigate to="/settings?tab=admin-users" replace />} />
       <Route path="/admin/settings" element={<Navigate to="/settings?tab=admin-site" replace />} />
       <Route path="/admin/style-guide" element={<Navigate to="/settings?tab=admin-style" replace />} />
+
+      {/* Workspace invite (works both authenticated and not) */}
+      <Route path="/workspace-invite/:token" element={<WorkspaceInvite />} />
 
       {/* Public routes */}
       <Route path="/setup" element={<Setup />} />

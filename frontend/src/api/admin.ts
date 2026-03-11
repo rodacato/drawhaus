@@ -13,7 +13,7 @@ export const adminApi = {
 
   getSettings: () => api.get("/api/admin/settings").then((r) => r.data),
 
-  updateSettings: (data: { instanceName?: string; registrationOpen?: boolean }) =>
+  updateSettings: (data: { instanceName?: string; registrationOpen?: boolean; maxWorkspacesPerUser?: number; maxMembersPerWorkspace?: number }) =>
     api.patch("/api/admin/settings", data).then((r) => r.data),
 
   inviteUser: (email: string, role: string = "user") =>
