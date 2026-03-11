@@ -1,5 +1,7 @@
 import { ui } from "@/lib/ui";
 import { useState } from "react";
+import { useToast } from "@/components/Toast";
+import { useConfirm } from "@/components/ConfirmDialog";
 
 const coreColors = [
   { name: "Accent Coral", var: "--color-accent-coral", hex: "#E95B2D", usage: "Brand accent, CTAs, hero elements" },
@@ -60,9 +62,9 @@ function ColorSwatch({ name, hex, cssVar, usage }: { name: string; hex: string; 
   );
 }
 
-function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+function Section({ id, title, description, children }: { id?: string; title: string; description?: string; children: React.ReactNode }) {
   return (
-    <section className="space-y-4">
+    <section id={id} className="space-y-4 scroll-mt-6">
       <div>
         <h2 className={ui.h2}>{title}</h2>
         {description && <p className="mt-1 text-sm text-text-secondary">{description}</p>}
@@ -80,6 +82,8 @@ export function AdminStyleGuide() {
   const [activeTab, setActiveTab] = useState("open");
   const [toggleA, setToggleA] = useState(true);
   const [toggleB, setToggleB] = useState(false);
+  const toast = useToast();
+  const confirm = useConfirm();
 
   return (
     <div className="space-y-8">
@@ -88,8 +92,59 @@ export function AdminStyleGuide() {
         <p className={ui.subtitle}>Brand colors, typography, logos, and UI components.</p>
       </div>
 
+      {/* Table of Contents */}
+      <nav className={`${ui.card} !p-5`}>
+        <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-text-muted">Table of Contents</h2>
+        <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <p className="mb-2 text-xs font-semibold text-primary">Brand & Identity</p>
+            <ul className="space-y-1.5">
+              <li><a href="#brand" className="text-sm text-text-secondary transition hover:text-primary">Brand</a></li>
+              <li><a href="#logos" className="text-sm text-text-secondary transition hover:text-primary">Logo System</a></li>
+              <li><a href="#core-colors" className="text-sm text-text-secondary transition hover:text-primary">Core Colors</a></li>
+              <li><a href="#semantic-colors" className="text-sm text-text-secondary transition hover:text-primary">Semantic Colors</a></li>
+              <li><a href="#surfaces-text" className="text-sm text-text-secondary transition hover:text-primary">Surfaces & Text</a></li>
+              <li><a href="#typography" className="text-sm text-text-secondary transition hover:text-primary">Typography</a></li>
+              <li><a href="#colors-in-context" className="text-sm text-text-secondary transition hover:text-primary">Colors in Context</a></li>
+            </ul>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-semibold text-primary">Controls & Forms</p>
+            <ul className="space-y-1.5">
+              <li><a href="#buttons" className="text-sm text-text-secondary transition hover:text-primary">Buttons</a></li>
+              <li><a href="#form-elements" className="text-sm text-text-secondary transition hover:text-primary">Form Elements</a></li>
+              <li><a href="#badges-tags" className="text-sm text-text-secondary transition hover:text-primary">Badges & Tags</a></li>
+              <li><a href="#theme-toggle" className="text-sm text-text-secondary transition hover:text-primary">Theme Toggle</a></li>
+              <li><a href="#color-picker" className="text-sm text-text-secondary transition hover:text-primary">Color Picker</a></li>
+              <li><a href="#connection-badges" className="text-sm text-text-secondary transition hover:text-primary">Connection & Sync Badges</a></li>
+            </ul>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-semibold text-primary">Feedback & Overlays</p>
+            <ul className="space-y-1.5">
+              <li><a href="#alerts" className="text-sm text-text-secondary transition hover:text-primary">Alerts & Feedback</a></li>
+              <li><a href="#toast" className="text-sm text-text-secondary transition hover:text-primary">Toast Notifications</a></li>
+              <li><a href="#confirm-dialog" className="text-sm text-text-secondary transition hover:text-primary">Confirm Dialog</a></li>
+              <li><a href="#modal" className="text-sm text-text-secondary transition hover:text-primary">Modal / Dialog</a></li>
+              <li><a href="#drawer" className="text-sm text-text-secondary transition hover:text-primary">Drawer / Slide-out</a></li>
+              <li><a href="#context-menu" className="text-sm text-text-secondary transition hover:text-primary">Context Menu</a></li>
+            </ul>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-semibold text-primary">Layout & Patterns</p>
+            <ul className="space-y-1.5">
+              <li><a href="#cards" className="text-sm text-text-secondary transition hover:text-primary">Cards & Panels</a></li>
+              <li><a href="#navigation" className="text-sm text-text-secondary transition hover:text-primary">Navigation</a></li>
+              <li><a href="#avatars" className="text-sm text-text-secondary transition hover:text-primary">Avatars</a></li>
+              <li><a href="#table" className="text-sm text-text-secondary transition hover:text-primary">Table</a></li>
+              <li><a href="#auth-card" className="text-sm text-text-secondary transition hover:text-primary">Auth Card</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
       {/* Brand Descriptor */}
-      <Section title="Brand" description="Core identity and messaging.">
+      <Section id="brand" title="Brand" description="Core identity and messaging.">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <img src="/logo-icon.svg" alt="Drawhaus" className="h-10 w-10" />
@@ -120,7 +175,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Logo System — compact */}
-      <Section title="Logo System" description="Available logo variants. Use the right variant for each context.">
+      <Section id="logos" title="Logo System" description="Available logo variants. Use the right variant for each context.">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {logos.map((logo) => (
             <div key={logo.src} className="space-y-2">
@@ -153,7 +208,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Core Colors */}
-      <Section title="Core Colors" description="Primary brand palette with usage guidelines.">
+      <Section id="core-colors" title="Core Colors" description="Primary brand palette with usage guidelines.">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {coreColors.map((c) => (
             <ColorSwatch key={c.var} name={c.name} hex={c.hex} cssVar={c.var} usage={c.usage} />
@@ -162,7 +217,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Semantic Colors */}
-      <Section title="Semantic Colors" description="Feedback and state colors.">
+      <Section id="semantic-colors" title="Semantic Colors" description="Feedback and state colors.">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {semanticColors.map((c) => (
             <ColorSwatch key={c.var} name={c.name} hex={c.hex} cssVar={c.var} />
@@ -171,7 +226,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Surfaces & Text */}
-      <Section title="Surfaces & Text">
+      <Section id="surfaces-text" title="Surfaces & Text">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {surfaceColors.map((c) => (
             <ColorSwatch key={c.var} name={c.name} hex={c.hex} cssVar={c.var} />
@@ -191,7 +246,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Typography */}
-      <Section title="Typography" description="Three-font system: Sora for headings, Inter for body, JetBrains Mono for code.">
+      <Section id="typography" title="Typography" description="Three-font system: Sora for headings, Inter for body, JetBrains Mono for code.">
         <div className="space-y-6">
           <div>
             <SectionLabel>Headings — Sora (600 SemiBold)</SectionLabel>
@@ -246,7 +301,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Buttons */}
-      <Section title="Buttons" description="Button variants from the ui utility. All buttons use rounded-lg, h-10, text-sm font-medium.">
+      <Section id="buttons" title="Buttons" description="Button variants from the ui utility. All buttons use rounded-lg, h-10, text-sm font-medium.">
         <div className="space-y-6">
           <div>
             <SectionLabel>Standard Variants</SectionLabel>
@@ -307,7 +362,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Form Elements */}
-      <Section title="Form Elements" description="Inputs, selects, textareas, toggles, and labels.">
+      <Section id="form-elements" title="Form Elements" description="Inputs, selects, textareas, toggles, and labels.">
         <div className="space-y-6">
           <div>
             <SectionLabel>Text Inputs</SectionLabel>
@@ -412,7 +467,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Badges & Tags */}
-      <Section title="Badges & Tags" description="Role indicators, status pills, and category labels.">
+      <Section id="badges-tags" title="Badges & Tags" description="Role indicators, status pills, and category labels.">
         <div className="space-y-6">
           <div>
             <SectionLabel>Default Badge</SectionLabel>
@@ -465,7 +520,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Alerts */}
-      <Section title="Alerts & Feedback" description="Inline feedback messages.">
+      <Section id="alerts" title="Alerts & Feedback" description="Inline feedback messages.">
         <div className="space-y-3 max-w-lg">
           <p className={ui.alertError}>This is an error alert.</p>
           <p className={ui.alertSuccess}>This is a success alert.</p>
@@ -474,8 +529,169 @@ export function AdminStyleGuide() {
         </div>
       </Section>
 
+      {/* Toast Notifications */}
+      <Section id="toast" title="Toast Notifications" description="Transient feedback messages. Auto-dismiss after 3 seconds. Triggered via useToast() hook.">
+        <div className="space-y-6">
+          <div>
+            <SectionLabel>Live Preview</SectionLabel>
+            <p className="mt-1 text-xs text-text-muted">Click to trigger a real toast notification at the top of the page.</p>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => toast("Diagram deleted")}
+                className={`${ui.btn} ${ui.btnPrimary}`}
+              >
+                Success Toast
+              </button>
+              <button
+                type="button"
+                onClick={() => toast("Failed to delete diagram.", "error")}
+                className={`${ui.btn} bg-error text-white hover:bg-error/80`}
+              >
+                Error Toast
+              </button>
+              <button
+                type="button"
+                onClick={() => toast("Diagram created, but missing id.", "info")}
+                className={`${ui.btn} ${ui.btnSecondary}`}
+              >
+                Info Toast
+              </button>
+            </div>
+          </div>
+          <hr className="border-border" />
+          <div>
+            <SectionLabel>Static Variants</SectionLabel>
+            <div className="mt-3 flex flex-col items-center gap-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-success/25 bg-surface-raised px-5 py-3.5 text-sm font-medium text-text-primary shadow-xl">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success/15">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-success"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+                Folder deleted
+              </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-error/25 bg-surface-raised px-5 py-3.5 text-sm font-medium text-error shadow-xl">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-error/15">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-error"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                </div>
+                Failed to delete diagram.
+              </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-primary/25 bg-surface-raised px-5 py-3.5 text-sm font-medium text-text-primary shadow-xl">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                </div>
+                Embed code copied!
+              </div>
+            </div>
+          </div>
+          <hr className="border-border" />
+          <div>
+            <SectionLabel>Usage</SectionLabel>
+            <div className="mt-2 rounded-lg bg-surface p-4 font-[family-name:var(--font-family-mono)] text-xs text-text-secondary">
+              <p className="text-text-muted">{"// Import"}</p>
+              <p>{"const toast = useToast();"}</p>
+              <br />
+              <p className="text-text-muted">{"// Call"}</p>
+              <p>{"toast(\"Diagram deleted\");           // success (default)"}</p>
+              <p>{"toast(\"Something failed.\", \"error\"); // error"}</p>
+              <p>{"toast(\"Just FYI.\", \"info\");           // info"}</p>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Confirm Dialog */}
+      <Section id="confirm-dialog" title="Confirm Dialog" description="Promise-based confirmation modals. Triggered via useConfirm() hook. Replaces all native window.confirm() calls.">
+        <div className="space-y-6">
+          <div>
+            <SectionLabel>Live Preview</SectionLabel>
+            <p className="mt-1 text-xs text-text-muted">Click to trigger a real confirm dialog.</p>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: "Delete Diagram",
+                    message: "\"User Journey Map V2\" will be permanently deleted. This cannot be undone.",
+                    confirmLabel: "Delete",
+                    variant: "danger",
+                  });
+                  toast(ok ? "Confirmed!" : "Cancelled", ok ? "success" : "info");
+                }}
+                className={`${ui.btn} bg-error text-white hover:bg-error/80`}
+              >
+                Danger Confirm
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: "Publish Diagram",
+                    message: "This will make your diagram visible to anyone with the link.",
+                    confirmLabel: "Publish",
+                  });
+                  toast(ok ? "Published!" : "Cancelled", ok ? "success" : "info");
+                }}
+                className={`${ui.btn} ${ui.btnPrimary}`}
+              >
+                Default Confirm
+              </button>
+            </div>
+          </div>
+          <hr className="border-border" />
+          <div>
+            <SectionLabel>Static Variants</SectionLabel>
+            <div className="mt-3 grid gap-6 lg:grid-cols-2">
+              {/* Danger variant */}
+              <div className="rounded-2xl border border-border bg-surface-raised p-6 shadow-2xl">
+                <div className="mb-1 flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error/10">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-error">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                  </div>
+                  <h2 className="text-lg font-semibold text-text-primary">Delete Workspace</h2>
+                </div>
+                <p className="mt-2 text-sm text-text-secondary">"Design Team" will be permanently deleted. All diagrams will revert to their owners' personal workspaces.</p>
+                <div className="mt-6 flex justify-end gap-3">
+                  <button type="button" className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-surface-raised px-4 text-sm font-medium text-text-primary">Cancel</button>
+                  <button type="button" className="inline-flex h-10 items-center justify-center rounded-lg bg-error px-4 text-sm font-semibold text-white shadow-sm">Delete Workspace</button>
+                </div>
+              </div>
+              {/* Default variant */}
+              <div className="rounded-2xl border border-border bg-surface-raised p-6 shadow-2xl">
+                <h2 className="text-lg font-semibold text-text-primary">Publish Diagram</h2>
+                <p className="mt-2 text-sm text-text-secondary">This will make your diagram visible to anyone with the link.</p>
+                <div className="mt-6 flex justify-end gap-3">
+                  <button type="button" className="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-surface-raised px-4 text-sm font-medium text-text-primary">Cancel</button>
+                  <button type="button" className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white shadow-sm">Publish</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr className="border-border" />
+          <div>
+            <SectionLabel>Usage</SectionLabel>
+            <div className="mt-2 rounded-lg bg-surface p-4 font-[family-name:var(--font-family-mono)] text-xs text-text-secondary">
+              <p className="text-text-muted">{"// Import"}</p>
+              <p>{"const confirm = useConfirm();"}</p>
+              <br />
+              <p className="text-text-muted">{"// Await the user's decision"}</p>
+              <p>{"const ok = await confirm({"}</p>
+              <p>{"  title: \"Delete Diagram\","}</p>
+              <p>{"  message: \"This cannot be undone.\","}</p>
+              <p>{"  confirmLabel: \"Delete\","}</p>
+              <p>{"  variant: \"danger\", // or omit for default"}</p>
+              <p>{"});"}</p>
+              <p>{"if (!ok) return;"}</p>
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* Cards & Panels */}
-      <Section title="Cards & Panels" description="Container patterns used across the app.">
+      <Section id="cards" title="Cards & Panels" description="Container patterns used across the app.">
         <div className="space-y-6">
           <div>
             <SectionLabel>Standard Card</SectionLabel>
@@ -576,7 +792,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Navigation Patterns */}
-      <Section title="Navigation" description="Sidebar, tabs, and nav item patterns used across the app.">
+      <Section id="navigation" title="Navigation" description="Sidebar, tabs, and nav item patterns used across the app.">
         <div className="space-y-6">
           <div>
             <SectionLabel>Sidebar Nav Items</SectionLabel>
@@ -656,7 +872,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Avatars */}
-      <Section title="Avatars" description="User identity elements used in navbars, comments, and collaboration.">
+      <Section id="avatars" title="Avatars" description="User identity elements used in navbars, comments, and collaboration.">
         <div className="space-y-6">
           <div>
             <SectionLabel>Avatar Sizes</SectionLabel>
@@ -692,7 +908,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Table */}
-      <Section title="Table" description="Data table pattern used in admin panel.">
+      <Section id="table" title="Table" description="Data table pattern used in admin panel.">
         <div className="overflow-hidden rounded-xl border border-border">
           <div className="flex items-center justify-between border-b border-border bg-surface/50 px-6 py-3">
             <h3 className="text-sm font-bold text-text-primary">User Management</h3>
@@ -781,7 +997,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Modal */}
-      <Section title="Modal / Dialog" description="Modal container pattern used in share dialogs and confirmations.">
+      <Section id="modal" title="Modal / Dialog" description="Modal container pattern used in share dialogs and confirmations.">
         <div className="space-y-4">
           <div className="overflow-hidden rounded-xl border border-border bg-surface-raised shadow-xl max-w-lg">
             {/* Modal Header */}
@@ -818,7 +1034,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Context Menu */}
-      <Section title="Context Menu / Dropdown" description="Floating menu for actions on cards and table rows.">
+      <Section id="context-menu" title="Context Menu / Dropdown" description="Floating menu for actions on cards and table rows.">
         <div className="max-w-xs">
           <div className="overflow-hidden rounded-xl border border-border bg-surface-raised py-2 shadow-2xl">
             <button className="flex w-full items-center gap-2 px-4 py-2 text-sm text-text-primary transition-colors hover:bg-surface">
@@ -842,8 +1058,149 @@ export function AdminStyleGuide() {
         </div>
       </Section>
 
+      {/* Drawer / Slide-out Panel */}
+      <Section id="drawer" title="Drawer / Slide-out Panel" description="Right-anchored panel used for workspace settings and detail views. Uses React Portal with backdrop blur.">
+        <div className="space-y-6">
+          <div>
+            <SectionLabel>Static Preview</SectionLabel>
+            <p className="mt-1 text-xs text-text-muted">The Drawer slides in from the right with a blurred backdrop. Closes on Escape or backdrop click.</p>
+            <div className="mt-3 relative overflow-hidden rounded-xl border border-border bg-surface" style={{ height: 280 }}>
+              {/* Simulated backdrop */}
+              <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
+              {/* Simulated drawer panel */}
+              <div className="absolute right-0 top-0 h-full w-72 bg-surface shadow-2xl flex flex-col">
+                {/* Header */}
+                <div className="flex shrink-0 items-center gap-3 border-b border-border px-5 py-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-sm" style={{ color: "#6366f1" }}>
+                    D
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-sm font-bold text-text-primary">Workspace Settings</h2>
+                    <p className="truncate text-xs text-text-muted">Design Team</p>
+                  </div>
+                  <button className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-text-muted hover:bg-surface-raised">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                  </button>
+                </div>
+                {/* Body preview */}
+                <div className="flex-1 overflow-hidden p-5 space-y-3">
+                  <div className="rounded-lg border border-border bg-surface-raised p-3">
+                    <p className="text-xs font-medium text-text-secondary">Name</p>
+                    <p className="mt-1 text-sm text-text-primary">Design Team</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-surface-raised p-3">
+                    <p className="text-xs font-medium text-text-secondary">Members</p>
+                    <p className="mt-1 text-sm text-text-primary">4 members</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr className="border-border" />
+          <div>
+            <SectionLabel>Anatomy</SectionLabel>
+            <div className="mt-2 space-y-2 text-sm text-text-secondary">
+              <p><span className="font-medium text-text-primary">Backdrop:</span> bg-black/50, backdrop-blur-sm, click to close</p>
+              <p><span className="font-medium text-text-primary">Panel:</span> max-w-xl, bg-surface, shadow-2xl, slide from right</p>
+              <p><span className="font-medium text-text-primary">Header:</span> icon + title + subtitle + close button, border-b</p>
+              <p><span className="font-medium text-text-primary">Body:</span> flex-1 overflow-y-auto, content scrolls independently</p>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Theme Toggle */}
+      <Section id="theme-toggle" title="Theme Toggle" description="Compact button for switching between light and dark mode. Always visible in the dashboard header.">
+        <div className="space-y-6">
+          <div>
+            <SectionLabel>States</SectionLabel>
+            <div className="mt-3 flex items-center gap-6">
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface-raised text-text-muted transition hover:bg-surface hover:text-text-primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
+                </div>
+                <span className="text-[10px] text-text-muted">Light mode</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface-raised text-text-muted transition hover:bg-surface hover:text-text-primary">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></svg>
+                </div>
+                <span className="text-[10px] text-text-muted">Dark mode</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Color Picker */}
+      <Section id="color-picker" title="Color Picker" description="Swatch grid for selecting workspace or category colors.">
+        <div className="space-y-6">
+          <div>
+            <SectionLabel>Swatch Grid</SectionLabel>
+            <p className="mt-1 text-xs text-text-muted">Used in workspace settings. Selected state shows scaled border.</p>
+            <div className="mt-3 flex gap-2">
+              {["#6366f1", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#64748b"].map((c, i) => (
+                <button
+                  key={c}
+                  className={`h-8 w-8 rounded-full border-2 transition ${i === 0 ? "border-text-primary scale-110" : "border-transparent hover:scale-105"}`}
+                  style={{ backgroundColor: c }}
+                  type="button"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* Status Indicators */}
+      <Section id="connection-badges" title="Connection & Sync Badges" description="Real-time status indicators used in the board editor.">
+        <div className="space-y-6">
+          <div>
+            <SectionLabel>Connection Badge</SectionLabel>
+            <p className="mt-1 text-xs text-text-muted">Shows WebSocket connection state in the board toolbar.</p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-medium text-green-700 shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                Connected
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-medium text-amber-700 shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                Disconnected
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-medium text-blue-700 shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                Connecting
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-medium text-red-700 shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                Error
+              </span>
+            </div>
+          </div>
+          <hr className="border-border" />
+          <div>
+            <SectionLabel>Sync Badge</SectionLabel>
+            <p className="mt-1 text-xs text-text-muted">Shows Google Drive sync status when integration is active.</p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-medium text-green-700 shadow-sm">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                Synced
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-medium text-blue-700 shadow-sm">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 11-6.219-8.56" /></svg>
+                Syncing
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-medium text-red-700 shadow-sm">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+                Sync Error
+              </span>
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* Auth Card Pattern */}
-      <Section title="Auth Card" description="Login/Register card pattern with toggle, social login, and form.">
+      <Section id="auth-card" title="Auth Card" description="Login/Register card pattern with toggle, social login, and form.">
         <div className="mx-auto max-w-[400px]">
           <div className="rounded-xl border border-border bg-surface-raised p-8 shadow-xl">
             {/* Toggle */}
@@ -880,7 +1237,7 @@ export function AdminStyleGuide() {
       </Section>
 
       {/* Colors in Context */}
-      <Section title="Colors in Context" description="How the palette works together in real layouts.">
+      <Section id="colors-in-context" title="Colors in Context" description="How the palette works together in real layouts.">
         <div className="space-y-4">
           <div className="overflow-hidden rounded-xl">
             <div className="flex h-14 items-center gap-3 bg-surface-dark px-6">
