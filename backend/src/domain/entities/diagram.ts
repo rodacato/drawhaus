@@ -1,6 +1,7 @@
 export type Diagram = {
   id: string;
   ownerId: string;
+  workspaceId: string | null;
   title: string;
   folderId: string | null;
   elements: unknown[];

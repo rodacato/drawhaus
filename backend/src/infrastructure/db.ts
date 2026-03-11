@@ -176,6 +176,46 @@ export async function initSchema(): Promise<void> {
     CREATE INDEX IF NOT EXISTS diagrams_folder_id_idx ON diagrams (folder_id);
     CREATE INDEX IF NOT EXISTS diagrams_updated_at_idx ON diagrams (updated_at DESC);
     CREATE INDEX IF NOT EXISTS diagram_members_user_id_idx ON diagram_members (user_id);
+
+    -- Workspaces
+    CREATE TABLE IF NOT EXISTS workspaces (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      is_personal BOOLEAN NOT NULL DEFAULT false,
+      color TEXT NOT NULL DEFAULT '#6366f1',
+      icon TEXT NOT NULL DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS workspaces_owner_id_idx ON workspaces (owner_id);
+
+    CREATE TABLE IF NOT EXISTS workspace_members (
+      workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      role TEXT NOT NULL DEFAULT 'editor' CHECK (role IN ('admin', 'editor', 'viewer')),
+      added_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (workspace_id, user_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS workspace_members_user_id_idx ON workspace_members (user_id);
+
+    CREATE TABLE IF NOT EXISTS workspace_invitations (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+      email TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'editor' CHECK (role IN ('admin', 'editor', 'viewer')),
+      token TEXT UNIQUE NOT NULL,
+      invited_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS workspace_invitations_token_idx ON workspace_invitations (token);
+    CREATE INDEX IF NOT EXISTS workspace_invitations_email_idx ON workspace_invitations (email);
   `);
 
   // Add columns for upgrades from older schema
@@ -230,5 +270,16 @@ export async function initSchema(): Promise<void> {
 
     CREATE INDEX IF NOT EXISTS drive_file_mappings_user_diagram_idx
       ON drive_file_mappings (user_id, diagram_id);
+
+    -- Workspace columns on existing tables
+    ALTER TABLE diagrams ADD COLUMN IF NOT EXISTS workspace_id UUID REFERENCES workspaces(id) ON DELETE SET NULL;
+    ALTER TABLE folders ADD COLUMN IF NOT EXISTS workspace_id UUID REFERENCES workspaces(id) ON DELETE SET NULL;
+
+    CREATE INDEX IF NOT EXISTS diagrams_workspace_id_idx ON diagrams (workspace_id);
+    CREATE INDEX IF NOT EXISTS folders_workspace_id_idx ON folders (workspace_id);
+
+    -- Site settings: workspace limits
+    ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS max_workspaces_per_user INTEGER NOT NULL DEFAULT 5;
+    ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS max_members_per_workspace INTEGER NOT NULL DEFAULT 5;
   `);
 }
