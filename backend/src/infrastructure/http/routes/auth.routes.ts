@@ -203,33 +203,19 @@ export function createAuthRoutes(
 
   // --- Google OAuth ---
 
-  router.get("/google", (_req, res) => {
-    if (!useCases.googleAuth.isEnabled) {
-      return res.status(404).json({ error: "Google OAuth is not configured" });
-    }
-
-    const state = useCases.googleAuth.generateStateToken();
+  function setOAuthStateCookie(res: import("express").Response, statePayload: string) {
     const isProduction = config.nodeEnv === "production";
-
-    res.cookie("drawhaus_oauth_state", state, {
+    res.cookie("drawhaus_oauth_state", statePayload, {
       httpOnly: true,
       sameSite: isProduction ? "none" as const : "lax" as const,
       secure: isProduction,
       path: "/",
-      maxAge: 10 * 60 * 1000, // 10 minutes
+      maxAge: 10 * 60 * 1000,
       ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
     });
+  }
 
-    const authUrl = useCases.googleAuth.getAuthorizationUrl(state);
-    return res.redirect(authUrl);
-  });
-
-  router.get("/google/callback", asyncPublicRoute(async (req, res) => {
-    const { code, state } = req.query;
-    const cookieHeader = req.headers.cookie;
-    const storedState = cookieHeader ? (parse(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
-
-    // Clear the state cookie
+  function clearOAuthStateCookie(res: import("express").Response) {
     const isProduction = config.nodeEnv === "production";
     res.clearCookie("drawhaus_oauth_state", {
       httpOnly: true,
@@ -238,9 +224,53 @@ export function createAuthRoutes(
       path: "/",
       ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
     });
+  }
 
-    // Validate state (CSRF protection)
-    if (!state || !storedState || state !== storedState) {
+  router.get("/google", (_req, res) => {
+    if (!useCases.googleAuth.isEnabled) {
+      return res.status(404).json({ error: "Google OAuth is not configured" });
+    }
+
+    const csrf = useCases.googleAuth.generateStateToken();
+    setOAuthStateCookie(res, JSON.stringify({ csrf, flow: "login" }));
+
+    const authUrl = useCases.googleAuth.getAuthorizationUrl(csrf);
+    return res.redirect(authUrl);
+  });
+
+  // Drive scope upgrade (requires auth — user must be logged in)
+  router.get("/google/drive", requireAuth, asyncRoute(async (req, res) => {
+    if (!useCases.googleAuth.isEnabled) {
+      return res.status(404).json({ error: "Google OAuth is not configured" });
+    }
+
+    const csrf = useCases.googleAuth.generateStateToken();
+    setOAuthStateCookie(res, JSON.stringify({ csrf, flow: "drive", userId: req.authUser.id }));
+
+    const authUrl = useCases.googleAuth.getAuthorizationUrl(csrf, [
+      "openid", "email", "profile",
+      "https://www.googleapis.com/auth/drive.file",
+    ]);
+    return res.redirect(authUrl);
+  }));
+
+  router.get("/google/callback", asyncPublicRoute(async (req, res) => {
+    const { code, state } = req.query;
+    const cookieHeader = req.headers.cookie;
+    const rawState = cookieHeader ? (parse(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
+
+    clearOAuthStateCookie(res);
+
+    // Parse state payload
+    let statePayload: { csrf: string; flow: string; userId?: string };
+    try {
+      statePayload = JSON.parse(rawState ?? "");
+    } catch {
+      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+    }
+
+    // Validate CSRF
+    if (!state || state !== statePayload.csrf) {
       return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
     }
 
@@ -248,6 +278,17 @@ export function createAuthRoutes(
       return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
     }
 
+    // Branch by flow type
+    if (statePayload.flow === "drive" && statePayload.userId) {
+      try {
+        await useCases.googleAuth.handleDriveCallback(code, statePayload.userId);
+        return res.redirect(`${config.frontendUrl}/settings?tab=integrations&drive=connected`);
+      } catch {
+        return res.redirect(`${config.frontendUrl}/settings?tab=integrations&drive=error`);
+      }
+    }
+
+    // Default: login flow
     try {
       const result = await useCases.googleAuth.handleCallback(code);
       res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
