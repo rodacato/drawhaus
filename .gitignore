@@ -39,4 +39,4 @@ Thumbs.db
 *.tsbuildinfo
 
 docs/designs
-docs/generated_screen
+docs/generated_screenscripts/
