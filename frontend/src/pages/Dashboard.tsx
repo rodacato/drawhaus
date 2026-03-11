@@ -9,6 +9,7 @@ import { ShareModal } from "@/components/ShareModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DiagramCard } from "@/components/DiagramCard";
 import { DiagramListRow } from "@/components/DiagramListRow";
+import { DriveImportModal } from "@/components/DriveImportModal";
 
 type Diagram = { id: string; title: string; folderId: string | null; thumbnail: string | null; starred?: boolean; tags?: Tag[]; updatedAt?: string; updated_at?: string };
 type Folder = { id: string; name: string };
@@ -31,6 +32,7 @@ export function Dashboard() {
   const [shareModalDiagramId, setShareModalDiagramId] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [tagModalDiagramId, setTagModalDiagramId] = useState<string | null>(null);
+  const [driveImportOpen, setDriveImportOpen] = useState(false);
 
   const folderIdParam = searchParams.get("folderId");
   const searchQuery = searchParams.get("q") ?? "";
@@ -365,6 +367,14 @@ export function Dashboard() {
               <span>Import</span>
             </button>
             <input ref={fileInputRef} type="file" accept=".excalidraw,.json" onChange={handleImport} className="hidden" />
+            <button className="flex items-center gap-2 rounded-xl bg-surface px-4 py-2.5 text-sm font-semibold transition hover:bg-surface-raised border border-border" onClick={() => setDriveImportOpen(true)} disabled={actionPending} type="button">
+              <svg width="16" height="16" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6.6 66.85L14.25 78h58.8l7.65-11.15z" fill="#2684FC" />
+                <path d="M29.05 0L6.6 66.85l7.65 11.15 22.45-38.8z" fill="#0066DA" />
+                <path d="M58.25 0H29.05l22.45 39.2H80.7z" fill="#FFBA00" />
+              </svg>
+              <span>Drive</span>
+            </button>
             <button className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-hover" onClick={createDiagram} disabled={actionPending} type="button">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
               <span>{actionPending ? "Creating..." : "New Diagram"}</span>
@@ -466,6 +476,13 @@ export function Dashboard() {
           diagramId={shareModalDiagramId}
         />
       )}
+
+      {/* Drive Import Modal */}
+      <DriveImportModal
+        open={driveImportOpen}
+        onClose={() => setDriveImportOpen(false)}
+        onImported={(id) => navigate(`/board/${id}`)}
+      />
     </div>
   );
 }

@@ -116,6 +116,8 @@ import { ExportToDriveUseCase } from "./application/use-cases/drive/export-to-dr
 import { GetDriveStatusUseCase } from "./application/use-cases/drive/get-drive-status";
 import { ToggleDriveBackupUseCase } from "./application/use-cases/drive/toggle-drive-backup";
 import { DisconnectDriveUseCase } from "./application/use-cases/drive/disconnect-drive";
+import { ListDriveFilesUseCase } from "./application/use-cases/drive/list-drive-files";
+import { ImportFromDriveUseCase } from "./application/use-cases/drive/import-from-drive";
 
 // --- HTTP Routes ---
 import { createAuthRoutes } from "./infrastructure/http/routes/auth.routes";
@@ -233,6 +235,8 @@ const exportToDrive = new ExportToDriveUseCase(driveService, tokenRefresher);
 const getDriveStatus = new GetDriveStatusUseCase(oauthTokenRepo, driveBackupRepo);
 const toggleDriveBackup = new ToggleDriveBackupUseCase(driveBackupRepo, oauthTokenRepo);
 const disconnectDrive = new DisconnectDriveUseCase(driveBackupRepo);
+const listDriveFiles = new ListDriveFilesUseCase(driveService, driveBackupRepo, tokenRefresher);
+const importFromDrive = new ImportFromDriveUseCase(driveService, diagramRepo, tokenRefresher);
 
 // Middleware
 const requireAuth = createRequireAuth(getCurrentUser);
@@ -260,7 +264,7 @@ app.use("/api/tags", createTagRoutes({ create: createTag, list: listTags, delete
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
 app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, getSettings, updateSettings, getMetrics, inviteUser }, requireAuth, invitationRepo));
-app.use("/api/drive", createDriveRoutes({ getDriveStatus, toggleDriveBackup, disconnectDrive, exportToDrive }, tokenRefresher, requireAuth));
+app.use("/api/drive", createDriveRoutes({ getDriveStatus, toggleDriveBackup, disconnectDrive, exportToDrive, listDriveFiles, importFromDrive }, tokenRefresher, requireAuth));
 
 // --- Honeybadger error handler (must be after all routes) ---
 if (config.honeybadgerApiKey) {
