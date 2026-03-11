@@ -4,6 +4,7 @@ import { diagramsApi } from "@/api/diagrams";
 import { foldersApi } from "@/api/folders";
 import { shareApi } from "@/api/share";
 import { tagsApi, type Tag } from "@/api/tags";
+import { workspacesApi, type Workspace } from "@/api/workspaces";
 import { useAuth } from "@/contexts/AuthContext";
 import { ui } from "@/lib/ui";
 import { ShareModal } from "@/components/ShareModal";
@@ -34,17 +35,49 @@ export function Dashboard() {
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [driveImportOpen, setDriveImportOpen] = useState(false);
 
+  // Workspaces
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(() => localStorage.getItem("drawhaus_workspace"));
+
   const folderIdParam = searchParams.get("folderId");
   const searchQuery = searchParams.get("q") ?? "";
   const folderId = folderIdParam === null ? undefined : folderIdParam === "null" ? null : folderIdParam;
 
+  // Load workspaces on mount
+  useEffect(() => {
+    workspacesApi.list().then((res) => {
+      const ws = res.workspaces ?? [];
+      setWorkspaces(ws);
+      // If no active workspace or active workspace no longer exists, default to personal
+      const saved = localStorage.getItem("drawhaus_workspace");
+      if (saved && ws.some((w) => w.id === saved)) {
+        setActiveWorkspaceId(saved);
+      } else {
+        const personal = ws.find((w) => w.isPersonal);
+        if (personal) {
+          setActiveWorkspaceId(personal.id);
+          localStorage.setItem("drawhaus_workspace", personal.id);
+        }
+      }
+    }).catch(() => {});
+  }, []);
+
+  // Persist active workspace
+  useEffect(() => {
+    if (activeWorkspaceId) localStorage.setItem("drawhaus_workspace", activeWorkspaceId);
+  }, [activeWorkspaceId]);
+
   const loadData = useCallback(async () => {
+    if (!activeWorkspaceId) return;
     try {
+      const params: { folderId?: string; workspaceId?: string } = { workspaceId: activeWorkspaceId };
+      if (folderId !== undefined) params.folderId = folderId === null ? "null" : folderId;
+
       const [foldersRes, diagramsRes, tagsRes] = await Promise.all([
-        foldersApi.list(),
+        foldersApi.list(activeWorkspaceId),
         searchQuery
           ? diagramsApi.search(searchQuery)
-          : diagramsApi.list(folderId !== undefined ? { folderId: folderId === null ? "null" : folderId } : undefined),
+          : diagramsApi.list(params),
         tagsApi.list(),
       ]);
       setFolders(foldersRes.folders ?? []);
@@ -53,7 +86,7 @@ export function Dashboard() {
       setAllTags(tagsRes.tags ?? []);
     } catch { /* silent */ }
     setLoading(false);
-  }, [folderId, searchQuery]);
+  }, [folderId, searchQuery, activeWorkspaceId]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -84,6 +117,7 @@ export function Dashboard() {
   })();
 
   const currentFolder = folderId ? folders.find((f) => f.id === folderId) : null;
+  const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
   const heading = searchQuery
     ? `Search: "${searchQuery}"`
     : sidebarView === "recent"
@@ -95,6 +129,7 @@ export function Dashboard() {
           : folderId === null
             ? "Unfiled"
             : "All Diagrams";
+  const workspaceLabel = activeWorkspace ? (activeWorkspace.isPersonal ? "Personal" : activeWorkspace.name) : "";
 
   // --- Sidebar ---
   const [sidebarSearch, setSidebarSearch] = useState(searchQuery);
@@ -129,7 +164,7 @@ export function Dashboard() {
   async function createFolder() {
     if (!newFolderName.trim()) return;
     try {
-      await foldersApi.create(newFolderName.trim());
+      await foldersApi.create(newFolderName.trim(), activeWorkspaceId ?? undefined);
       setNewFolderName("");
       setCreatingFolder(false);
       loadData();
@@ -149,7 +184,7 @@ export function Dashboard() {
     setActionPending(true);
     setActionStatus(null);
     try {
-      const payload = await diagramsApi.create({ title: "Untitled", folderId: folderId ?? undefined });
+      const payload = await diagramsApi.create({ title: "Untitled", folderId: folderId ?? undefined, workspaceId: activeWorkspaceId ?? undefined });
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
       else { setActionStatus("Diagram created, but missing id."); loadData(); }
@@ -172,7 +207,7 @@ export function Dashboard() {
         return;
       }
       const title = file.name.replace(/\.(excalidraw|json)$/i, "") || "Imported";
-      const payload = await diagramsApi.create({ title, folderId: folderId ?? undefined, elements: data.elements });
+      const payload = await diagramsApi.create({ title, folderId: folderId ?? undefined, workspaceId: activeWorkspaceId ?? undefined, elements: data.elements });
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
       else { setActionStatus("Imported, but missing id."); loadData(); }
@@ -307,6 +342,48 @@ export function Dashboard() {
               <span className="text-sm">Starred</span>
             </button>
 
+            {/* Workspaces section */}
+            <div className="pb-2 pt-4 px-3 text-[10px] font-bold uppercase tracking-wider text-text-muted">Workspaces</div>
+            {workspaces.map((ws) => (
+              <div key={ws.id} className="group flex items-center">
+                <button
+                  onClick={() => { setActiveWorkspaceId(ws.id); navTo(undefined); }}
+                  className={`flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${activeWorkspaceId === ws.id ? "bg-primary/10 font-medium text-primary" : "text-text-secondary hover:bg-surface"}`}
+                  type="button"
+                >
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-xs" style={{ backgroundColor: ws.color + "22", color: ws.color }}>
+                    {ws.icon || ws.name.charAt(0)}
+                  </span>
+                  <span className="truncate text-sm">{ws.isPersonal ? "Personal" : ws.name}</span>
+                </button>
+                {!ws.isPersonal && (
+                  <Link
+                    to={`/workspace/${ws.id}/settings`}
+                    className="hidden rounded px-1 text-text-muted hover:text-primary group-hover:block"
+                    title="Workspace settings"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></svg>
+                  </Link>
+                )}
+              </div>
+            ))}
+            {workspaces.filter((w) => !w.isPersonal).length < 5 && (
+              <button
+                onClick={() => {
+                  workspacesApi.create({ name: "New Workspace" }).then((res) => {
+                    setWorkspaces((prev) => [...prev, res.workspace]);
+                    setActiveWorkspaceId(res.workspace.id);
+                    navigate(`/workspace/${res.workspace.id}/settings`);
+                  }).catch(() => {});
+                }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm italic text-text-muted transition hover:text-primary"
+                type="button"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+                <span className="text-sm">New Workspace</span>
+              </button>
+            )}
+
             {/* Folders section */}
             <div className="pb-2 pt-4 px-3 text-[10px] font-bold uppercase tracking-wider text-text-muted">Folders</div>
             {folders.map((folder) => (
@@ -405,7 +482,7 @@ export function Dashboard() {
           <div className="flex items-end justify-between mb-8">
             <div>
               <h2 className="font-[family-name:var(--font-family-heading)] text-3xl font-bold tracking-tight text-text-primary">{heading}</h2>
-              <p className="mt-1 text-text-secondary">{searchQuery ? `${displayDiagrams.length} result${displayDiagrams.length !== 1 ? "s" : ""}` : "Manage and organize your visual workflows"}</p>
+              <p className="mt-1 text-text-secondary">{searchQuery ? `${displayDiagrams.length} result${displayDiagrams.length !== 1 ? "s" : ""}` : workspaceLabel ? `${workspaceLabel} workspace` : "Manage and organize your visual workflows"}</p>
             </div>
             <div className="flex items-center gap-2 rounded-lg border border-border bg-surface-raised p-1">
               <button
