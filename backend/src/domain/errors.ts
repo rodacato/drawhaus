@@ -42,3 +42,9 @@ export class InvalidInputError extends DomainError {
     super("INVALID_INPUT", message);
   }
 }
+
+export class DriveTokenError extends DomainError {
+  constructor(message = "Google Drive authorization required") {
+    super("DRIVE_TOKEN_ERROR", message);
+  }
+}
