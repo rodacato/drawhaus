@@ -199,7 +199,7 @@ export default function BoardEditor({
       />
 
       {/* Main content area */}
-      <div className="relative flex-1 flex h-full min-w-0">
+      <div className="relative flex-1 flex h-full min-w-0 overflow-hidden">
         {/* Top bar — floats over canvas */}
         <div className="pointer-events-none absolute left-2 top-3 z-20 flex flex-col gap-1">
           <div className="flex h-10 items-stretch gap-3">
@@ -270,7 +270,7 @@ export default function BoardEditor({
         )}
 
         {/* Canvas */}
-        <div className="flex-1 h-full" onPointerMove={collab.onPointerMove}>
+        <div className="relative flex-1 h-full min-w-0" onPointerMove={collab.onPointerMove}>
           <ExcalidrawCanvas
             excalidrawAPI={collab.onExcalidrawApi}
             initialData={collab.initialData}
