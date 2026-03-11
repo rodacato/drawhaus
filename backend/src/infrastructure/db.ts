@@ -206,5 +206,29 @@ export async function initSchema(): Promise<void> {
     );
 
     CREATE INDEX IF NOT EXISTS oauth_tokens_user_id_idx ON oauth_tokens (user_id);
+
+    -- Google Drive backup settings (per-user)
+    CREATE TABLE IF NOT EXISTS drive_backup_settings (
+      user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      enabled BOOLEAN NOT NULL DEFAULT false,
+      root_folder_id TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    -- Google Drive file mappings (diagram → Drive file ID)
+    CREATE TABLE IF NOT EXISTS drive_file_mappings (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      diagram_id UUID NOT NULL REFERENCES diagrams(id) ON DELETE CASCADE,
+      scene_id UUID REFERENCES scenes(id) ON DELETE CASCADE,
+      drive_file_id TEXT NOT NULL,
+      drive_folder_id TEXT NOT NULL,
+      last_synced_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE(user_id, diagram_id, scene_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS drive_file_mappings_user_diagram_idx
+      ON drive_file_mappings (user_id, diagram_id);
   `);
 }
