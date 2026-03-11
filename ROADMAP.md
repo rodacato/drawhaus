@@ -95,6 +95,17 @@ Everything below is shipped and working in production.
 - Always-visible folder action buttons (create diagram, delete)
 - Refactored Dashboard.tsx into reusable components: DashboardSidebar, WorkspaceToolbar, WorkspaceView, GeneralView, FolderSection, DiagramGrid, NewDiagramCard
 
+### Feedback & Notification System (v0.7)
+- Toast notification system: `useToast()` hook with success, error, and info variants
+- Confirm dialog system: `useConfirm()` hook with promise-based API and danger variant
+- Replaced all `window.confirm()` (4) and `window.alert()` (1) with polished UI dialogs
+- Success feedback on all destructive actions (delete diagram, folder, workspace, user, member)
+- Error feedback on failed operations instead of silent catches
+- Consistent design across Dashboard, WorkspaceSettings, and AdminUsers
+- Admin delete user modal replaced with shared ConfirmDialog
+- Style guide: documented Toast, ConfirmDialog, Drawer, Theme Toggle, Color Picker, Connection Badges
+- Style guide: categorized table of contents with anchor navigation
+
 ---
 
 ## What's Next
@@ -155,7 +166,7 @@ Everything below is shipped and working in production.
 | 2 | Version endpoint | Should | S | `GET /api/version` → `{ version, commit, deployedAt }` for admin panel and debugging |
 | 3 | DB backup cron | Should | S | Automated `pg_dump` to volume or S3 on schedule |
 | 4 | Smoke test full user flow | Should | S | Register → create diagram → collaborate → share → export |
-| 5 | Fix remaining rough edges | Should | M | Broken states, missing loading/error feedback, mobile issues |
+| 5 | Fix remaining rough edges | Should | M | Broken states, mobile issues |
 
 ### Admin Polish
 
