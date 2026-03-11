@@ -458,12 +458,11 @@ export function BoardSidebar({
   }, [activePanel]);
 
   return (
-    <div id="board-sidebar" className="fixed left-0 top-0 z-40 flex h-full">
+    <div id="board-sidebar" className="flex h-full shrink-0">
       {/* Icon bar */}
       <div className="flex h-full w-14 flex-col items-center border-r border-gray-200 bg-white/95 backdrop-blur-sm py-3">
         {/* Top actions */}
         <div className="flex flex-col items-center gap-1.5">
-          <SidebarButton icon={<HomeIcon />} label="Dashboard" onClick={() => { window.location.href = "/dashboard"; }} />
           <SidebarButton icon={<ExportIcon />} label="Export" active={activePanel === "export"} onClick={() => togglePanel("export")} />
         </div>
 
@@ -496,17 +495,28 @@ export function BoardSidebar({
         <div className="flex-1" />
 
         {/* Bottom */}
-        <SidebarButton icon={<GearIcon />} label="Settings" active={activePanel === "settings"} onClick={() => togglePanel("settings")} />
+        <div className="flex flex-col items-center gap-1.5">
+          <SidebarButton
+            icon={<HomeIcon />}
+            label="Dashboard"
+            onClick={() => {
+              if (window.confirm("Leave this diagram and go to Dashboard?")) {
+                window.location.href = "/dashboard";
+              }
+            }}
+          />
+          <SidebarButton icon={<GearIcon />} label="Settings" active={activePanel === "settings"} onClick={() => togglePanel("settings")} />
+        </div>
       </div>
 
-      {/* Expandable panel */}
+      {/* Expandable drawer panel — pushes canvas */}
       <div
         ref={panelRef}
-        className={`h-full w-64 overflow-y-auto border-r border-gray-200 bg-white shadow-lg transition-all duration-200 ease-out ${
-          activePanel ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0 pointer-events-none"
+        className={`h-full overflow-y-auto border-r border-gray-200 bg-white transition-[width] duration-200 ease-out ${
+          activePanel ? "w-[300px]" : "w-0"
         }`}
       >
-        <div className="p-4">
+        <div className="w-[300px] p-4">
           {activePanel === "export" && <ExportPanel excalidrawApiRef={excalidrawApiRef} />}
           {activePanel === "share" && (
             <SharePanel
