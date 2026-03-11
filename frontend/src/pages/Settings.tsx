@@ -8,8 +8,9 @@ import { AdminUsers } from "@/pages/AdminUsers";
 import { AdminSettings as AdminSiteSettings } from "@/pages/AdminSettings";
 import { AdminStyleGuide } from "@/pages/AdminStyleGuide";
 import { AdminOverview } from "@/pages/AdminDashboard";
+import { DriveIntegrationCard } from "@/components/DriveIntegrationCard";
 
-type Tab = "profile" | "security" | "billing" | "preferences" | "admin-overview" | "admin-users" | "admin-site" | "admin-style";
+type Tab = "profile" | "security" | "billing" | "preferences" | "integrations" | "admin-overview" | "admin-users" | "admin-site" | "admin-style";
 
 export function Settings() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -111,6 +112,11 @@ export function Settings() {
       id: "billing",
       label: "Billing",
       icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>,
+    },
+    {
+      id: "integrations",
+      label: "Integrations",
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>,
     },
     {
       id: "preferences",
@@ -255,6 +261,16 @@ export function Settings() {
                   Community Edition — Free forever
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === "integrations" && (
+            <div className="space-y-6">
+              <div>
+                <h2 className={ui.h2}>Integrations</h2>
+                <p className={`${ui.muted} mt-1`}>Connect external services to enhance your workflow.</p>
+              </div>
+              <DriveIntegrationCard />
             </div>
           )}
 
