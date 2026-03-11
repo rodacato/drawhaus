@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { workspacesApi, type Workspace, type WorkspaceMember } from "@/api/workspaces";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/Toast";
+import { useConfirm } from "@/components/ConfirmDialog";
 
 const COLORS = ["#6366f1", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#64748b"];
 
@@ -13,6 +15,8 @@ interface WorkspaceSettingsContentProps {
 
 export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpdated, onStatusMessage }: WorkspaceSettingsContentProps) {
   const { user } = useAuth();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
   const [role, setRole] = useState<string>("");
@@ -86,21 +90,39 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
   }
 
   async function handleRemoveMember(userId: string) {
-    if (!window.confirm("Remove this member from the workspace?")) return;
+    const member = members.find((m) => m.userId === userId);
+    const isSelf = userId === user?.id;
+    const ok = await confirm({
+      title: isSelf ? "Leave Workspace" : "Remove Member",
+      message: isSelf
+        ? "You will lose access to this workspace. You can be re-invited later."
+        : `Remove ${member?.userName ?? "this member"} from the workspace?`,
+      confirmLabel: isSelf ? "Leave" : "Remove",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       await workspacesApi.removeMember(workspaceId, userId);
+      toast(isSelf ? "You left the workspace" : "Member removed");
       loadData();
-    } catch { /* silent */ }
+    } catch { toast("Failed to remove member.", "error"); }
   }
 
   async function handleDelete() {
     if (!workspace) return;
-    if (!window.confirm(`Delete workspace "${workspace.name}"? All diagrams will revert to their owners' personal workspaces.`)) return;
+    const ok = await confirm({
+      title: "Delete Workspace",
+      message: `"${workspace.name}" will be permanently deleted. All diagrams will revert to their owners' personal workspaces.`,
+      confirmLabel: "Delete Workspace",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       await workspacesApi.delete(workspaceId);
+      toast("Workspace deleted");
       onWorkspaceUpdated?.();
       onClose();
-    } catch { /* silent */ }
+    } catch { toast("Failed to delete workspace.", "error"); }
   }
 
   if (loading) {

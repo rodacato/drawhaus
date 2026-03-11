@@ -6,6 +6,8 @@ import { shareApi } from "@/api/share";
 import { tagsApi, type Tag } from "@/api/tags";
 import { workspacesApi, type Workspace } from "@/api/workspaces";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/Toast";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ShareModal } from "@/components/ShareModal";
 import { DriveImportModal } from "@/components/DriveImportModal";
@@ -25,8 +27,9 @@ export function Dashboard() {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
+  const confirm = useConfirm();
   const [actionPending, setActionPending] = useState(false);
-  const [actionStatus, setActionStatus] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">(() => (localStorage.getItem("drawhaus_view") as "grid" | "list") ?? "grid");
   const [sidebarView, setSidebarView] = useState<SidebarView>("recent");
   const [shareModalDiagramId, setShareModalDiagramId] = useState<string | null>(null);
@@ -156,13 +159,12 @@ export function Dashboard() {
   // ── CRUD actions ──
   async function createDiagram(targetFolderId?: string) {
     setActionPending(true);
-    setActionStatus(null);
     try {
       const payload = await diagramsApi.create({ title: "Untitled", folderId: targetFolderId ?? folderId ?? undefined, workspaceId: activeWorkspaceId ?? undefined });
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
-      else { setActionStatus("Diagram created, but missing id."); loadData(); }
-    } catch { setActionStatus("Could not create diagram."); }
+      else { toast("Diagram created, but missing id.", "info"); loadData(); }
+    } catch { toast("Could not create diagram.", "error"); }
     finally { setActionPending(false); }
   }
 
@@ -171,12 +173,11 @@ export function Dashboard() {
     if (!file) return;
     e.target.value = "";
     setActionPending(true);
-    setActionStatus(null);
     try {
       const text = await file.text();
       const data = JSON.parse(text);
       if (data.type !== "excalidraw" || !Array.isArray(data.elements)) {
-        setActionStatus("Invalid .excalidraw file.");
+        toast("Invalid .excalidraw file.", "error");
         setActionPending(false);
         return;
       }
@@ -184,8 +185,8 @@ export function Dashboard() {
       const payload = await diagramsApi.create({ title, folderId: folderId ?? undefined, workspaceId: activeWorkspaceId ?? undefined, elements: data.elements });
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
-      else { setActionStatus("Imported, but missing id."); loadData(); }
-    } catch { setActionStatus("Could not read file."); }
+      else { toast("Imported, but missing id.", "info"); loadData(); }
+    } catch { toast("Could not read file.", "error"); }
     finally { setActionPending(false); }
   }
 
@@ -202,15 +203,22 @@ export function Dashboard() {
   async function deleteFolder(id: string) {
     const hasDiagrams = diagrams.some((d) => d.folderId === id);
     if (hasDiagrams) {
-      window.alert("Cannot delete this folder because it still contains diagrams. Move or delete them first.");
+      toast("Cannot delete this folder because it still contains diagrams. Move or delete them first.", "error");
       return;
     }
-    if (!window.confirm("Delete this folder? This cannot be undone.")) return;
+    const ok = await confirm({
+      title: "Delete Folder",
+      message: "This folder will be permanently deleted. This cannot be undone.",
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       await foldersApi.delete(id);
       if (folderId === id) setSearchParams({});
+      toast("Folder deleted");
       loadData();
-    } catch { /* silent */ }
+    } catch { toast("Failed to delete folder.", "error"); }
   }
 
   async function moveDiagram(diagramId: string, targetFolderId: string | null) {
@@ -218,8 +226,18 @@ export function Dashboard() {
   }
 
   async function deleteDiagram(diagramId: string, title: string) {
-    if (!window.confirm(`Delete "${title || "Untitled"}"? This cannot be undone.`)) return;
-    try { await diagramsApi.delete(diagramId); loadData(); } catch { /* silent */ }
+    const ok = await confirm({
+      title: "Delete Diagram",
+      message: `"${title || "Untitled"}" will be permanently deleted. This cannot be undone.`,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
+    try {
+      await diagramsApi.delete(diagramId);
+      toast("Diagram deleted");
+      loadData();
+    } catch { toast("Failed to delete diagram.", "error"); }
   }
 
   async function duplicateDiagram(diagramId: string) {
@@ -252,8 +270,7 @@ export function Dashboard() {
       const embedUrl = url.replace("/share/", "/embed/");
       const snippet = `<iframe src="${embedUrl}" width="100%" height="400" style="border:none;border-radius:8px;" loading="lazy"></iframe>`;
       await navigator.clipboard.writeText(snippet);
-      setActionStatus("Embed code copied!");
-      setTimeout(() => setActionStatus(null), 2000);
+      toast("Embed code copied!");
     } catch { /* silent */ }
   }
 
@@ -336,7 +353,7 @@ export function Dashboard() {
           setActiveWorkspaceId(ws.id);
           navTo(undefined);
         }}
-        onStatusMessage={(msg) => { setActionStatus(msg); setTimeout(() => setActionStatus(null), 3000); }}
+        onStatusMessage={(msg) => toast(msg)}
         onLogout={logout}
         onOpenWorkspaceSettings={(id) => setSettingsWorkspaceId(id)}
       />
@@ -386,15 +403,6 @@ export function Dashboard() {
               onDriveImport={() => setDriveImportOpen(true)}
               onViewModeChange={setViewMode}
             />
-          )}
-
-          {actionStatus && (
-            <div className="pointer-events-none fixed inset-x-0 top-6 z-[60] flex justify-center">
-              <div className="pointer-events-auto flex items-center gap-2 rounded-xl bg-text-primary px-4 py-2.5 text-sm font-medium text-surface shadow-lg">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-400"><polyline points="20 6 9 17 4 12" /></svg>
-                {actionStatus}
-              </div>
-            </div>
           )}
 
           {isWorkspaceView && folders.length > 0 ? (
@@ -449,7 +457,7 @@ export function Dashboard() {
           <WorkspaceSettingsContent
             workspaceId={settingsWorkspaceId}
             onClose={() => setSettingsWorkspaceId(null)}
-            onStatusMessage={(msg) => { setActionStatus(msg); setTimeout(() => setActionStatus(null), 3000); }}
+            onStatusMessage={(msg) => toast(msg)}
             onWorkspaceUpdated={() => {
               workspacesApi.list().then((res) => {
                 const ws = res.workspaces ?? [];

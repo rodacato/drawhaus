@@ -2,6 +2,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { adminApi } from "@/api/admin";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/Toast";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { ui } from "@/lib/ui";
 import { ToggleSwitch } from "@/components/ToggleSwitch";
 
@@ -109,11 +111,11 @@ const roleBadgeColors: Record<string, string> = {
 export function AdminUsers() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const toast = useToast();
+  const confirm = useConfirm();
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     adminApi.listUsers().then((data) => setUsers(data.users ?? [])).catch(() => {});
@@ -134,19 +136,22 @@ export function AdminUsers() {
     }
   }
 
-  async function deleteUser(id: string) {
-    setDeleting(true);
+  async function handleDeleteUser(user: AdminUser) {
+    const ok = await confirm({
+      title: "Delete User",
+      message: `Are you sure you want to delete ${user.name} (${user.email})? All their diagrams, folders, and data will be permanently removed.`,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
     setError(null);
     try {
-      await adminApi.deleteUser(id);
-      setUsers((prev) => prev.filter((u) => u.id !== id));
-      setDeleteTarget(null);
+      await adminApi.deleteUser(user.id);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      toast("User deleted");
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Delete failed";
       setError(msg);
-      setDeleteTarget(null);
-    } finally {
-      setDeleting(false);
     }
   }
 
@@ -231,7 +236,7 @@ export function AdminUsers() {
                               type="button"
                               title="Delete user"
                               className="rounded-lg p-1.5 text-text-muted hover:bg-red-50 hover:text-red-600 transition-colors"
-                              onClick={() => setDeleteTarget(user)}
+                              onClick={() => handleDeleteUser(user)}
                             >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
                             </button>
@@ -248,33 +253,6 @@ export function AdminUsers() {
       </div>
 
       <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
-
-      {deleteTarget && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !deleting && setDeleteTarget(null)} />
-          <div className={`${ui.card} relative z-10 w-full max-w-sm space-y-4 shadow-2xl`}>
-            <h2 className={ui.h2}>Delete User</h2>
-            <p className="text-sm text-text-secondary">
-              Are you sure you want to delete <strong>{deleteTarget.name}</strong> ({deleteTarget.email})?
-              All their diagrams, folders, and data will be permanently removed.
-            </p>
-            <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setDeleteTarget(null)} disabled={deleting} className={`${ui.btn} ${ui.btnSecondary}`}>
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={deleting}
-                className={`${ui.btn} bg-red-600 text-white hover:bg-red-700 transition-colors`}
-                onClick={() => deleteUser(deleteTarget.id)}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body,
-      )}
     </div>
   );
 }
