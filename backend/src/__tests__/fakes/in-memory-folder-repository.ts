@@ -13,10 +13,15 @@ export class InMemoryFolderRepository implements FolderRepository {
     return this.store.filter((f) => f.ownerId === userId);
   }
 
-  async create(data: { ownerId: string; name: string }): Promise<Folder> {
+  async findByWorkspace(workspaceId: string): Promise<Folder[]> {
+    return this.store.filter((f) => f.workspaceId === workspaceId);
+  }
+
+  async create(data: { ownerId: string; workspaceId?: string | null; name: string }): Promise<Folder> {
     const folder: Folder = {
       id: crypto.randomUUID(),
       ownerId: data.ownerId,
+      workspaceId: data.workspaceId ?? null,
       name: data.name,
       createdAt: new Date(),
     };

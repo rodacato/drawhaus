@@ -8,6 +8,7 @@ import { asyncRoute } from "../middleware/async-handler";
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),
+  workspaceId: z.string().uuid().nullable().optional(),
 });
 
 const renameSchema = z.object({
@@ -27,14 +28,15 @@ export function createFolderRoutes(
   router.use(requireAuth);
 
   router.get("/", asyncRoute(async (req, res) => {
-    const folders = await useCases.list.execute(req.authUser.id);
+    const workspaceId = typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
+    const folders = await useCases.list.execute(req.authUser.id, workspaceId);
     return res.json({ folders });
   }));
 
   router.post("/", asyncRoute(async (req, res) => {
     const parsed = createSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    const folder = await useCases.create.execute(req.authUser.id, parsed.data.name);
+    const folder = await useCases.create.execute(req.authUser.id, parsed.data.name, parsed.data.workspaceId);
     return res.status(201).json({ folder });
   }));
 
