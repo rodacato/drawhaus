@@ -43,6 +43,7 @@ export type CollaborationState = {
   createScene: (name?: string) => Promise<void>;
   deleteScene: (sceneId: string) => Promise<void>;
   renameScene: (sceneId: string, name: string) => Promise<void>;
+  flushSave: () => Promise<void>;
   // Refs & callbacks for Excalidraw integration
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
   socketRef: React.MutableRefObject<import("socket.io-client").Socket | null>;
@@ -526,6 +527,14 @@ export function useCollaboration({
     error: "bg-red-100 text-red-700",
   }[saveState];
 
+  const flushSave = useCallback(async () => {
+    const api = excalidrawApiRef.current;
+    if (!api || saveState === "saved" || saveState === "idle") return;
+    const elements = api.getSceneElements();
+    const appState = api.getAppState();
+    await persistScene([...elements], appState as Record<string, unknown>, activeSceneIdRef.current);
+  }, [persistScene, saveState]);
+
   return {
     saveState,
     connectionState,
@@ -554,5 +563,6 @@ export function useCollaboration({
     onExcalidrawApi,
     onChange,
     onPointerMove,
+    flushSave,
   };
 }

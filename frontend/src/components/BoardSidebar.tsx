@@ -1,7 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { driveApi } from "@/api/drive";
+import { ui } from "@/lib/ui";
 import type { ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 
 /* ───────────────────────── types ───────────────────────── */
@@ -23,6 +25,9 @@ type BoardSidebarProps = {
   // scenes
   canEdit: boolean;
   onCreateScene: () => void;
+  // navigation
+  saveState: string;
+  onBeforeLeave: () => Promise<void>;
 };
 
 /* ───────────────────────── icons ───────────────────────── */
@@ -419,7 +424,7 @@ function SharePanel({
 
 /* ───────────────────────── settings panel ───────────────────────── */
 
-function SettingsPanel({ userEmail }: { userEmail: string }) {
+function SettingsPanel({ userEmail, onDashboardClick }: { userEmail: string; onDashboardClick: () => void }) {
   const { logout } = useAuth();
 
   return (
@@ -428,10 +433,10 @@ function SettingsPanel({ userEmail }: { userEmail: string }) {
       <div className="rounded-lg bg-gray-50 px-3 py-2.5">
         <p className="truncate text-sm font-medium text-gray-900">{userEmail}</p>
       </div>
-      <Link to="/dashboard" className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50">
+      <button type="button" onClick={onDashboardClick} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
         Dashboard
-      </Link>
+      </button>
       <Link to="/settings" className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
         Settings
@@ -460,9 +465,22 @@ export function BoardSidebar({
   onCreateShareLink,
   canEdit,
   onCreateScene,
+  saveState,
+  onBeforeLeave,
 }: BoardSidebarProps) {
+  const navigate = useNavigate();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
+  async function handleLeave() {
+    setLeaving(true);
+    try {
+      await onBeforeLeave();
+    } catch { /* best effort */ }
+    navigate("/dashboard");
+  }
 
   function togglePanel(panel: ActivePanel) {
     setActivePanel((prev) => (prev === panel ? null : panel));
@@ -537,11 +555,7 @@ export function BoardSidebar({
           <SidebarButton
             icon={<HomeIcon />}
             label="Dashboard"
-            onClick={() => {
-              if (window.confirm("Leave this diagram and go to Dashboard?")) {
-                window.location.href = "/dashboard";
-              }
-            }}
+            onClick={() => setLeaveOpen(true)}
           />
           <SidebarButton icon={<GearIcon />} label="Settings" active={activePanel === "settings"} onClick={() => togglePanel("settings")} />
         </div>
@@ -564,9 +578,37 @@ export function BoardSidebar({
               onCreateShareLink={onCreateShareLink}
             />
           )}
-          {activePanel === "settings" && <SettingsPanel userEmail={userEmail} />}
+          {activePanel === "settings" && <SettingsPanel userEmail={userEmail} onDashboardClick={() => setLeaveOpen(true)} />}
         </div>
       </div>
+
+      {leaveOpen && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !leaving && setLeaveOpen(false)} />
+          <div className={`${ui.card} relative z-10 w-full max-w-sm space-y-4 shadow-2xl`}>
+            <h2 className={ui.h2}>Leave Diagram</h2>
+            <p className="text-sm text-text-secondary">
+              {saveState === "pending" || saveState === "saving"
+                ? "You have unsaved changes. They will be saved before leaving."
+                : "Are you sure you want to go back to the Dashboard?"}
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" onClick={() => setLeaveOpen(false)} disabled={leaving} className={`${ui.btn} ${ui.btnSecondary}`}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={leaving}
+                className={`${ui.btn} ${ui.btnPrimary}`}
+                onClick={handleLeave}
+              >
+                {leaving ? "Saving..." : "Leave"}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }
