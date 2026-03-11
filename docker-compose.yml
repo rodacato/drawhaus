@@ -11,8 +11,9 @@ services:
     ports:
       - "5173:5173"
     environment:
-      VITE_API_URL: http://localhost:4300
-      VITE_WS_URL: http://localhost:4300
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:4300}
+      VITE_WS_URL: ${VITE_WS_URL:-http://localhost:4300}
+      VITE_GOOGLE_API_KEY: ${VITE_GOOGLE_API_KEY:-}
     command: npm run dev
 
   backend:
@@ -29,17 +30,24 @@ services:
     ports:
       - "4300:4000"
     environment:
-      PORT: 4000
-      FRONTEND_URL: http://localhost:5173
-      DATABASE_URL: postgres://drawhaus:drawhaus@db:5432/drawhaus
+      PORT: ${PORT:-4000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      DATABASE_URL: ${DATABASE_URL:-postgres://drawhaus:drawhaus@db:5432/drawhaus}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-secret}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      FROM_EMAIL: ${FROM_EMAIL:-}
+      HONEYBADGER_API_KEY: ${HONEYBADGER_API_KEY:-}
     command: npm run dev
 
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: drawhaus
-      POSTGRES_USER: drawhaus
-      POSTGRES_PASSWORD: drawhaus
+      POSTGRES_DB: ${POSTGRES_DB:-drawhaus}
+      POSTGRES_USER: ${POSTGRES_USER:-drawhaus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-drawhaus}
     ports:
       - "5643:5432"
     volumes:
