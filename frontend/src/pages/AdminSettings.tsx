@@ -8,6 +8,8 @@ export function AdminSettings() {
   const [adminEmail, setAdminEmail] = useState("");
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maxWorkspacesPerUser, setMaxWorkspacesPerUser] = useState(5);
+  const [maxMembersPerWorkspace, setMaxMembersPerWorkspace] = useState(5);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [pending, setPending] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -19,6 +21,8 @@ export function AdminSettings() {
       setAdminEmail(s.adminEmail ?? "");
       setRegistrationOpen(s.registrationOpen ?? false);
       setMaintenanceMode(s.maintenanceMode ?? false);
+      setMaxWorkspacesPerUser(s.maxWorkspacesPerUser ?? 5);
+      setMaxMembersPerWorkspace(s.maxMembersPerWorkspace ?? 5);
       setLoaded(true);
     }).catch(() => {});
   }, []);
@@ -28,7 +32,7 @@ export function AdminSettings() {
     setPending(true);
     setStatus(null);
     try {
-      await adminApi.updateSettings({ instanceName: instanceName.trim(), registrationOpen });
+      await adminApi.updateSettings({ instanceName: instanceName.trim(), registrationOpen, maxWorkspacesPerUser, maxMembersPerWorkspace });
       setStatus({ type: "success", message: "Settings saved" });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Update failed";
@@ -73,6 +77,14 @@ export function AdminSettings() {
               </div>
               <ToggleSwitch checked={maintenanceMode} onChange={setMaintenanceMode} />
             </div>
+          </div>
+        </div>
+
+        <div className={ui.card}>
+          <h2 className={ui.h2}>Workspace Limits</h2>
+          <div className="mt-4 space-y-4">
+            <label className={ui.label}>Max Workspaces per User<input className={ui.input} type="number" min={1} max={50} value={maxWorkspacesPerUser} onChange={(e) => setMaxWorkspacesPerUser(Number(e.target.value))} /></label>
+            <label className={ui.label}>Max Members per Workspace<input className={ui.input} type="number" min={1} max={100} value={maxMembersPerWorkspace} onChange={(e) => setMaxMembersPerWorkspace(Number(e.target.value))} /></label>
           </div>
         </div>
 
