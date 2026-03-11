@@ -54,46 +54,109 @@ Everything below is shipped and working in production.
 - Honeybadger error monitoring
 - First-time `/setup` page for admin creation
 
+### Google Drive Integration (v0.7)
+- Google OAuth login with account linking
+- OAuth scope upgrade flow for Drive API
+- Export diagrams to Google Drive
+- Import `.excalidraw` files from Google Drive
+- Auto-backup to Drive on save
+- Integrations tab in settings with sync badge
+
+### Remaining Stitch Items (v0.7)
+- Category tags: full CRUD API + UI
+- Account deletion with password confirmation and cascade
+- Comment reactions (likes) with toggle
+- Board collapsible sidebar: slim icon bar + expandable panels
+- Admin delete user with confirmation modal
+- Embeddable link support for diagrams
+
 ---
 
 ## What's Next
 
-### Phase 4 — Remaining Stitch Items
+### Workspaces
 
-Small items from the design mockups that still need implementation.
+> In progress — multi-tenant workspace support.
+
+<!-- TODO: fill in workspace implementation details once complete -->
+
+- Backup All to Google Drive: bulk sync all diagrams in active workspace to Drive with folder structure and real-time progress (POST returning 202, socket.io progress events, concurrency limit of 3). Depends on workspaces being complete.
+
+### v1.0 Gate — Security Hardening
+
+> Must-fix before release. Identified by expert panel security audit.
+
+| # | Item | Priority | Effort | Description |
+|---|------|----------|--------|-------------|
+| 1 | Rate limiting | Must | S | `express-rate-limit` on login, register, password reset, setup. 5 req/min auth, 20/min general |
+| 2 | Helmet security headers | Must | S | `app.use(helmet())` — X-Frame-Options, HSTS, X-Content-Type-Options, basic CSP |
+| 3 | Setup lock | Must | S | `setup_completed` flag in `site_settings`; redirect all routes to `/setup` until complete |
+
+### v1.0 Gate — Setup Wizard
+
+> Replace current bare `/setup` page with a guided 3-step wizard.
+
+| Step | What it does | Backend |
+|------|-------------|---------|
+| 1 — Admin account | Create admin user (already exists) | Reuse `/api/auth/register` with auto-admin role |
+| 2 — Instance config | Instance name, registration open/closed | Reuse `PUT /api/admin/settings` |
+| 3 — Integrations (optional) | Google OAuth, Resend API key, Honeybadger | New `PUT /api/admin/integrations` endpoint |
+
+- Skippable step 3 — never block first use for optional integrations
+- On completion, set `setup_completed = true`
+- Dashboard shows persistent "Finish setup" banner if optional steps were skipped
+
+### v1.0 Gate — Integration Secrets in DB
+
+> Move feature-level API keys from env vars to encrypted DB storage, editable from admin UI.
+
+**Moves to DB (encrypted):**
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
+- `RESEND_API_KEY`, `FROM_EMAIL`
+- `HONEYBADGER_API_KEY`
+
+**Stays in env vars (infra — required to boot):**
+- `DATABASE_URL`, `SESSION_SECRET`, `ENCRYPTION_KEY`
+- `PORT`, `FRONTEND_URL`, `COOKIE_DOMAIN`, `NODE_ENV`
+
+**Implementation:**
+- New table `integration_secrets (key TEXT PK, encrypted_value TEXT, updated_at TIMESTAMPTZ)`
+- Single new env var: `ENCRYPTION_KEY` (required in production)
+- AES-256-GCM via Node `crypto.createCipheriv` — zero new dependencies
+- Config loads env vars first, then merges DB values on startup
+- In-memory cache, invalidated when admin updates via UI
+
+### v1.0 Gate — Operational Readiness
+
+> Should-have items for a reliable production deployment.
+
+| # | Item | Priority | Effort | Description |
+|---|------|----------|--------|-------------|
+| 1 | Improved healthcheck | Should | S | `/health` verifies DB connection and reports app version |
+| 2 | Version endpoint | Should | S | `GET /api/version` → `{ version, commit, deployedAt }` for admin panel and debugging |
+| 3 | DB backup cron | Should | S | Automated `pg_dump` to volume or S3 on schedule |
+| 4 | Smoke test full user flow | Should | S | Register → create diagram → collaborate → share → export |
+| 5 | Fix remaining rough edges | Should | M | Broken states, missing loading/error feedback, mobile issues |
+
+### Admin Polish
+
+> Not required for v1.0, but nice improvements for the admin experience.
 
 | # | Feature | Type | Description |
 |---|---------|------|-------------|
-| ~~1~~ | ~~Category tags~~ | ~~Done~~ | ~~Full CRUD API + UI wired~~ |
-| ~~2~~ | ~~Account deletion~~ | ~~Done~~ | ~~`DELETE /api/auth/account` with password confirmation, cascade~~ |
-| ~~3~~ | ~~Comment reactions~~ | ~~Done~~ | ~~`comment_reactions` table + toggle like endpoint~~ |
-| ~~4~~ | ~~Board collapsible sidebar~~ | ~~Done~~ | ~~Slim icon bar (w-14) with expandable panels (w-64) on click~~ |
 | 5 | Admin analytics | Full | Charts (recharts) for user growth, diagram creation, active sessions |
 | 6 | Admin backup & logs | Full | Manual backup trigger, DB dump download, log viewer |
 | 7 | Export CSV from admin | Frontend | Client-side CSV generation from user table |
 
-### Phase 5 — Power Features
+### Nice to Have — Backlog
 
-> Goal: Things that genuinely improve daily use.
-
-| # | Feature | Description | Effort |
-|---|---------|-------------|--------|
-| 8 | Versioning | Snapshot-based diagram history, timeline UI, restore | M |
-| 9 | PDF/PPTX export | Export scenes as presentation-ready files | M |
-| 10 | Presentations | Scene-based slideshow mode | M |
-| 11 | Libraries | Personal reusable component library, synced across diagrams | M |
-| 12 | Archive / soft delete | `deleted_at` column + filter toggle | S |
-
-### Phase 6 — Stretch / Explore
-
-> Goal: High-value features once the core is solid.
+> Low priority. Pick these up when there are no active features in progress.
 
 | # | Feature | Description | Effort |
 |---|---------|-------------|--------|
 | 13 | AI assist | Generate diagrams from text prompts (Claude API) | L |
 | 14 | MCP server | Expose Drawhaus to AI agents for automated diagram creation | M |
 | 15 | Public API | REST API for external integrations and automation | M |
-| 16 | Social OAuth | Google/Apple login (passport.js). Markup exists. | M |
 | 17 | @mention in comments | User search + notification system | M |
 
 ### Not Planned
@@ -105,6 +168,19 @@ Small items from the design mockups that still need implementation.
 | Offline mode | Requires service worker + CRDT rewrite |
 | SSO / SAML | Enterprise feature, overkill for personal/small team |
 | Library marketplace | No community to serve |
+
+### Archived / Discarded
+
+> Evaluated but not worth the effort for current scope.
+
+| # | Feature | Reason discarded |
+|---|---------|-----------------|
+| 8 | Versioning (snapshot history, timeline UI) | Complex for low usage; snapshots in DB are enough |
+| 9 | PDF/PPTX export | PNG/SVG export covers the need; use external tools for slides |
+| 10 | Presentations (slideshow mode) | Niche feature; use actual presentation tools instead |
+| 11 | Libraries (reusable components) | Over-engineering for personal/small team use |
+| 12 | Archive / soft delete | Simple delete is fine; DB backups cover recovery |
+| 16 | Social OAuth (Apple) | Google OAuth shipped; Apple sign-in not worth the effort |
 
 ---
 
@@ -145,6 +221,10 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 | No global state library | AuthContext + local state | App has no complex global state needs |
 | MCP as differentiator | AI agents on own server | Unique angle no other self-hosted whiteboard has |
 | Resend for email | Simple API, good DX | Transactional email for invites + password reset |
+| API keys: hybrid env + DB | Infra secrets in env, feature secrets encrypted in DB | Allows admin UI config without server access; keeps boot deps in env |
+| Setup wizard over manual .env | Wizard for feature config, env for infra | Reduces deploy friction; validates credentials before saving |
+| No CSRF tokens | SameSite=Lax + CORS origin lock + httpOnly cookies | SPA architecture already mitigates CSRF; tokens add complexity without value |
+| No migration system (v1.0) | Inline `initSchema()` with idempotent DDL | Single operator; `CREATE IF NOT EXISTS` is sufficient; revisit if team grows |
 
 ---
 
@@ -158,4 +238,4 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ---
 
-*Last updated: 2026-03-10*
+*Last updated: 2026-03-11*
