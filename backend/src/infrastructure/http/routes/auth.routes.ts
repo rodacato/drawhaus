@@ -11,6 +11,7 @@ import type { AcceptInviteUseCase } from "../../../application/use-cases/auth/ac
 import type { ForgotPasswordUseCase } from "../../../application/use-cases/auth/forgot-password";
 import type { ResetPasswordUseCase } from "../../../application/use-cases/auth/reset-password";
 import type { DeleteAccountUseCase } from "../../../application/use-cases/auth/delete-account";
+import type { GoogleAuthUseCase } from "../../../application/use-cases/auth/google-auth";
 import { asyncPublicRoute, asyncRoute } from "../middleware/async-handler";
 import { config } from "../../config";
 
@@ -31,7 +32,7 @@ const updateProfileSchema = z.object({
 }).refine((v) => Object.keys(v).length > 0, { message: "At least one field is required" });
 
 const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1).max(128),
+  currentPassword: z.string().min(1).max(128).optional(),
   newPassword: z.string().min(8).max(128),
 });
 
@@ -51,7 +52,7 @@ const resetPasswordSchema = z.object({
 });
 
 const deleteAccountSchema = z.object({
-  password: z.string().min(1).max(128),
+  password: z.string().min(1).max(128).optional(),
 });
 
 function getCookieOptions() {
@@ -78,6 +79,7 @@ export function createAuthRoutes(
     forgotPassword: ForgotPasswordUseCase;
     resetPassword: ResetPasswordUseCase;
     deleteAccount: DeleteAccountUseCase;
+    googleAuth: GoogleAuthUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
 ) {
@@ -186,9 +188,9 @@ export function createAuthRoutes(
 
   router.delete("/account", requireAuth, asyncRoute(async (req, res) => {
     const parsed = deleteAccountSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Password is required" });
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
 
-    await useCases.deleteAccount.execute(req.authUser.id, parsed.data.password);
+    await useCases.deleteAccount.execute(req.authUser.id, parsed.data.password ?? null);
     res.clearCookie(config.cookieName, {
       httpOnly: true,
       sameSite: config.nodeEnv === "production" ? "none" as const : "lax" as const,
@@ -197,6 +199,62 @@ export function createAuthRoutes(
       ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
     });
     return res.status(200).json({ success: true });
+  }));
+
+  // --- Google OAuth ---
+
+  router.get("/google", (_req, res) => {
+    if (!useCases.googleAuth.isEnabled) {
+      return res.status(404).json({ error: "Google OAuth is not configured" });
+    }
+
+    const state = useCases.googleAuth.generateStateToken();
+    const isProduction = config.nodeEnv === "production";
+
+    res.cookie("drawhaus_oauth_state", state, {
+      httpOnly: true,
+      sameSite: isProduction ? "none" as const : "lax" as const,
+      secure: isProduction,
+      path: "/",
+      maxAge: 10 * 60 * 1000, // 10 minutes
+      ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
+    });
+
+    const authUrl = useCases.googleAuth.getAuthorizationUrl(state);
+    return res.redirect(authUrl);
+  });
+
+  router.get("/google/callback", asyncPublicRoute(async (req, res) => {
+    const { code, state } = req.query;
+    const cookieHeader = req.headers.cookie;
+    const storedState = cookieHeader ? (parse(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
+
+    // Clear the state cookie
+    const isProduction = config.nodeEnv === "production";
+    res.clearCookie("drawhaus_oauth_state", {
+      httpOnly: true,
+      sameSite: isProduction ? "none" as const : "lax" as const,
+      secure: isProduction,
+      path: "/",
+      ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
+    });
+
+    // Validate state (CSRF protection)
+    if (!state || !storedState || state !== storedState) {
+      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+    }
+
+    if (!code || typeof code !== "string") {
+      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+    }
+
+    try {
+      const result = await useCases.googleAuth.handleCallback(code);
+      res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
+      return res.redirect(result.redirectUrl);
+    } catch {
+      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+    }
   }));
 
   return router;

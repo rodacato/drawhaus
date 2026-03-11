@@ -13,6 +13,8 @@ type SessionRow = {
   name: string;
   role: string;
   disabled: boolean;
+  avatar_url: string | null;
+  password_hash: string | null;
 };
 
 export class PgSessionRepository implements SessionRepository {
@@ -31,7 +33,7 @@ export class PgSessionRepository implements SessionRepository {
 
   async findUserByToken(token: string): Promise<AuthUser | null> {
     const { rows } = await pool.query<SessionRow>(
-      `SELECT s.id, s.user_id, s.expires_at, u.email, u.name, u.role, u.disabled
+      `SELECT s.id, s.user_id, s.expires_at, u.email, u.name, u.role, u.disabled, u.avatar_url, u.password_hash
        FROM sessions s
        JOIN users u ON u.id = s.user_id
        WHERE s.id = $1
@@ -53,6 +55,8 @@ export class PgSessionRepository implements SessionRepository {
       name: row.name,
       role: row.role as UserRole,
       disabled: row.disabled,
+      avatarUrl: row.avatar_url,
+      hasPassword: !!row.password_hash,
     };
   }
 

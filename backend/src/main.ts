@@ -28,6 +28,7 @@ import { PgCommentRepository } from "./infrastructure/persistence/pg-comment-rep
 import { PgTagRepository } from "./infrastructure/persistence/pg-tag-repository";
 import { PgInvitationRepository } from "./infrastructure/persistence/pg-invitation-repository";
 import { PgPasswordResetRepository } from "./infrastructure/persistence/pg-password-reset-repository";
+import { PgOAuthTokenRepository } from "./infrastructure/persistence/pg-oauth-token-repository";
 
 // --- Services ---
 import { BcryptHasher } from "./infrastructure/services/bcrypt-hasher";
@@ -44,6 +45,7 @@ import { AcceptInviteUseCase } from "./application/use-cases/auth/accept-invite"
 import { ForgotPasswordUseCase } from "./application/use-cases/auth/forgot-password";
 import { ResetPasswordUseCase } from "./application/use-cases/auth/reset-password";
 import { DeleteAccountUseCase } from "./application/use-cases/auth/delete-account";
+import { GoogleAuthUseCase } from "./application/use-cases/auth/google-auth";
 
 // --- Use Cases: Diagrams ---
 import { CreateDiagramUseCase } from "./application/use-cases/diagrams/create-diagram";
@@ -134,6 +136,7 @@ const commentRepo = new PgCommentRepository();
 const tagRepo = new PgTagRepository();
 const invitationRepo = new PgInvitationRepository();
 const passwordResetRepo = new PgPasswordResetRepository();
+const oauthTokenRepo = new PgOAuthTokenRepository();
 const hasher = new BcryptHasher();
 const emailService = new ResendEmailService();
 
@@ -148,6 +151,7 @@ const acceptInvite = new AcceptInviteUseCase(userRepo, sessionRepo, invitationRe
 const forgotPassword = new ForgotPasswordUseCase(userRepo, passwordResetRepo, emailService);
 const resetPassword = new ResetPasswordUseCase(userRepo, sessionRepo, passwordResetRepo, hasher);
 const deleteAccount = new DeleteAccountUseCase(userRepo, hasher);
+const googleAuth = new GoogleAuthUseCase(userRepo, sessionRepo, oauthTokenRepo, siteSettingsRepo);
 
 // Diagrams
 const createDiagram = new CreateDiagramUseCase(diagramRepo);
@@ -227,7 +231,7 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount }, requireAuth));
+app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth }, requireAuth));
 app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, toggleStar, duplicate: duplicateDiagram, move: moveDiagram }, requireAuth, tagRepo));
 app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes, get: getScene, create: createScene, rename: renameScene, delete: deleteScene }, requireAuth));
 app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: listComments, create: createComment, reply: replyComment, resolve: resolveComment, delete: deleteComment, toggleLike }, requireAuth));

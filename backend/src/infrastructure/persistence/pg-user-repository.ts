@@ -6,13 +6,15 @@ type UserRow = {
   id: string;
   email: string;
   name: string;
-  password_hash: string;
+  password_hash: string | null;
   role: string;
   disabled: boolean;
+  google_id: string | null;
+  avatar_url: string | null;
   created_at: string;
 };
 
-const SELECT_COLS = "id, email, name, password_hash, role, disabled, created_at";
+const SELECT_COLS = "id, email, name, password_hash, role, disabled, google_id, avatar_url, created_at";
 
 function toDomain(row: UserRow): User {
   return {
@@ -22,6 +24,8 @@ function toDomain(row: UserRow): User {
     passwordHash: row.password_hash,
     role: row.role as UserRole,
     disabled: row.disabled,
+    googleId: row.google_id,
+    avatarUrl: row.avatar_url,
     createdAt: new Date(row.created_at),
   };
 }
@@ -43,17 +47,25 @@ export class PgUserRepository implements UserRepository {
     return rows[0] ? toDomain(rows[0]) : null;
   }
 
-  async create(data: { email: string; name: string; passwordHash: string }): Promise<User> {
+  async findByGoogleId(googleId: string): Promise<User | null> {
     const { rows } = await pool.query<UserRow>(
-      `INSERT INTO users (email, name, password_hash)
-       VALUES ($1, $2, $3)
+      `SELECT ${SELECT_COLS} FROM users WHERE google_id = $1 LIMIT 1`,
+      [googleId],
+    );
+    return rows[0] ? toDomain(rows[0]) : null;
+  }
+
+  async create(data: { email: string; name: string; passwordHash: string | null; googleId?: string; avatarUrl?: string }): Promise<User> {
+    const { rows } = await pool.query<UserRow>(
+      `INSERT INTO users (email, name, password_hash, google_id, avatar_url)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING ${SELECT_COLS}`,
-      [data.email, data.name, data.passwordHash],
+      [data.email, data.name, data.passwordHash, data.googleId ?? null, data.avatarUrl ?? null],
     );
     return toDomain(rows[0]);
   }
 
-  async update(id: string, data: Partial<Pick<User, "email" | "name" | "passwordHash">>): Promise<User | null> {
+  async update(id: string, data: Partial<Pick<User, "email" | "name" | "passwordHash" | "googleId" | "avatarUrl">>): Promise<User | null> {
     const updates: string[] = [];
     const values: unknown[] = [];
     let index = 1;
@@ -71,6 +83,16 @@ export class PgUserRepository implements UserRepository {
     if (data.passwordHash !== undefined) {
       updates.push(`password_hash = $${index}`);
       values.push(data.passwordHash);
+      index += 1;
+    }
+    if (data.googleId !== undefined) {
+      updates.push(`google_id = $${index}`);
+      values.push(data.googleId);
+      index += 1;
+    }
+    if (data.avatarUrl !== undefined) {
+      updates.push(`avatar_url = $${index}`);
+      values.push(data.avatarUrl);
       index += 1;
     }
 

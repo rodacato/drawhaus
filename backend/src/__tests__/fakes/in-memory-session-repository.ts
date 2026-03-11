@@ -27,7 +27,7 @@ export class InMemorySessionRepository implements SessionRepository {
     if (session.expiresAt.getTime() <= Date.now()) return null;
     const user = this.users().find((u) => u.id === session.userId);
     if (!user) return null;
-    return { id: user.id, email: user.email, name: user.name, role: user.role, disabled: user.disabled };
+    return { id: user.id, email: user.email, name: user.name, role: user.role, disabled: user.disabled, avatarUrl: user.avatarUrl, hasPassword: !!user.passwordHash };
   }
 
   async delete(token: string): Promise<void> {

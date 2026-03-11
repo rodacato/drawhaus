@@ -185,5 +185,26 @@ export async function initSchema(): Promise<void> {
     ALTER TABLE diagrams ADD COLUMN IF NOT EXISTS folder_id UUID REFERENCES folders(id) ON DELETE SET NULL;
     ALTER TABLE diagrams ADD COLUMN IF NOT EXISTS thumbnail TEXT;
     ALTER TABLE diagrams ADD COLUMN IF NOT EXISTS starred BOOLEAN NOT NULL DEFAULT false;
+
+    -- Google OAuth columns
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id TEXT UNIQUE;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+    ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+
+    -- OAuth tokens table (for Google Drive and future integrations)
+    CREATE TABLE IF NOT EXISTS oauth_tokens (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      provider TEXT NOT NULL DEFAULT 'google',
+      access_token TEXT NOT NULL,
+      refresh_token TEXT,
+      token_expires_at TIMESTAMPTZ,
+      scopes TEXT NOT NULL DEFAULT '',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE(user_id, provider)
+    );
+
+    CREATE INDEX IF NOT EXISTS oauth_tokens_user_id_idx ON oauth_tokens (user_id);
   `);
 }

@@ -17,6 +17,9 @@ export class LoginUseCase {
 
     if (user.disabled) throw new ForbiddenError();
 
+    // Google-only accounts have no password
+    if (!user.passwordHash) throw new UnauthorizedError();
+
     const valid = await this.hasher.verify(input.password, user.passwordHash);
     if (!valid) throw new UnauthorizedError();
 

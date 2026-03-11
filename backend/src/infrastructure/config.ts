@@ -26,4 +26,8 @@ export const config = {
   honeybadgerApiKey: process.env.HONEYBADGER_API_KEY as string | undefined,
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   fromEmail: process.env.FROM_EMAIL ?? "noreply@drawhaus.app",
+  // Google OAuth (optional — feature disabled when not set)
+  googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+  googleRedirectUri: process.env.GOOGLE_REDIRECT_URI ?? "",
 } as const;
