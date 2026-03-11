@@ -13,7 +13,11 @@ export class InMemoryUserRepository implements UserRepository {
     return this.store.find((u) => u.email === email) ?? null;
   }
 
-  async create(data: { email: string; name: string; passwordHash: string }): Promise<User> {
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return this.store.find((u) => u.googleId === googleId) ?? null;
+  }
+
+  async create(data: { email: string; name: string; passwordHash: string | null; googleId?: string; avatarUrl?: string }): Promise<User> {
     const user: User = {
       id: crypto.randomUUID(),
       email: data.email,
@@ -21,18 +25,22 @@ export class InMemoryUserRepository implements UserRepository {
       passwordHash: data.passwordHash,
       role: "user",
       disabled: false,
+      googleId: data.googleId ?? null,
+      avatarUrl: data.avatarUrl ?? null,
       createdAt: new Date(),
     };
     this.store.push(user);
     return user;
   }
 
-  async update(id: string, data: Partial<Pick<User, "email" | "name" | "passwordHash">>): Promise<User | null> {
+  async update(id: string, data: Partial<Pick<User, "email" | "name" | "passwordHash" | "googleId" | "avatarUrl">>): Promise<User | null> {
     const user = this.store.find((u) => u.id === id);
     if (!user) return null;
     if (data.email !== undefined) user.email = data.email;
     if (data.name !== undefined) user.name = data.name;
     if (data.passwordHash !== undefined) user.passwordHash = data.passwordHash;
+    if (data.googleId !== undefined) user.googleId = data.googleId;
+    if (data.avatarUrl !== undefined) user.avatarUrl = data.avatarUrl;
     return user;
   }
 

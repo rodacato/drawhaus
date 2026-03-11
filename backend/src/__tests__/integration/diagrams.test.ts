@@ -32,7 +32,9 @@ import { InMemoryFolderRepository } from "../fakes/in-memory-folder-repository";
 import { FakeHasher } from "../fakes/fake-hasher";
 import { InMemoryInvitationRepository } from "../fakes/in-memory-invitation-repository";
 import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-reset-repository";
+import { InMemoryOAuthTokenRepository } from "../fakes/in-memory-oauth-token-repository";
 import { NoopEmailService } from "../fakes/noop-email-service";
+import { GoogleAuthUseCase } from "../../application/use-cases/auth/google-auth";
 
 let diagrams: InMemoryDiagramRepository;
 
@@ -61,6 +63,7 @@ function createApp() {
     forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
     resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
     deleteAccount: new DeleteAccountUseCase(users, hasher),
+    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
   }, requireAuth));
   const folders = new InMemoryFolderRepository();
   app.use("/api/diagrams", createDiagramRoutes({

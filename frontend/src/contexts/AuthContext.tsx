@@ -7,6 +7,8 @@ interface AuthUser {
   email: string;
   name: string;
   role: string;
+  avatarUrl: string | null;
+  hasPassword: boolean;
 }
 
 interface AuthContextValue {

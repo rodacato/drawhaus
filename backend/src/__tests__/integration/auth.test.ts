@@ -12,12 +12,14 @@ import { AcceptInviteUseCase } from "../../application/use-cases/auth/accept-inv
 import { ForgotPasswordUseCase } from "../../application/use-cases/auth/forgot-password";
 import { ResetPasswordUseCase } from "../../application/use-cases/auth/reset-password";
 import { DeleteAccountUseCase } from "../../application/use-cases/auth/delete-account";
+import { GoogleAuthUseCase } from "../../application/use-cases/auth/google-auth";
 import { createAuthRoutes } from "../../infrastructure/http/routes/auth.routes";
 import { createRequireAuth } from "../../infrastructure/http/middleware/require-auth";
 import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../fakes/in-memory-session-repository";
 import { InMemoryInvitationRepository } from "../fakes/in-memory-invitation-repository";
 import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-reset-repository";
+import { InMemoryOAuthTokenRepository } from "../fakes/in-memory-oauth-token-repository";
 import { NoopEmailService } from "../fakes/noop-email-service";
 import { FakeHasher } from "../fakes/fake-hasher";
 
@@ -42,11 +44,13 @@ function createApp() {
   const forgotPassword = new ForgotPasswordUseCase(users, passwordResets, emailService);
   const resetPassword = new ResetPasswordUseCase(users, sessions, passwordResets, hasher);
   const deleteAccount = new DeleteAccountUseCase(users, hasher);
+  const oauthTokens = new InMemoryOAuthTokenRepository();
+  const googleAuth = new GoogleAuthUseCase(users, sessions, oauthTokens);
   const requireAuth = createRequireAuth(getCurrentUser);
 
   const app = express();
   app.use(express.json());
-  app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount }, requireAuth));
+  app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth }, requireAuth));
   return app;
 }
 

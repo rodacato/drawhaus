@@ -7,6 +7,8 @@ export type AuthUser = {
   name: string;
   role: UserRole;
   disabled: boolean;
+  avatarUrl: string | null;
+  hasPassword: boolean;
 };
 
 export interface SessionRepository {
