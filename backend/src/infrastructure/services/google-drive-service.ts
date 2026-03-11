@@ -1,4 +1,4 @@
-import type { GoogleDriveService, DriveFile, DriveFolder } from "../../domain/ports/google-drive-service";
+import type { GoogleDriveService, DriveFile, DriveFolder, DriveFileListItem } from "../../domain/ports/google-drive-service";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
@@ -101,5 +101,35 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
     }
 
     return (await res.json()) as DriveFile;
+  }
+
+  async listFiles(accessToken: string, folderId: string): Promise<DriveFileListItem[]> {
+    const q = `'${folderId}' in parents and trashed=false`;
+    const fields = "files(id,name,mimeType,modifiedTime,size)";
+    const orderBy = "modifiedTime desc";
+
+    const res = await fetch(
+      `${DRIVE_API}/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&orderBy=${encodeURIComponent(orderBy)}&pageSize=100`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+
+    if (!res.ok) {
+      throw new Error(`Drive listFiles failed (${res.status}): ${await res.text()}`);
+    }
+
+    const data = (await res.json()) as { files: DriveFileListItem[] };
+    return data.files;
+  }
+
+  async downloadFile(accessToken: string, fileId: string): Promise<string> {
+    const res = await fetch(`${DRIVE_API}/files/${fileId}?alt=media`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Drive downloadFile failed (${res.status}): ${await res.text()}`);
+    }
+
+    return res.text();
   }
 }
