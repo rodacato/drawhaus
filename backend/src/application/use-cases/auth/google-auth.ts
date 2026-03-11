@@ -123,6 +123,19 @@ export class GoogleAuthUseCase {
     };
   }
 
+  async handleDriveCallback(code: string, userId: string): Promise<void> {
+    const tokens = await this.exchangeCode(code);
+    const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
+    await this.oauthTokens.upsert({
+      userId,
+      provider: "google",
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      tokenExpiresAt: expiresAt,
+      scopes: tokens.scope,
+    });
+  }
+
   private async exchangeCode(code: string): Promise<GoogleTokenResponse> {
     const response = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
