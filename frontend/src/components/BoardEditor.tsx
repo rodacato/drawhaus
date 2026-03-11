@@ -196,6 +196,8 @@ export default function BoardEditor({
         onCreateShareLink={handleCreateShareLink}
         canEdit={canEdit}
         onCreateScene={collab.createScene}
+        saveState={collab.saveState}
+        onBeforeLeave={collab.flushSave}
       />
 
       {/* Main content area */}
