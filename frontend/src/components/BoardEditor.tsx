@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
 import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
+import { DriveSyncBadge, type DriveSyncState } from "@/components/DriveSyncBadge";
 import { FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "@/components/BoardSidebar";
 import { SceneTabBar } from "@/components/SceneTabBar";
@@ -43,6 +44,31 @@ export default function BoardEditor({
   });
 
   const comments = useComments({ diagramId, sceneId: collab.activeSceneId, socketRef: collab.socketRef });
+
+  // Drive sync status from socket
+  const [driveSyncState, setDriveSyncState] = useState<DriveSyncState>("idle");
+  const [driveSyncError, setDriveSyncError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const socket = collab.socketRef.current;
+    if (!socket) return;
+    const handler = ({ synced, error }: { synced: boolean; error?: string }) => {
+      if (synced) {
+        setDriveSyncState("synced");
+        setDriveSyncError(null);
+        const timer = setTimeout(() => setDriveSyncState("idle"), 5000);
+        return () => clearTimeout(timer);
+      }
+      if (error) {
+        setDriveSyncState("error");
+        setDriveSyncError(error);
+        const timer = setTimeout(() => setDriveSyncState("idle"), 8000);
+        return () => clearTimeout(timer);
+      }
+    };
+    socket.on("drive-sync-status", handler);
+    return () => { socket.off("drive-sync-status", handler); };
+  }, [collab.socketRef]);
 
   const canEdit = collab.userRole === "owner" || collab.userRole === "editor";
 
@@ -199,9 +225,10 @@ export default function BoardEditor({
               </button>
             )}
           </div>
-          {/* Connection badge */}
-          <div className="pointer-events-auto flex items-center">
+          {/* Connection & Drive sync badges */}
+          <div className="pointer-events-auto flex items-center gap-2">
             <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
+            <DriveSyncBadge state={driveSyncState} error={driveSyncError} />
           </div>
         </div>
         {/* Save status */}
