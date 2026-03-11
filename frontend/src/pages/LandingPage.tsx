@@ -1,6 +1,5 @@
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import pkg from "../../../package.json";
 
@@ -10,7 +9,6 @@ const EXCALIDRAW_GITHUB = "https://github.com/excalidraw/excalidraw";
 
 export function LandingPage() {
   const { user, loading } = useAuth();
-  const { theme } = useTheme();
 
   if (loading) {
     return (

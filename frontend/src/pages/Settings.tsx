@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -97,7 +97,7 @@ export function Settings() {
 
   const isAdmin = user?.role === "admin";
 
-  const userTabs: { id: Tab; label: string; icon: JSX.Element }[] = [
+  const userTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     {
       id: "profile",
       label: "Profile",
@@ -125,7 +125,7 @@ export function Settings() {
     },
   ];
 
-  const adminTabs: { id: Tab; label: string; icon: JSX.Element }[] = [
+  const adminTabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     {
       id: "admin-overview",
       label: "Overview",
@@ -148,7 +148,7 @@ export function Settings() {
     },
   ];
 
-  function NavItem({ tab }: { tab: { id: Tab; label: string; icon: JSX.Element } }) {
+  function NavItem({ tab }: { tab: { id: Tab; label: string; icon: React.ReactNode } }) {
     return (
       <button
         onClick={() => switchTab(tab.id)}
