@@ -16,12 +16,13 @@ type DashboardSidebarProps = {
   onWorkspaceCreated: (ws: Workspace) => void;
   onStatusMessage: (msg: string) => void;
   onLogout: () => Promise<void>;
+  onOpenWorkspaceSettings?: (workspaceId: string) => void;
 };
 
 const navBtnClass = (active: boolean) =>
   `flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${active ? "bg-primary/10 font-medium text-primary" : "text-text-secondary hover:bg-surface"}`;
 
-export function DashboardSidebar({ user, workspaces, activeWorkspaceId, isRecent, isStarred, onNavRecent, onNavStarred, onSelectWorkspace, onWorkspaceCreated, onStatusMessage, onLogout }: DashboardSidebarProps) {
+export function DashboardSidebar({ user, workspaces, activeWorkspaceId, isRecent, isStarred, onNavRecent, onNavStarred, onSelectWorkspace, onWorkspaceCreated, onStatusMessage, onLogout, onOpenWorkspaceSettings }: DashboardSidebarProps) {
   const navigate = useNavigate();
 
   return (
@@ -61,14 +62,15 @@ export function DashboardSidebar({ user, workspaces, activeWorkspaceId, isRecent
                 </span>
                 <span className="truncate text-sm">{ws.isPersonal ? "Personal" : ws.name}</span>
               </button>
-              {!ws.isPersonal && (
-                <Link
-                  to={`/workspace/${ws.id}/settings`}
+              {!ws.isPersonal && onOpenWorkspaceSettings && (
+                <button
+                  onClick={() => onOpenWorkspaceSettings(ws.id)}
                   className="hidden rounded px-1 text-text-muted hover:text-primary group-hover:block"
                   title="Workspace settings"
+                  type="button"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></svg>
-                </Link>
+                </button>
               )}
             </div>
           ))}
