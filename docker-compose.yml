@@ -23,6 +23,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -34,6 +36,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
       DATABASE_URL: ${DATABASE_URL:-postgres://drawhaus:drawhaus@db:5432/drawhaus}
       SESSION_SECRET: ${SESSION_SECRET:-dev-secret}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-}
@@ -41,6 +44,16 @@ services:
       FROM_EMAIL: ${FROM_EMAIL:-}
       HONEYBADGER_API_KEY: ${HONEYBADGER_API_KEY:-}
     command: npm run dev
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6479:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   db:
     image: postgres:16-alpine

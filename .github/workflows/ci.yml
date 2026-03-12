@@ -60,6 +60,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -90,6 +99,7 @@ jobs:
           NODE_ENV: test
           PORT: "4000"
           FRONTEND_URL: http://localhost:5173
+          REDIS_URL: redis://localhost:6379
 
       - name: Upload Playwright report
         if: always()

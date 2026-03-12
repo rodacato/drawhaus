@@ -313,7 +313,7 @@ if (config.honeybadgerApiKey) {
 async function startServer(): Promise<void> {
   await initSchema();
   const httpServer = createServer(app);
-  setupSocketServer(httpServer, { joinRoom, joinRoomGuest, saveScene, syncToDrive, createComment, replyComment, resolveComment, deleteComment });
+  await setupSocketServer(httpServer, { joinRoom, joinRoomGuest, saveScene, syncToDrive, createComment, replyComment, resolveComment, deleteComment });
 
   httpServer.listen(config.port, () => {
     logger.info({ port: config.port }, `Backend running on http://localhost:${config.port}`);

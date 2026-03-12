@@ -30,4 +30,5 @@ export const config = {
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
   googleRedirectUri: process.env.GOOGLE_REDIRECT_URI ?? "",
+  redisUrl: process.env.REDIS_URL as string | undefined,
 } as const;

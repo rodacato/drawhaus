@@ -2,7 +2,7 @@ import type { Server, Socket } from "socket.io";
 import { parse } from "cookie";
 import type { JoinRoomUseCase } from "../../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../../application/use-cases/realtime/join-room-guest";
-import { type SocketData, getRoomPresenceUsers } from "../helpers";
+import { type SocketData, type PresenceUser, getRoomPresenceUsers } from "../helpers";
 import { config } from "../../config";
 import { logger } from "../../logger";
 
@@ -48,7 +48,7 @@ export function registerRoomHandlers(
 
       io.to(roomId).emit("room-presence", {
         roomId,
-        users: getRoomPresenceUsers(io, roomId),
+        users: await getRoomPresenceUsers(io, roomId),
       });
     } catch (error: unknown) {
       logger.error(error, "join-room failed");
@@ -95,7 +95,7 @@ export function registerRoomHandlers(
 
       io.to(roomId).emit("room-presence", {
         roomId,
-        users: getRoomPresenceUsers(io, roomId),
+        users: await getRoomPresenceUsers(io, roomId),
       });
     } catch (error: unknown) {
       logger.error(error, "join-room-guest failed");
@@ -124,25 +124,27 @@ export function registerRoomHandlers(
     socket.data.activeSceneId = sceneId;
   });
 
-  socket.on("disconnecting", () => {
+  socket.on("disconnecting", async () => {
+    const myData = socket.data as SocketData;
     for (const roomId of socket.rooms) {
       if (roomId === socket.id) continue;
-      // Skip scene sub-rooms (they contain ':')
       if (roomId.includes(":")) continue;
 
-      const futureUsers = getRoomPresenceUsers(io, roomId).filter(
-        (u) =>
-          u.userId !== (socket.data as SocketData).userId ||
-          Array.from(io.sockets.adapter.rooms.get(roomId) ?? []).some(
-            (sid) =>
-              sid !== socket.id &&
-              (io.sockets.sockets.get(sid)?.data as SocketData)?.userId ===
-                (socket.data as SocketData).userId,
-          ),
-      );
+      const allSockets = await io.in(roomId).fetchSockets();
+      const seen = new Set<string>();
+      const futureUsers: PresenceUser[] = [];
+
+      for (const s of allSockets) {
+        if (s.id === socket.id) continue;
+        const data = s.data as SocketData;
+        if (data.userId && !seen.has(data.userId)) {
+          seen.add(data.userId);
+          futureUsers.push({ userId: data.userId, name: data.userName, isGuest: data.isGuest ?? false });
+        }
+      }
 
       socket.to(roomId).emit("room-presence", { roomId, users: futureUsers });
-      socket.to(roomId).emit("cursor-left", { userId: (socket.data as SocketData).userId });
+      socket.to(roomId).emit("cursor-left", { userId: myData.userId });
     }
   });
 }
