@@ -5,16 +5,18 @@ import { pool } from "../db";
 type SettingsRow = {
   registration_open: boolean;
   instance_name: string;
+  maintenance_mode: boolean;
   max_workspaces_per_user: number;
   max_members_per_workspace: number;
 };
 
-const COLS = "registration_open, instance_name, max_workspaces_per_user, max_members_per_workspace";
+const COLS = "registration_open, instance_name, maintenance_mode, max_workspaces_per_user, max_members_per_workspace";
 
 function toDomain(row: SettingsRow): SiteSettings {
   return {
     registrationOpen: row.registration_open,
     instanceName: row.instance_name,
+    maintenanceMode: row.maintenance_mode,
     maxWorkspacesPerUser: row.max_workspaces_per_user,
     maxMembersPerWorkspace: row.max_members_per_workspace,
   };
@@ -25,7 +27,7 @@ export class PgSiteSettingsRepository implements SiteSettingsRepository {
     const { rows } = await pool.query<SettingsRow>(
       `SELECT ${COLS} FROM site_settings WHERE id = true LIMIT 1`,
     );
-    return rows[0] ? toDomain(rows[0]) : { registrationOpen: true, instanceName: "Drawhaus", maxWorkspacesPerUser: 5, maxMembersPerWorkspace: 5 };
+    return rows[0] ? toDomain(rows[0]) : { registrationOpen: true, instanceName: "Drawhaus", maintenanceMode: false, maxWorkspacesPerUser: 5, maxMembersPerWorkspace: 5 };
   }
 
   async update(data: Partial<SiteSettings>): Promise<SiteSettings> {
@@ -41,6 +43,11 @@ export class PgSiteSettingsRepository implements SiteSettingsRepository {
     if (data.instanceName !== undefined) {
       updates.push(`instance_name = $${index}`);
       values.push(data.instanceName);
+      index += 1;
+    }
+    if (data.maintenanceMode !== undefined) {
+      updates.push(`maintenance_mode = $${index}`);
+      values.push(data.maintenanceMode);
       index += 1;
     }
     if (data.maxWorkspacesPerUser !== undefined) {

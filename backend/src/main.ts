@@ -285,6 +285,11 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+app.get("/api/site/status", async (_req, res) => {
+  const settings = await getSettings.execute();
+  res.json({ maintenanceMode: settings.maintenanceMode, instanceName: settings.instanceName });
+});
+
 app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth }, requireAuth));
 app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, toggleStar, duplicate: duplicateDiagram, move: moveDiagram }, requireAuth, tagRepo));
 app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes, get: getScene, create: createScene, rename: renameScene, delete: deleteScene }, requireAuth));

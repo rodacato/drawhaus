@@ -1,5 +1,9 @@
 import { api } from "./client";
 
+export const siteApi = {
+  getStatus: () => api.get("/api/site/status").then((r) => r.data) as Promise<{ maintenanceMode: boolean; instanceName: string }>,
+};
+
 export const adminApi = {
   getMetrics: () => api.get("/api/admin/metrics").then((r) => r.data),
 
@@ -13,7 +17,7 @@ export const adminApi = {
 
   getSettings: () => api.get("/api/admin/settings").then((r) => r.data),
 
-  updateSettings: (data: { instanceName?: string; registrationOpen?: boolean; maxWorkspacesPerUser?: number; maxMembersPerWorkspace?: number }) =>
+  updateSettings: (data: { instanceName?: string; registrationOpen?: boolean; maintenanceMode?: boolean; maxWorkspacesPerUser?: number; maxMembersPerWorkspace?: number }) =>
     api.patch("/api/admin/settings", data).then((r) => r.data),
 
   inviteUser: (email: string, role: string = "user") =>

@@ -32,7 +32,7 @@ export function AdminSettings() {
     setPending(true);
     setStatus(null);
     try {
-      await adminApi.updateSettings({ instanceName: instanceName.trim(), registrationOpen, maxWorkspacesPerUser, maxMembersPerWorkspace });
+      await adminApi.updateSettings({ instanceName: instanceName.trim(), registrationOpen, maintenanceMode, maxWorkspacesPerUser, maxMembersPerWorkspace });
       setStatus({ type: "success", message: "Settings saved" });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Update failed";
