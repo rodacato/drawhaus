@@ -42,15 +42,12 @@ export function canEdit(socket: { data: Record<string, unknown> }, roomId: strin
   return role === "owner" || role === "editor";
 }
 
-export function getRoomPresenceUsers(io: Server, roomId: string): PresenceUser[] {
+export async function getRoomPresenceUsers(io: Server, roomId: string): Promise<PresenceUser[]> {
   const seen = new Set<string>();
   const users: PresenceUser[] = [];
-  const socketIds = io.sockets.adapter.rooms.get(roomId);
-  if (!socketIds) return users;
+  const remoteSockets = await io.in(roomId).fetchSockets();
 
-  for (const sid of socketIds) {
-    const s = io.sockets.sockets.get(sid);
-    if (!s) continue;
+  for (const s of remoteSockets) {
     const data = s.data as SocketData;
     if (data.userId && !seen.has(data.userId)) {
       seen.add(data.userId);

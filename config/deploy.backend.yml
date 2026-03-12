@@ -49,6 +49,7 @@ env:
     - GOOGLE_CLIENT_ID
     - GOOGLE_CLIENT_SECRET
     - GOOGLE_REDIRECT_URI
+    - REDIS_URL
 
 volumes:
   - drawhaus-uploads:/data/files
@@ -71,3 +72,10 @@ accessories:
         - POSTGRES_PASSWORD
     directories:
       - drawhaus-pgdata:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    host: <%= ENV["HOST_IP"] %>
+    port: "127.0.0.1:6379:6379"
+    cmd: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    directories:
+      - drawhaus-redis-data:/data

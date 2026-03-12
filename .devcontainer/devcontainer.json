@@ -5,7 +5,8 @@
   "workspaceFolder": "/workspaces/drawhaus",
   "runServices": [
     "workspace",
-    "db"
+    "db",
+    "redis"
   ],
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
@@ -18,7 +19,7 @@
   },
   "remoteUser": "vscode",
   "updateRemoteUserUID": true,
-  "forwardPorts": [3000, 4000, 5173, 5432],
+  "forwardPorts": [3000, 4000, 5173, 5432, 6479],
   "postCreateCommand": "bash .devcontainer/post-install.sh",
   "customizations": {
     "vscode": {

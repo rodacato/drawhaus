@@ -14,8 +14,9 @@ import { registerSceneHandlers } from "./handlers/scene.handler";
 import { registerCursorHandlers } from "./handlers/cursor.handler";
 import { registerCommentHandlers } from "./handlers/comment.handler";
 import { config } from "../config";
+import { attachRedisAdapter } from "./redis-adapter";
 
-export function setupSocketServer(
+export async function setupSocketServer(
   httpServer: HttpServer,
   useCases: {
     joinRoom: JoinRoomUseCase;
@@ -27,7 +28,7 @@ export function setupSocketServer(
     resolveComment: ResolveCommentUseCase;
     deleteComment: DeleteCommentUseCase;
   },
-): Server {
+): Promise<Server> {
   const io = new Server(httpServer, {
     parser: msgpackParser,
     cors: {
@@ -39,6 +40,8 @@ export function setupSocketServer(
       zlibDeflateOptions: { level: 6 },
     },
   });
+
+  await attachRedisAdapter(io);
 
   io.on("connection", (socket) => {
     socket.data.roomRoles = {};
