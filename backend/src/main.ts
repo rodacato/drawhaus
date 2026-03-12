@@ -279,7 +279,7 @@ export const app = express();
 app.use(requestId);
 app.use(requestLogger);
 app.use(cors({ origin: config.frontendUrl, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
