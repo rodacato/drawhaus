@@ -40,3 +40,9 @@ Thumbs.db
 
 docs/designs
 docs/generated_screenscripts/
+
+# Playwright
+e2e/test-results/
+e2e/playwright-report/
+e2e/blob-report/
+e2e/tests/.auth/

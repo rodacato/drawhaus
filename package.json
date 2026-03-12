@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": [
     "frontend",
-    "backend"
+    "backend",
+    "e2e"
   ],
   "scripts": {
     "dev": "concurrently -n fe,be -c blue,green \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
@@ -12,7 +13,12 @@
     "dev:backend": "npm run dev --workspace=backend",
     "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
-    "typecheck": "npm run typecheck --workspace=frontend && npm run typecheck --workspace=backend"
+    "typecheck": "npm run typecheck --workspace=frontend && npm run typecheck --workspace=backend",
+    "db:seed": "npm run db:seed --workspace=backend",
+    "db:reset": "npm run db:reset --workspace=backend",
+    "test:e2e": "npm test --workspace=e2e",
+    "test:e2e:ui": "npm run test:ui --workspace=e2e",
+    "test:e2e:headed": "npm run test:headed --workspace=e2e"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
