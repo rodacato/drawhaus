@@ -1,17 +1,7 @@
 import { Link } from "react-router-dom";
-import type { Tag } from "@/api/tags";
 import { useInlineRename } from "@/hooks/useInlineRename";
-
-type Diagram = {
-  id: string;
-  title: string;
-  folderId: string | null;
-  thumbnail: string | null;
-  starred?: boolean;
-  tags?: Tag[];
-  updatedAt?: string;
-  updated_at?: string;
-};
+import type { Diagram } from "./shared/DiagramTypes";
+import { TagBadges } from "./shared/TagBadges";
 
 export interface DiagramListRowProps {
   diagram: Diagram;
@@ -75,13 +65,7 @@ export function DiagramListRow({
         )}
         <div className="flex items-center gap-2">
           {diagram.tags && diagram.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {diagram.tags.map((tag) => (
-                <span key={tag.id} className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: tag.color }}>
-                  {tag.name}
-                </span>
-              ))}
-            </div>
+            <TagBadges tags={diagram.tags} />
           )}
           <p className="text-xs text-text-muted">{new Date(diagram.updatedAt ?? diagram.updated_at ?? "").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
         </div>

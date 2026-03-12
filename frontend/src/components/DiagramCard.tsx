@@ -2,17 +2,9 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Tag } from "@/api/tags";
 import { useInlineRename } from "@/hooks/useInlineRename";
+import type { Diagram } from "./shared/DiagramTypes";
+import { TagBadges } from "./shared/TagBadges";
 
-type Diagram = {
-  id: string;
-  title: string;
-  folderId: string | null;
-  thumbnail: string | null;
-  starred?: boolean;
-  tags?: Tag[];
-  updatedAt?: string;
-  updated_at?: string;
-};
 type Folder = { id: string; name: string };
 
 const TAG_COLORS = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#F97316"];
@@ -254,12 +246,8 @@ export function DiagramCard({
             </h2>
           )}
           {diagram.tags && diagram.tags.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-1">
-              {diagram.tags.map((tag) => (
-                <span key={tag.id} className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white" style={{ backgroundColor: tag.color }}>
-                  {tag.name}
-                </span>
-              ))}
+            <div className="mt-1">
+              <TagBadges tags={diagram.tags} />
             </div>
           )}
           <p className="mt-1 text-xs text-text-secondary">{new Date(diagram.updatedAt ?? diagram.updated_at ?? "").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
