@@ -8,6 +8,8 @@
     "start": "node dist/main.js",
     "lint": "eslint 'src/**/*.ts'",
     "typecheck": "tsc --noEmit",
+    "db:seed": "tsx --env-file=../.env src/scripts/db-seed.ts",
+    "db:reset": "tsx --env-file=../.env src/scripts/db-reset.ts",
     "test": "tsx --test --test-concurrency=1 'src/__tests__/**/*.test.ts'",
     "test:unit": "tsx --test --test-concurrency=1 'src/__tests__/unit/**/*.test.ts'",
     "test:integration": "tsx --test --test-concurrency=1 'src/__tests__/integration/**/*.test.ts'"
