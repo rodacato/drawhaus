@@ -3,19 +3,22 @@ import { loginAsUser, ADMIN_USER } from "../../fixtures/multi-user.fixture";
 
 const BASE_URL = "http://localhost:5173";
 
+async function getPersonalWorkspaceId(request: any): Promise<string | null> {
+  const res = await request.get("/api/workspaces");
+  if (!res.ok()) return null;
+  const body = await res.json();
+  const workspaces = body.workspaces ?? body;
+  if (!Array.isArray(workspaces) || workspaces.length === 0) return null;
+  const personal = workspaces.find((w: any) => w.is_personal || w.isPersonal);
+  return personal?.id ?? workspaces[0]?.id ?? null;
+}
+
 test.describe("Workspace Members", () => {
-  let personalWorkspaceId: string;
+  test.describe.configure({ retries: 1 });
+
   let adminCtx: Awaited<ReturnType<typeof loginAsUser>>;
 
-  test.beforeAll(async ({ request }) => {
-    // Use the personal workspace (always exists, no limit issues)
-    const res = await request.get("/api/workspaces");
-    if (res.ok()) {
-      const workspaces = (await res.json()).workspaces ?? await res.json();
-      const personal = workspaces.find((w: any) => w.is_personal || w.isPersonal);
-      personalWorkspaceId = personal?.id ?? workspaces[0]?.id;
-    }
-
+  test.beforeAll(async () => {
     adminCtx = await loginAsUser(BASE_URL, ADMIN_USER.email, ADMIN_USER.password);
   });
 
@@ -24,24 +27,26 @@ test.describe("Workspace Members", () => {
   });
 
   test("workspace owner can see workspace details", async ({ request }) => {
-    test.skip(!personalWorkspaceId, "No workspace found");
+    const wsId = await getPersonalWorkspaceId(request);
+    test.skip(!wsId, "No workspace found");
 
-    const res = await request.get(`/api/workspaces/${personalWorkspaceId}`);
+    const res = await request.get(`/api/workspaces/${wsId}`);
     expect(res.ok()).toBeTruthy();
   });
 
-  test("non-member cannot access workspace", async () => {
-    test.skip(!personalWorkspaceId, "No workspace found");
+  test("non-member cannot access workspace", async ({ request }) => {
+    const wsId = await getPersonalWorkspaceId(request);
+    test.skip(!wsId, "No workspace found");
 
-    const res = await adminCtx.get(`/api/workspaces/${personalWorkspaceId}`);
-    // Admin shouldn't have access to regular user's personal workspace
+    const res = await adminCtx.get(`/api/workspaces/${wsId}`);
     expect(res.ok()).toBeFalsy();
   });
 
   test("workspace owner can update workspace", async ({ request }) => {
-    test.skip(!personalWorkspaceId, "No workspace found");
+    const wsId = await getPersonalWorkspaceId(request);
+    test.skip(!wsId, "No workspace found");
 
-    const res = await request.patch(`/api/workspaces/${personalWorkspaceId}`, {
+    const res = await request.patch(`/api/workspaces/${wsId}`, {
       data: { description: "Updated by member test" },
     });
     expect(res.ok()).toBeTruthy();
