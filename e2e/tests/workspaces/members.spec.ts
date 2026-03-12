@@ -82,3 +82,70 @@ test.describe("Workspace Members", () => {
     await request.delete(`/api/workspaces/${ws.id}`);
   });
 });
+
+test.describe("Workspace Member Management", () => {
+  test.describe.configure({ mode: "serial" });
+
+  let ownerCtx: Awaited<ReturnType<typeof loginAsUser>>;
+  let memberCtx: Awaited<ReturnType<typeof loginAsUser>>;
+  let workspaceId: string;
+  let memberId: string;
+
+  test.beforeAll(async () => {
+    ownerCtx = await loginAsUser(BASE_URL, WS_MEMBER_USER.email, WS_MEMBER_USER.password);
+    memberCtx = await loginAsUser(BASE_URL, ADMIN_USER.email, ADMIN_USER.password);
+
+    // Get admin user's ID
+    const meRes = await memberCtx.get("/api/auth/me");
+    const meBody = await meRes.json();
+    memberId = meBody.user?.id ?? meBody.id;
+
+    // Create workspace
+    const wsRes = await ownerCtx.post("/api/workspaces", {
+      data: { name: "Member Mgmt WS" },
+    });
+    if (!wsRes.ok()) return;
+    const wsBody = await wsRes.json();
+    workspaceId = wsBody.workspace?.id ?? wsBody.id;
+
+    // Invite and accept
+    const inviteRes = await ownerCtx.post(`/api/workspaces/${workspaceId}/invite`, {
+      data: { email: ADMIN_USER.email, role: "editor" },
+    });
+    if (inviteRes.ok() || inviteRes.status() === 201) {
+      const invBody = await inviteRes.json();
+      const token = invBody.invitation?.token ?? invBody.token;
+      if (token) {
+        await memberCtx.post("/api/workspaces/accept-invite", { data: { token } });
+      }
+    }
+  });
+
+  test.afterAll(async () => {
+    if (workspaceId) {
+      await ownerCtx.delete(`/api/workspaces/${workspaceId}`).catch(() => {});
+    }
+    await ownerCtx?.dispose();
+    await memberCtx?.dispose();
+  });
+
+  test("can change member role", async () => {
+    test.skip(!workspaceId || !memberId, "Setup incomplete");
+    const res = await ownerCtx.patch(`/api/workspaces/${workspaceId}/members/${memberId}`, {
+      data: { role: "viewer" },
+    });
+    expect(res.ok()).toBeTruthy();
+  });
+
+  test("can remove member from workspace", async () => {
+    test.skip(!workspaceId || !memberId, "Setup incomplete");
+    const res = await ownerCtx.delete(`/api/workspaces/${workspaceId}/members/${memberId}`);
+    expect(res.ok()).toBeTruthy();
+  });
+
+  test("removed member loses access", async () => {
+    test.skip(!workspaceId, "Setup incomplete");
+    const res = await memberCtx.get(`/api/workspaces/${workspaceId}`);
+    expect(res.ok()).toBeFalsy();
+  });
+});

@@ -186,7 +186,11 @@ export function Dashboard() {
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
       else { toast("Imported, but missing id.", "info"); loadData(); }
-    } catch { toast("Could not read file.", "error"); }
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 413) toast("File is too large to import. Try a smaller diagram.", "error");
+      else toast("Could not read file.", "error");
+    }
     finally { setActionPending(false); }
   }
 
