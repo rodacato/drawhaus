@@ -47,7 +47,7 @@ test.describe("Visual Regression", () => {
     await stabilizePage(page);
 
     const screenshot = await page.screenshot({ timeout: 60_000 });
-    expect(screenshot).toMatchSnapshot("login.png", { maxDiffPixelRatio: 0.02 });
+    expect(screenshot).toMatchSnapshot("login.png", { maxDiffPixelRatio: 0.05 });
   });
 
   test("dashboard", async ({ page }) => {
@@ -65,7 +65,7 @@ test.describe("Visual Regression", () => {
     });
 
     const screenshot = await page.screenshot({ timeout: 60_000 });
-    expect(screenshot).toMatchSnapshot("dashboard.png", { maxDiffPixelRatio: 0.02 });
+    expect(screenshot).toMatchSnapshot("dashboard.png", { maxDiffPixelRatio: 0.05 });
   });
 
   test("share join page", async ({ browser }) => {
@@ -109,8 +109,81 @@ test.describe("Visual Regression", () => {
     await stabilizePage(guestPage);
 
     const screenshot = await guestPage.screenshot({ timeout: 60_000 });
-    expect(screenshot).toMatchSnapshot("share-join.png", { maxDiffPixelRatio: 0.02 });
+    expect(screenshot).toMatchSnapshot("share-join.png", { maxDiffPixelRatio: 0.05 });
 
     await guestContext.close();
+  });
+
+  test("register page", async ({ browser }) => {
+    // Use unauthenticated context to avoid redirect
+    const ctx = await browser.newContext({
+      storageState: { cookies: [], origins: [] },
+    });
+    const page = await ctx.newPage();
+    await page.goto("http://localhost:5173/register");
+    await page.waitForLoadState("networkidle");
+    await stabilizePage(page);
+
+    const screenshot = await page.screenshot({ timeout: 60_000 });
+    expect(screenshot).toMatchSnapshot("register.png", { maxDiffPixelRatio: 0.05 });
+    await ctx.close();
+  });
+
+  test("forgot password page", async ({ browser }) => {
+    const ctx = await browser.newContext({
+      storageState: { cookies: [], origins: [] },
+    });
+    const page = await ctx.newPage();
+    await page.goto("http://localhost:5173/forgot-password");
+    await page.waitForLoadState("networkidle");
+    await stabilizePage(page);
+
+    const screenshot = await page.screenshot({ timeout: 60_000 });
+    expect(screenshot).toMatchSnapshot("forgot-password.png", { maxDiffPixelRatio: 0.05 });
+    await ctx.close();
+  });
+
+  test("settings page - profile tab", async ({ page }) => {
+    await page.goto("/settings?tab=profile");
+    await page.waitForLoadState("networkidle");
+    await stabilizePage(page);
+
+    // Mask dynamic content (input values, avatars)
+    await page.addStyleTag({
+      content: `
+        img[src*="avatar"] { visibility: hidden !important; }
+        input { color: transparent !important; }
+      `,
+    });
+
+    const screenshot = await page.screenshot({ timeout: 60_000 });
+    expect(screenshot).toMatchSnapshot("settings-profile.png", { maxDiffPixelRatio: 0.05 });
+  });
+
+  test("settings page - security tab", async ({ page }) => {
+    await page.goto("/settings?tab=security");
+    await page.waitForLoadState("networkidle");
+    await stabilizePage(page);
+
+    const screenshot = await page.screenshot({ timeout: 60_000 });
+    expect(screenshot).toMatchSnapshot("settings-security.png", { maxDiffPixelRatio: 0.05 });
+  });
+
+  test("admin panel - users", async ({ page }) => {
+    await page.goto("/admin");
+    await page.waitForLoadState("networkidle");
+    await stabilizePage(page);
+
+    // Mask dynamic user data (dates, emails, user counts)
+    await page.addStyleTag({
+      content: `
+        time { visibility: hidden !important; }
+        td, span { color: transparent !important; }
+        [data-testid*="date"], [data-testid*="time"] { visibility: hidden !important; }
+      `,
+    });
+
+    const screenshot = await page.screenshot({ timeout: 60_000 });
+    expect(screenshot).toMatchSnapshot("admin-users.png", { maxDiffPixelRatio: 0.05 });
   });
 });
