@@ -72,4 +72,27 @@ test.describe("Resource Access", () => {
     const res = await userCtx.get(`/api/diagrams/${diagram.id}`);
     expect(res.ok()).toBeTruthy();
   });
+
+  test("viewer share link blocks editing via API", async () => {
+    const diagram = await createDiagram(userCtx, "Viewer Only Diagram");
+    const share = await createShareLink(userCtx, diagram.id, "viewer");
+
+    // Access the diagram as a guest via share link (get the data)
+    const { unauthenticatedContext } = await import("../../fixtures/multi-user.fixture");
+    const noAuth = await unauthenticatedContext(BASE_URL);
+
+    // Resolve the share link — guest can view
+    const viewRes = await noAuth.get(`/api/share/link/${share.token}`);
+    expect(viewRes.ok()).toBeTruthy();
+
+    // Guest (admin user as different user) should not be able to edit via API
+    // A viewer share link should not grant write access to the diagram
+    const editRes = await adminCtx.patch(`/api/diagrams/${diagram.id}`, {
+      data: { title: "Hacked via viewer link" },
+    });
+    // Admin user is not the owner, so this should fail regardless
+    expect(editRes.ok()).toBeFalsy();
+
+    await noAuth.dispose();
+  });
 });

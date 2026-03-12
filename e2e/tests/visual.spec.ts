@@ -134,13 +134,18 @@ test.describe("Visual Regression", () => {
       storageState: { cookies: [], origins: [] },
     });
     const page = await ctx.newPage();
-    await page.goto("http://localhost:5173/forgot-password");
-    await page.waitForLoadState("networkidle");
-    await stabilizePage(page);
+    try {
+      await page.goto("http://localhost:5173/forgot-password");
+      await page.waitForLoadState("networkidle");
+      // Wait for the form to be visible before stabilizing
+      await page.locator('input[type="email"]').waitFor({ state: "visible", timeout: 10_000 }).catch(() => {});
+      await stabilizePage(page);
 
-    const screenshot = await page.screenshot({ timeout: 60_000 });
-    expect(screenshot).toMatchSnapshot("forgot-password.png", { maxDiffPixelRatio: 0.05 });
-    await ctx.close();
+      const screenshot = await page.screenshot({ timeout: 60_000 });
+      expect(screenshot).toMatchSnapshot("forgot-password.png", { maxDiffPixelRatio: 0.05 });
+    } finally {
+      await ctx.close();
+    }
   });
 
   test("settings page - profile tab", async ({ page }) => {
@@ -185,5 +190,33 @@ test.describe("Visual Regression", () => {
 
     const screenshot = await page.screenshot({ timeout: 60_000 });
     expect(screenshot).toMatchSnapshot("admin-users.png", { maxDiffPixelRatio: 0.05 });
+  });
+
+  test("landing page", async ({ browser }) => {
+    const ctx = await browser.newContext({
+      storageState: { cookies: [], origins: [] },
+    });
+    const page = await ctx.newPage();
+    await page.goto("http://localhost:5173/");
+    await page.waitForLoadState("networkidle");
+    await stabilizePage(page);
+
+    const screenshot = await page.screenshot({ timeout: 60_000 });
+    expect(screenshot).toMatchSnapshot("landing.png", { maxDiffPixelRatio: 0.05 });
+    await ctx.close();
+  });
+
+  test("404 page", async ({ browser }) => {
+    const ctx = await browser.newContext({
+      storageState: { cookies: [], origins: [] },
+    });
+    const page = await ctx.newPage();
+    await page.goto("http://localhost:5173/this-page-does-not-exist");
+    await page.waitForLoadState("networkidle");
+    await stabilizePage(page);
+
+    const screenshot = await page.screenshot({ timeout: 60_000 });
+    expect(screenshot).toMatchSnapshot("404.png", { maxDiffPixelRatio: 0.05 });
+    await ctx.close();
   });
 });

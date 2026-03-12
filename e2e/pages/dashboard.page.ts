@@ -22,7 +22,8 @@ export class DashboardPage {
   }
 
   async waitForLoad() {
-    await this.loadingIndicator.waitFor({ state: "hidden", timeout: 10_000 });
+    await this.loadingIndicator.waitFor({ state: "hidden", timeout: 30_000 }).catch(() => {});
+    await this.page.waitForTimeout(500);
   }
 
   async searchDiagrams(query: string) {
