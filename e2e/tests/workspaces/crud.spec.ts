@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { WS_CRUD_USER } from "../../fixtures/multi-user.fixture";
+
+// Use a dedicated user for workspace CRUD to avoid conflicts with other workspace tests
+test.use({ storageState: WS_CRUD_USER.authFile });
 
 test.describe("Workspace CRUD", () => {
-  test.describe.configure({ mode: "serial", retries: 1 });
+  test.describe.configure({ mode: "serial" });
 
   // Clean up old test workspaces to stay under the limit
   test.beforeAll(async ({ request }) => {
@@ -9,7 +13,7 @@ test.describe("Workspace CRUD", () => {
     if (!res.ok()) return;
     const workspaces = (await res.json()).workspaces ?? await res.json();
     for (const ws of workspaces) {
-      if (!ws.is_personal && !ws.isPersonal && /Smoke|CRUD|Verify|Update Me|Delete Me|List Verify/i.test(ws.name)) {
+      if (!ws.is_personal && !ws.isPersonal && /CRUD|Verify|Update|Delete Me|List Verify/i.test(ws.name)) {
         await request.delete(`/api/workspaces/${ws.id}`);
       }
     }

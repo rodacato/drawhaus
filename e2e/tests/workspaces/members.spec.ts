@@ -1,7 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { loginAsUser, ADMIN_USER } from "../../fixtures/multi-user.fixture";
+import { loginAsUser, ADMIN_USER, WS_MEMBER_USER } from "../../fixtures/multi-user.fixture";
 
 const BASE_URL = "http://localhost:5173";
+
+// Use a dedicated user for workspace member tests to avoid conflicts with CRUD tests
+test.use({ storageState: WS_MEMBER_USER.authFile });
 
 async function getPersonalWorkspaceId(request: any): Promise<string | null> {
   const res = await request.get("/api/workspaces");
@@ -14,8 +17,6 @@ async function getPersonalWorkspaceId(request: any): Promise<string | null> {
 }
 
 test.describe("Workspace Members", () => {
-  test.describe.configure({ retries: 1 });
-
   let adminCtx: Awaited<ReturnType<typeof loginAsUser>>;
 
   test.beforeAll(async () => {

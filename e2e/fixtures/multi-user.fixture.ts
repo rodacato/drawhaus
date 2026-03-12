@@ -10,6 +10,25 @@ export const REGULAR_USER = {
   password: "Test1234!pass",
 };
 
+/** Domain-specific users — each test domain gets its own user to avoid resource conflicts */
+export const WS_CRUD_USER = {
+  email: "e2e-ws-crud@drawhaus.test",
+  password: "Test1234!pass",
+  authFile: "tests/.auth/ws-crud.json",
+};
+
+export const WS_MEMBER_USER = {
+  email: "e2e-ws-member@drawhaus.test",
+  password: "Test1234!pass",
+  authFile: "tests/.auth/ws-member.json",
+};
+
+export const API_TESTS_USER = {
+  email: "e2e-api@drawhaus.test",
+  password: "Test1234!pass",
+  authFile: "tests/.auth/api-tests.json",
+};
+
 /**
  * Login via API and return an authenticated APIRequestContext.
  */

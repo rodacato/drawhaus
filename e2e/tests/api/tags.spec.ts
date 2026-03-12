@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { createDiagram } from "../../fixtures/data.fixture";
+import { API_TESTS_USER } from "../../fixtures/multi-user.fixture";
+
+// Use a dedicated user for API tests to avoid resource conflicts
+test.use({ storageState: API_TESTS_USER.authFile });
 
 test.describe("Tags API", () => {
   test.describe.configure({ mode: "serial" });
