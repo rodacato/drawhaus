@@ -281,5 +281,8 @@ export async function initSchema(): Promise<void> {
     -- Site settings: workspace limits
     ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS max_workspaces_per_user INTEGER NOT NULL DEFAULT 5;
     ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS max_members_per_workspace INTEGER NOT NULL DEFAULT 5;
+
+    -- Site settings: maintenance mode
+    ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS maintenance_mode BOOLEAN NOT NULL DEFAULT false;
   `);
 }

@@ -19,6 +19,7 @@ const updateUserSchema = z.object({
 const updateSettingsSchema = z.object({
   registrationOpen: z.boolean().optional(),
   instanceName: z.string().trim().min(1).max(100).optional(),
+  maintenanceMode: z.boolean().optional(),
   maxWorkspacesPerUser: z.number().int().min(1).max(50).optional(),
   maxMembersPerWorkspace: z.number().int().min(1).max(100).optional(),
 }).refine((v) => Object.keys(v).length > 0, { message: "At least one field is required" });
