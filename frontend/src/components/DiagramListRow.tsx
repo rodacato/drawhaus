@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useInlineRename } from "@/hooks/useInlineRename";
+import { useInlineRename } from "@/lib/hooks/useInlineRename";
 import type { Diagram } from "./shared/DiagramTypes";
 import { TagBadges } from "./shared/TagBadges";
 

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Tag } from "@/api/tags";
-import { useInlineRename } from "@/hooks/useInlineRename";
+import { useInlineRename } from "@/lib/hooks/useInlineRename";
 import type { Diagram } from "./shared/DiagramTypes";
 import { TagBadges } from "./shared/TagBadges";
 
