@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Workspace CRUD", () => {
-  test.describe.configure({ mode: "serial" });
+  test.describe.configure({ mode: "serial", retries: 1 });
 
   // Clean up old test workspaces to stay under the limit
   test.beforeAll(async ({ request }) => {
