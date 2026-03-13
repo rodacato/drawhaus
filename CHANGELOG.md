@@ -13,7 +13,19 @@ All notable changes to Drawhaus are documented here.
 - **Template Picker modal** — replaces blank "New Diagram" flow with categorized template selection (Architecture, Database, Agile, Process)
 - **Template API** — full CRUD for custom templates plus `POST /api/templates/:id/use` to create diagrams from templates
 - **Usage tracking** — templates track how many times they've been used
+- **My Templates dashboard view** — dedicated "My Templates" nav item in dashboard sidebar with grid of template cards (thumbnail, category badge, scope label, usage count, inline rename, delete, use)
+- **Workspace template sharing** — "Share with [Workspace Name]" checkbox when saving templates; scope badge shows workspace name in My Templates view
 - **Diagram as Code — Mermaid Live Import** — "Import from Code" panel in the board sidebar. Paste Mermaid code, see a live SVG preview, and add editable Excalidraw elements to the canvas. Supports flowcharts, sequence diagrams, class diagrams, and all Mermaid diagram types.
+- **Reusable SidebarDrawer** — extracted inline drawer component with outside-click/Escape handling and dynamic width per panel type
+- **Sidebar UX redesign** — buttons reorganized into semantic groups (Create & Import, View & Collaborate, Save, Navigation)
+
+### Improved
+- **Axios type safety** — module augmentation for AxiosInstance reflecting the response.data interceptor, resolving all pre-existing type errors across the frontend
+- **Excalidraw UI cleanup** — hidden redundant canvas actions (library, export, save-as-image, load scene, save-to-file)
+
+### Fixed
+- **SceneTabBar restored** — floating tab bar for scene switching was accidentally removed in a prior refactor; now back at bottom-left of canvas
+- **Template listing bug** — `findByCreator()` excluded workspace-associated templates due to `AND workspace_id IS NULL` filter; templates now visible regardless of workspace association
 
 ---
 

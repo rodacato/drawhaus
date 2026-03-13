@@ -125,10 +125,12 @@ Everything below is shipped and working in production.
 - Template system with built-in + user-created custom templates
 - 7 built-in templates: System Architecture, ER Diagram, Sequence Diagram, Sprint Retro, ADR Visual, API Flow, User Flow
 - Template Picker modal replaces blank "New Diagram" flow
-- Save as Template from board sidebar
+- Save as Template from board sidebar with workspace sharing ("Share with [Workspace Name]")
 - Template API: full CRUD + `POST /api/templates/:id/use`
 - Category filtering (Architecture, Database, Agile, Process, My Templates)
 - Usage count tracking per template
+- **My Templates dashboard view**: dedicated sidebar nav item with template grid (thumbnail, category badge, scope badge, usage count, rename, delete, use)
+- Workspace-scoped templates visible in "My Templates" regardless of workspace association
 
 ### Diagram as Code — Mermaid Live Import (v0.9)
 - "Import from Code" panel in board sidebar (same pattern as Export/Share/Template panels)
@@ -136,6 +138,13 @@ Everything below is shipped and working in production.
 - Supports all Mermaid diagram types (flowchart, sequence, class, state, etc.)
 - Replace toggle to replace existing elements or append
 - Zero backend changes — fully client-side using `@excalidraw/mermaid-to-excalidraw` + `convertToExcalidrawElements()`
+
+### Board & Dashboard Polish (v0.9)
+- Reusable SidebarDrawer component: inline drawer with outside-click, Escape handling, and dynamic width per panel
+- Sidebar UX: reorganized buttons into semantic groups (Create & Import, View & Collaborate, Save, Navigation)
+- SceneTabBar restored: floating tab bar at bottom-left of canvas for scene switching, rename, delete
+- Excalidraw UI cleanup: hidden redundant canvas actions (library, export, save-as-image, load scene)
+- Axios type safety: module augmentation for AxiosInstance reflecting the response.data interceptor — resolved all pre-existing type errors
 
 ---
 
