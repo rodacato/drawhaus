@@ -1,11 +1,13 @@
 import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { Hasher } from "../../../domain/ports/hasher";
+import type { AuditLogger } from "../../../domain/ports/audit-logger";
 import { NotFoundError, UnauthorizedError } from "../../../domain/errors";
 
 export class DeleteAccountUseCase {
   constructor(
     private users: UserRepository,
     private hasher: Hasher,
+    private audit: AuditLogger,
   ) {}
 
   async execute(userId: string, password: string | null) {
@@ -20,6 +22,7 @@ export class DeleteAccountUseCase {
     }
     // Google-only users (no password) can delete without password verification
 
+    this.audit.log({ actor: userId, action: "user.delete_account" });
     await this.users.delete(userId);
   }
 }

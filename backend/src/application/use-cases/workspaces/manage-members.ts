@@ -1,12 +1,14 @@
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
 import type { SiteSettingsRepository } from "../../../domain/ports/site-settings-repository";
 import type { WorkspaceRole } from "../../../domain/entities/workspace";
+import type { AuditLogger } from "../../../domain/ports/audit-logger";
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
 export class AddWorkspaceMemberUseCase {
   constructor(
     private workspaces: WorkspaceRepository,
     private settings: SiteSettingsRepository,
+    private audit: AuditLogger,
   ) {}
 
   async execute(workspaceId: string, actorId: string, targetUserId: string, role: WorkspaceRole) {
@@ -24,6 +26,7 @@ export class AddWorkspaceMemberUseCase {
     }
 
     await this.workspaces.addMember(workspaceId, targetUserId, role);
+    this.audit.log({ actor: actorId, action: "workspace.add_member", target: targetUserId, meta: { workspaceId, role } });
   }
 }
 
