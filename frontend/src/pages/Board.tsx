@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { diagramsApi } from "@/api/diagrams";
 import { useAuth } from "@/contexts/AuthContext";
 import BoardEditor from "@/components/BoardEditor";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { BoardErrorFallback } from "@/components/BoardErrorFallback";
 
 type DiagramData = {
   id: string;
@@ -39,12 +41,14 @@ export function Board() {
   }
 
   return (
-    <BoardEditor
-      diagramId={diagram.id}
-      title={diagram.title}
-      userEmail={user?.email ?? ""}
-      initialElements={diagram.elements}
-      initialAppState={diagram.appState}
-    />
+    <ErrorBoundary FallbackComponent={BoardErrorFallback}>
+      <BoardEditor
+        diagramId={diagram.id}
+        title={diagram.title}
+        userEmail={user?.email ?? ""}
+        initialElements={diagram.elements}
+        initialAppState={diagram.appState}
+      />
+    </ErrorBoundary>
   );
 }
