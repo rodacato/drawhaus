@@ -12,6 +12,7 @@ import type { IntegrationSecretsRepository } from "../../../domain/ports/integra
 import type { ConfigProvider } from "../../services/config-provider";
 import { INTEGRATION_KEYS } from "../../../domain/entities/integration-secret";
 import { asyncRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 import { requireAdmin } from "../middleware/require-admin";
 import { createBackup, listBackups, getBackupConfig } from "../../services/backup-service";
 
@@ -62,12 +63,9 @@ export function createAdminRoutes(
     return res.json({ users });
   }));
 
-  router.patch("/users/:id", asyncRoute(async (req, res) => {
-    const parsed = updateUserSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
+  router.patch("/users/:id", validate(updateUserSchema), asyncRoute(async (req, res) => {
     const targetId = req.params.id as string;
-    const user = await useCases.updateUser.execute(targetId, req.authUser.id, parsed.data);
+    const user = await useCases.updateUser.execute(targetId, req.authUser.id, req.body);
     return res.json({ user });
   }));
 
@@ -82,11 +80,8 @@ export function createAdminRoutes(
     return res.json({ settings });
   }));
 
-  router.patch("/settings", asyncRoute(async (req, res) => {
-    const parsed = updateSettingsSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    const settings = await useCases.updateSettings.execute(parsed.data);
+  router.patch("/settings", validate(updateSettingsSchema), asyncRoute(async (req, res) => {
+    const settings = await useCases.updateSettings.execute(req.body);
     return res.json({ settings });
   }));
 
@@ -95,13 +90,10 @@ export function createAdminRoutes(
     return res.json({ metrics });
   }));
 
-  router.post("/invite", asyncRoute(async (req, res) => {
-    const parsed = inviteSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
+  router.post("/invite", validate(inviteSchema), asyncRoute(async (req, res) => {
     const invitation = await useCases.inviteUser.execute({
-      email: parsed.data.email,
-      role: parsed.data.role,
+      email: req.body.email,
+      role: req.body.role,
       invitedBy: req.authUser.id,
       inviterName: req.authUser.name,
     });
@@ -145,20 +137,17 @@ export function createAdminRoutes(
     return res.json({ integrations, encryptionEnabled: true });
   }));
 
-  router.patch("/integrations", asyncRoute(async (req, res) => {
+  router.patch("/integrations", validate(updateIntegrationSchema), asyncRoute(async (req, res) => {
     if (!integrationSecrets) {
       return res.status(400).json({ error: "ENCRYPTION_KEY not configured — secrets can only be set via environment variables" });
     }
 
-    const parsed = updateIntegrationSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    if (parsed.data.value === "") {
-      await integrationSecrets.repo.delete(parsed.data.key);
+    if (req.body.value === "") {
+      await integrationSecrets.repo.delete(req.body.key);
     } else {
-      await integrationSecrets.repo.set(parsed.data.key, parsed.data.value);
+      await integrationSecrets.repo.set(req.body.key, req.body.value);
     }
-    integrationSecrets.configProvider.invalidate(parsed.data.key);
+    integrationSecrets.configProvider.invalidate(req.body.key);
 
     return res.json({ success: true });
   }));

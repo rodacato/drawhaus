@@ -10,6 +10,7 @@ import type { InviteToWorkspaceUseCase } from "../../../application/use-cases/wo
 import type { AcceptWorkspaceInviteUseCase } from "../../../application/use-cases/workspaces/accept-workspace-invite";
 import type { EnsurePersonalWorkspaceUseCase } from "../../../application/use-cases/workspaces/ensure-personal-workspace";
 import { asyncRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -55,10 +56,8 @@ export function createWorkspaceRoutes(
   const acceptInviteSchema = z.object({ token: z.string().min(1) });
 
   // Public: accept workspace invite (needs auth but separate flow)
-  router.post("/accept-invite", requireAuth, asyncRoute(async (req, res) => {
-    const parsed = acceptInviteSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    const result = await useCases.acceptInvite.execute(parsed.data.token, req.authUser.id);
+  router.post("/accept-invite", requireAuth, validate(acceptInviteSchema), asyncRoute(async (req, res) => {
+    const result = await useCases.acceptInvite.execute(req.body.token, req.authUser.id);
     return res.json({ workspace: result.workspace, role: result.role });
   }));
 
@@ -87,12 +86,10 @@ export function createWorkspaceRoutes(
     return res.json({ workspaces });
   }));
 
-  router.post("/", asyncRoute(async (req, res) => {
-    const parsed = createSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
     const workspace = await useCases.create.execute({
       userId: req.authUser.id,
-      ...parsed.data,
+      ...req.body,
     });
     return res.status(201).json({ workspace });
   }));
@@ -102,10 +99,8 @@ export function createWorkspaceRoutes(
     return res.json(result);
   }));
 
-  router.patch("/:id", asyncRoute(async (req, res) => {
-    const parsed = updateSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    const workspace = await useCases.update.execute(String(req.params.id), req.authUser.id, parsed.data);
+  router.patch("/:id", validate(updateSchema), asyncRoute(async (req, res) => {
+    const workspace = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
     return res.json({ workspace });
   }));
 
@@ -115,23 +110,19 @@ export function createWorkspaceRoutes(
   }));
 
   // Members
-  router.post("/:id/invite", asyncRoute(async (req, res) => {
-    const parsed = inviteSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+  router.post("/:id/invite", validate(inviteSchema), asyncRoute(async (req, res) => {
     const invitation = await useCases.invite.execute({
       workspaceId: String(req.params.id),
       actorId: req.authUser.id,
       actorName: req.authUser.name,
-      email: parsed.data.email,
-      role: parsed.data.role,
+      email: req.body.email,
+      role: req.body.role,
     });
     return res.status(201).json({ invitation });
   }));
 
-  router.patch("/:id/members/:userId", asyncRoute(async (req, res) => {
-    const parsed = roleSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    await useCases.updateMemberRole.execute(String(req.params.id), req.authUser.id, String(req.params.userId), parsed.data.role);
+  router.patch("/:id/members/:userId", validate(roleSchema), asyncRoute(async (req, res) => {
+    await useCases.updateMemberRole.execute(String(req.params.id), req.authUser.id, String(req.params.userId), req.body.role);
     return res.json({ success: true });
   }));
 

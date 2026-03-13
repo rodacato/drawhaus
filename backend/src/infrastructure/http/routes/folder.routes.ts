@@ -5,6 +5,7 @@ import type { ListFoldersUseCase } from "../../../application/use-cases/folders/
 import type { RenameFolderUseCase } from "../../../application/use-cases/folders/rename-folder";
 import type { DeleteFolderUseCase } from "../../../application/use-cases/folders/delete-folder";
 import { asyncRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -33,17 +34,13 @@ export function createFolderRoutes(
     return res.json({ folders });
   }));
 
-  router.post("/", asyncRoute(async (req, res) => {
-    const parsed = createSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    const folder = await useCases.create.execute(req.authUser.id, parsed.data.name, parsed.data.workspaceId);
+  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
+    const folder = await useCases.create.execute(req.authUser.id, req.body.name, req.body.workspaceId);
     return res.status(201).json({ folder });
   }));
 
-  router.patch("/:id", asyncRoute(async (req, res) => {
-    const parsed = renameSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    const folder = await useCases.rename.execute(String(req.params.id), req.authUser.id, parsed.data.name);
+  router.patch("/:id", validate(renameSchema), asyncRoute(async (req, res) => {
+    const folder = await useCases.rename.execute(String(req.params.id), req.authUser.id, req.body.name);
     return res.json({ folder });
   }));
 

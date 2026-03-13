@@ -6,6 +6,7 @@ import type { CreateSceneUseCase } from "../../../application/use-cases/scenes/c
 import type { RenameSceneUseCase } from "../../../application/use-cases/scenes/rename-scene";
 import type { DeleteSceneUseCase } from "../../../application/use-cases/scenes/delete-scene";
 import { asyncRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 import type { Scene } from "../../../domain/entities/scene";
 
 const createSchema = z.object({
@@ -61,25 +62,21 @@ export function createSceneRoutes(
   }));
 
   // POST /api/diagrams/:diagramId/scenes
-  router.post("/", asyncRoute(async (req, res) => {
-    const parsed = createSchema.safeParse(req.body ?? {});
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
     const scene = await useCases.create.execute(
       String(req.params.diagramId),
       req.authUser.id,
-      parsed.data.name,
+      req.body.name,
     );
     return res.status(201).json({ scene: formatScene(scene) });
   }));
 
   // PATCH /api/diagrams/:diagramId/scenes/:sceneId
-  router.patch("/:sceneId", asyncRoute(async (req, res) => {
-    const parsed = renameSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+  router.patch("/:sceneId", validate(renameSchema), asyncRoute(async (req, res) => {
     const scene = await useCases.rename.execute(
       String(req.params.sceneId),
       req.authUser.id,
-      parsed.data.name,
+      req.body.name,
     );
     return res.json({ scene: formatScene(scene) });
   }));

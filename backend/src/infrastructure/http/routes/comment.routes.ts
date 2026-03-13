@@ -7,6 +7,7 @@ import type { ResolveCommentUseCase } from "../../../application/use-cases/comme
 import type { DeleteCommentUseCase } from "../../../application/use-cases/comments/delete-comment";
 import type { ToggleLikeUseCase } from "../../../application/use-cases/comments/toggle-like";
 import { asyncRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 import type { CommentThread, CommentReply } from "../../../domain/entities/comment";
 
 const createSchema = z.object({
@@ -76,39 +77,33 @@ export function createCommentRoutes(
   }));
 
   // POST /api/diagrams/:diagramId/comments
-  router.post("/", asyncRoute(async (req, res) => {
-    const parsed = createSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
     const thread = await useCases.create.execute(
       String(req.params.diagramId),
       req.authUser.id,
-      parsed.data.elementId,
-      parsed.data.body,
-      parsed.data.sceneId,
+      req.body.elementId,
+      req.body.body,
+      req.body.sceneId,
     );
     return res.status(201).json({ thread: formatThread(thread) });
   }));
 
   // POST /api/diagrams/:diagramId/comments/:threadId/replies
-  router.post("/:threadId/replies", asyncRoute(async (req, res) => {
-    const parsed = replySchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+  router.post("/:threadId/replies", validate(replySchema), asyncRoute(async (req, res) => {
     const reply = await useCases.reply.execute(
       String(req.params.threadId),
       req.authUser.id,
-      parsed.data.body,
+      req.body.body,
     );
     return res.status(201).json({ reply: formatReply(reply) });
   }));
 
   // PATCH /api/diagrams/:diagramId/comments/:threadId/resolve
-  router.patch("/:threadId/resolve", asyncRoute(async (req, res) => {
-    const parsed = resolveSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+  router.patch("/:threadId/resolve", validate(resolveSchema), asyncRoute(async (req, res) => {
     const thread = await useCases.resolve.execute(
       String(req.params.threadId),
       req.authUser.id,
-      parsed.data.resolved,
+      req.body.resolved,
     );
     return res.json({ thread: formatThread(thread) });
   }));

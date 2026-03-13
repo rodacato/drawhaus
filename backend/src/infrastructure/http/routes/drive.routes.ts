@@ -8,6 +8,7 @@ import type { ListDriveFilesUseCase } from "../../../application/use-cases/drive
 import type { ImportFromDriveUseCase } from "../../../application/use-cases/drive/import-from-drive";
 import type { GoogleTokenRefresher } from "../../services/google-token-refresh";
 import { asyncRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 
 const toggleSchema = z.object({
   enabled: z.boolean(),
@@ -44,11 +45,8 @@ export function createDriveRoutes(
     return res.json(status);
   }));
 
-  router.post("/backup/toggle", requireAuth, asyncRoute(async (req, res) => {
-    const parsed = toggleSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    const result = await useCases.toggleDriveBackup.execute(req.authUser.id, parsed.data.enabled);
+  router.post("/backup/toggle", requireAuth, validate(toggleSchema), asyncRoute(async (req, res) => {
+    const result = await useCases.toggleDriveBackup.execute(req.authUser.id, req.body.enabled);
     return res.json(result);
   }));
 
@@ -57,11 +55,8 @@ export function createDriveRoutes(
     return res.json({ success: true });
   }));
 
-  router.post("/export", requireAuth, asyncRoute(async (req, res) => {
-    const parsed = exportSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    const result = await useCases.exportToDrive.execute(req.authUser.id, parsed.data);
+  router.post("/export", requireAuth, validate(exportSchema), asyncRoute(async (req, res) => {
+    const result = await useCases.exportToDrive.execute(req.authUser.id, req.body);
     return res.json(result);
   }));
 
@@ -76,11 +71,8 @@ export function createDriveRoutes(
     return res.json(result);
   }));
 
-  router.post("/import", requireAuth, asyncRoute(async (req, res) => {
-    const parsed = importSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    const result = await useCases.importFromDrive.execute(req.authUser.id, parsed.data);
+  router.post("/import", requireAuth, validate(importSchema), asyncRoute(async (req, res) => {
+    const result = await useCases.importFromDrive.execute(req.authUser.id, req.body);
     return res.json(result);
   }));
 
