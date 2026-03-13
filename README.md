@@ -90,7 +90,9 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 
 ## Environment Variables
 
-### Backend
+### Backend — Infrastructure
+
+> These must be set as env vars (GitHub Actions secrets or deploy config). They are needed at server boot before DB is available and **cannot** be moved to the database.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
@@ -99,18 +101,25 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `PORT` | No | `4000` | Server port |
 | `FRONTEND_URL` | No | `http://localhost:5173` | Allowed CORS origin |
 | `COOKIE_DOMAIN` | No | — | Cookie domain for subdomain sharing (e.g. `.drawhaus.dev`) |
-| `RESEND_API_KEY` | No | — | Resend API key for emails. If blank, emails log to console |
-| `FROM_EMAIL` | No | `noreply@drawhaus.dev` | Sender address for transactional emails |
-| `HONEYBADGER_API_KEY` | No | — | Error monitoring (optional) |
-| `GOOGLE_CLIENT_ID` | No | — | Google OAuth client ID. Leave blank to disable Google login |
-| `GOOGLE_CLIENT_SECRET` | No | — | Google OAuth client secret |
-| `GOOGLE_REDIRECT_URI` | No | — | Google OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/google/callback`) |
 | `REDIS_URL` | No | — | Redis connection string. Required for multi-container deployments (Socket.IO scaling) |
 | `ENCRYPTION_KEY` | No | — | 32-byte hex key for encrypting integration secrets in DB. Generate with `openssl rand -hex 32` |
 | `BACKUP_ENABLED` | No | `true` | Enable automated daily database backups |
 | `BACKUP_CRON` | No | `0 3 * * *` | Cron schedule for automated backups (default: 3AM UTC daily) |
 | `BACKUP_PATH` | No | `/data/backups` | Directory to store backup files |
 | `BACKUP_RETENTION_DAYS` | No | `7` | Number of days to keep old backups before cleanup |
+
+### Backend — Integration Secrets (DB-configurable)
+
+> When `ENCRYPTION_KEY` is set, these can be managed from the **admin panel** (Settings → Integrations) instead of env vars. The app checks the DB first, then falls back to env vars. After migrating to the DB, you can remove these from GitHub secrets.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GOOGLE_CLIENT_ID` | — | Google OAuth client ID. Leave blank to disable Google login |
+| `GOOGLE_CLIENT_SECRET` | — | Google OAuth client secret |
+| `GOOGLE_REDIRECT_URI` | — | Google OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/google/callback`) |
+| `RESEND_API_KEY` | — | Resend API key for emails. If blank, emails log to console |
+| `FROM_EMAIL` | `noreply@drawhaus.dev` | Sender address for transactional emails |
+| `HONEYBADGER_API_KEY` | — | Error monitoring (optional) |
 
 ### Frontend
 
