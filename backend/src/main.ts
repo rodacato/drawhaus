@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { createServer } from "http";
 import { authLimiter, generalLimiter } from "./infrastructure/http/middleware/rate-limit";
+import { createSetupLock } from "./infrastructure/http/middleware/setup-lock";
 import { config } from "./infrastructure/config";
 import { initSchema, pool } from "./infrastructure/db";
 import { logger } from "./infrastructure/logger";
@@ -145,6 +146,7 @@ import { createCommentRoutes } from "./infrastructure/http/routes/comment.routes
 import { createTagRoutes } from "./infrastructure/http/routes/tag.routes";
 import { createDriveRoutes } from "./infrastructure/http/routes/drive.routes";
 import { createWorkspaceRoutes } from "./infrastructure/http/routes/workspace.routes";
+import { createSetupRoutes } from "./infrastructure/http/routes/setup.routes";
 import { createRequireAuth } from "./infrastructure/http/middleware/require-auth";
 
 // --- Socket ---
@@ -313,6 +315,10 @@ app.get("/api/site/status", async (_req, res) => {
   res.json({ maintenanceMode: settings.maintenanceMode, instanceName: settings.instanceName });
 });
 
+// Setup lock (blocks all routes except whitelisted until setup is complete)
+const setupLock = createSetupLock(siteSettingsRepo);
+app.use(setupLock.middleware);
+
 // Rate limiting
 app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
@@ -320,6 +326,7 @@ app.use("/api/auth/forgot-password", authLimiter);
 app.use("/api/auth/reset-password", authLimiter);
 app.use("/api", generalLimiter);
 
+app.use("/api/setup", createSetupRoutes({ getSettings, updateSettings }, userRepo, requireAuth, setupLock.invalidate));
 app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth }, requireAuth));
 app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, toggleStar, duplicate: duplicateDiagram, move: moveDiagram }, requireAuth, tagRepo));
 app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: listScenes, get: getScene, create: createScene, rename: renameScene, delete: deleteScene }, requireAuth));

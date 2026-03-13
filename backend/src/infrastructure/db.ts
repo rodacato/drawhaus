@@ -284,5 +284,9 @@ export async function initSchema(): Promise<void> {
 
     -- Site settings: maintenance mode
     ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS maintenance_mode BOOLEAN NOT NULL DEFAULT false;
+
+    -- Site settings: setup wizard
+    ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS setup_completed BOOLEAN NOT NULL DEFAULT false;
+    ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS setup_skipped_integrations BOOLEAN NOT NULL DEFAULT false;
   `);
 }
