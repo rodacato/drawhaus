@@ -1,6 +1,7 @@
 import type { SceneRepository } from "../../../domain/ports/scene-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
 import { NotFoundError } from "../../../domain/errors";
+import { requireAccess } from "../../helpers/require-access";
 import type { Scene } from "../../../domain/entities/scene";
 
 export class ListScenesUseCase {
@@ -11,7 +12,7 @@ export class ListScenesUseCase {
 
   async execute(diagramId: string, userId: string): Promise<Scene[]> {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
+    requireAccess(role);
 
     const scenes = await this.scenes.findByDiagram(diagramId);
 

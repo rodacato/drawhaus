@@ -1,6 +1,7 @@
 import type { ShareRepository } from "../../../domain/ports/share-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
-import { NotFoundError, ForbiddenError, ConflictError } from "../../../domain/errors";
+import { ConflictError } from "../../../domain/errors";
+import { requireEditAccess } from "../../helpers/require-access";
 
 const MAX_LINKS_PER_DIAGRAM = 20;
 
@@ -17,8 +18,7 @@ export class CreateShareLinkUseCase {
     expiresInHours?: number;
   }) {
     const accessRole = await this.diagrams.findAccessRole(input.diagramId, input.userId);
-    if (!accessRole) throw new NotFoundError("Diagram");
-    if (accessRole !== "owner" && accessRole !== "editor") throw new ForbiddenError();
+    requireEditAccess(accessRole);
 
     const existing = await this.shares.findByDiagram(input.diagramId);
     if (existing.length >= MAX_LINKS_PER_DIAGRAM) {

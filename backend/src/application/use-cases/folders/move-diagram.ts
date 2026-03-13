@@ -1,6 +1,7 @@
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
 import type { FolderRepository } from "../../../domain/ports/folder-repository";
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
+import { requireOwnerAccess } from "../../helpers/require-access";
 
 export class MoveDiagramUseCase {
   constructor(
@@ -10,8 +11,7 @@ export class MoveDiagramUseCase {
 
   async execute(diagramId: string, userId: string, folderId: string | null) {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
-    if (role !== "owner") throw new ForbiddenError();
+    requireOwnerAccess(role);
 
     if (folderId !== null) {
       const folder = await this.folders.findById(folderId);

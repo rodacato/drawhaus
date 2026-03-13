@@ -3,7 +3,8 @@ import type { DiagramRepository } from "../../../domain/ports/diagram-repository
 import type { SceneRepository } from "../../../domain/ports/scene-repository";
 import type { DiagramRole } from "../../../domain/entities/diagram";
 import type { Scene } from "../../../domain/entities/scene";
-import { UnauthorizedError, NotFoundError } from "../../../domain/errors";
+import { UnauthorizedError } from "../../../domain/errors";
+import { requireAccess } from "../../helpers/require-access";
 
 export class JoinRoomUseCase {
   constructor(
@@ -24,7 +25,7 @@ export class JoinRoomUseCase {
     if (!user) throw new UnauthorizedError();
 
     const role = await this.diagrams.findAccessRole(roomId, user.id);
-    if (!role) throw new NotFoundError("Diagram");
+    requireAccess(role);
 
     let scenes = await this.scenes.findByDiagram(roomId);
 

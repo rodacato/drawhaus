@@ -1,6 +1,7 @@
 import type { CommentRepository } from "../../../domain/ports/comment-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
-import { NotFoundError, ForbiddenError } from "../../../domain/errors";
+import { NotFoundError } from "../../../domain/errors";
+import { requireEditAccess } from "../../helpers/require-access";
 import type { CommentThread } from "../../../domain/entities/comment";
 
 export class ResolveCommentUseCase {
@@ -14,8 +15,7 @@ export class ResolveCommentUseCase {
     if (!thread) throw new NotFoundError("Comment thread");
 
     const role = await this.diagrams.findAccessRole(thread.diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
-    if (role === "viewer") throw new ForbiddenError();
+    requireEditAccess(role);
 
     const updated = resolve
       ? await this.comments.resolveThread(threadId, userId)

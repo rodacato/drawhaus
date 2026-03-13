@@ -1,6 +1,7 @@
 import type { SceneRepository } from "../../../domain/ports/scene-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
-import { NotFoundError, ForbiddenError } from "../../../domain/errors";
+import { NotFoundError } from "../../../domain/errors";
+import { requireEditAccess } from "../../helpers/require-access";
 
 export class DeleteSceneUseCase {
   constructor(
@@ -13,8 +14,7 @@ export class DeleteSceneUseCase {
     if (!scene) throw new NotFoundError("Scene");
 
     const role = await this.diagrams.findAccessRole(scene.diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
-    if (role === "viewer") throw new ForbiddenError();
+    requireEditAccess(role);
 
     // Don't delete the last scene
     const siblings = await this.scenes.findByDiagram(scene.diagramId);
