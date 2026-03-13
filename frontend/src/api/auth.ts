@@ -2,39 +2,39 @@ import { api } from "./client";
 
 export const authApi = {
   login: (email: string, password: string) =>
-    api.post("/api/auth/login", { email, password }).then((r) => r.data),
+    api.post("/api/auth/login", { email, password }),
 
   register: (name: string, email: string, password: string) =>
-    api.post("/api/auth/register", { name, email, password }).then((r) => r.data),
+    api.post("/api/auth/register", { name, email, password }),
 
-  logout: () => api.post("/api/auth/logout").then((r) => r.data),
+  logout: () => api.post("/api/auth/logout"),
 
-  getMe: () => api.get("/api/auth/me").then((r) => r.data.user),
+  getMe: () => api.get("/api/auth/me").then((r: any) => r.user),
 
   updateProfile: (data: { name?: string; email?: string }) =>
-    api.patch("/api/auth/me", data).then((r) => r.data),
+    api.patch("/api/auth/me", data),
 
   changePassword: (currentPassword: string, newPassword: string) =>
-    api.post("/api/auth/change-password", { currentPassword, newPassword }).then((r) => r.data),
+    api.post("/api/auth/change-password", { currentPassword, newPassword }),
 
   getSetupStatus: () =>
-    api.get("/api/auth/setup-status").then((r) => r.data as { needsSetup: boolean }),
+    api.get("/api/auth/setup-status") as Promise<{ needsSetup: boolean }>,
 
   resolveInvite: (token: string) =>
-    api.get(`/api/auth/invite/${token}`).then((r) => r.data as { email: string; role: string }),
+    api.get(`/api/auth/invite/${token}`) as Promise<{ email: string; role: string }>,
 
   acceptInvite: (token: string, name: string, password: string) =>
-    api.post("/api/auth/accept-invite", { token, name, password }).then((r) => r.data),
+    api.post("/api/auth/accept-invite", { token, name, password }),
 
   forgotPassword: (email: string) =>
-    api.post("/api/auth/forgot-password", { email }).then((r) => r.data),
+    api.post("/api/auth/forgot-password", { email }),
 
   validateResetToken: (token: string) =>
-    api.get(`/api/auth/reset-password/${token}`).then((r) => r.data as { valid: boolean }),
+    api.get(`/api/auth/reset-password/${token}`) as Promise<{ valid: boolean }>,
 
   resetPassword: (token: string, newPassword: string) =>
-    api.post("/api/auth/reset-password", { token, newPassword }).then((r) => r.data),
+    api.post("/api/auth/reset-password", { token, newPassword }),
 
   deleteAccount: (password: string) =>
-    api.delete("/api/auth/account", { data: { password } }).then((r) => r.data),
+    api.delete("/api/auth/account", { data: { password } }),
 };

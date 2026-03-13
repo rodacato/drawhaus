@@ -284,7 +284,7 @@ export function useCollaboration({
     setActiveSceneId(sceneId);
     setSwitchingScene(true);
     try {
-      const data = await api.get(`/api/diagrams/${diagramId}/scenes/${sceneId}`).then(r => r.data);
+      const data = await api.get(`/api/diagrams/${diagramId}/scenes/${sceneId}`) as any;
       const scene = data.scene as { elements: unknown[]; appState: Record<string, unknown> };
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ elements: scene.elements ?? [] });
@@ -294,7 +294,7 @@ export function useCollaboration({
 
   const createScene = useCallback(async (name?: string) => {
     try {
-      const data = await api.post(`/api/diagrams/${diagramId}/scenes`, { name }).then(r => r.data);
+      const data = await api.post(`/api/diagrams/${diagramId}/scenes`, { name }) as any;
       const newScene = data.scene as SceneInfo;
       setScenes((prev) => [...prev, newScene]);
       switchScene(newScene.id);

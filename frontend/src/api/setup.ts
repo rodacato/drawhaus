@@ -8,14 +8,14 @@ export type SetupStatus = {
 
 export const setupApi = {
   getStatus: () =>
-    api.get("/api/setup/status").then((r) => r.data as SetupStatus),
+    api.get("/api/setup/status") as Promise<SetupStatus>,
 
   submitStep2: (data: { instanceName: string; registrationOpen: boolean }) =>
-    api.post("/api/setup/step-2", data).then((r) => r.data),
+    api.post("/api/setup/step-2", data),
 
   skipIntegrations: () =>
-    api.post("/api/setup/skip-integrations").then((r) => r.data),
+    api.post("/api/setup/skip-integrations"),
 
   complete: () =>
-    api.post("/api/setup/complete").then((r) => r.data),
+    api.post("/api/setup/complete"),
 };
