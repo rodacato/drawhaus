@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { createDiagram } from "../../fixtures/data.fixture";
+import { loginAsUser, ADMIN_USER } from "../../fixtures/multi-user.fixture";
 
 test.describe("Smoke Tests @smoke", () => {
   test.describe.configure({ mode: "serial" });
@@ -61,8 +62,6 @@ test.describe("Smoke Tests @smoke", () => {
   });
 
   test("admin settings accessible", async () => {
-    // Use admin login to check admin endpoint
-    const { loginAsUser, ADMIN_USER } = await import("../../fixtures/multi-user.fixture");
     const admin = await loginAsUser("http://localhost:5173", ADMIN_USER.email, ADMIN_USER.password);
     const res = await admin.get("/api/admin/settings");
     expect(res.ok()).toBeTruthy();

@@ -36,10 +36,13 @@ export class RegisterUseCase {
     const passwordHash = await this.hasher.hash(input.password);
     const user = await this.users.create({ email, name: input.name, passwordHash });
 
-    // First user becomes admin
+    // First user becomes admin and auto-completes setup
     if (isFirstUser) {
       await this.users.adminUpdate(user.id, { role: "admin" });
       user.role = "admin";
+      if (this.siteSettings) {
+        await this.siteSettings.update({ setupCompleted: true });
+      }
     }
 
     const session = await this.sessions.create(user.id);
