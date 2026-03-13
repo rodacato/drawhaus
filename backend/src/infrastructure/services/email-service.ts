@@ -2,14 +2,25 @@ import { Resend } from "resend";
 import { config } from "../config";
 import { logger } from "../logger";
 import type { EmailService } from "../../domain/ports/email-service";
+import type { ConfigProvider } from "./config-provider";
 
 export class ResendEmailService implements EmailService {
-  private resend: Resend | null;
-  private from: string;
+  private configProvider: ConfigProvider | null;
 
-  constructor() {
-    this.from = config.fromEmail;
-    this.resend = config.resendApiKey ? new Resend(config.resendApiKey) : null;
+  constructor(configProvider?: ConfigProvider) {
+    this.configProvider = configProvider ?? null;
+  }
+
+  private async getResend(): Promise<{ client: Resend; from: string } | null> {
+    const apiKey = this.configProvider
+      ? await this.configProvider.get("RESEND_API_KEY")
+      : config.resendApiKey;
+    const from = this.configProvider
+      ? await this.configProvider.get("FROM_EMAIL")
+      : config.fromEmail;
+
+    if (!apiKey) return null;
+    return { client: new Resend(apiKey), from: from || "noreply@drawhaus.app" };
   }
 
   async sendInviteEmail(to: string, inviteToken: string, inviterName: string, instanceName: string): Promise<void> {
@@ -82,12 +93,13 @@ export class ResendEmailService implements EmailService {
   }
 
   private async send(to: string, subject: string, html: string, actionUrl: string): Promise<void> {
-    if (!this.resend) {
+    const resend = await this.getResend();
+    if (!resend) {
       logger.info({ to, subject, actionUrl }, "[Email] No RESEND_API_KEY set — logging email instead of sending");
       return;
     }
 
-    const { error } = await this.resend.emails.send({ from: this.from, to, subject, html });
+    const { error } = await resend.client.emails.send({ from: resend.from, to, subject, html });
     if (error) {
       logger.error({ to, subject, error }, "Failed to send email via Resend");
       throw new Error(`Failed to send email: ${error.message}`);

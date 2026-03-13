@@ -8,6 +8,9 @@ import type { GetMetricsUseCase } from "../../../application/use-cases/admin/get
 import type { InviteUserUseCase } from "../../../application/use-cases/admin/invite-user";
 import type { AdminDeleteUserUseCase } from "../../../application/use-cases/admin/delete-user";
 import type { InvitationRepository } from "../../../domain/ports/invitation-repository";
+import type { IntegrationSecretsRepository } from "../../../domain/ports/integration-secrets-repository";
+import type { ConfigProvider } from "../../services/config-provider";
+import { INTEGRATION_KEYS } from "../../../domain/entities/integration-secret";
 import { asyncRoute } from "../middleware/async-handler";
 import { requireAdmin } from "../middleware/require-admin";
 
@@ -29,6 +32,11 @@ const inviteSchema = z.object({
   role: z.enum(["user", "admin"]).optional().default("user"),
 });
 
+const updateIntegrationSchema = z.object({
+  key: z.enum(INTEGRATION_KEYS as unknown as [string, ...string[]]),
+  value: z.string(),
+});
+
 export function createAdminRoutes(
   useCases: {
     listUsers: ListUsersUseCase;
@@ -41,6 +49,7 @@ export function createAdminRoutes(
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
   invitationRepo: InvitationRepository,
+  integrationSecrets?: { repo: IntegrationSecretsRepository; configProvider: ConfigProvider },
 ) {
   const router = Router();
 
@@ -103,5 +112,61 @@ export function createAdminRoutes(
     return res.json({ invitations });
   }));
 
+  // --- Integration secrets ---
+
+  router.get("/integrations", asyncRoute(async (_req, res) => {
+    if (!integrationSecrets) {
+      // No encryption key — report all as env-sourced
+      const integrations = INTEGRATION_KEYS.map((key) => ({
+        key,
+        source: process.env[key] ? "env" as const : "none" as const,
+        maskedValue: maskValue(process.env[key] ?? ""),
+      }));
+      return res.json({ integrations, encryptionEnabled: false });
+    }
+
+    const dbKeys = await integrationSecrets.repo.listKeys();
+    const dbKeySet = new Set(dbKeys.map((k) => k.key));
+
+    const integrations = await Promise.all(
+      INTEGRATION_KEYS.map(async (key) => {
+        if (dbKeySet.has(key)) {
+          const value = await integrationSecrets.configProvider.get(key);
+          return { key, source: "db" as const, maskedValue: maskValue(value) };
+        }
+        return {
+          key,
+          source: process.env[key] ? "env" as const : "none" as const,
+          maskedValue: maskValue(process.env[key] ?? ""),
+        };
+      }),
+    );
+    return res.json({ integrations, encryptionEnabled: true });
+  }));
+
+  router.patch("/integrations", asyncRoute(async (req, res) => {
+    if (!integrationSecrets) {
+      return res.status(400).json({ error: "ENCRYPTION_KEY not configured — secrets can only be set via environment variables" });
+    }
+
+    const parsed = updateIntegrationSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+
+    if (parsed.data.value === "") {
+      await integrationSecrets.repo.delete(parsed.data.key);
+    } else {
+      await integrationSecrets.repo.set(parsed.data.key, parsed.data.value);
+    }
+    integrationSecrets.configProvider.invalidate(parsed.data.key);
+
+    return res.json({ success: true });
+  }));
+
   return router;
+}
+
+function maskValue(value: string): string {
+  if (!value) return "";
+  if (value.length <= 8) return "\u2022".repeat(value.length);
+  return value.slice(0, 4) + "\u2022".repeat(Math.min(value.length - 8, 12)) + value.slice(-4);
 }

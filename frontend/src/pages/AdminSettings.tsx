@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { adminApi } from "@/api/admin";
 import { ui } from "@/lib/ui";
 import { ToggleSwitch } from "@/components/ToggleSwitch";
+import { IntegrationSecretsPanel } from "@/components/IntegrationSecretsPanel";
 
 export function AdminSettings() {
   const [instanceName, setInstanceName] = useState("");
@@ -91,6 +92,12 @@ export function AdminSettings() {
         {status && <p className={status.type === "error" ? ui.alertError : ui.alertSuccess}>{status.message}</p>}
         <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`} disabled={pending}>{pending ? "Saving..." : "Save Changes"}</button>
       </form>
+
+      <div className={ui.card}>
+        <h2 className={ui.h2}>Integrations</h2>
+        <p className={`${ui.muted} mb-4`}>Manage integration API keys and secrets. Values are encrypted at rest in the database.</p>
+        <IntegrationSecretsPanel />
+      </div>
     </div>
   );
 }

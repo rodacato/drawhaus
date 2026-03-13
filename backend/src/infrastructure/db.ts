@@ -288,5 +288,14 @@ export async function initSchema(): Promise<void> {
     -- Site settings: setup wizard
     ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS setup_completed BOOLEAN NOT NULL DEFAULT false;
     ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS setup_skipped_integrations BOOLEAN NOT NULL DEFAULT false;
+
+    -- Integration secrets (encrypted at rest)
+    CREATE TABLE IF NOT EXISTS integration_secrets (
+      key TEXT PRIMARY KEY,
+      encrypted_value TEXT NOT NULL,
+      iv TEXT NOT NULL,
+      auth_tag TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
   `);
 }

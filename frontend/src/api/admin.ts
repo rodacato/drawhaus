@@ -25,4 +25,13 @@ export const adminApi = {
 
   listInvitations: () =>
     api.get("/api/admin/invitations").then((r) => r.data),
+
+  getIntegrations: () =>
+    api.get("/api/admin/integrations").then((r) => r.data as {
+      integrations: { key: string; source: "db" | "env" | "none"; maskedValue: string }[];
+      encryptionEnabled: boolean;
+    }),
+
+  updateIntegration: (key: string, value: string) =>
+    api.patch("/api/admin/integrations", { key, value }).then((r) => r.data),
 };

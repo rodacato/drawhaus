@@ -68,6 +68,7 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
       REDIS_URL: ${{ secrets.REDIS_URL }}
+      ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
     steps:
       - name: Checkout
