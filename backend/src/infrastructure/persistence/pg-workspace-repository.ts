@@ -1,6 +1,6 @@
 import type { WorkspaceRepository } from "../../domain/ports/workspace-repository";
 import type { Workspace, WorkspaceMember, WorkspaceRole } from "../../domain/entities/workspace";
-import { pool } from "../db";
+import { pool, withTransaction } from "../db";
 
 type WorkspaceRow = {
   id: string;
@@ -69,21 +69,23 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
   }
 
   async create(data: { name: string; description?: string; ownerId: string; isPersonal?: boolean; color?: string; icon?: string }): Promise<Workspace> {
-    const { rows } = await pool.query<WorkspaceRow>(
-      `INSERT INTO workspaces (name, description, owner_id, is_personal, color, icon)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING ${COLS}`,
-      [data.name, data.description ?? "", data.ownerId, data.isPersonal ?? false, data.color ?? "#6366f1", data.icon ?? ""],
-    );
-    const workspace = toDomain(rows[0]);
+    return withTransaction(async (client) => {
+      const { rows } = await client.query<WorkspaceRow>(
+        `INSERT INTO workspaces (name, description, owner_id, is_personal, color, icon)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING ${COLS}`,
+        [data.name, data.description ?? "", data.ownerId, data.isPersonal ?? false, data.color ?? "#6366f1", data.icon ?? ""],
+      );
+      const workspace = toDomain(rows[0]);
 
-    // Auto-add owner as admin member
-    await pool.query(
-      `INSERT INTO workspace_members (workspace_id, user_id, role) VALUES ($1, $2, 'admin')`,
-      [workspace.id, data.ownerId],
-    );
+      // Auto-add owner as admin member (atomic with workspace creation)
+      await client.query(
+        `INSERT INTO workspace_members (workspace_id, user_id, role) VALUES ($1, $2, 'admin')`,
+        [workspace.id, data.ownerId],
+      );
 
-    return workspace;
+      return workspace;
+    });
   }
 
   async update(id: string, data: Partial<Pick<Workspace, "name" | "description" | "color" | "icon">>): Promise<Workspace | null> {
