@@ -10,8 +10,10 @@ type DashboardSidebarProps = {
   activeWorkspaceId: string | null;
   isRecent: boolean;
   isStarred: boolean;
+  isTemplates: boolean;
   onNavRecent: () => void;
   onNavStarred: () => void;
+  onNavTemplates: () => void;
   onSelectWorkspace: (id: string) => void;
   onWorkspaceCreated: (ws: Workspace) => void;
   onStatusMessage: (msg: string) => void;
@@ -22,7 +24,7 @@ type DashboardSidebarProps = {
 const navBtnClass = (active: boolean) =>
   `flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${active ? "bg-primary/10 font-medium text-primary" : "text-text-secondary hover:bg-surface"}`;
 
-export function DashboardSidebar({ user, workspaces, activeWorkspaceId, isRecent, isStarred, onNavRecent, onNavStarred, onSelectWorkspace, onWorkspaceCreated, onStatusMessage, onLogout, onOpenWorkspaceSettings }: DashboardSidebarProps) {
+export function DashboardSidebar({ user, workspaces, activeWorkspaceId, isRecent, isStarred, isTemplates, onNavRecent, onNavStarred, onNavTemplates, onSelectWorkspace, onWorkspaceCreated, onStatusMessage, onLogout, onOpenWorkspaceSettings }: DashboardSidebarProps) {
   const navigate = useNavigate();
 
   return (
@@ -47,6 +49,10 @@ export function DashboardSidebar({ user, workspaces, activeWorkspaceId, isRecent
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
             <span className="text-sm">Starred</span>
           </button>
+          <button onClick={onNavTemplates} className={navBtnClass(isTemplates)} type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></svg>
+            <span className="text-sm">My Templates</span>
+          </button>
 
           {/* Workspaces section */}
           <div className="pb-2 pt-4 px-3 text-[10px] font-bold uppercase tracking-wider text-text-muted">Workspaces</div>
@@ -54,7 +60,7 @@ export function DashboardSidebar({ user, workspaces, activeWorkspaceId, isRecent
             <div key={ws.id} className="group flex items-center">
               <button
                 onClick={() => onSelectWorkspace(ws.id)}
-                className={navBtnClass(activeWorkspaceId === ws.id && !isRecent && !isStarred)}
+                className={navBtnClass(activeWorkspaceId === ws.id && !isRecent && !isStarred && !isTemplates)}
                 type="button"
               >
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-xs" style={{ backgroundColor: ws.color + "22", color: ws.color }}>

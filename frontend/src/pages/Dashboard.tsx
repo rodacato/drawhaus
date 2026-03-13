@@ -15,11 +15,11 @@ import { DriveImportModal } from "@/components/DriveImportModal";
 import { TemplatePicker } from "@/components/TemplatePicker";
 import { Drawer } from "@/components/Drawer";
 import { WorkspaceSettingsContent } from "@/components/WorkspaceSettingsContent";
-import { DashboardSidebar, WorkspaceToolbar, WorkspaceView, GeneralView } from "@/components/dashboard";
+import { DashboardSidebar, WorkspaceToolbar, WorkspaceView, GeneralView, TemplatesView } from "@/components/dashboard";
 
 type Diagram = { id: string; title: string; folderId: string | null; thumbnail: string | null; starred?: boolean; tags?: Tag[]; updatedAt?: string; updated_at?: string };
 type Folder = { id: string; name: string };
-type SidebarView = "all" | "recent" | "starred" | "unfiled" | "folder";
+type SidebarView = "all" | "recent" | "starred" | "unfiled" | "folder" | "templates";
 
 export function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -55,6 +55,7 @@ export function Dashboard() {
   const folderId = folderIdParam === null ? undefined : folderIdParam === "null" ? null : folderIdParam;
   const isRecent = sidebarView === "recent";
   const isStarred = sidebarView === "starred";
+  const isTemplates = sidebarView === "templates";
   const isWorkspaceView = sidebarView === "all";
 
   // ── Load workspaces on mount ──
@@ -80,7 +81,7 @@ export function Dashboard() {
   }, [activeWorkspaceId]);
 
   // ── Load data ──
-  const isGlobalView = sidebarView === "recent" || sidebarView === "starred";
+  const isGlobalView = sidebarView === "recent" || sidebarView === "starred" || sidebarView === "templates";
 
   const loadData = useCallback(async () => {
     if (!activeWorkspaceId && !isGlobalView) return;
@@ -136,6 +137,7 @@ export function Dashboard() {
     ? `Search: "${searchQuery}"`
     : isRecent ? "Recent"
     : isStarred ? "Starred"
+    : isTemplates ? "My Templates"
     : activeWorkspace ? (activeWorkspace.isPersonal ? "Personal" : activeWorkspace.name)
     : "Diagrams";
 
@@ -143,6 +145,7 @@ export function Dashboard() {
     ? `${displayDiagrams.length} result${displayDiagrams.length !== 1 ? "s" : ""}`
     : isRecent ? "Recently edited diagrams"
     : isStarred ? "Your starred diagrams"
+    : isTemplates ? "Your saved templates — double-click to rename"
     : isWorkspaceView && activeWorkspace
       ? (activeWorkspace.isPersonal ? "Personal workspace" : `${activeWorkspace.name} workspace`)
       : "Manage and organize your visual workflows";
@@ -408,8 +411,10 @@ export function Dashboard() {
         activeWorkspaceId={activeWorkspaceId}
         isRecent={isRecent}
         isStarred={isStarred}
+        isTemplates={isTemplates}
         onNavRecent={() => { setSearchParams({}); setSidebarView("recent"); }}
         onNavStarred={() => { setSearchParams({}); setSidebarView("starred"); }}
+        onNavTemplates={() => { setSearchParams({}); setSidebarView("templates"); }}
         onSelectWorkspace={(id) => { setActiveWorkspaceId(id); navTo(undefined); }}
         onWorkspaceCreated={(ws) => {
           setWorkspaces((prev) => [...prev, ws]);
@@ -451,43 +456,49 @@ export function Dashboard() {
             <p className="mt-1 text-text-secondary">{subtitle}</p>
           </div>
 
-          {isWorkspaceView && (
-            <WorkspaceToolbar
-              viewMode={viewMode}
-              actionPending={actionPending}
-              creatingFolder={creatingFolder}
-              newFolderName={newFolderName}
-              onCreateDiagram={() => openTemplatePicker()}
-              onStartCreatingFolder={() => setCreatingFolder(true)}
-              onCancelCreatingFolder={() => setCreatingFolder(false)}
-              onNewFolderNameChange={setNewFolderName}
-              onCreateFolder={createFolder}
-              onImport={() => fileInputRef.current?.click()}
-              onDriveImport={() => setDriveImportOpen(true)}
-              onViewModeChange={setViewMode}
-            />
-          )}
-
-          {isWorkspaceView && folders.length > 0 ? (
-            <WorkspaceView
-              diagrams={displayDiagrams}
-              folders={folders}
-              allTags={allTags}
-              viewMode={viewMode}
-              actionPending={actionPending}
-              onCreateDiagram={openTemplatePicker}
-              onDeleteFolder={deleteFolder}
-              {...diagramActions}
-            />
+          {isTemplates ? (
+            <TemplatesView onStatusMessage={(msg) => toast(msg)} />
           ) : (
-            <GeneralView
-              diagrams={displayDiagrams}
-              folders={folders}
-              allTags={allTags}
-              viewMode={viewMode}
-              emptyMessage={emptyMessage}
-              {...diagramActions}
-            />
+            <>
+              {isWorkspaceView && (
+                <WorkspaceToolbar
+                  viewMode={viewMode}
+                  actionPending={actionPending}
+                  creatingFolder={creatingFolder}
+                  newFolderName={newFolderName}
+                  onCreateDiagram={() => openTemplatePicker()}
+                  onStartCreatingFolder={() => setCreatingFolder(true)}
+                  onCancelCreatingFolder={() => setCreatingFolder(false)}
+                  onNewFolderNameChange={setNewFolderName}
+                  onCreateFolder={createFolder}
+                  onImport={() => fileInputRef.current?.click()}
+                  onDriveImport={() => setDriveImportOpen(true)}
+                  onViewModeChange={setViewMode}
+                />
+              )}
+
+              {isWorkspaceView && folders.length > 0 ? (
+                <WorkspaceView
+                  diagrams={displayDiagrams}
+                  folders={folders}
+                  allTags={allTags}
+                  viewMode={viewMode}
+                  actionPending={actionPending}
+                  onCreateDiagram={openTemplatePicker}
+                  onDeleteFolder={deleteFolder}
+                  {...diagramActions}
+                />
+              ) : (
+                <GeneralView
+                  diagrams={displayDiagrams}
+                  folders={folders}
+                  allTags={allTags}
+                  viewMode={viewMode}
+                  emptyMessage={emptyMessage}
+                  {...diagramActions}
+                />
+              )}
+            </>
           )}
         </div>
       </main>

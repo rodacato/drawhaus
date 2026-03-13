@@ -5,3 +5,4 @@ export { GeneralView } from "./GeneralView";
 export { NewDiagramCard } from "./NewDiagramCard";
 export { WorkspaceToolbar } from "./WorkspaceToolbar";
 export { WorkspaceView } from "./WorkspaceView";
+export { TemplatesView } from "./TemplatesView";
