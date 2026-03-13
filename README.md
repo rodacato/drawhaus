@@ -120,7 +120,7 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `VITE_WS_URL` | No | — | WebSocket URL. Leave empty in dev |
 | `VITE_GOOGLE_API_KEY` | No | — | Google Picker API key for Drive file browser. Leave blank to disable |
 
-> **Local dev:** Copy `.env.example` to `.env` — Docker Compose loads it automatically. See `.env.production.example` for the production template.
+> **Local dev:** Copy `.env.example` to `.env` — Docker Compose loads it automatically. For production, configure secrets in GitHub Actions (see [Deployment](#deployment)).
 
 ---
 
@@ -232,11 +232,7 @@ Drawhaus uses a split deployment model:
    usermod -aG docker deploy
    ```
 
-2. **Copy and fill in the production env file**:
-   ```bash
-   cp .env.production.example .env.production
-   ```
-   Fill in all values — see the Environment Variables section below for details.
+2. **Configure GitHub Actions secrets** — see the [GitHub Actions secrets](#github-actions-secrets) table below. Kamal reads these from the CI environment during deploy.
 
 3. **First deploy with Kamal** (from your local machine):
    ```bash
@@ -318,6 +314,8 @@ For the backend deploy workflow to work, configure these secrets in your GitHub 
 | `GOOGLE_CLIENT_ID` | (Optional) Google OAuth client ID — leave blank to disable Google login |
 | `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth client secret |
 | `GOOGLE_REDIRECT_URI` | (Optional) Google OAuth redirect URI (e.g. `https://api.yourdomain.com/api/auth/google/callback`) |
+| `REDIS_URL` | (Optional) Redis connection string for Socket.IO scaling |
+| `ENCRYPTION_KEY` | (Optional) 32-byte hex key for encrypting integration secrets (`openssl rand -hex 32`) |
 
 ### Manual deploy commands
 
