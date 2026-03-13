@@ -5,7 +5,7 @@
 When making changes that affect any of the following, update the corresponding docs **in the same commit**:
 
 - **New/changed API endpoints** → Update the API Overview table in `README.md`
-- **New/changed env vars** → Update `README.md` env vars table, `.env.example`, and `.env.production.example`
+- **New/changed env vars** → Update `README.md` env vars table and `.env.example`
 - **New/changed CLI commands** → Update the Commands table in `README.md`
 - **New features shipped** → Add entry to `CHANGELOG.md` under the current version
 - **Completed roadmap items** → Mark as done in `ROADMAP.md`
