@@ -171,7 +171,16 @@ const oauthTokenRepo = new PgOAuthTokenRepository();
 const driveBackupRepo = new PgDriveBackupRepository();
 const workspaceRepo = new PgWorkspaceRepository();
 const hasher = new BcryptHasher();
-const emailService = new ResendEmailService();
+
+// Integration secrets (optional — requires ENCRYPTION_KEY)
+import { PgIntegrationSecretsRepository } from "./infrastructure/persistence/pg-integration-secrets-repository";
+import { ConfigProvider } from "./infrastructure/services/config-provider";
+
+const integrationSecretsRepo = config.encryptionKey
+  ? new PgIntegrationSecretsRepository(config.encryptionKey)
+  : null;
+const configProvider = new ConfigProvider(integrationSecretsRepo);
+const emailService = new ResendEmailService(configProvider);
 const driveService = new GoogleDriveServiceImpl();
 const tokenRefresher = new GoogleTokenRefresher(oauthTokenRepo);
 
@@ -335,7 +344,12 @@ app.use("/api/tags", createTagRoutes({ create: createTag, list: listTags, delete
 app.use("/api/folders", createFolderRoutes({ create: createFolder, list: listFolders, rename: renameFolder, delete: deleteFolder }, requireAuth));
 app.use("/api/workspaces", createWorkspaceRoutes({ create: createWorkspace, list: listWorkspaces, get: getWorkspace, update: updateWorkspace, delete: deleteWorkspace, addMember: addWorkspaceMember, updateMemberRole: updateWorkspaceMemberRole, removeMember: removeWorkspaceMember, invite: inviteToWorkspace, acceptInvite: acceptWorkspaceInvite, ensurePersonal: ensurePersonalWorkspace }, requireAuth));
 app.use("/api/share", createShareRoutes({ createLink, resolveLink, listLinks, deleteLink }, requireAuth));
-app.use("/api/admin", createAdminRoutes({ listUsers, updateUser: adminUpdateUser, deleteUser: adminDeleteUser, getSettings, updateSettings, getMetrics, inviteUser }, requireAuth, invitationRepo));
+app.use("/api/admin", createAdminRoutes(
+  { listUsers, updateUser: adminUpdateUser, deleteUser: adminDeleteUser, getSettings, updateSettings, getMetrics, inviteUser },
+  requireAuth,
+  invitationRepo,
+  integrationSecretsRepo ? { repo: integrationSecretsRepo, configProvider } : undefined,
+));
 app.use("/api/drive", createDriveRoutes({ getDriveStatus, toggleDriveBackup, disconnectDrive, exportToDrive, listDriveFiles, importFromDrive }, tokenRefresher, requireAuth));
 
 // --- Honeybadger error handler (must be after all routes) ---

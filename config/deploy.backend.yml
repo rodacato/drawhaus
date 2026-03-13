@@ -50,6 +50,7 @@ env:
     - GOOGLE_CLIENT_SECRET
     - GOOGLE_REDIRECT_URI
     - REDIS_URL
+    - ENCRYPTION_KEY
 
 volumes:
   - drawhaus-uploads:/data/files
