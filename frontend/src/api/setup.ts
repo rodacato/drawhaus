@@ -10,7 +10,7 @@ export const setupApi = {
   getStatus: () =>
     api.get("/api/setup/status") as Promise<SetupStatus>,
 
-  submitStep2: (data: { instanceName: string; registrationOpen: boolean }) =>
+  submitStep2: (data: { instanceName: string; registrationOpen: boolean; backupEnabled?: boolean; backupCron?: string; backupRetentionDays?: number }) =>
     api.post("/api/setup/step-2", data),
 
   skipIntegrations: () =>

@@ -6,4 +6,7 @@ export type SiteSettings = {
   maxMembersPerWorkspace: number;
   setupCompleted: boolean;
   setupSkippedIntegrations: boolean;
+  backupEnabled: boolean;
+  backupCron: string;
+  backupRetentionDays: number;
 };

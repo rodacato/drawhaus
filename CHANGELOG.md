@@ -18,7 +18,7 @@ All notable changes to Drawhaus are documented here.
 - **React Error Boundary** around BoardEditor to catch rendering crashes gracefully
 - **Improved `/health` endpoint** — verifies DB connection, reports app version and uptime
 - **`GET /api/version`** — returns version, commit hash, and deploy date
-- **Automated database backups** via `node-cron` with configurable schedule and 7-day retention
+- **Automated database backups** via `node-cron` with schedule, retention, and enable/disable configurable from admin panel and setup wizard
 - **On-demand backup/restore CLI** — `npm run db:backup` and `npm run db:restore` commands
 - **Admin backup API** — `GET /api/admin/backups` and `POST /api/admin/backups/trigger`
 - **Redis adapter** for Socket.IO horizontal scaling across multiple containers
@@ -48,10 +48,8 @@ All notable changes to Drawhaus are documented here.
 ### Environment Variables (new)
 - `ENCRYPTION_KEY` — 32-byte hex key for encrypting integration secrets
 - `REDIS_URL` — Redis connection string for Socket.IO scaling
-- `BACKUP_ENABLED` — Enable/disable automated daily backups (default: `true`)
-- `BACKUP_CRON` — Cron schedule for backups (default: `0 3 * * *`)
 - `BACKUP_PATH` — Backup storage directory (default: `/data/backups`)
-- `BACKUP_RETENTION_DAYS` — Days to keep old backups (default: `7`)
+- `BACKUP_ENABLED`, `BACKUP_CRON`, `BACKUP_RETENTION_DAYS` moved to admin panel (Settings → Database Backups) with env var fallback
 
 ---
 

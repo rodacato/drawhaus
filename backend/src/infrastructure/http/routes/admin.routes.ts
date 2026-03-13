@@ -27,6 +27,9 @@ const updateSettingsSchema = z.object({
   maintenanceMode: z.boolean().optional(),
   maxWorkspacesPerUser: z.number().int().min(1).max(50).optional(),
   maxMembersPerWorkspace: z.number().int().min(1).max(100).optional(),
+  backupEnabled: z.boolean().optional(),
+  backupCron: z.string().trim().min(1).max(100).optional(),
+  backupRetentionDays: z.number().int().min(1).max(365).optional(),
 }).refine((v) => Object.keys(v).length > 0, { message: "At least one field is required" });
 
 const inviteSchema = z.object({
@@ -82,6 +85,13 @@ export function createAdminRoutes(
 
   router.patch("/settings", validate(updateSettingsSchema), asyncRoute(async (req, res) => {
     const settings = await useCases.updateSettings.execute(req.body);
+
+    // Restart backup scheduler if backup config changed
+    if (req.body.backupEnabled !== undefined || req.body.backupCron !== undefined || req.body.backupRetentionDays !== undefined) {
+      const { startBackupScheduler } = await import("../../services/backup-scheduler");
+      await startBackupScheduler();
+    }
+
     return res.json({ settings });
   }));
 

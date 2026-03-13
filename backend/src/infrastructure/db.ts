@@ -308,6 +308,11 @@ export async function initSchema(): Promise<void> {
     UPDATE site_settings SET setup_completed = true
     WHERE setup_completed = false AND EXISTS (SELECT 1 FROM users LIMIT 1);
 
+    -- Site settings: backup configuration
+    ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS backup_enabled BOOLEAN NOT NULL DEFAULT true;
+    ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS backup_cron TEXT NOT NULL DEFAULT '0 3 * * *';
+    ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS backup_retention_days INTEGER NOT NULL DEFAULT 7;
+
     -- Integration secrets (encrypted at rest)
     CREATE TABLE IF NOT EXISTS integration_secrets (
       key TEXT PRIMARY KEY,

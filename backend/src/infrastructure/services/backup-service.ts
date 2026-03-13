@@ -19,7 +19,6 @@ export interface BackupResult {
 }
 
 const BACKUP_DIR = process.env.BACKUP_PATH ?? "/data/backups";
-const RETENTION_DAYS = Number(process.env.BACKUP_RETENTION_DAYS) || 7;
 
 function parseConnectionString(url: string) {
   const parsed = new URL(url);
@@ -159,8 +158,9 @@ export async function deleteBackup(filename: string): Promise<void> {
   await fs.unlink(filepath);
 }
 
-export async function cleanupOldBackups(): Promise<string[]> {
-  const cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
+export async function cleanupOldBackups(retentionDays?: number): Promise<string[]> {
+  const days = retentionDays ?? (Number(process.env.BACKUP_RETENTION_DAYS) || 7);
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
   const backups = await listBackups();
   const deleted: string[] = [];
 
@@ -174,10 +174,27 @@ export async function cleanupOldBackups(): Promise<string[]> {
   return deleted;
 }
 
-export function getBackupConfig() {
+/** Read backup config from DB (site_settings), falling back to env vars */
+export async function getBackupConfig(): Promise<{ backupDir: string; retentionDays: number; schedule: string; enabled: boolean }> {
+  try {
+    const { pool } = await import("../db");
+    const { rows } = await pool.query<{ backup_enabled: boolean; backup_cron: string; backup_retention_days: number }>(
+      "SELECT backup_enabled, backup_cron, backup_retention_days FROM site_settings WHERE id = true LIMIT 1",
+    );
+    if (rows[0]) {
+      return {
+        backupDir: BACKUP_DIR,
+        retentionDays: rows[0].backup_retention_days,
+        schedule: rows[0].backup_cron,
+        enabled: rows[0].backup_enabled,
+      };
+    }
+  } catch {
+    // DB not available yet (e.g. during init) — fall back to env vars
+  }
   return {
     backupDir: BACKUP_DIR,
-    retentionDays: RETENTION_DAYS,
+    retentionDays: Number(process.env.BACKUP_RETENTION_DAYS) || 7,
     schedule: process.env.BACKUP_CRON ?? "0 3 * * *",
     enabled: process.env.BACKUP_ENABLED !== "false",
   };

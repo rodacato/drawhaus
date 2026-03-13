@@ -130,9 +130,9 @@ async function startServer(): Promise<void> {
   const httpServer = createServer(app);
   await setupSocketServer(httpServer, { joinRoom: useCases.joinRoom, joinRoomGuest: useCases.joinRoomGuest, saveScene: useCases.saveScene, syncToDrive: useCases.syncToDrive, createComment: useCases.createComment, replyComment: useCases.replyComment, resolveComment: useCases.resolveComment, deleteComment: useCases.deleteComment });
 
-  // Start backup scheduler (cron-based, no-op if disabled)
+  // Start backup scheduler (cron-based, reads config from DB, no-op if disabled)
   const { startBackupScheduler } = await import("./infrastructure/services/backup-scheduler");
-  startBackupScheduler();
+  await startBackupScheduler();
 
   httpServer.listen(config.port, () => {
     logger.info({ port: config.port }, `Backend running on http://localhost:${config.port}`);

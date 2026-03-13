@@ -37,7 +37,7 @@ async function main() {
     filename = backups[0].filename;
   }
 
-  const cfg = getBackupConfig();
+  const cfg = await getBackupConfig();
   console.log(`🔄 Restoring from: ${cfg.backupDir}/${filename}`);
   console.log("   ⚠️  This will overwrite the current database!\n");
 
