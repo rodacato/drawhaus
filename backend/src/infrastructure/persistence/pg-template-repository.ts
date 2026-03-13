@@ -49,7 +49,7 @@ export class PgTemplateRepository implements TemplateRepository {
 
   async findByCreator(userId: string): Promise<Template[]> {
     const { rows } = await pool.query<TemplateRow>(
-      `SELECT ${COLS} FROM templates WHERE creator_id = $1 AND is_built_in = false AND workspace_id IS NULL ORDER BY updated_at DESC`,
+      `SELECT ${COLS} FROM templates WHERE creator_id = $1 AND is_built_in = false ORDER BY updated_at DESC`,
       [userId],
     );
     return rows.map(toDomain);
