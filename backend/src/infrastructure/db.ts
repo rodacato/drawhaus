@@ -321,5 +321,25 @@ export async function initSchema(): Promise<void> {
       auth_tag TEXT NOT NULL,
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+
+    -- Templates (built-in + user-created)
+    CREATE TABLE IF NOT EXISTS templates (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      creator_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      workspace_id UUID REFERENCES workspaces(id) ON DELETE SET NULL,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      category TEXT NOT NULL DEFAULT 'general',
+      elements JSONB NOT NULL DEFAULT '[]',
+      app_state JSONB NOT NULL DEFAULT '{}',
+      thumbnail TEXT,
+      is_built_in BOOLEAN NOT NULL DEFAULT false,
+      usage_count INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS templates_creator_id_idx ON templates (creator_id);
+    CREATE INDEX IF NOT EXISTS templates_workspace_id_idx ON templates (workspace_id);
   `);
 }

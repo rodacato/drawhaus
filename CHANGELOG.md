@@ -4,6 +4,18 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
+## v0.9.0 — Developer Templates (2026-03)
+
+### Added
+- **Template system** — create new diagrams from built-in or custom templates
+- **7 built-in developer templates**: System Architecture, ER Diagram, Sequence Diagram, Sprint Retro Board, ADR Visual, API Flow, User Flow
+- **Custom templates** — save any diagram as a reusable template from the board sidebar
+- **Template Picker modal** — replaces blank "New Diagram" flow with categorized template selection (Architecture, Database, Agile, Process)
+- **Template API** — full CRUD for custom templates plus `POST /api/templates/:id/use` to create diagrams from templates
+- **Usage tracking** — templates track how many times they've been used
+
+---
+
 ## v0.8.0 — Security, Testing & Architecture (2026-03)
 
 ### Added

@@ -5,12 +5,14 @@ import { foldersApi } from "@/api/folders";
 import { shareApi } from "@/api/share";
 import { tagsApi, type Tag } from "@/api/tags";
 import { workspacesApi, type Workspace } from "@/api/workspaces";
+import { templatesApi } from "@/api/templates";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ShareModal } from "@/components/ShareModal";
 import { DriveImportModal } from "@/components/DriveImportModal";
+import { TemplatePicker } from "@/components/TemplatePicker";
 import { Drawer } from "@/components/Drawer";
 import { WorkspaceSettingsContent } from "@/components/WorkspaceSettingsContent";
 import { DashboardSidebar, WorkspaceToolbar, WorkspaceView, GeneralView } from "@/components/dashboard";
@@ -35,6 +37,8 @@ export function Dashboard() {
   const [shareModalDiagramId, setShareModalDiagramId] = useState<string | null>(null);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [driveImportOpen, setDriveImportOpen] = useState(false);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [templatePickerFolderId, setTemplatePickerFolderId] = useState<string | undefined>(undefined);
   const [settingsWorkspaceId, setSettingsWorkspaceId] = useState<string | null>(null);
 
   // Workspaces
@@ -157,10 +161,49 @@ export function Dashboard() {
   }
 
   // ── CRUD actions ──
-  async function createDiagram(targetFolderId?: string) {
+  function openTemplatePicker(targetFolderId?: string) {
+    setTemplatePickerFolderId(targetFolderId);
+    setTemplatePickerOpen(true);
+  }
+
+  async function createBlankDiagram() {
+    setTemplatePickerOpen(false);
     setActionPending(true);
     try {
-      const payload = await diagramsApi.create({ title: "Untitled", folderId: targetFolderId ?? folderId ?? undefined, workspaceId: activeWorkspaceId ?? undefined });
+      const payload = await diagramsApi.create({ title: "Untitled", folderId: templatePickerFolderId ?? folderId ?? undefined, workspaceId: activeWorkspaceId ?? undefined });
+      const id = payload.diagram?.id;
+      if (id) navigate(`/board/${id}`);
+      else { toast("Diagram created, but missing id.", "info"); loadData(); }
+    } catch { toast("Could not create diagram.", "error"); }
+    finally { setActionPending(false); }
+  }
+
+  async function createFromBuiltIn(template: { name: string; elements: unknown[]; appState: Record<string, unknown> }) {
+    setTemplatePickerOpen(false);
+    setActionPending(true);
+    try {
+      const payload = await diagramsApi.create({
+        title: template.name,
+        folderId: templatePickerFolderId ?? folderId ?? undefined,
+        workspaceId: activeWorkspaceId ?? undefined,
+        elements: template.elements,
+      });
+      const id = payload.diagram?.id;
+      if (id) navigate(`/board/${id}`);
+      else { toast("Diagram created, but missing id.", "info"); loadData(); }
+    } catch { toast("Could not create diagram.", "error"); }
+    finally { setActionPending(false); }
+  }
+
+  async function createFromTemplate(templateId: string, title: string) {
+    setTemplatePickerOpen(false);
+    setActionPending(true);
+    try {
+      const payload = await templatesApi.use(templateId, {
+        title,
+        folderId: templatePickerFolderId ?? folderId ?? undefined,
+        workspaceId: activeWorkspaceId ?? undefined,
+      });
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
       else { toast("Diagram created, but missing id.", "info"); loadData(); }
@@ -317,6 +360,21 @@ export function Dashboard() {
     } catch { /* silent */ }
   }
 
+  async function saveAsTemplate(diagramId: string, title: string) {
+    try {
+      const data = await diagramsApi.get(diagramId);
+      const d = data.diagram ?? data;
+      await templatesApi.create({
+        title: `${title} Template`,
+        elements: d.elements ?? [],
+        appState: d.appState ?? d.app_state ?? {},
+        workspaceId: activeWorkspaceId,
+        thumbnail: d.thumbnail ?? null,
+      });
+      toast("Template saved!");
+    } catch { toast("Could not save template.", "error"); }
+  }
+
   // Shared diagram action props
   const diagramActions = {
     onMove: moveDiagram,
@@ -329,6 +387,7 @@ export function Dashboard() {
     onToggleTag: toggleTag,
     onCreateTag: createTag,
     onDeleteTag: deleteTag,
+    onSaveAsTemplate: saveAsTemplate,
   };
 
   if (loading) {
@@ -398,7 +457,7 @@ export function Dashboard() {
               actionPending={actionPending}
               creatingFolder={creatingFolder}
               newFolderName={newFolderName}
-              onCreateDiagram={() => createDiagram()}
+              onCreateDiagram={() => openTemplatePicker()}
               onStartCreatingFolder={() => setCreatingFolder(true)}
               onCancelCreatingFolder={() => setCreatingFolder(false)}
               onNewFolderNameChange={setNewFolderName}
@@ -416,7 +475,7 @@ export function Dashboard() {
               allTags={allTags}
               viewMode={viewMode}
               actionPending={actionPending}
-              onCreateDiagram={createDiagram}
+              onCreateDiagram={openTemplatePicker}
               onDeleteFolder={deleteFolder}
               {...diagramActions}
             />
@@ -437,6 +496,14 @@ export function Dashboard() {
         <ShareModal open onClose={() => setShareModalDiagramId(null)} diagramId={shareModalDiagramId} />
       )}
       <DriveImportModal open={driveImportOpen} onClose={() => setDriveImportOpen(false)} onImported={(id) => navigate(`/board/${id}`)} />
+      <TemplatePicker
+        open={templatePickerOpen}
+        workspaceId={activeWorkspaceId}
+        onClose={() => setTemplatePickerOpen(false)}
+        onBlank={createBlankDiagram}
+        onUseBuiltIn={createFromBuiltIn}
+        onUseTemplate={createFromTemplate}
+      />
 
       <Drawer
         open={!!settingsWorkspaceId}

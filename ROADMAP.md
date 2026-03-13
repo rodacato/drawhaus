@@ -121,6 +121,15 @@ Everything below is shipped and working in production.
 - **Comprehensive E2E testing**: 5-phase Playwright suite (permissions, CRUD, sharing, auth, visual regression) + smoke tests
 - **Documentation**: LICENSE, CONTRIBUTING, SECURITY files; CLAUDE.md project instructions
 
+### Developer Templates (v0.9)
+- Template system with built-in + user-created custom templates
+- 7 built-in templates: System Architecture, ER Diagram, Sequence Diagram, Sprint Retro, ADR Visual, API Flow, User Flow
+- Template Picker modal replaces blank "New Diagram" flow
+- Save as Template from board sidebar
+- Template API: full CRUD + `POST /api/templates/:id/use`
+- Category filtering (Architecture, Database, Agile, Process, My Templates)
+- Usage count tracking per template
+
 ---
 
 ## What's Next
@@ -147,6 +156,11 @@ Everything below is shipped and working in production.
 | 14 | MCP server | Expose Drawhaus to AI agents for automated diagram creation | M |
 | 15 | Public API | REST API for external integrations and automation | M |
 | 17 | @mention in comments | User search + notification system | M |
+| 18 | Diagram as Code | Import/export Mermaid, D2, PlantUML — bidirectional text-to-canvas | M |
+| 19 | Webhooks | Notify external systems on diagram changes (CI/CD, Slack, docs rebuild) | S |
+| 20 | CLI tool | `drawhaus create`, `drawhaus export`, `drawhaus import` from terminal | M |
+| 21 | Link previews (OpenGraph) | Thumbnail preview when pasting Drawhaus links in Slack/Discord/GitHub | S |
+| 22 | Embed SDK | Lightweight JS SDK for embedding live diagrams in Docusaurus/wikis | M |
 
 ### Not Planned
 

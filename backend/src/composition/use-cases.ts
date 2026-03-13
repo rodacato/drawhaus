@@ -92,6 +92,14 @@ import { DisconnectDriveUseCase } from "../application/use-cases/drive/disconnec
 import { ListDriveFilesUseCase } from "../application/use-cases/drive/list-drive-files";
 import { ImportFromDriveUseCase } from "../application/use-cases/drive/import-from-drive";
 
+// --- Templates ---
+import { CreateTemplateUseCase } from "../application/use-cases/templates/create-template";
+import { GetTemplateUseCase } from "../application/use-cases/templates/get-template";
+import { ListTemplatesUseCase } from "../application/use-cases/templates/list-templates";
+import { UpdateTemplateUseCase } from "../application/use-cases/templates/update-template";
+import { DeleteTemplateUseCase } from "../application/use-cases/templates/delete-template";
+import { UseTemplateUseCase } from "../application/use-cases/templates/use-template";
+
 import type { Repositories } from "./repositories";
 import type { Services } from "./services";
 
@@ -192,6 +200,14 @@ export function createUseCases(repos: Repositories, services: Services) {
   const listDriveFiles = new ListDriveFilesUseCase(services.driveService, repos.driveBackupRepo, services.tokenRefresher);
   const importFromDrive = new ImportFromDriveUseCase(services.driveService, repos.diagramRepo, services.tokenRefresher);
 
+  // Templates
+  const createTemplate = new CreateTemplateUseCase(repos.templateRepo);
+  const getTemplate = new GetTemplateUseCase(repos.templateRepo);
+  const listTemplates = new ListTemplatesUseCase(repos.templateRepo);
+  const updateTemplate = new UpdateTemplateUseCase(repos.templateRepo);
+  const deleteTemplate = new DeleteTemplateUseCase(repos.templateRepo);
+  const useTemplate = new UseTemplateUseCase(repos.templateRepo, repos.diagramRepo);
+
   return {
     // auth
     register, login, logout, getCurrentUser, updateProfile, changePassword,
@@ -219,6 +235,8 @@ export function createUseCases(repos: Repositories, services: Services) {
     joinRoom, joinRoomGuest, saveScene,
     // drive
     syncToDrive, exportToDrive, getDriveStatus, toggleDriveBackup, disconnectDrive, listDriveFiles, importFromDrive,
+    // templates
+    createTemplate, getTemplate, listTemplates, updateTemplate, deleteTemplate, useTemplate,
   };
 }
 

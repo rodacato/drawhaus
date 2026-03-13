@@ -20,6 +20,7 @@ type BoardEditorProps = {
   userEmail: string;
   initialElements: unknown[];
   initialAppState: Record<string, unknown>;
+  workspaceId?: string | null;
 };
 
 export default function BoardEditor({
@@ -28,6 +29,7 @@ export default function BoardEditor({
   userEmail,
   initialElements,
   initialAppState,
+  workspaceId,
 }: BoardEditorProps) {
   const [commentsPanelOpen, setCommentsPanelOpen] = useState(false);
   const [showCommentIndicators, setShowCommentIndicators] = useState(true);
@@ -198,6 +200,7 @@ export default function BoardEditor({
         onCreateScene={collab.createScene}
         saveState={collab.saveState}
         onBeforeLeave={collab.flushSave}
+        workspaceId={workspaceId}
       />
 
       {/* Main content area */}

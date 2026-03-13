@@ -4,14 +4,15 @@ import { createPortal } from "react-dom";
 import { ui } from "@/lib/ui";
 import type { ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 import { SidebarButton } from "./board-sidebar/SidebarButton";
-import { ExportIcon, CommentIcon, ShareIcon, PlusIcon, HomeIcon, GearIcon } from "./board-sidebar/icons";
+import { ExportIcon, CommentIcon, ShareIcon, PlusIcon, HomeIcon, GearIcon, TemplateIcon } from "./board-sidebar/icons";
 import { ExportPanel } from "./board-sidebar/ExportPanel";
 import { SharePanel } from "./board-sidebar/SharePanel";
 import { SettingsPanel } from "./board-sidebar/SettingsPanel";
+import { SaveTemplatePanel } from "./board-sidebar/SaveTemplatePanel";
 
 /* ───────────────────────── types ───────────────────────── */
 
-type ActivePanel = "export" | "share" | "settings" | null;
+type ActivePanel = "export" | "share" | "settings" | "template" | null;
 
 type BoardSidebarProps = {
   userEmail: string;
@@ -27,6 +28,7 @@ type BoardSidebarProps = {
   onCreateScene: () => void;
   saveState: string;
   onBeforeLeave: () => Promise<void>;
+  workspaceId?: string | null;
 };
 
 /* ───────────────────────── main sidebar ───────────────────────── */
@@ -45,6 +47,7 @@ export function BoardSidebar({
   onCreateScene,
   saveState,
   onBeforeLeave,
+  workspaceId,
 }: BoardSidebarProps) {
   const navigate = useNavigate();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
@@ -122,7 +125,10 @@ export function BoardSidebar({
         <div className="mx-3 my-3 h-px w-6 bg-gray-200" />
 
         {canEdit && (
-          <SidebarButton icon={<PlusIcon />} label="New scene" accent onClick={onCreateScene} />
+          <>
+            <SidebarButton icon={<PlusIcon />} label="New scene" accent onClick={onCreateScene} />
+            <SidebarButton icon={<TemplateIcon />} label="Save as Template" active={activePanel === "template"} onClick={() => togglePanel("template")} />
+          </>
         )}
 
         {/* Spacer */}
@@ -157,6 +163,7 @@ export function BoardSidebar({
             />
           )}
           {activePanel === "settings" && <SettingsPanel userEmail={userEmail} onDashboardClick={() => setLeaveOpen(true)} />}
+          {activePanel === "template" && <SaveTemplatePanel excalidrawApiRef={excalidrawApiRef} workspaceId={workspaceId} />}
         </div>
       </div>
 

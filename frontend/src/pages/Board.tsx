@@ -11,6 +11,7 @@ type DiagramData = {
   title: string;
   elements: unknown[];
   appState: Record<string, unknown>;
+  workspaceId: string | null;
 };
 
 export function Board() {
@@ -28,6 +29,7 @@ export function Board() {
         title: d.title ?? "",
         elements: d.elements ?? [],
         appState: d.appState ?? d.app_state ?? {},
+        workspaceId: d.workspaceId ?? d.workspace_id ?? null,
       });
     }).catch(() => setError("Diagram not found"));
   }, [id]);
@@ -48,6 +50,7 @@ export function Board() {
         userEmail={user?.email ?? ""}
         initialElements={diagram.elements}
         initialAppState={diagram.appState}
+        workspaceId={diagram.workspaceId}
       />
     </ErrorBoundary>
   );

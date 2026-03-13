@@ -16,6 +16,7 @@ export type DiagramActions = {
   onToggleTag: (diagramId: string, tag: Tag) => void;
   onCreateTag: (name: string, color: string) => Promise<Tag | null>;
   onDeleteTag: (tagId: string) => void;
+  onSaveAsTemplate?: (diagramId: string, title: string) => void;
 };
 
 type DiagramGridProps = DiagramActions & {
@@ -26,7 +27,7 @@ type DiagramGridProps = DiagramActions & {
   appendToGrid?: React.ReactNode;
 };
 
-export function DiagramGrid({ diagrams, folders, allTags, viewMode, appendToGrid, onMove, onDelete, onDuplicate, onToggleStar, onShare, onEmbed, onRename, onToggleTag, onCreateTag, onDeleteTag }: DiagramGridProps) {
+export function DiagramGrid({ diagrams, folders, allTags, viewMode, appendToGrid, onMove, onDelete, onDuplicate, onToggleStar, onShare, onEmbed, onRename, onToggleTag, onCreateTag, onDeleteTag, onSaveAsTemplate }: DiagramGridProps) {
   if (viewMode === "list") {
     return (
       <div className="divide-y divide-border rounded-lg border border-border bg-surface-raised">
@@ -40,7 +41,7 @@ export function DiagramGrid({ diagrams, folders, allTags, viewMode, appendToGrid
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
       {diagrams.map((diagram) => (
-        <DiagramCard key={diagram.id} diagram={diagram} folders={folders} allTags={allTags} onMove={onMove} onDelete={onDelete} onDuplicate={onDuplicate} onToggleStar={onToggleStar} onShare={(id) => onShare(id)} onEmbed={onEmbed} onRename={onRename} onToggleTag={onToggleTag} onCreateTag={onCreateTag} onDeleteTag={onDeleteTag} />
+        <DiagramCard key={diagram.id} diagram={diagram} folders={folders} allTags={allTags} onMove={onMove} onDelete={onDelete} onDuplicate={onDuplicate} onToggleStar={onToggleStar} onShare={(id) => onShare(id)} onEmbed={onEmbed} onRename={onRename} onToggleTag={onToggleTag} onCreateTag={onCreateTag} onDeleteTag={onDeleteTag} onSaveAsTemplate={onSaveAsTemplate} />
       ))}
       {appendToGrid}
     </div>

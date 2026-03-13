@@ -13,6 +13,7 @@ import { PgOAuthTokenRepository } from "../infrastructure/persistence/pg-oauth-t
 import { PgDriveBackupRepository } from "../infrastructure/persistence/pg-drive-backup-repository";
 import { PgWorkspaceRepository } from "../infrastructure/persistence/pg-workspace-repository";
 import { PgIntegrationSecretsRepository } from "../infrastructure/persistence/pg-integration-secrets-repository";
+import { PgTemplateRepository } from "../infrastructure/persistence/pg-template-repository";
 import { config } from "../infrastructure/config";
 
 export function createRepositories() {
@@ -33,12 +34,13 @@ export function createRepositories() {
   const integrationSecretsRepo = config.encryptionKey
     ? new PgIntegrationSecretsRepository(config.encryptionKey)
     : null;
+  const templateRepo = new PgTemplateRepository();
 
   return {
     userRepo, sessionRepo, diagramRepo, shareRepo, siteSettingsRepo,
     folderRepo, sceneRepo, commentRepo, tagRepo, invitationRepo,
     passwordResetRepo, oauthTokenRepo, driveBackupRepo, workspaceRepo,
-    integrationSecretsRepo,
+    integrationSecretsRepo, templateRepo,
   };
 }
 

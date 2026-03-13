@@ -449,6 +449,16 @@ kamal rollback -c config/deploy.backend.yml
 | `GET` | `/api/share/link/:token` | Resolve share link |
 | `DELETE` | `/api/share/link/:token` | Revoke share link |
 
+### Templates
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/templates` | List all templates (built-in + user's custom) |
+| `GET` | `/api/templates/:id` | Get single template |
+| `POST` | `/api/templates` | Create custom template from current canvas |
+| `POST` | `/api/templates/:id/use` | Create a new diagram from a template |
+| `PATCH` | `/api/templates/:id` | Update custom template (title, description, category) |
+| `DELETE` | `/api/templates/:id` | Delete custom template |
+
 ### Drive
 | Method | Endpoint | Description |
 |--------|----------|-------------|

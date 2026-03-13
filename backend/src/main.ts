@@ -30,6 +30,7 @@ import { createCommentRoutes } from "./infrastructure/http/routes/comment.routes
 import { createTagRoutes } from "./infrastructure/http/routes/tag.routes";
 import { createDriveRoutes } from "./infrastructure/http/routes/drive.routes";
 import { createWorkspaceRoutes } from "./infrastructure/http/routes/workspace.routes";
+import { createTemplateRoutes } from "./infrastructure/http/routes/template.routes";
 import { createSetupRoutes } from "./infrastructure/http/routes/setup.routes";
 import { createRequireAuth } from "./infrastructure/http/middleware/require-auth";
 
@@ -114,6 +115,7 @@ app.use("/api/admin", createAdminRoutes(
   repos.invitationRepo,
   repos.integrationSecretsRepo ? { repo: repos.integrationSecretsRepo, configProvider: services.configProvider } : undefined,
 ));
+app.use("/api/templates", createTemplateRoutes({ create: useCases.createTemplate, get: useCases.getTemplate, list: useCases.listTemplates, update: useCases.updateTemplate, delete: useCases.deleteTemplate, use: useCases.useTemplate }, requireAuth));
 app.use("/api/drive", createDriveRoutes({ getDriveStatus: useCases.getDriveStatus, toggleDriveBackup: useCases.toggleDriveBackup, disconnectDrive: useCases.disconnectDrive, exportToDrive: useCases.exportToDrive, listDriveFiles: useCases.listDriveFiles, importFromDrive: useCases.importFromDrive }, services.tokenRefresher, requireAuth));
 
 // --- Honeybadger error handler (must be after all routes) ---

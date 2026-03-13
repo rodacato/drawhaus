@@ -23,6 +23,7 @@ export interface DiagramCardProps {
   onToggleTag: (diagramId: string, tag: Tag) => void;
   onCreateTag: (name: string, color: string) => Promise<Tag | null>;
   onDeleteTag: (tagId: string) => void;
+  onSaveAsTemplate?: (diagramId: string, title: string) => void;
 }
 
 export function DiagramCard({
@@ -38,6 +39,7 @@ export function DiagramCard({
   onRename,
   onToggleTag,
   onCreateTag,
+  onSaveAsTemplate,
 }: DiagramCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [moveSubOpen, setMoveSubOpen] = useState(false);
@@ -173,6 +175,14 @@ export function DiagramCard({
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
               Embed
             </button>
+
+            {/* Save as Template */}
+            {onSaveAsTemplate && (
+              <button className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-text-secondary transition hover:bg-surface" type="button" onClick={() => { closeMenu(); onSaveAsTemplate(diagram.id, diagram.title); }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v7l3-2 3 2V3" /></svg>
+                Save as Template
+              </button>
+            )}
 
             {/* Move — with sub-menu */}
             <div className="relative">
