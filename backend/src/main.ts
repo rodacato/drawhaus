@@ -366,6 +366,10 @@ async function startServer(): Promise<void> {
   const httpServer = createServer(app);
   await setupSocketServer(httpServer, { joinRoom, joinRoomGuest, saveScene, syncToDrive, createComment, replyComment, resolveComment, deleteComment });
 
+  // Start backup scheduler (cron-based, no-op if disabled)
+  const { startBackupScheduler } = await import("./infrastructure/services/backup-scheduler");
+  startBackupScheduler();
+
   httpServer.listen(config.port, () => {
     logger.info({ port: config.port }, `Backend running on http://localhost:${config.port}`);
   });

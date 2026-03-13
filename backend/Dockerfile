@@ -14,6 +14,7 @@ COPY . .
 RUN npm run build
 
 FROM node:20-alpine AS production
+RUN apk add --no-cache postgresql16-client
 WORKDIR /app
 ARG GIT_COMMIT=unknown
 ENV NODE_ENV=production

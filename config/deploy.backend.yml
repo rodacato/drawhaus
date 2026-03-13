@@ -54,6 +54,7 @@ env:
 
 volumes:
   - drawhaus-uploads:/data/files
+  - drawhaus-backups:/data/backups
 
 logging:
   driver: json-file

@@ -13,6 +13,7 @@ import type { ConfigProvider } from "../../services/config-provider";
 import { INTEGRATION_KEYS } from "../../../domain/entities/integration-secret";
 import { asyncRoute } from "../middleware/async-handler";
 import { requireAdmin } from "../middleware/require-admin";
+import { createBackup, listBackups, getBackupConfig } from "../../services/backup-service";
 
 const updateUserSchema = z.object({
   role: z.enum(["user", "admin"]).optional(),
@@ -160,6 +161,27 @@ export function createAdminRoutes(
     integrationSecrets.configProvider.invalidate(parsed.data.key);
 
     return res.json({ success: true });
+  }));
+
+  // --- Backups ---
+
+  router.get("/backups", asyncRoute(async (_req, res) => {
+    const [backups, cfg] = await Promise.all([listBackups(), getBackupConfig()]);
+    return res.json({
+      backups: backups.map((b) => ({
+        filename: b.filename,
+        size: b.size,
+        createdAt: b.createdAt.toISOString(),
+      })),
+      config: { retentionDays: cfg.retentionDays, schedule: cfg.schedule, enabled: cfg.enabled },
+    });
+  }));
+
+  router.post("/backups/trigger", asyncRoute(async (_req, res) => {
+    const result = await createBackup();
+    return res.status(201).json({
+      backup: { filename: result.filename, size: result.size, durationMs: result.durationMs },
+    });
   }));
 
   return router;
