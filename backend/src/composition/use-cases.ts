@@ -98,7 +98,7 @@ import type { Services } from "./services";
 export function createUseCases(repos: Repositories, services: Services) {
   // Auth
   const register = new RegisterUseCase(repos.userRepo, repos.sessionRepo, services.hasher, repos.siteSettingsRepo);
-  const login = new LoginUseCase(repos.userRepo, repos.sessionRepo, services.hasher);
+  const login = new LoginUseCase(repos.userRepo, repos.sessionRepo, services.hasher, services.auditLogger);
   const logout = new LogoutUseCase(repos.sessionRepo);
   const getCurrentUser = new GetCurrentUserUseCase(repos.sessionRepo);
   const updateProfile = new UpdateProfileUseCase(repos.userRepo);
@@ -106,7 +106,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   const acceptInvite = new AcceptInviteUseCase(repos.userRepo, repos.sessionRepo, repos.invitationRepo, services.hasher);
   const forgotPassword = new ForgotPasswordUseCase(repos.userRepo, repos.passwordResetRepo, services.emailService);
   const resetPassword = new ResetPasswordUseCase(repos.userRepo, repos.sessionRepo, repos.passwordResetRepo, services.hasher);
-  const deleteAccount = new DeleteAccountUseCase(repos.userRepo, services.hasher);
+  const deleteAccount = new DeleteAccountUseCase(repos.userRepo, services.hasher, services.auditLogger);
   const googleAuth = new GoogleAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo);
 
   // Diagrams
@@ -126,7 +126,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   const getWorkspace = new GetWorkspaceUseCase(repos.workspaceRepo);
   const updateWorkspace = new UpdateWorkspaceUseCase(repos.workspaceRepo);
   const deleteWorkspace = new DeleteWorkspaceUseCase(repos.workspaceRepo);
-  const addWorkspaceMember = new AddWorkspaceMemberUseCase(repos.workspaceRepo, repos.siteSettingsRepo);
+  const addWorkspaceMember = new AddWorkspaceMemberUseCase(repos.workspaceRepo, repos.siteSettingsRepo, services.auditLogger);
   const updateWorkspaceMemberRole = new UpdateWorkspaceMemberRoleUseCase(repos.workspaceRepo);
   const removeWorkspaceMember = new RemoveWorkspaceMemberUseCase(repos.workspaceRepo);
   const inviteToWorkspace = new InviteToWorkspaceUseCase(repos.workspaceRepo, repos.siteSettingsRepo, services.emailService);
@@ -148,8 +148,8 @@ export function createUseCases(repos: Repositories, services: Services) {
 
   // Admin
   const listUsers = new ListUsersUseCase(repos.userRepo);
-  const adminUpdateUser = new AdminUpdateUserUseCase(repos.userRepo, repos.sessionRepo);
-  const adminDeleteUser = new AdminDeleteUserUseCase(repos.userRepo, repos.sessionRepo);
+  const adminUpdateUser = new AdminUpdateUserUseCase(repos.userRepo, repos.sessionRepo, services.auditLogger);
+  const adminDeleteUser = new AdminDeleteUserUseCase(repos.userRepo, repos.sessionRepo, services.auditLogger);
   const getSettings = new GetSiteSettingsUseCase(repos.siteSettingsRepo);
   const updateSettings = new UpdateSiteSettingsUseCase(repos.siteSettingsRepo);
   const getMetrics = new GetMetricsUseCase();

@@ -22,6 +22,7 @@ import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-res
 import { InMemoryOAuthTokenRepository } from "../fakes/in-memory-oauth-token-repository";
 import { NoopEmailService } from "../fakes/noop-email-service";
 import { FakeHasher } from "../fakes/fake-hasher";
+import { NoopAuditLogger } from "../fakes/noop-audit-logger";
 
 let users: InMemoryUserRepository;
 let sessions: InMemorySessionRepository;
@@ -32,7 +33,8 @@ function createApp() {
   const hasher = new FakeHasher();
 
   const register = new RegisterUseCase(users, sessions, hasher);
-  const login = new LoginUseCase(users, sessions, hasher);
+  const audit = new NoopAuditLogger();
+  const login = new LoginUseCase(users, sessions, hasher, audit);
   const logout = new LogoutUseCase(sessions);
   const getCurrentUser = new GetCurrentUserUseCase(sessions);
   const updateProfile = new UpdateProfileUseCase(users);
@@ -43,7 +45,7 @@ function createApp() {
   const acceptInvite = new AcceptInviteUseCase(users, sessions, invitations, hasher);
   const forgotPassword = new ForgotPasswordUseCase(users, passwordResets, emailService);
   const resetPassword = new ResetPasswordUseCase(users, sessions, passwordResets, hasher);
-  const deleteAccount = new DeleteAccountUseCase(users, hasher);
+  const deleteAccount = new DeleteAccountUseCase(users, hasher, audit);
   const oauthTokens = new InMemoryOAuthTokenRepository();
   const googleAuth = new GoogleAuthUseCase(users, sessions, oauthTokens);
   const requireAuth = createRequireAuth(getCurrentUser);

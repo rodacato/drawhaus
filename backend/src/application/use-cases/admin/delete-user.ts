@@ -1,11 +1,13 @@
 import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { SessionRepository } from "../../../domain/ports/session-repository";
+import type { AuditLogger } from "../../../domain/ports/audit-logger";
 import { NotFoundError, InvalidInputError } from "../../../domain/errors";
 
 export class AdminDeleteUserUseCase {
   constructor(
     private users: UserRepository,
     private sessions: SessionRepository,
+    private audit: AuditLogger,
   ) {}
 
   async execute(targetId: string, adminId: string) {
@@ -20,6 +22,7 @@ export class AdminDeleteUserUseCase {
       throw new InvalidInputError("Cannot delete an admin user");
     }
 
+    this.audit.log({ actor: "admin", action: "admin.delete_user", target: targetId });
     await this.sessions.deleteAllForUser(targetId);
     await this.users.delete(targetId);
   }

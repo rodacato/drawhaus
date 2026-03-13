@@ -5,6 +5,7 @@ import { LoginUseCase } from "../../../application/use-cases/auth/login";
 import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { FakeHasher } from "../../fakes/fake-hasher";
+import { NoopAuditLogger } from "../../fakes/noop-audit-logger";
 import { UnauthorizedError } from "../../../domain/errors";
 
 function setup() {
@@ -12,7 +13,7 @@ function setup() {
   const sessions = new InMemorySessionRepository(() => users.store);
   const hasher = new FakeHasher();
   const register = new RegisterUseCase(users, sessions, hasher);
-  const login = new LoginUseCase(users, sessions, hasher);
+  const login = new LoginUseCase(users, sessions, hasher, new NoopAuditLogger());
   return { users, sessions, register, login };
 }
 

@@ -1,12 +1,14 @@
 import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { SessionRepository } from "../../../domain/ports/session-repository";
 import type { UserRole } from "../../../domain/entities/user";
+import type { AuditLogger } from "../../../domain/ports/audit-logger";
 import { NotFoundError, InvalidInputError } from "../../../domain/errors";
 
 export class AdminUpdateUserUseCase {
   constructor(
     private users: UserRepository,
     private sessions: SessionRepository,
+    private audit: AuditLogger,
   ) {}
 
   async execute(targetId: string, adminId: string, data: { role?: UserRole; disabled?: boolean }) {
@@ -25,6 +27,7 @@ export class AdminUpdateUserUseCase {
       await this.sessions.deleteAllForUser(targetId);
     }
 
+    this.audit.log({ actor: "admin", action: "admin.update_user", target: targetId });
     const { passwordHash: _passwordHash, ...safe } = user;
     return safe;
   }

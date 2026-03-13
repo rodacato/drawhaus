@@ -35,6 +35,7 @@ import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-res
 import { InMemoryOAuthTokenRepository } from "../fakes/in-memory-oauth-token-repository";
 import { NoopEmailService } from "../fakes/noop-email-service";
 import { GoogleAuthUseCase } from "../../application/use-cases/auth/google-auth";
+import { NoopAuditLogger } from "../fakes/noop-audit-logger";
 
 let diagrams: InMemoryDiagramRepository;
 
@@ -54,7 +55,7 @@ function createApp() {
   const emailService = new NoopEmailService();
   app.use("/api/auth", createAuthRoutes({
     register: new RegisterUseCase(users, sessions, hasher),
-    login: new LoginUseCase(users, sessions, hasher),
+    login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
     logout: new LogoutUseCase(sessions),
     getCurrentUser,
     updateProfile: new UpdateProfileUseCase(users),
@@ -62,7 +63,7 @@ function createApp() {
     acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
     forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
     resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher),
+    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger()),
     googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
   }, requireAuth));
   const folders = new InMemoryFolderRepository();
