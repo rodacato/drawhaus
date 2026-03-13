@@ -4,7 +4,7 @@
 
 ---
 
-## What's Been Built (v0.1–v0.7)
+## What's Been Built (v0.1–v0.8)
 
 Everything below is shipped and working in production.
 
@@ -106,47 +106,26 @@ Everything below is shipped and working in production.
 - Style guide: documented Toast, ConfirmDialog, Drawer, Theme Toggle, Color Picker, Connection Badges
 - Style guide: categorized table of contents with anchor navigation
 
+### Security, Testing & Architecture (v0.8)
+- **Security hardening**: Helmet headers, rate limiting (5 req/min auth, 20/min general), setup lock middleware
+- **Security fixes**: Drive GraphQL injection, folder auth bypass, cookie deduplication
+- **Setup wizard**: 3-step guided flow (admin account → instance config → integrations) with progress bar
+- **Integration secrets**: AES-256-GCM encrypted feature keys in DB, editable from admin UI
+- **Structured audit logger**: logs security-sensitive operations (login, role changes, deletions)
+- **Maintenance mode**: site-wide access control during deployments
+- **React Error Boundary**: catches BoardEditor rendering crashes gracefully
+- **Operational readiness**: improved `/health` endpoint, `GET /api/version`, automated DB backups with 7-day retention
+- **Redis adapter**: Socket.IO horizontal scaling across multiple containers
+- **Backend refactoring**: composition root extraction, `validate()` middleware, `requireAccess` helpers, `withTransaction` for atomic operations
+- **Frontend refactoring**: split `useCollaboration` into 4 focused hooks, consolidated hooks directory, component extraction, Axios response interceptor (removed 59 manual `.then(r => r.data)` calls)
+- **Comprehensive E2E testing**: 5-phase Playwright suite (permissions, CRUD, sharing, auth, visual regression) + smoke tests
+- **Documentation**: LICENSE, CONTRIBUTING, SECURITY files; CLAUDE.md project instructions
+
 ---
 
 ## What's Next
 
 - Backup All to Google Drive: bulk sync all diagrams in active workspace to Drive with folder structure and real-time progress (POST returning 202, socket.io progress events, concurrency limit of 3).
-
-### v1.0 Gate — Security Hardening ✅
-
-> Completed in v0.8.0.
-
-| # | Item | Status | Description |
-|---|------|--------|-------------|
-| 1 | Rate limiting | ✅ Done | `express-rate-limit` on login, register, password reset, setup. 5 req/min auth, 20/min general |
-| 2 | Helmet security headers | ✅ Done | `app.use(helmet())` — X-Frame-Options, HSTS, X-Content-Type-Options, basic CSP |
-| 3 | Setup lock | ✅ Done | `setup_completed` flag in `site_settings`; redirect all routes to `/setup` until complete |
-
-### v1.0 Gate — Setup Wizard ✅
-
-> Completed in v0.8.0. 3-step guided wizard with progress bar.
-
-| Step | What it does | Status |
-|------|-------------|--------|
-| 1 — Admin account | Create admin user with auto-admin role | ✅ Done |
-| 2 — Instance config | Instance name, registration open/closed | ✅ Done |
-| 3 — Integrations (optional) | Google OAuth, Resend API key, Honeybadger | ✅ Done |
-
-### v1.0 Gate — Integration Secrets in DB ✅
-
-> Completed in v0.8.0. Feature-level API keys stored encrypted in DB (AES-256-GCM), editable from admin UI.
-
-### v1.0 Gate — Operational Readiness ✅
-
-> Completed in v0.8.0.
-
-| # | Item | Status | Description |
-|---|------|--------|-------------|
-| 1 | Improved healthcheck | ✅ Done | `/health` verifies DB connection and reports app version |
-| 2 | Version endpoint | ✅ Done | `GET /api/version` → `{ version, commit, deployedAt }` |
-| 3 | DB backup cron | ✅ Done | Automated `pg_dump` with 7-day retention, on-demand backup/restore CLI |
-| 4 | Smoke test full user flow | ✅ Done | 11 Playwright smoke tests covering critical paths |
-| 5 | Fix remaining rough edges | ✅ Done | Setup lock, rate limiting bypass in tests, Zod validation |
 
 ### Admin Polish
 
@@ -155,7 +134,7 @@ Everything below is shipped and working in production.
 | # | Feature | Type | Description |
 |---|---------|------|-------------|
 | 5 | Admin analytics | Full | Charts (recharts) for user growth, diagram creation, active sessions |
-| 6 | Admin backup & logs | Full | Manual backup trigger, DB dump download, log viewer |
+| 6 | Admin backup & logs | Frontend | ~~Manual backup trigger~~ (done in v0.8), DB dump download, log viewer |
 | 7 | Export CSV from admin | Frontend | Client-side CSV generation from user table |
 
 ### Nice to Have — Backlog
@@ -251,4 +230,4 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ---
 
-*Last updated: 2026-03-11*
+*Last updated: 2026-03-13*

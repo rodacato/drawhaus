@@ -4,29 +4,46 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
-## v0.8.0 — Security Hardening & Operational Readiness (2026-03)
+## v0.8.0 — Security, Testing & Architecture (2026-03)
 
 ### Added
+- **Maintenance mode** for site-wide access control during deployments
 - **Security headers** via Helmet (X-Frame-Options, HSTS, X-Content-Type-Options, CSP)
 - **Rate limiting** on auth endpoints (5 req/min) and general API (20 req/min) via `express-rate-limit`
 - **Setup lock** middleware — redirects all routes to `/setup` until initial admin is created
 - **3-step setup wizard** with progress bar: admin account → instance config → integrations (optional)
 - **Setup banner** on dashboard when optional setup steps are skipped
 - **Integration secrets in DB** — Google OAuth, Resend, Honeybadger keys stored encrypted (AES-256-GCM), editable from admin UI
-- **`ENCRYPTION_KEY` env var** for encrypting integration secrets (required in production)
+- **Structured audit logger** for security-sensitive operations (login, role changes, deletions)
+- **React Error Boundary** around BoardEditor to catch rendering crashes gracefully
 - **Improved `/health` endpoint** — verifies DB connection, reports app version and uptime
 - **`GET /api/version`** — returns version, commit hash, and deploy date
 - **Automated database backups** via `node-cron` with configurable schedule and 7-day retention
 - **On-demand backup/restore CLI** — `npm run db:backup` and `npm run db:restore` commands
 - **Admin backup API** — `GET /api/admin/backups` and `POST /api/admin/backups/trigger`
 - **Redis adapter** for Socket.IO horizontal scaling across multiple containers
-- **11 Playwright smoke tests** covering critical user flows (health, login, create diagram, share, search, admin, setup)
+- **`withTransaction` helper** for atomic multi-step DB operations (e.g. workspace creation)
+- **Comprehensive Playwright E2E suite** — 5-phase rollout: permission boundaries, CRUD, sharing, auth flows, visual regression
+- **Smoke tests** covering critical user flows (health, login, create diagram, share, search, admin, setup)
+- **LICENSE**, **CONTRIBUTING**, and **SECURITY** documentation files
 
 ### Improved
+- **Backend architecture**: extracted composition root into separate repositories, services, and use-cases modules
+- **Validation**: extracted `validate()` middleware, deduplicated Zod schema parsing across 11 route files
+- **Authorization**: extracted `requireAccess` helpers, deduplicated permission checks across 21 use cases
+- **Frontend hooks**: split `useCollaboration` into `useSocketConnection`, `useSaveManager`, `usePresence`, `useSceneManager`
+- **Frontend components**: split large components and extracted shared types into dedicated modules
+- **Frontend hooks directory**: consolidated all hooks into single `lib/hooks/` directory
+- **Axios layer**: added response interceptor, removed 59 manual `.then(r => r.data)` calls
 - First user registration auto-completes setup (`setup_completed = true`)
 - Rate limiting disabled in test environment to prevent flaky e2e tests
-- Zod validation on diagram thumbnail and workspace invite accept endpoints
-- Setup lock allows auth, share, embed, health, and version endpoints pre-setup
+- Raised Express JSON body limit to 5 MB for large diagram imports
+- E2E test isolation: unique test users per domain to eliminate flakiness
+
+### Fixed
+- **Security**: Drive GraphQL injection, folder authorization bypass, cookie deduplication
+- Stabilized e2e tests and hardened setup flow
+- Resolved e2e test timing issues and improved test resilience
 
 ### Environment Variables (new)
 - `ENCRYPTION_KEY` — 32-byte hex key for encrypting integration secrets
