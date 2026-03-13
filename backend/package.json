@@ -12,7 +12,9 @@
     "db:reset": "tsx --env-file=../.env src/scripts/db-reset.ts",
     "test": "tsx --test --test-concurrency=1 'src/__tests__/**/*.test.ts'",
     "test:unit": "tsx --test --test-concurrency=1 'src/__tests__/unit/**/*.test.ts'",
-    "test:integration": "tsx --test --test-concurrency=1 'src/__tests__/integration/**/*.test.ts'"
+    "test:integration": "tsx --test --test-concurrency=1 'src/__tests__/integration/**/*.test.ts'",
+    "db:backup": "tsx --env-file=../.env src/scripts/db-backup.ts",
+    "db:restore": "tsx --env-file=../.env src/scripts/db-restore.ts"
   },
   "dependencies": {
     "@honeybadger-io/js": "^6.12.3",
@@ -23,6 +25,7 @@
     "express": "^4.21.2",
     "express-rate-limit": "^8.3.1",
     "helmet": "^8.1.0",
+    "node-cron": "^3.0.3",
     "ioredis": "^5.10.0",
     "pg": "^8.20.0",
     "pino": "^10.3.1",
@@ -37,6 +40,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
+    "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.18.0",
     "@types/pino": "^7.0.4",
     "@types/supertest": "^7.2.0",
