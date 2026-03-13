@@ -34,11 +34,21 @@ export function Setup() {
     }
   }
 
-  function handleStepComplete() {
-    if (step < 3) {
-      setStep(step + 1);
-    } else {
-      handleComplete();
+  async function handleStepComplete() {
+    // Re-check status — setup may have been auto-completed (e.g. first user registration)
+    try {
+      const status = await setupApi.getStatus();
+      if (status.setupCompleted) {
+        navigate("/dashboard", { replace: true });
+        return;
+      }
+      setStep(typeof status.step === "number" ? status.step : step + 1);
+    } catch {
+      if (step < 3) {
+        setStep(step + 1);
+      } else {
+        handleComplete();
+      }
     }
   }
 

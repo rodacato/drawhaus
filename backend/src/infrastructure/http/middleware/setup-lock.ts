@@ -7,8 +7,15 @@ const ALLOWED_PREFIXES = [
   "/api/site/status",
   "/api/auth/setup-status",
   "/api/auth/register",
+  "/api/auth/login",
+  "/api/auth/me",
   "/api/auth/google",
+  "/api/auth/invite",
+  "/api/auth/accept-invite",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
   "/api/setup",
+  "/api/share",
 ];
 
 export function createSetupLock(siteSettingsRepo: SiteSettingsRepository): { middleware: RequestHandler; invalidate: () => void } {

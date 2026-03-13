@@ -289,6 +289,10 @@ export async function initSchema(): Promise<void> {
     ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS setup_completed BOOLEAN NOT NULL DEFAULT false;
     ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS setup_skipped_integrations BOOLEAN NOT NULL DEFAULT false;
 
+    -- Auto-complete setup for existing instances that already have users
+    UPDATE site_settings SET setup_completed = true
+    WHERE setup_completed = false AND EXISTS (SELECT 1 FROM users LIMIT 1);
+
     -- Integration secrets (encrypted at rest)
     CREATE TABLE IF NOT EXISTS integration_secrets (
       key TEXT PRIMARY KEY,
