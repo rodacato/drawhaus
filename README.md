@@ -103,10 +103,9 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `COOKIE_DOMAIN` | No | — | Cookie domain for subdomain sharing (e.g. `.drawhaus.dev`) |
 | `REDIS_URL` | No | — | Redis connection string. Required for multi-container deployments (Socket.IO scaling) |
 | `ENCRYPTION_KEY` | No | — | 32-byte hex key for encrypting integration secrets in DB. Generate with `openssl rand -hex 32` |
-| `BACKUP_ENABLED` | No | `true` | Enable automated daily database backups |
-| `BACKUP_CRON` | No | `0 3 * * *` | Cron schedule for automated backups (default: 3AM UTC daily) |
-| `BACKUP_PATH` | No | `/data/backups` | Directory to store backup files |
-| `BACKUP_RETENTION_DAYS` | No | `7` | Number of days to keep old backups before cleanup |
+| `BACKUP_PATH` | No | `/data/backups` | Directory to store backup files (filesystem path, must be an env var) |
+
+> **Backup schedule, retention, and enable/disable** are configured from the admin panel (Settings → Database Backups) or during the setup wizard. They are stored in the `site_settings` table. Env vars `BACKUP_ENABLED`, `BACKUP_CRON`, and `BACKUP_RETENTION_DAYS` are used as fallback defaults only if the DB values are not yet set.
 
 ### Backend — Integration Secrets (DB-configurable)
 

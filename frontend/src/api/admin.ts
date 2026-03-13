@@ -17,7 +17,7 @@ export const adminApi = {
 
   getSettings: () => api.get("/api/admin/settings"),
 
-  updateSettings: (data: { instanceName?: string; registrationOpen?: boolean; maintenanceMode?: boolean; maxWorkspacesPerUser?: number; maxMembersPerWorkspace?: number }) =>
+  updateSettings: (data: { instanceName?: string; registrationOpen?: boolean; maintenanceMode?: boolean; maxWorkspacesPerUser?: number; maxMembersPerWorkspace?: number; backupEnabled?: boolean; backupCron?: string; backupRetentionDays?: number }) =>
     api.patch("/api/admin/settings", data),
 
   inviteUser: (email: string, role: string = "user") =>

@@ -10,6 +10,9 @@ import { requireAdmin } from "../middleware/require-admin";
 const step2Schema = z.object({
   instanceName: z.string().trim().min(1).max(100),
   registrationOpen: z.boolean(),
+  backupEnabled: z.boolean().optional(),
+  backupCron: z.string().trim().min(1).max(100).optional(),
+  backupRetentionDays: z.number().int().min(1).max(365).optional(),
 });
 
 export function createSetupRoutes(

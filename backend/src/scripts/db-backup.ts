@@ -8,7 +8,7 @@
 import { createBackup, cleanupOldBackups, getBackupConfig } from "../infrastructure/services/backup-service";
 
 async function main() {
-  const cfg = getBackupConfig();
+  const cfg = await getBackupConfig();
   console.log(`📦 Creating backup → ${cfg.backupDir}`);
   console.log(`   Retention: ${cfg.retentionDays} days\n`);
 
@@ -17,7 +17,7 @@ async function main() {
   console.log(`    Size: ${(result.size / 1024).toFixed(1)} KB`);
   console.log(`    Duration: ${result.durationMs}ms\n`);
 
-  const deleted = await cleanupOldBackups();
+  const deleted = await cleanupOldBackups(cfg.retentionDays);
   if (deleted.length > 0) {
     console.log(`  🗑️  Cleaned up ${deleted.length} old backup(s):`);
     deleted.forEach((f) => console.log(`     - ${f}`));

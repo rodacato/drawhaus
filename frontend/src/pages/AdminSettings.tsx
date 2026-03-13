@@ -11,6 +11,9 @@ export function AdminSettings() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maxWorkspacesPerUser, setMaxWorkspacesPerUser] = useState(5);
   const [maxMembersPerWorkspace, setMaxMembersPerWorkspace] = useState(5);
+  const [backupEnabled, setBackupEnabled] = useState(true);
+  const [backupCron, setBackupCron] = useState("0 3 * * *");
+  const [backupRetentionDays, setBackupRetentionDays] = useState(7);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [pending, setPending] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -24,6 +27,9 @@ export function AdminSettings() {
       setMaintenanceMode(s.maintenanceMode ?? false);
       setMaxWorkspacesPerUser(s.maxWorkspacesPerUser ?? 5);
       setMaxMembersPerWorkspace(s.maxMembersPerWorkspace ?? 5);
+      setBackupEnabled(s.backupEnabled ?? true);
+      setBackupCron(s.backupCron ?? "0 3 * * *");
+      setBackupRetentionDays(s.backupRetentionDays ?? 7);
       setLoaded(true);
     }).catch(() => {});
   }, []);
@@ -33,7 +39,7 @@ export function AdminSettings() {
     setPending(true);
     setStatus(null);
     try {
-      await adminApi.updateSettings({ instanceName: instanceName.trim(), registrationOpen, maintenanceMode, maxWorkspacesPerUser, maxMembersPerWorkspace });
+      await adminApi.updateSettings({ instanceName: instanceName.trim(), registrationOpen, maintenanceMode, maxWorkspacesPerUser, maxMembersPerWorkspace, backupEnabled, backupCron: backupCron.trim(), backupRetentionDays });
       setStatus({ type: "success", message: "Settings saved" });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Update failed";
@@ -86,6 +92,26 @@ export function AdminSettings() {
           <div className="mt-4 space-y-4">
             <label className={ui.label}>Max Workspaces per User<input className={ui.input} type="number" min={1} max={50} value={maxWorkspacesPerUser} onChange={(e) => setMaxWorkspacesPerUser(Number(e.target.value))} /></label>
             <label className={ui.label}>Max Members per Workspace<input className={ui.input} type="number" min={1} max={100} value={maxMembersPerWorkspace} onChange={(e) => setMaxMembersPerWorkspace(Number(e.target.value))} /></label>
+          </div>
+        </div>
+
+        <div className={ui.card}>
+          <h2 className={ui.h2}>Database Backups</h2>
+          <div className="mt-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-text-primary">Automated Backups</p>
+                <p className={ui.muted}>Run pg_dump on a cron schedule with automatic cleanup.</p>
+              </div>
+              <ToggleSwitch checked={backupEnabled} onChange={setBackupEnabled} />
+            </div>
+            {backupEnabled && (
+              <>
+                <div className="border-t border-border" />
+                <label className={ui.label}>Cron Schedule<input className={ui.input} type="text" value={backupCron} onChange={(e) => setBackupCron(e.target.value)} placeholder="0 3 * * *" /><span className={`${ui.muted} text-xs`}>Default: 0 3 * * * (daily at 3AM UTC)</span></label>
+                <label className={ui.label}>Retention (days)<input className={ui.input} type="number" min={1} max={365} value={backupRetentionDays} onChange={(e) => setBackupRetentionDays(Number(e.target.value))} /><span className={`${ui.muted} text-xs`}>Backups older than this are deleted automatically.</span></label>
+              </>
+            )}
           </div>
         </div>
 
