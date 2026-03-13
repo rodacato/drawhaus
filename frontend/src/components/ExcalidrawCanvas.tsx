@@ -21,7 +21,18 @@ type ExcalidrawCanvasProps = {
 export function ExcalidrawCanvas(props: ExcalidrawCanvasProps) {
   return (
     <Suspense fallback={<div className="flex h-full w-full items-center justify-center text-text-muted">Loading editor...</div>}>
-      <ExcalidrawLazy {...props} />
+      <ExcalidrawLazy
+        {...props}
+        UIOptions={{
+          canvasActions: {
+            toggleLibrary: false,
+            export: false,
+            saveAsImage: false,
+            loadScene: false,
+            saveToActiveFile: false,
+          },
+        }}
+      />
     </Suspense>
   );
 }
