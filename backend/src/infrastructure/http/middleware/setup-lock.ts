@@ -16,6 +16,7 @@ const ALLOWED_PREFIXES = [
   "/api/auth/reset-password",
   "/api/setup",
   "/api/share",
+  "/embed/",
 ];
 
 export function createSetupLock(siteSettingsRepo: SiteSettingsRepository): { middleware: RequestHandler; invalidate: () => void } {

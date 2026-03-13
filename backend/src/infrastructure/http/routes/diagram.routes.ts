@@ -75,7 +75,8 @@ export function createDiagramRoutes(
 
   // Search must be registered before /:id to avoid "search" being parsed as UUID
   router.get("/search", asyncRoute(async (req, res) => {
-    const q = String(req.query.q ?? "");
+    const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+    if (!q) return res.status(400).json({ error: "Query parameter 'q' is required" });
     const diagrams = await useCases.search.execute(req.authUser.id, q);
     if (tagRepo && diagrams.length > 0) {
       const tagsMap = await tagRepo.listForDiagrams(diagrams.map((d) => d.id));
@@ -120,10 +121,12 @@ export function createDiagramRoutes(
     return res.status(201).json({ diagram: formatDiagram(diagram) });
   }));
 
+  const thumbnailSchema = z.object({ thumbnail: z.string().min(1) });
+
   router.put("/:id/thumbnail", asyncRoute(async (req, res) => {
-    const thumbnail = req.body?.thumbnail;
-    if (typeof thumbnail !== "string") return res.status(400).json({ error: "thumbnail is required" });
-    await useCases.updateThumbnail.execute(String(req.params.id), req.authUser.id, thumbnail);
+    const parsed = thumbnailSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+    await useCases.updateThumbnail.execute(String(req.params.id), req.authUser.id, parsed.data.thumbnail);
     return res.json({ success: true });
   }));
 

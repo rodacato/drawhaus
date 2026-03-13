@@ -52,11 +52,13 @@ export function createWorkspaceRoutes(
 ) {
   const router = Router();
 
+  const acceptInviteSchema = z.object({ token: z.string().min(1) });
+
   // Public: accept workspace invite (needs auth but separate flow)
   router.post("/accept-invite", requireAuth, asyncRoute(async (req, res) => {
-    const token = req.body?.token;
-    if (typeof token !== "string") return res.status(400).json({ error: "token is required" });
-    const result = await useCases.acceptInvite.execute(token, req.authUser.id);
+    const parsed = acceptInviteSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
+    const result = await useCases.acceptInvite.execute(parsed.data.token, req.authUser.id);
     return res.json({ workspace: result.workspace, role: result.role });
   }));
 

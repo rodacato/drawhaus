@@ -4,9 +4,24 @@ import { loginAsUser, ADMIN_USER } from "../../fixtures/multi-user.fixture";
 
 test.describe("Smoke Tests @smoke", () => {
   test.describe.configure({ mode: "serial" });
-  test("health check", async ({ request }) => {
+
+  test("health check returns version and db status", async ({ request }) => {
     const res = await request.get("/health");
     expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.status).toBe("ok");
+    expect(body.database).toBe("ok");
+    expect(body.version).toBeTruthy();
+    expect(typeof body.uptime).toBe("number");
+  });
+
+  test("version endpoint returns build info", async ({ request }) => {
+    const res = await request.get("/api/version");
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.version).toBeTruthy();
+    expect(body.commit).toBeTruthy();
+    expect(body.deployedAt).toBeTruthy();
   });
 
   test("login → dashboard", async ({ browser }) => {
@@ -22,12 +37,16 @@ test.describe("Smoke Tests @smoke", () => {
     await context.close();
   });
 
-  test("create diagram → appears in API", async ({ request }) => {
-    const diagram = await createDiagram(request, "Smoke Test Diagram");
+  test("create diagram → open board", async ({ request, page }) => {
+    const diagram = await createDiagram(request, "Smoke Board Test");
     expect(diagram.id).toBeTruthy();
 
     const res = await request.get(`/api/diagrams/${diagram.id}`);
     expect(res.ok()).toBeTruthy();
+
+    // Navigate to board and verify it loads
+    await page.goto(`/board/${diagram.id}`);
+    await expect(page.locator(".excalidraw")).toBeVisible({ timeout: 15_000 });
   });
 
   test("list workspaces", async ({ request }) => {
@@ -59,6 +78,8 @@ test.describe("Smoke Tests @smoke", () => {
     await createDiagram(request, "SmokeSearchTarget");
     const res = await request.get("/api/diagrams/search?q=SmokeSearchTarget");
     expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.diagrams).toBeDefined();
   });
 
   test("admin settings accessible", async () => {
@@ -66,6 +87,13 @@ test.describe("Smoke Tests @smoke", () => {
     const res = await admin.get("/api/admin/settings");
     expect(res.ok()).toBeTruthy();
     await admin.dispose();
+  });
+
+  test("setup status reports completed", async ({ request }) => {
+    const res = await request.get("/api/auth/setup-status");
+    expect(res.ok()).toBeTruthy();
+    const body = await res.json();
+    expect(body.needsSetup).toBe(false);
   });
 
   test("logout clears session", async ({ browser }) => {
