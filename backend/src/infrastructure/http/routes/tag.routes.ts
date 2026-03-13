@@ -7,6 +7,7 @@ import type { UpdateTagUseCase } from "../../../application/use-cases/tags/updat
 import type { AssignTagUseCase } from "../../../application/use-cases/tags/assign-tag";
 import type { UnassignTagUseCase } from "../../../application/use-cases/tags/unassign-tag";
 import { asyncRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(50),
@@ -45,17 +46,13 @@ export function createTagRoutes(
     return res.json({ tags });
   }));
 
-  router.post("/", asyncRoute(async (req, res) => {
-    const parsed = createSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    const tag = await useCases.create.execute(req.authUser.id, parsed.data.name, parsed.data.color);
+  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
+    const tag = await useCases.create.execute(req.authUser.id, req.body.name, req.body.color);
     return res.status(201).json({ tag });
   }));
 
-  router.patch("/:id", asyncRoute(async (req, res) => {
-    const parsed = updateSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    const tag = await useCases.update.execute(String(req.params.id), req.authUser.id, parsed.data);
+  router.patch("/:id", validate(updateSchema), asyncRoute(async (req, res) => {
+    const tag = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
     return res.json({ tag });
   }));
 
@@ -64,17 +61,13 @@ export function createTagRoutes(
     return res.json({ success: true });
   }));
 
-  router.post("/:id/assign", asyncRoute(async (req, res) => {
-    const parsed = assignSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    await useCases.assign.execute(String(req.params.id), parsed.data.diagramId, req.authUser.id);
+  router.post("/:id/assign", validate(assignSchema), asyncRoute(async (req, res) => {
+    await useCases.assign.execute(String(req.params.id), req.body.diagramId, req.authUser.id);
     return res.json({ success: true });
   }));
 
-  router.post("/:id/unassign", asyncRoute(async (req, res) => {
-    const parsed = assignSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    await useCases.unassign.execute(String(req.params.id), parsed.data.diagramId, req.authUser.id);
+  router.post("/:id/unassign", validate(assignSchema), asyncRoute(async (req, res) => {
+    await useCases.unassign.execute(String(req.params.id), req.body.diagramId, req.authUser.id);
     return res.json({ success: true });
   }));
 

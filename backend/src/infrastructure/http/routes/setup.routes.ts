@@ -4,6 +4,7 @@ import type { GetSiteSettingsUseCase } from "../../../application/use-cases/admi
 import type { UpdateSiteSettingsUseCase } from "../../../application/use-cases/admin/update-site-settings";
 import type { UserRepository } from "../../../domain/ports/user-repository";
 import { asyncPublicRoute, asyncRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 import { requireAdmin } from "../middleware/require-admin";
 
 const step2Schema = z.object({
@@ -41,11 +42,8 @@ export function createSetupRoutes(
     return res.json({ step, setupCompleted: false, setupSkippedIntegrations: settings.setupSkippedIntegrations });
   }));
 
-  router.post("/step-2", requireAuth, requireAdmin, asyncRoute(async (req, res) => {
-    const parsed = step2Schema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    const settings = await useCases.updateSettings.execute(parsed.data);
+  router.post("/step-2", requireAuth, requireAdmin, validate(step2Schema), asyncRoute(async (req, res) => {
+    const settings = await useCases.updateSettings.execute(req.body);
     return res.json({ settings });
   }));
 

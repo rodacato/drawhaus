@@ -11,6 +11,7 @@ import type { ToggleStarUseCase } from "../../../application/use-cases/diagrams/
 import type { DuplicateDiagramUseCase } from "../../../application/use-cases/diagrams/duplicate-diagram";
 import type { MoveDiagramUseCase } from "../../../application/use-cases/folders/move-diagram";
 import { asyncRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 import type { Diagram } from "../../../domain/entities/diagram";
 import type { Tag } from "../../../domain/entities/tag";
 import type { TagRepository } from "../../../domain/ports/tag-repository";
@@ -106,34 +107,27 @@ export function createDiagramRoutes(
     return res.json({ diagram: formatDiagram(diagram) });
   }));
 
-  router.post("/", asyncRoute(async (req, res) => {
-    const parsed = createSchema.safeParse(req.body ?? {});
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
+  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
     const diagram = await useCases.create.execute({
       ownerId: req.authUser.id,
-      title: parsed.data.title,
-      workspaceId: parsed.data.workspaceId,
-      folderId: parsed.data.folderId,
-      elements: parsed.data.elements,
-      appState: parsed.data.appState,
+      title: req.body.title,
+      workspaceId: req.body.workspaceId,
+      folderId: req.body.folderId,
+      elements: req.body.elements,
+      appState: req.body.appState,
     });
     return res.status(201).json({ diagram: formatDiagram(diagram) });
   }));
 
   const thumbnailSchema = z.object({ thumbnail: z.string().min(1) });
 
-  router.put("/:id/thumbnail", asyncRoute(async (req, res) => {
-    const parsed = thumbnailSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    await useCases.updateThumbnail.execute(String(req.params.id), req.authUser.id, parsed.data.thumbnail);
+  router.put("/:id/thumbnail", validate(thumbnailSchema), asyncRoute(async (req, res) => {
+    await useCases.updateThumbnail.execute(String(req.params.id), req.authUser.id, req.body.thumbnail);
     return res.json({ success: true });
   }));
 
-  router.post("/:id/move", asyncRoute(async (req, res) => {
-    const parsed = moveSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    await useCases.move.execute(String(req.params.id), req.authUser.id, parsed.data.folderId);
+  router.post("/:id/move", validate(moveSchema), asyncRoute(async (req, res) => {
+    await useCases.move.execute(String(req.params.id), req.authUser.id, req.body.folderId);
     return res.json({ success: true });
   }));
 
@@ -149,10 +143,8 @@ export function createDiagramRoutes(
     return res.status(201).json({ diagram: formatDiagram(diagram) });
   }));
 
-  router.patch("/:id", asyncRoute(async (req, res) => {
-    const parsed = patchSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-    const diagram = await useCases.update.execute(String(req.params.id), req.authUser.id, parsed.data);
+  router.patch("/:id", validate(patchSchema), asyncRoute(async (req, res) => {
+    const diagram = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
     return res.json({ diagram: formatDiagram(diagram) });
   }));
 

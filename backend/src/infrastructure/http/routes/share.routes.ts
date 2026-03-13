@@ -5,6 +5,7 @@ import type { ResolveLinkUseCase } from "../../../application/use-cases/share/re
 import type { ListLinksUseCase } from "../../../application/use-cases/share/list-links";
 import type { DeleteLinkUseCase } from "../../../application/use-cases/share/delete-link";
 import { asyncRoute, asyncPublicRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 
 const createSchema = z.object({
   role: z.enum(["editor", "viewer"]).optional().default("viewer"),
@@ -32,15 +33,12 @@ export function createShareRoutes(
 ) {
   const router = Router();
 
-  router.post("/:diagramId", requireAuth, asyncRoute(async (req, res) => {
-    const parsed = createSchema.safeParse(req.body ?? {});
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
+  router.post("/:diagramId", requireAuth, validate(createSchema), asyncRoute(async (req, res) => {
     const link = await useCases.createLink.execute({
       diagramId: String(req.params.diagramId),
       userId: req.authUser.id,
-      role: parsed.data.role,
-      expiresInHours: parsed.data.expiresInHours,
+      role: req.body.role,
+      expiresInHours: req.body.expiresInHours,
     });
     return res.status(201).json({ shareLink: formatLink(link) });
   }));
