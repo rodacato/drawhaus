@@ -16,6 +16,7 @@ type ExcalidrawCanvasProps = {
   };
   onChange?: (elements: readonly unknown[], appState: Record<string, unknown>) => void;
   viewModeEnabled?: boolean;
+  UIOptions?: Record<string, unknown>;
 };
 
 export function ExcalidrawCanvas(props: ExcalidrawCanvasProps) {
