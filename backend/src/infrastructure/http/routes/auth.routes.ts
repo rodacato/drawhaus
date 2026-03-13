@@ -13,6 +13,7 @@ import type { ResetPasswordUseCase } from "../../../application/use-cases/auth/r
 import type { DeleteAccountUseCase } from "../../../application/use-cases/auth/delete-account";
 import type { GoogleAuthUseCase } from "../../../application/use-cases/auth/google-auth";
 import { asyncPublicRoute, asyncRoute } from "../middleware/async-handler";
+import { validate } from "../middleware/validate";
 import { config } from "../../config";
 
 const registerSchema = z.object({
@@ -55,15 +56,21 @@ const deleteAccountSchema = z.object({
   password: z.string().min(1).max(128).optional(),
 });
 
-function getCookieOptions() {
+function getClearCookieOptions() {
   const isProduction = config.nodeEnv === "production";
   return {
     httpOnly: true,
     sameSite: isProduction ? "none" as const : "lax" as const,
     secure: isProduction,
     path: "/",
-    maxAge: config.sessionTtlDays * 24 * 60 * 60 * 1000,
     ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
+  };
+}
+
+function getCookieOptions() {
+  return {
+    ...getClearCookieOptions(),
+    maxAge: config.sessionTtlDays * 24 * 60 * 60 * 1000,
   };
 }
 
@@ -90,20 +97,14 @@ export function createAuthRoutes(
     return res.status(200).json({ needsSetup });
   }));
 
-  router.post("/register", asyncPublicRoute(async (req, res) => {
-    const parsed = registerSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    const result = await useCases.register.execute(parsed.data);
+  router.post("/register", validate(registerSchema), asyncPublicRoute(async (req, res) => {
+    const result = await useCases.register.execute(req.body);
     res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
     return res.status(201).json({ user: result.user });
   }));
 
-  router.post("/login", asyncPublicRoute(async (req, res) => {
-    const parsed = loginSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    const result = await useCases.login.execute(parsed.data);
+  router.post("/login", validate(loginSchema), asyncPublicRoute(async (req, res) => {
+    const result = await useCases.login.execute(req.body);
     res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
     return res.status(200).json({ user: result.user });
   }));
@@ -112,13 +113,7 @@ export function createAuthRoutes(
     const cookieHeader = req.headers.cookie;
     const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
     await useCases.logout.execute(token);
-    res.clearCookie(config.cookieName, {
-      httpOnly: true,
-      sameSite: config.nodeEnv === "production" ? "none" as const : "lax" as const,
-      secure: config.nodeEnv === "production",
-      path: "/",
-      ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
-    });
+    res.clearCookie(config.cookieName, getClearCookieOptions());
     return res.status(200).json({ success: true });
   }));
 
@@ -129,19 +124,13 @@ export function createAuthRoutes(
     return res.status(200).json({ user });
   }));
 
-  router.patch("/me", requireAuth, asyncRoute(async (req, res) => {
-    const parsed = updateProfileSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    const user = await useCases.updateProfile.execute(req.authUser.id, parsed.data);
+  router.patch("/me", requireAuth, validate(updateProfileSchema), asyncRoute(async (req, res) => {
+    const user = await useCases.updateProfile.execute(req.authUser.id, req.body);
     return res.status(200).json({ user });
   }));
 
-  router.post("/change-password", requireAuth, asyncRoute(async (req, res) => {
-    const parsed = changePasswordSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    await useCases.changePassword.execute(req.authUser.id, parsed.data);
+  router.post("/change-password", requireAuth, validate(changePasswordSchema), asyncRoute(async (req, res) => {
+    await useCases.changePassword.execute(req.authUser.id, req.body);
     return res.status(200).json({ success: true });
   }));
 
@@ -152,22 +141,16 @@ export function createAuthRoutes(
     return res.status(200).json(result);
   }));
 
-  router.post("/accept-invite", asyncPublicRoute(async (req, res) => {
-    const parsed = acceptInviteSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    const result = await useCases.acceptInvite.execute(parsed.data);
+  router.post("/accept-invite", validate(acceptInviteSchema), asyncPublicRoute(async (req, res) => {
+    const result = await useCases.acceptInvite.execute(req.body);
     res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
     return res.status(201).json({ user: result.user });
   }));
 
   // --- Forgot / Reset password ---
 
-  router.post("/forgot-password", asyncPublicRoute(async (req, res) => {
-    const parsed = forgotPasswordSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    await useCases.forgotPassword.execute(parsed.data.email);
+  router.post("/forgot-password", validate(forgotPasswordSchema), asyncPublicRoute(async (req, res) => {
+    await useCases.forgotPassword.execute(req.body.email);
     return res.status(200).json({ success: true });
   }));
 
@@ -176,54 +159,30 @@ export function createAuthRoutes(
     return res.status(200).json(result);
   }));
 
-  router.post("/reset-password", asyncPublicRoute(async (req, res) => {
-    const parsed = resetPasswordSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    await useCases.resetPassword.execute(parsed.data);
+  router.post("/reset-password", validate(resetPasswordSchema), asyncPublicRoute(async (req, res) => {
+    await useCases.resetPassword.execute(req.body);
     return res.status(200).json({ success: true });
   }));
 
   // --- Delete account ---
 
-  router.delete("/account", requireAuth, asyncRoute(async (req, res) => {
-    const parsed = deleteAccountSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Invalid request body" });
-
-    await useCases.deleteAccount.execute(req.authUser.id, parsed.data.password ?? null);
-    res.clearCookie(config.cookieName, {
-      httpOnly: true,
-      sameSite: config.nodeEnv === "production" ? "none" as const : "lax" as const,
-      secure: config.nodeEnv === "production",
-      path: "/",
-      ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
-    });
+  router.delete("/account", requireAuth, validate(deleteAccountSchema), asyncRoute(async (req, res) => {
+    await useCases.deleteAccount.execute(req.authUser.id, req.body.password ?? null);
+    res.clearCookie(config.cookieName, getClearCookieOptions());
     return res.status(200).json({ success: true });
   }));
 
   // --- Google OAuth ---
 
   function setOAuthStateCookie(res: import("express").Response, statePayload: string) {
-    const isProduction = config.nodeEnv === "production";
     res.cookie("drawhaus_oauth_state", statePayload, {
-      httpOnly: true,
-      sameSite: isProduction ? "none" as const : "lax" as const,
-      secure: isProduction,
-      path: "/",
+      ...getClearCookieOptions(),
       maxAge: 10 * 60 * 1000,
-      ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
     });
   }
 
   function clearOAuthStateCookie(res: import("express").Response) {
-    const isProduction = config.nodeEnv === "production";
-    res.clearCookie("drawhaus_oauth_state", {
-      httpOnly: true,
-      sameSite: isProduction ? "none" as const : "lax" as const,
-      secure: isProduction,
-      path: "/",
-      ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
-    });
+    res.clearCookie("drawhaus_oauth_state", getClearCookieOptions());
   }
 
   router.get("/google", (_req, res) => {

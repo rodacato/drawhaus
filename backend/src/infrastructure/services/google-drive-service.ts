@@ -4,6 +4,10 @@ const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 
+function escapeDriveQL(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
 export class GoogleDriveServiceImpl implements GoogleDriveService {
   async createFolder(accessToken: string, name: string, parentId: string | null): Promise<DriveFolder> {
     const body: Record<string, unknown> = { name, mimeType: FOLDER_MIME };
@@ -27,8 +31,8 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
   }
 
   async findFolder(accessToken: string, name: string, parentId: string | null): Promise<DriveFolder | null> {
-    const parentClause = parentId ? `and '${parentId}' in parents` : "";
-    const q = `name='${name}' and mimeType='${FOLDER_MIME}' ${parentClause} and trashed=false`;
+    const parentClause = parentId ? `and '${escapeDriveQL(parentId)}' in parents` : "";
+    const q = `name='${escapeDriveQL(name)}' and mimeType='${FOLDER_MIME}' ${parentClause} and trashed=false`;
 
     const res = await fetch(`${DRIVE_API}/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=1`, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -104,7 +108,7 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
   }
 
   async listFiles(accessToken: string, folderId: string): Promise<DriveFileListItem[]> {
-    const q = `'${folderId}' in parents and trashed=false`;
+    const q = `'${escapeDriveQL(folderId)}' in parents and trashed=false`;
     const fields = "files(id,name,mimeType,modifiedTime,size)";
     const orderBy = "modifiedTime desc";
 
