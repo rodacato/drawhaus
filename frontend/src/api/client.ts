@@ -5,6 +5,11 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+// Auto-unwrap response data
+api.interceptors.response.use(
+  (response) => response.data,
+);
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {
