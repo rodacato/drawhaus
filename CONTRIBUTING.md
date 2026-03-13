@@ -9,7 +9,7 @@ Thanks for your interest in contributing to Drawhaus! This guide will help you g
    ```bash
    npm install
    ```
-3. **Set up the environment**: Copy `.env.example` to `.env` in the `backend/` directory and fill in the required values.
+3. **Set up the environment**: Copy `.env.example` to `.env` in the project root and fill in the required values (the defaults work for Docker Compose).
 4. **Start the dev servers**:
    ```bash
    npm run dev
@@ -37,12 +37,16 @@ drawhaus/
    npm run lint
    npm run typecheck
    ```
-4. Run the E2E test suite:
+4. Run backend tests:
+   ```bash
+   npm test --workspace=backend
+   ```
+5. (Optional) Run the E2E test suite (requires running backend + frontend + PostgreSQL):
    ```bash
    npm run test:e2e
    ```
-5. Commit your changes with a clear, descriptive message.
-6. Open a Pull Request against `master`.
+6. Commit your changes with a clear, descriptive message.
+7. Open a Pull Request against `master`.
 
 ## Code Style
 

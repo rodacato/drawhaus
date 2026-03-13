@@ -160,32 +160,32 @@ npm run dev   # ← crashea porque no hay DATABASE_URL
 
 ## Acciones consolidadas (priorizadas)
 
-### Must-do (antes de v0.8.0 release)
+### Must-do (antes de v0.8.0 release) — ✅ Completado
 
-| # | Acción | Archivo | Esfuerzo |
-|---|--------|---------|----------|
-| 1 | Agregar v0.8.0 al CHANGELOG | CHANGELOG.md | S |
-| 2 | Actualizar README env vars con los nuevos (ENCRYPTION_KEY, REDIS_URL, backup vars) | README.md | S |
-| 3 | Actualizar README Commands table con test, db:*, backup commands | README.md | S |
-| 4 | Actualizar README API overview con endpoints faltantes | README.md | M |
-| 5 | Fix CONTRIBUTING.md — .env va en raíz, no en backend/ | CONTRIBUTING.md | S |
-| 6 | Fix CONTRIBUTING.md — `npm run test:e2e` → instrucciones correctas para e2e | CONTRIBUTING.md | S |
-| 7 | Agregar paso de copiar .env en Quick Start Option 1 | README.md | S |
-| 8 | Marcar v1.0 Gate items como completados en ROADMAP.md | ROADMAP.md | S |
-| 9 | Actualizar SECURITY.md versión soportada a 0.8.x | SECURITY.md | S |
-| 10 | Crear `.env.production.example` (README lo referencia pero no existe) | .env.production.example | S |
+| # | Acción | Archivo | Estado |
+|---|--------|---------|--------|
+| 1 | Agregar v0.8.0 al CHANGELOG | CHANGELOG.md | ✅ |
+| 2 | Actualizar README env vars con los nuevos (ENCRYPTION_KEY, REDIS_URL, backup vars) | README.md | ✅ |
+| 3 | Actualizar README Commands table con test, db:*, backup commands | README.md | ✅ |
+| 4 | Actualizar README API overview con endpoints faltantes | README.md | ✅ |
+| 5 | Fix CONTRIBUTING.md — .env va en raíz, no en backend/ | CONTRIBUTING.md | ✅ |
+| 6 | Fix CONTRIBUTING.md — `npm run test:e2e` → instrucciones correctas para e2e | CONTRIBUTING.md | ✅ |
+| 7 | Agregar paso de copiar .env en Quick Start Option 1 | README.md | ✅ |
+| 8 | Marcar v1.0 Gate items como completados en ROADMAP.md | ROADMAP.md | ✅ |
+| 9 | Actualizar SECURITY.md versión soportada a 0.8.x | SECURITY.md | ✅ |
+| 10 | Crear `.env.production.example` (README lo referencia pero no existe) | .env.production.example | ✅ |
 
-### Should-do (mejora significativa de DX)
+### Should-do (mejora significativa de DX) — ✅ Completado
 
-| # | Acción | Archivo | Esfuerzo |
-|---|--------|---------|----------|
-| 11 | Aclarar mismatch de puertos Docker (4300) vs local (4000) en README | README.md | S |
-| 12 | Agregar GitHub issue templates (bug report, feature request) | .github/ISSUE_TEMPLATE/ | S |
-| 13 | Agregar GitHub PR template | .github/PULL_REQUEST_TEMPLATE.md | S |
-| 14 | Agregar CODE_OF_CONDUCT.md (Contributor Covenant) | CODE_OF_CONDUCT.md | S |
-| 15 | Documentar cómo correr e2e tests localmente en README | README.md | S |
-| 16 | Agregar `npm run test:e2e` script a root package.json | package.json | S |
-| 17 | Agregar sección "Architecture" al README o docs/architecture.md | docs/ o README.md | M |
+| # | Acción | Archivo | Estado |
+|---|--------|---------|--------|
+| 11 | Aclarar mismatch de puertos Docker (4300) vs local (4000) en README | README.md | ✅ |
+| 12 | Agregar GitHub issue templates (bug report, feature request) | .github/ISSUE_TEMPLATE/ | ✅ |
+| 13 | Agregar GitHub PR template | .github/PULL_REQUEST_TEMPLATE.md | ✅ |
+| 14 | Agregar CODE_OF_CONDUCT.md (Contributor Covenant) | CODE_OF_CONDUCT.md | ✅ |
+| 15 | Documentar cómo correr e2e tests localmente en README | README.md | ✅ |
+| 16 | Agregar `npm run test:e2e` script a root package.json | package.json | ✅ (ya existía) |
+| 17 | Agregar sección "Architecture" al README o docs/architecture.md | README.md | ✅ |
 
 ### Nice-to-have (polish)
 

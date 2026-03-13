@@ -4,6 +4,40 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
+## v0.8.0 — Security Hardening & Operational Readiness (2026-03)
+
+### Added
+- **Security headers** via Helmet (X-Frame-Options, HSTS, X-Content-Type-Options, CSP)
+- **Rate limiting** on auth endpoints (5 req/min) and general API (20 req/min) via `express-rate-limit`
+- **Setup lock** middleware — redirects all routes to `/setup` until initial admin is created
+- **3-step setup wizard** with progress bar: admin account → instance config → integrations (optional)
+- **Setup banner** on dashboard when optional setup steps are skipped
+- **Integration secrets in DB** — Google OAuth, Resend, Honeybadger keys stored encrypted (AES-256-GCM), editable from admin UI
+- **`ENCRYPTION_KEY` env var** for encrypting integration secrets (required in production)
+- **Improved `/health` endpoint** — verifies DB connection, reports app version and uptime
+- **`GET /api/version`** — returns version, commit hash, and deploy date
+- **Automated database backups** via `node-cron` with configurable schedule and 7-day retention
+- **On-demand backup/restore CLI** — `npm run db:backup` and `npm run db:restore` commands
+- **Admin backup API** — `GET /api/admin/backups` and `POST /api/admin/backups/trigger`
+- **Redis adapter** for Socket.IO horizontal scaling across multiple containers
+- **11 Playwright smoke tests** covering critical user flows (health, login, create diagram, share, search, admin, setup)
+
+### Improved
+- First user registration auto-completes setup (`setup_completed = true`)
+- Rate limiting disabled in test environment to prevent flaky e2e tests
+- Zod validation on diagram thumbnail and workspace invite accept endpoints
+- Setup lock allows auth, share, embed, health, and version endpoints pre-setup
+
+### Environment Variables (new)
+- `ENCRYPTION_KEY` — 32-byte hex key for encrypting integration secrets
+- `REDIS_URL` — Redis connection string for Socket.IO scaling
+- `BACKUP_ENABLED` — Enable/disable automated daily backups (default: `true`)
+- `BACKUP_CRON` — Cron schedule for backups (default: `0 3 * * *`)
+- `BACKUP_PATH` — Backup storage directory (default: `/data/backups`)
+- `BACKUP_RETENTION_DAYS` — Days to keep old backups (default: `7`)
+
+---
+
 ## v0.7.0 — Workspaces, Drive & Dashboard Overhaul (2026-03)
 
 ### Added

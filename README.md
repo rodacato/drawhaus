@@ -40,9 +40,12 @@ Drawhaus is a self-hosted Excalidraw alternative for developers and small teams 
 
 ### Option 1: Local development
 
+Requires a running PostgreSQL 16+ instance. The backend auto-creates all tables on first run.
+
 ```bash
 git clone https://github.com/rodacato/drawhaus.git
 cd drawhaus
+cp .env.example .env          # edit DATABASE_URL if your PG is not on localhost:5432
 npm install
 npm run dev
 ```
@@ -51,7 +54,7 @@ This starts:
 - **Frontend** at http://localhost:5173 (Vite dev server)
 - **Backend** at http://localhost:4000 (Express)
 
-> The backend auto-creates database tables on first run. You need a local PostgreSQL instance or use Option 2.
+> **Tip:** If you don't have PostgreSQL installed locally, use Option 2 (Docker Compose) or Option 3 (Dev Container) instead.
 
 ### Option 2: Docker Compose
 
@@ -60,13 +63,16 @@ cp .env.example .env   # edit .env to add Google OAuth keys, etc.
 docker compose up
 ```
 
-Docker Compose reads `.env` automatically. Starts everything — frontend, backend, and PostgreSQL:
+Docker Compose reads `.env` automatically. Starts everything — frontend, backend, PostgreSQL, and Redis:
 
-| Service  | URL                     |
-|----------|-------------------------|
-| Frontend | http://localhost:5173   |
-| Backend  | http://localhost:4300   |
-| Postgres | localhost:5643          |
+| Service  | URL / Port              | Notes |
+|----------|-------------------------|-------|
+| Frontend | http://localhost:5173   | Vite dev server |
+| Backend  | http://localhost:4300   | Mapped from internal port 4000 |
+| Postgres | localhost:5643          | Mapped from internal port 5432 |
+| Redis    | localhost:6479          | Mapped from internal port 6379 |
+
+> **Note:** Docker Compose maps the backend to port **4300** externally (not 4000). The frontend Vite proxy handles routing `/api` calls to the backend automatically, so you only need to access http://localhost:5173.
 
 ### Option 3: Dev Container
 
@@ -99,6 +105,12 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `GOOGLE_CLIENT_ID` | No | — | Google OAuth client ID. Leave blank to disable Google login |
 | `GOOGLE_CLIENT_SECRET` | No | — | Google OAuth client secret |
 | `GOOGLE_REDIRECT_URI` | No | — | Google OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/google/callback`) |
+| `REDIS_URL` | No | — | Redis connection string. Required for multi-container deployments (Socket.IO scaling) |
+| `ENCRYPTION_KEY` | No | — | 32-byte hex key for encrypting integration secrets in DB. Generate with `openssl rand -hex 32` |
+| `BACKUP_ENABLED` | No | `true` | Enable automated daily database backups |
+| `BACKUP_CRON` | No | `0 3 * * *` | Cron schedule for automated backups (default: 3AM UTC daily) |
+| `BACKUP_PATH` | No | `/data/backups` | Directory to store backup files |
+| `BACKUP_RETENTION_DAYS` | No | `7` | Number of days to keep old backups before cleanup |
 
 ### Frontend
 
@@ -122,6 +134,13 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `npm run build` | Production build (both workspaces) |
 | `npm run lint` | Lint all workspaces |
 | `npm run typecheck` | Type-check all workspaces |
+| `npm test --workspace=backend` | Run backend unit & integration tests |
+| `npm run test:e2e` | Run Playwright end-to-end tests (requires running backend + frontend + PG) |
+| `npm run test:e2e:ui` | Open Playwright test runner UI |
+| `npm run db:seed` | Seed database with test data |
+| `npm run db:reset` | Drop all tables, recreate schema, and seed |
+| `npm run db:backup --workspace=backend` | Create an on-demand database backup |
+| `npm run db:restore --workspace=backend -- latest` | Restore database from most recent backup |
 
 ---
 
@@ -139,11 +158,15 @@ drawhaus/
 │   │   ├── pages/     # Page components
 │   │   └── lib/       # Utilities, types, collaboration logic
 │   └── vite.config.ts
-├── backend/           # Express + Socket.IO + PostgreSQL
+├── backend/           # Express + Socket.IO + PostgreSQL (Clean Architecture)
 │   └── src/
-│       ├── application/    # Use cases
-│       ├── domain/         # Domain entities
+│       ├── application/    # Use cases (business logic, one file per action)
+│       ├── domain/         # Domain entities and interfaces
 │       └── infrastructure/ # Routes, repos, services, socket handlers
+│           ├── http/       # Express routes + middleware
+│           ├── repositories/ # PostgreSQL data access
+│           ├── services/   # External services (email, backup, encryption)
+│           └── socket/     # Socket.IO event handlers
 ├── config/            # Kamal deployment configs
 ├── docs/              # Branding assets and design mockups
 └── docker-compose.yml # Local dev orchestration
@@ -319,33 +342,115 @@ kamal rollback -c config/deploy.backend.yml
 
 ## API Overview
 
+### Health & Status
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Health check (DB status, uptime) |
+| `GET` | `/api/version` | App version, commit, deploy date |
+| `GET` | `/api/site/status` | Site status (maintenance, instance name) |
+
 ### Auth
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| `GET` | `/api/auth/setup-status` | Check if initial setup is needed |
 | `POST` | `/api/auth/register` | Create account |
 | `POST` | `/api/auth/login` | Sign in |
 | `POST` | `/api/auth/logout` | Sign out |
 | `GET` | `/api/auth/me` | Current user |
+| `PATCH` | `/api/auth/me` | Update profile (name, email) |
+| `POST` | `/api/auth/change-password` | Change password |
 | `POST` | `/api/auth/forgot-password` | Request password reset |
 | `POST` | `/api/auth/reset-password` | Reset password with token |
+| `DELETE` | `/api/auth/account` | Delete account |
+| `GET` | `/api/auth/google` | Google OAuth login |
+| `GET` | `/api/auth/google/callback` | Google OAuth callback |
+
+### Setup
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/setup/status` | Current setup step (1–3 or complete) |
+| `POST` | `/api/setup/step-2` | Set instance name and registration |
+| `POST` | `/api/setup/skip-integrations` | Skip integration setup |
+| `POST` | `/api/setup/complete` | Mark setup as complete |
 
 ### Diagrams
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/diagrams` | List user's diagrams |
+| `GET` | `/api/diagrams` | List diagrams (filter by folder/workspace) |
+| `GET` | `/api/diagrams/search` | Search diagrams by query |
 | `POST` | `/api/diagrams` | Create diagram |
 | `GET` | `/api/diagrams/:id` | Get diagram |
 | `PATCH` | `/api/diagrams/:id` | Update diagram |
 | `DELETE` | `/api/diagrams/:id` | Delete diagram |
+| `PUT` | `/api/diagrams/:id/thumbnail` | Update thumbnail |
+| `POST` | `/api/diagrams/:id/move` | Move to folder |
 | `PATCH` | `/api/diagrams/:id/star` | Toggle starred |
 | `POST` | `/api/diagrams/:id/duplicate` | Duplicate diagram |
+
+### Scenes
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/diagrams/:id/scenes` | List scenes |
+| `POST` | `/api/diagrams/:id/scenes` | Create scene |
+| `PATCH` | `/api/diagrams/:id/scenes/:sceneId` | Rename scene |
+| `DELETE` | `/api/diagrams/:id/scenes/:sceneId` | Delete scene |
+
+### Comments
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/diagrams/:id/comments` | List comment threads |
+| `POST` | `/api/diagrams/:id/comments` | Create comment |
+| `POST` | `/api/diagrams/:id/comments/:threadId/replies` | Reply to thread |
+| `PATCH` | `/api/diagrams/:id/comments/:threadId/resolve` | Resolve/unresolve |
+| `DELETE` | `/api/diagrams/:id/comments/:threadId` | Delete thread |
+| `POST` | `/api/diagrams/:id/comments/:threadId/like` | Toggle like |
+
+### Folders
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/folders` | List folders |
+| `POST` | `/api/folders` | Create folder |
+| `PATCH` | `/api/folders/:id` | Rename folder |
+| `DELETE` | `/api/folders/:id` | Delete folder |
+
+### Tags
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/tags` | List tags |
+| `POST` | `/api/tags` | Create tag |
+| `PATCH` | `/api/tags/:id` | Update tag |
+| `DELETE` | `/api/tags/:id` | Delete tag |
+| `POST` | `/api/tags/:id/assign` | Assign tag to diagram |
+| `POST` | `/api/tags/:id/unassign` | Remove tag from diagram |
+
+### Workspaces
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/workspaces` | List workspaces |
+| `POST` | `/api/workspaces` | Create workspace |
+| `GET` | `/api/workspaces/:id` | Get workspace |
+| `PATCH` | `/api/workspaces/:id` | Update workspace |
+| `DELETE` | `/api/workspaces/:id` | Delete workspace |
+| `POST` | `/api/workspaces/:id/invite` | Invite member |
+| `PATCH` | `/api/workspaces/:id/members/:userId` | Update member role |
+| `DELETE` | `/api/workspaces/:id/members/:userId` | Remove member |
 
 ### Share
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/share/link` | Create share link |
+| `POST` | `/api/share/:diagramId` | Create share link |
+| `GET` | `/api/share/:diagramId/links` | List share links |
 | `GET` | `/api/share/link/:token` | Resolve share link |
 | `DELETE` | `/api/share/link/:token` | Revoke share link |
+
+### Drive
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/drive/status` | Drive connection status |
+| `POST` | `/api/drive/export` | Export diagram to Drive |
+| `POST` | `/api/drive/import` | Import from Drive |
+| `POST` | `/api/drive/backup/toggle` | Toggle auto-backup |
+| `POST` | `/api/drive/disconnect` | Disconnect Drive |
 
 ### Admin
 | Method | Endpoint | Description |
@@ -353,7 +458,15 @@ kamal rollback -c config/deploy.backend.yml
 | `GET` | `/api/admin/metrics` | Instance metrics |
 | `GET` | `/api/admin/users` | List all users |
 | `PATCH` | `/api/admin/users/:id` | Update user (role, status) |
+| `DELETE` | `/api/admin/users/:id` | Delete user |
+| `GET` | `/api/admin/settings` | Get site settings |
+| `PATCH` | `/api/admin/settings` | Update site settings |
 | `POST` | `/api/admin/invite` | Send invite email |
+| `GET` | `/api/admin/invitations` | List pending invitations |
+| `GET` | `/api/admin/integrations` | Get integration secrets status |
+| `PATCH` | `/api/admin/integrations` | Update integration secrets |
+| `GET` | `/api/admin/backups` | List database backups |
+| `POST` | `/api/admin/backups/trigger` | Trigger manual backup |
 
 ---
 
@@ -376,12 +489,43 @@ kamal rollback -c config/deploy.backend.yml
 
 ---
 
+## Testing
+
+### Unit & Integration Tests
+
+```bash
+npm test --workspace=backend
+```
+
+### End-to-End Tests (Playwright)
+
+E2E tests require a running backend, frontend, and PostgreSQL:
+
+```bash
+# Option A: Use Docker Compose (easiest)
+docker compose up -d
+
+# Option B: Start services manually
+npm run dev  # in one terminal
+
+# Then run the tests
+npm run test:e2e
+
+# Or open the Playwright UI
+npm run test:e2e:ui
+```
+
+> **Note:** The first run installs Playwright browsers automatically. Tests create their own test users via the global setup.
+
+---
+
 ## Contributing
 
 1. Fork the repo and create a feature branch
 2. Make changes — keep PRs small and focused
 3. Run `npm run lint && npm run typecheck` before pushing
-4. Open a PR against `master`
+4. Run `npm test --workspace=backend` to verify backend tests pass
+5. Open a PR against `master`
 
 CI runs automatically on every PR (lint, typecheck, backend tests, build).
 

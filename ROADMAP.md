@@ -112,61 +112,41 @@ Everything below is shipped and working in production.
 
 - Backup All to Google Drive: bulk sync all diagrams in active workspace to Drive with folder structure and real-time progress (POST returning 202, socket.io progress events, concurrency limit of 3).
 
-### v1.0 Gate — Security Hardening
+### v1.0 Gate — Security Hardening ✅
 
-> Must-fix before release. Identified by expert panel security audit.
+> Completed in v0.8.0.
 
-| # | Item | Priority | Effort | Description |
-|---|------|----------|--------|-------------|
-| 1 | Rate limiting | Must | S | `express-rate-limit` on login, register, password reset, setup. 5 req/min auth, 20/min general |
-| 2 | Helmet security headers | Must | S | `app.use(helmet())` — X-Frame-Options, HSTS, X-Content-Type-Options, basic CSP |
-| 3 | Setup lock | Must | S | `setup_completed` flag in `site_settings`; redirect all routes to `/setup` until complete |
+| # | Item | Status | Description |
+|---|------|--------|-------------|
+| 1 | Rate limiting | ✅ Done | `express-rate-limit` on login, register, password reset, setup. 5 req/min auth, 20/min general |
+| 2 | Helmet security headers | ✅ Done | `app.use(helmet())` — X-Frame-Options, HSTS, X-Content-Type-Options, basic CSP |
+| 3 | Setup lock | ✅ Done | `setup_completed` flag in `site_settings`; redirect all routes to `/setup` until complete |
 
-### v1.0 Gate — Setup Wizard
+### v1.0 Gate — Setup Wizard ✅
 
-> Replace current bare `/setup` page with a guided 3-step wizard.
+> Completed in v0.8.0. 3-step guided wizard with progress bar.
 
-| Step | What it does | Backend |
-|------|-------------|---------|
-| 1 — Admin account | Create admin user (already exists) | Reuse `/api/auth/register` with auto-admin role |
-| 2 — Instance config | Instance name, registration open/closed | Reuse `PUT /api/admin/settings` |
-| 3 — Integrations (optional) | Google OAuth, Resend API key, Honeybadger | New `PUT /api/admin/integrations` endpoint |
+| Step | What it does | Status |
+|------|-------------|--------|
+| 1 — Admin account | Create admin user with auto-admin role | ✅ Done |
+| 2 — Instance config | Instance name, registration open/closed | ✅ Done |
+| 3 — Integrations (optional) | Google OAuth, Resend API key, Honeybadger | ✅ Done |
 
-- Skippable step 3 — never block first use for optional integrations
-- On completion, set `setup_completed = true`
-- Dashboard shows persistent "Finish setup" banner if optional steps were skipped
+### v1.0 Gate — Integration Secrets in DB ✅
 
-### v1.0 Gate — Integration Secrets in DB
+> Completed in v0.8.0. Feature-level API keys stored encrypted in DB (AES-256-GCM), editable from admin UI.
 
-> Move feature-level API keys from env vars to encrypted DB storage, editable from admin UI.
+### v1.0 Gate — Operational Readiness ✅
 
-**Moves to DB (encrypted):**
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
-- `RESEND_API_KEY`, `FROM_EMAIL`
-- `HONEYBADGER_API_KEY`
+> Completed in v0.8.0.
 
-**Stays in env vars (infra — required to boot):**
-- `DATABASE_URL`, `SESSION_SECRET`, `ENCRYPTION_KEY`
-- `PORT`, `FRONTEND_URL`, `COOKIE_DOMAIN`, `NODE_ENV`
-
-**Implementation:**
-- New table `integration_secrets (key TEXT PK, encrypted_value TEXT, updated_at TIMESTAMPTZ)`
-- Single new env var: `ENCRYPTION_KEY` (required in production)
-- AES-256-GCM via Node `crypto.createCipheriv` — zero new dependencies
-- Config loads env vars first, then merges DB values on startup
-- In-memory cache, invalidated when admin updates via UI
-
-### v1.0 Gate — Operational Readiness
-
-> Should-have items for a reliable production deployment.
-
-| # | Item | Priority | Effort | Description |
-|---|------|----------|--------|-------------|
-| 1 | Improved healthcheck | Should | S | `/health` verifies DB connection and reports app version |
-| 2 | Version endpoint | Should | S | `GET /api/version` → `{ version, commit, deployedAt }` for admin panel and debugging |
-| 3 | DB backup cron | Should | S | Automated `pg_dump` to volume or S3 on schedule |
-| 4 | Smoke test full user flow | Should | S | Register → create diagram → collaborate → share → export |
-| 5 | Fix remaining rough edges | Should | M | Broken states, mobile issues |
+| # | Item | Status | Description |
+|---|------|--------|-------------|
+| 1 | Improved healthcheck | ✅ Done | `/health` verifies DB connection and reports app version |
+| 2 | Version endpoint | ✅ Done | `GET /api/version` → `{ version, commit, deployedAt }` |
+| 3 | DB backup cron | ✅ Done | Automated `pg_dump` with 7-day retention, on-demand backup/restore CLI |
+| 4 | Smoke test full user flow | ✅ Done | 11 Playwright smoke tests covering critical paths |
+| 5 | Fix remaining rough edges | ✅ Done | Setup lock, rate limiting bypass in tests, Zod validation |
 
 ### Admin Polish
 
