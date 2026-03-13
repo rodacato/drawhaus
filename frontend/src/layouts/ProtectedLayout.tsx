@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { siteApi } from "@/api/admin";
+import { setupApi } from "@/api/setup";
 import { MaintenancePage } from "@/pages/MaintenancePage";
 
 export function ProtectedLayout() {
   const { user, loading } = useAuth();
   const [maintenance, setMaintenance] = useState(false);
   const [statusLoaded, setStatusLoaded] = useState(false);
+  const [showSetupBanner, setShowSetupBanner] = useState(false);
 
   useEffect(() => {
     siteApi.getStatus()
@@ -15,6 +17,14 @@ export function ProtectedLayout() {
       .catch(() => {})
       .finally(() => setStatusLoaded(true));
   }, []);
+
+  useEffect(() => {
+    if (user?.role === "admin") {
+      setupApi.getStatus()
+        .then((status) => setShowSetupBanner(status.setupSkippedIntegrations === true && status.setupCompleted))
+        .catch(() => {});
+    }
+  }, [user]);
 
   if (loading || !statusLoaded) {
     return (
@@ -30,5 +40,17 @@ export function ProtectedLayout() {
     return <MaintenancePage />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      {showSetupBanner && (
+        <div className="border-b border-warning/30 bg-warning/10 px-4 py-2 text-center text-sm text-warning">
+          Integrations not configured.{" "}
+          <Link to="/settings?tab=admin-site" className="underline hover:no-underline">
+            Finish setup
+          </Link>
+        </div>
+      )}
+      <Outlet />
+    </>
+  );
 }
