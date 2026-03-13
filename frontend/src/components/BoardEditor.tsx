@@ -5,7 +5,7 @@ import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { DriveSyncBadge, type DriveSyncState } from "@/components/DriveSyncBadge";
 import { FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "@/components/BoardSidebar";
-// SceneTabBar removed — scenes managed from sidebar
+import { SceneTabBar } from "@/components/SceneTabBar";
 import { CommentsPanel } from "@/components/CommentsPanel";
 import { CommentIndicators } from "@/components/CommentIndicators";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
@@ -263,6 +263,22 @@ export default function BoardEditor({
             excalidrawApiRef={collab.excalidrawApiRef}
             onClickIndicator={handleClickIndicator}
           />
+        )}
+
+        {/* Scene tabs — bottom-left floating bar */}
+        {(collab.scenes.length > 1 || canEdit) && (
+          <div className="pointer-events-none absolute bottom-3 left-2 z-20">
+            <SceneTabBar
+              scenes={collab.scenes}
+              activeSceneId={collab.activeSceneId}
+              switchingScene={collab.switchingScene}
+              canEdit={canEdit}
+              onSwitch={collab.switchScene}
+              onCreate={collab.createScene}
+              onDelete={collab.deleteScene}
+              onRename={collab.renameScene}
+            />
+          </div>
         )}
 
         {/* Scene loading overlay */}
