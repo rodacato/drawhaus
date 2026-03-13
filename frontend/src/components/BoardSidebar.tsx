@@ -1,18 +1,25 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import { ui } from "@/lib/ui";
 import type { ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 import { SidebarButton } from "./board-sidebar/SidebarButton";
-import { ExportIcon, CommentIcon, ShareIcon, PlusIcon, HomeIcon, GearIcon, TemplateIcon } from "./board-sidebar/icons";
+import { ExportIcon, CommentIcon, ShareIcon, PlusIcon, HomeIcon, GearIcon, TemplateIcon, CodeIcon } from "./board-sidebar/icons";
+import { SidebarDrawer } from "./board-sidebar/SidebarDrawer";
 import { ExportPanel } from "./board-sidebar/ExportPanel";
 import { SharePanel } from "./board-sidebar/SharePanel";
 import { SettingsPanel } from "./board-sidebar/SettingsPanel";
 import { SaveTemplatePanel } from "./board-sidebar/SaveTemplatePanel";
+import { CodeImportPanel } from "./board-sidebar/CodeImportPanel";
 
 /* ───────────────────────── types ───────────────────────── */
 
-type ActivePanel = "export" | "share" | "settings" | "template" | null;
+type ActivePanel = "export" | "share" | "settings" | "template" | "code" | null;
+
+/** Panel width overrides — default is 300 */
+const PANEL_WIDTH: Partial<Record<NonNullable<ActivePanel>, number>> = {
+  code: 380,
+};
 
 type BoardSidebarProps = {
   userEmail: string;
@@ -51,7 +58,6 @@ export function BoardSidebar({
 }: BoardSidebarProps) {
   const navigate = useNavigate();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
@@ -67,45 +73,27 @@ export function BoardSidebar({
     setActivePanel((prev) => (prev === panel ? null : panel));
   }
 
-  // Close panel on outside click
-  useEffect(() => {
-    if (!activePanel) return;
-    function handleClick(e: MouseEvent) {
-      const sidebar = document.getElementById("board-sidebar");
-      if (sidebar && !sidebar.contains(e.target as Node)) {
-        setActivePanel(null);
-      }
-    }
-    const timer = setTimeout(() => document.addEventListener("mousedown", handleClick), 0);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener("mousedown", handleClick);
-    };
-  }, [activePanel]);
+  const closePanel = useCallback(() => setActivePanel(null), []);
 
-  // Close panel on Escape
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && activePanel) {
-        setActivePanel(null);
-      }
-    }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [activePanel]);
+  const drawerWidth = activePanel ? (PANEL_WIDTH[activePanel] ?? 300) : 300;
 
   return (
     <div id="board-sidebar" className="flex h-full shrink-0">
       {/* Icon bar */}
       <div className="flex h-full w-14 flex-col items-center border-r border-gray-200 bg-white/95 backdrop-blur-sm py-3">
-        {/* Top actions */}
+        {/* Create & Import */}
+        {canEdit && (
+          <div className="flex flex-col items-center gap-1.5">
+            <SidebarButton icon={<PlusIcon />} label="New scene" accent onClick={onCreateScene} />
+            <SidebarButton icon={<CodeIcon />} label="Import from Code" active={activePanel === "code"} onClick={() => togglePanel("code")} />
+          </div>
+        )}
+
+        {canEdit && <div className="mx-3 my-3 h-px w-6 bg-gray-200" />}
+
+        {/* View & Collaborate */}
         <div className="flex flex-col items-center gap-1.5">
           <SidebarButton icon={<ExportIcon />} label="Export" active={activePanel === "export"} onClick={() => togglePanel("export")} />
-        </div>
-
-        <div className="mx-3 my-3 h-px w-6 bg-gray-200" />
-
-        <div className="flex flex-col items-center gap-1.5">
           <SidebarButton
             icon={<CommentIcon />}
             label="Comments"
@@ -124,11 +112,11 @@ export function BoardSidebar({
 
         <div className="mx-3 my-3 h-px w-6 bg-gray-200" />
 
+        {/* Save */}
         {canEdit && (
-          <>
-            <SidebarButton icon={<PlusIcon />} label="New scene" accent onClick={onCreateScene} />
+          <div className="flex flex-col items-center gap-1.5">
             <SidebarButton icon={<TemplateIcon />} label="Save as Template" active={activePanel === "template"} onClick={() => togglePanel("template")} />
-          </>
+          </div>
         )}
 
         {/* Spacer */}
@@ -146,26 +134,20 @@ export function BoardSidebar({
       </div>
 
       {/* Expandable drawer panel — pushes canvas */}
-      <div
-        ref={panelRef}
-        className={`h-full overflow-y-auto border-r border-gray-200 bg-white transition-[width] duration-200 ease-out ${
-          activePanel ? "w-[300px]" : "w-0"
-        }`}
-      >
-        <div className="w-[300px] p-4">
-          {activePanel === "export" && <ExportPanel excalidrawApiRef={excalidrawApiRef} />}
-          {activePanel === "share" && (
-            <SharePanel
-              presenceUsers={presenceUsers}
-              followingUserId={followingUserId}
-              onFollow={onFollow}
-              onCreateShareLink={onCreateShareLink}
-            />
-          )}
-          {activePanel === "settings" && <SettingsPanel userEmail={userEmail} onDashboardClick={() => setLeaveOpen(true)} />}
-          {activePanel === "template" && <SaveTemplatePanel excalidrawApiRef={excalidrawApiRef} workspaceId={workspaceId} />}
-        </div>
-      </div>
+      <SidebarDrawer open={!!activePanel} onClose={closePanel} width={drawerWidth}>
+        {activePanel === "export" && <ExportPanel excalidrawApiRef={excalidrawApiRef} />}
+        {activePanel === "share" && (
+          <SharePanel
+            presenceUsers={presenceUsers}
+            followingUserId={followingUserId}
+            onFollow={onFollow}
+            onCreateShareLink={onCreateShareLink}
+          />
+        )}
+        {activePanel === "settings" && <SettingsPanel userEmail={userEmail} onDashboardClick={() => setLeaveOpen(true)} />}
+        {activePanel === "template" && <SaveTemplatePanel excalidrawApiRef={excalidrawApiRef} workspaceId={workspaceId} />}
+        {activePanel === "code" && <CodeImportPanel excalidrawApiRef={excalidrawApiRef} onClose={closePanel} />}
+      </SidebarDrawer>
 
       {leaveOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center">
