@@ -222,8 +222,8 @@ const acceptWorkspaceInvite = new AcceptWorkspaceInviteUseCase(workspaceRepo);
 const ensurePersonalWorkspace = new EnsurePersonalWorkspaceUseCase(workspaceRepo);
 
 // Folders
-const createFolder = new CreateFolderUseCase(folderRepo);
-const listFolders = new ListFoldersUseCase(folderRepo);
+const createFolder = new CreateFolderUseCase(folderRepo, workspaceRepo);
+const listFolders = new ListFoldersUseCase(folderRepo, workspaceRepo);
 const renameFolder = new RenameFolderUseCase(folderRepo);
 const deleteFolder = new DeleteFolderUseCase(folderRepo);
 const moveDiagram = new MoveDiagramUseCase(diagramRepo, folderRepo);
