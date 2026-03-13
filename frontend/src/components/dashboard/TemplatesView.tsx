@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { templatesApi, type TemplateDTO } from "@/api/templates";
+import { workspacesApi, type Workspace } from "@/api/workspaces";
 import { ui } from "@/lib/ui";
 
 type TemplatesViewProps = {
@@ -18,15 +19,28 @@ const CATEGORY_COLORS: Record<string, string> = {
 export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<TemplateDTO[]>([]);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
 
   useEffect(() => {
-    templatesApi.list().then((res) => {
-      setTemplates((res.templates ?? []).filter((t) => !t.isBuiltIn));
+    Promise.all([
+      templatesApi.list().then((res) => res.templates ?? []),
+      workspacesApi.list().then((res) => res.workspaces ?? []),
+    ]).then(([tpls, ws]) => {
+      setTemplates(tpls.filter((t) => !t.isBuiltIn));
+      setWorkspaces(ws);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
+
+  const wsMap = new Map(workspaces.map((w) => [w.id, w]));
+
+  function scopeLabel(t: TemplateDTO) {
+    if (!t.workspaceId) return "Personal";
+    const ws = wsMap.get(t.workspaceId);
+    return ws ? (ws.isPersonal ? "Personal" : ws.name) : "Workspace";
+  }
 
   async function handleUse(template: TemplateDTO) {
     try {
@@ -121,9 +135,12 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
             {t.description && (
               <p className="mb-2 line-clamp-2 text-xs text-text-muted">{t.description}</p>
             )}
-            <div className="mt-auto flex items-center gap-2">
+            <div className="mt-auto flex items-center gap-2 flex-wrap">
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${CATEGORY_COLORS[t.category] ?? CATEGORY_COLORS.general}`}>
                 {t.category}
+              </span>
+              <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-medium text-text-muted ring-1 ring-inset ring-border">
+                {scopeLabel(t)}
               </span>
               {t.usageCount > 0 && (
                 <span className="text-[10px] text-text-muted">Used {t.usageCount}x</span>

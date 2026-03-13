@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { templatesApi } from "@/api/templates";
+import { workspacesApi } from "@/api/workspaces";
 import type { ExcalidrawApi } from "@/lib/types";
 import { ui } from "@/lib/ui";
 
@@ -33,6 +34,15 @@ export function SaveTemplatePanel({ excalidrawApiRef, workspaceId }: SaveTemplat
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [wsName, setWsName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    workspacesApi.get(workspaceId).then((res) => {
+      const ws = res.workspace ?? res;
+      setWsName(ws.isPersonal ? "Personal" : ws.name);
+    }).catch(() => {});
+  }, [workspaceId]);
 
   async function handleSave() {
     if (!title.trim()) {
@@ -136,7 +146,7 @@ export function SaveTemplatePanel({ excalidrawApiRef, workspaceId }: SaveTemplat
             onChange={(e) => setShareWithWorkspace(e.target.checked)}
             className="rounded border-border"
           />
-          <span>Share with workspace members</span>
+          <span>Share with {wsName || "workspace members"}</span>
         </label>
       )}
 
