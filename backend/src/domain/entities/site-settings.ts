@@ -4,4 +4,6 @@ export type SiteSettings = {
   maintenanceMode: boolean;
   maxWorkspacesPerUser: number;
   maxMembersPerWorkspace: number;
+  setupCompleted: boolean;
+  setupSkippedIntegrations: boolean;
 };

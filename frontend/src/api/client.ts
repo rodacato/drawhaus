@@ -8,6 +8,12 @@ export const api = axios.create({
 api.interceptors.response.use(
   (res) => res,
   (err) => {
+    if (err.response?.status === 403 && err.response?.data?.error === "setup_required") {
+      if (!window.location.pathname.startsWith("/setup")) {
+        window.location.href = "/setup";
+      }
+      return Promise.reject(err);
+    }
     if (
       err.response?.status === 401 &&
       window.location.pathname !== "/" &&
