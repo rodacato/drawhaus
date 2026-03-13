@@ -1,15 +1,12 @@
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
+import { requireEditAccess } from "../../helpers/require-access";
 
 export class UpdateThumbnailUseCase {
   constructor(private diagrams: DiagramRepository) {}
 
   async execute(diagramId: string, userId: string, thumbnail: string): Promise<void> {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
-    if (!role || role === "viewer") {
-      const err = new Error("Forbidden");
-      (err as Error & { status: number }).status = 403;
-      throw err;
-    }
+    requireEditAccess(role);
     await this.diagrams.updateThumbnail(diagramId, thumbnail);
   }
 }

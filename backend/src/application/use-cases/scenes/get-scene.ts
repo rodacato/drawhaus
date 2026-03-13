@@ -1,6 +1,7 @@
 import type { SceneRepository } from "../../../domain/ports/scene-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
 import { NotFoundError } from "../../../domain/errors";
+import { requireAccess } from "../../helpers/require-access";
 import type { Scene } from "../../../domain/entities/scene";
 
 export class GetSceneUseCase {
@@ -14,7 +15,7 @@ export class GetSceneUseCase {
     if (!scene) throw new NotFoundError("Scene");
 
     const role = await this.diagrams.findAccessRole(scene.diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
+    requireAccess(role);
 
     return scene;
   }

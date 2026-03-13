@@ -1,6 +1,6 @@
 import type { CommentRepository } from "../../../domain/ports/comment-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
-import { NotFoundError } from "../../../domain/errors";
+import { requireAccess } from "../../helpers/require-access";
 import type { CommentThread } from "../../../domain/entities/comment";
 
 export class CreateCommentUseCase {
@@ -11,7 +11,7 @@ export class CreateCommentUseCase {
 
   async execute(diagramId: string, userId: string, elementId: string, body: string, sceneId?: string | null): Promise<CommentThread> {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
+    requireAccess(role);
     return this.comments.createThread({ diagramId, sceneId: sceneId ?? null, elementId, authorId: userId, body });
   }
 }

@@ -1,5 +1,6 @@
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
-import { NotFoundError, ForbiddenError } from "../../../domain/errors";
+import { NotFoundError } from "../../../domain/errors";
+import { requireEditAccess } from "../../helpers/require-access";
 
 export class UpdateDiagramUseCase {
   constructor(private diagrams: DiagramRepository) {}
@@ -10,8 +11,7 @@ export class UpdateDiagramUseCase {
     data: { title?: string; elements?: unknown[]; appState?: Record<string, unknown> },
   ) {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
-    if (role !== "owner" && role !== "editor") throw new ForbiddenError();
+    requireEditAccess(role);
 
     const updated = await this.diagrams.update(diagramId, data);
     if (!updated) throw new NotFoundError("Diagram");

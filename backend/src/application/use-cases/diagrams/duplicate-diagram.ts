@@ -1,5 +1,6 @@
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
 import type { Diagram } from "../../../domain/entities/diagram";
+import { requireAccess } from "../../helpers/require-access";
 
 export class DuplicateDiagramUseCase {
   constructor(private diagramRepo: DiagramRepository) {}
@@ -8,7 +9,7 @@ export class DuplicateDiagramUseCase {
     const original = await this.diagramRepo.findById(diagramId);
     if (!original) throw new Error("Diagram not found");
     const role = await this.diagramRepo.findAccessRole(diagramId, userId);
-    if (!role) throw new Error("Access denied");
+    requireAccess(role);
     return this.diagramRepo.create({
       title: `${original.title} (copy)`,
       ownerId: userId,

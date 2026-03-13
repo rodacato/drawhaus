@@ -1,6 +1,7 @@
 import type { CommentRepository } from "../../../domain/ports/comment-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
 import { NotFoundError } from "../../../domain/errors";
+import { requireAccess } from "../../helpers/require-access";
 
 export class ToggleLikeUseCase {
   constructor(
@@ -13,7 +14,7 @@ export class ToggleLikeUseCase {
     if (!thread) throw new NotFoundError("Comment thread");
 
     const role = await this.diagrams.findAccessRole(thread.diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
+    requireAccess(role);
 
     const liked = await this.comments.toggleLike(threadId, userId);
     const updated = await this.comments.findThreadById(threadId, userId);

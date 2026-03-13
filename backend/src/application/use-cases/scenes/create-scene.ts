@@ -1,6 +1,6 @@
 import type { SceneRepository } from "../../../domain/ports/scene-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
-import { NotFoundError, ForbiddenError } from "../../../domain/errors";
+import { requireEditAccess } from "../../helpers/require-access";
 import type { Scene } from "../../../domain/entities/scene";
 
 export class CreateSceneUseCase {
@@ -11,8 +11,7 @@ export class CreateSceneUseCase {
 
   async execute(diagramId: string, userId: string, name?: string): Promise<Scene> {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
-    if (role === "viewer") throw new ForbiddenError();
+    requireEditAccess(role);
 
     const existing = await this.scenes.findByDiagram(diagramId);
     const nextOrder = existing.length > 0

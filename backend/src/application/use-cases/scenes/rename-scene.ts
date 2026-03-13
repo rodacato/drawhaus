@@ -1,6 +1,7 @@
 import type { SceneRepository } from "../../../domain/ports/scene-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
-import { NotFoundError, ForbiddenError } from "../../../domain/errors";
+import { NotFoundError } from "../../../domain/errors";
+import { requireEditAccess } from "../../helpers/require-access";
 import type { Scene } from "../../../domain/entities/scene";
 
 export class RenameSceneUseCase {
@@ -14,8 +15,7 @@ export class RenameSceneUseCase {
     if (!scene) throw new NotFoundError("Scene");
 
     const role = await this.diagrams.findAccessRole(scene.diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
-    if (role === "viewer") throw new ForbiddenError();
+    requireEditAccess(role);
 
     const updated = await this.scenes.rename(sceneId, name);
     if (!updated) throw new NotFoundError("Scene");

@@ -1,6 +1,6 @@
 import type { TagRepository } from "../../../domain/ports/tag-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
-import { NotFoundError, ForbiddenError } from "../../../domain/errors";
+import { requireOwnerAccess } from "../../helpers/require-access";
 
 export class UnassignTagUseCase {
   constructor(
@@ -11,8 +11,7 @@ export class UnassignTagUseCase {
   async execute(tagId: string, diagramId: string, userId: string) {
     // Verify the user owns the diagram
     const role = await this.diagrams.findAccessRole(diagramId, userId);
-    if (!role) throw new NotFoundError("Diagram");
-    if (role !== "owner") throw new ForbiddenError();
+    requireOwnerAccess(role);
 
     await this.tags.unassignFromDiagram(diagramId, tagId);
   }
