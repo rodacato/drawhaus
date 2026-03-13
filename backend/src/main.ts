@@ -1,9 +1,11 @@
 import Honeybadger from "@honeybadger-io/js";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import { createServer } from "http";
+import { authLimiter, generalLimiter } from "./infrastructure/http/middleware/rate-limit";
 import { config } from "./infrastructure/config";
-import { initSchema } from "./infrastructure/db";
+import { initSchema, pool } from "./infrastructure/db";
 import { logger } from "./infrastructure/logger";
 import { requestId } from "./infrastructure/http/middleware/request-id";
 import { requestLogger } from "./infrastructure/http/middleware/request-logger";
@@ -276,19 +278,47 @@ const requireAuth = createRequireAuth(getCurrentUser);
 
 export const app = express();
 
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 app.use(requestId);
 app.use(requestLogger);
 app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json({ limit: "5mb" }));
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
+app.get("/health", async (_req, res) => {
+  let database = "ok";
+  try {
+    await pool.query("SELECT 1");
+  } catch {
+    database = "error";
+  }
+  const status = database === "ok" ? "ok" : "degraded";
+  res.status(status === "ok" ? 200 : 503).json({
+    status,
+    version: config.appVersion,
+    uptime: Math.floor(process.uptime()),
+    database,
+  });
+});
+
+app.get("/api/version", (_req, res) => {
+  res.json({
+    version: config.appVersion,
+    commit: config.gitCommit,
+    deployedAt: config.deployedAt,
+  });
 });
 
 app.get("/api/site/status", async (_req, res) => {
   const settings = await getSettings.execute();
   res.json({ maintenanceMode: settings.maintenanceMode, instanceName: settings.instanceName });
 });
+
+// Rate limiting
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
+app.use("/api/auth/forgot-password", authLimiter);
+app.use("/api/auth/reset-password", authLimiter);
+app.use("/api", generalLimiter);
 
 app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth }, requireAuth));
 app.use("/api/diagrams", createDiagramRoutes({ create: createDiagram, get: getDiagram, list: listDiagrams, search: searchDiagrams, update: updateDiagram, updateThumbnail, delete: deleteDiagram, toggleStar, duplicate: duplicateDiagram, move: moveDiagram }, requireAuth, tagRepo));

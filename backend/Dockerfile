@@ -15,7 +15,9 @@ RUN npm run build
 
 FROM node:20-alpine AS production
 WORKDIR /app
+ARG GIT_COMMIT=unknown
 ENV NODE_ENV=production
+ENV GIT_COMMIT=$GIT_COMMIT
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
 RUN npm install --omit=dev
