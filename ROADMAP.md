@@ -2,237 +2,182 @@
 
 > Self-hosted Excalidraw alternative — your whiteboard, on your server.
 
+**Currently working on**: Backup All to Google Drive
+
 ---
 
-## What's Been Built (v0.1–v0.8)
+## What's Been Built
 
-Everything below is shipped and working in production.
+Shipped and working in production. See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
-### Core (v0.1–v0.2)
-- Full Excalidraw editor with real-time collaboration (Socket.IO)
-- Auth: register, login, logout, session management
-- Diagram CRUD with auto-save (JSONB in Postgres)
-- Live presence: cursors, user list, viewport follow
-- Share links with roles (editor/viewer) and expiration
-- Guest access via share tokens
-- Permission enforcement on sockets and API
-- Production deployment: Kamal + Cloudflare Tunnel
-
-### Phase 1 — Table Stakes (v0.3)
-- Export PNG/SVG via Excalidraw APIs
-- Import `.excalidraw` files
-- Read-only embed links (`/embed/:token`)
-- Structured logging (pino + request IDs)
-- User settings: profile editing, password change
-- Admin panel: metrics, user management, registration toggle
-
-### Phase 2 — Team Experience (v0.4)
-- Folders with sidebar navigation
-- Full-text search on diagram titles
-- Multi-scene support with tab bar and per-scene collaboration
-- Auto-generated diagram thumbnails on save
-
-### Phase 3 — Vite Migration (v0.5)
-- Replaced Next.js with Vite + React Router + Axios
-- Backend CORS + cross-origin cookie support
-- Static SPA deployed via Cloudflare Pages
-- Removed all Next.js dependencies
-
-### Design Stitch & Polish (v0.6)
-- Dark/light theme toggle with ThemeContext
-- Full UI redesign: auth pages, settings, admin, dashboard, board toolbar
-- Landing page with hero, features grid, CTA, footer
-- Dashboard: starred diagrams, grid/list toggle, recent sidebar, duplicate, inline rename
-- Share modal: role selector, expiration in days, copy link, revoke links
-- Comments: tabs (Open/Resolved/All), threaded replies, resolve workflow, scene-scoped
-- Guest join: enhanced design with session preview, role badge, branding
-- Admin: invite user flow with email (Resend), metric cards, toggle switches
-- Forgot password flow with reset tokens and email
-- Board toolbar: 2-row layout, icon buttons, inline title editing
-- Branding: Bauhaus-inspired logo, brand guide, fonts, favicon
-- Performance: msgpack binary encoding, adaptive throttle, WebSocket compression
-- Honeybadger error monitoring
-- First-time `/setup` page for admin creation
-
-### Google Drive Integration (v0.7)
-- Google OAuth login with account linking
-- OAuth scope upgrade flow for Drive API
-- Export diagrams to Google Drive
-- Import `.excalidraw` files from Google Drive
-- Auto-backup to Drive on save
-- Integrations tab in settings with sync badge
-
-### Remaining Stitch Items (v0.7)
-- Category tags: full CRUD API + UI
-- Account deletion with password confirmation and cascade
-- Comment reactions (likes) with toggle
-- Board collapsible sidebar: slim icon bar + expandable panels
-- Admin delete user with confirmation modal
-- Embeddable link support for diagrams
-
-### Workspaces (v0.7)
-- Multi-tenant workspace support for separating diagrams by client/project
-- Personal workspace auto-created per user (can't be deleted or shared)
-- Workspace CRUD: name, description, color, emoji/text icon
-- Workspace roles: admin (full control), editor (edit diagrams), viewer (read-only)
-- Member management: invite by email, accept flow with login/register redirect
-- Workspace-scoped folders and diagrams
-- Access control: `findAccessRole` checks owner > diagram member > workspace member
-- Dashboard sidebar: workspace switcher with settings cog per workspace
-- Workspace settings page: identity, members list with role dropdown, danger zone
-- Admin-configurable limits: max 5 workspaces per user, max 5 members per workspace
-- Production migration: standalone SQL script for existing data normalization
-
-### Dashboard UX Overhaul (v0.7)
-- Removed "All Diagrams" nav — Recent is now the default landing view
-- Recent and Starred fetch diagrams across all workspaces (cross-workspace global views)
-- Recent/Starred are read-only views (no create CTAs)
-- Workspace-scoped toolbar: New Diagram, New Folder, Import, Drive, grid/list toggle
-- Folders rendered as content sections (not sidebar items), sorted alphabetically
-- Per-folder diagram creation via inline action button
-- "Uncategorized" section for diagrams not in any folder
-- Folder deletion with non-empty guard (blocking alert)
-- Always-visible folder action buttons (create diagram, delete)
-- Refactored Dashboard.tsx into reusable components: DashboardSidebar, WorkspaceToolbar, WorkspaceView, GeneralView, FolderSection, DiagramGrid, NewDiagramCard
-
-### Feedback & Notification System (v0.7)
-- Toast notification system: `useToast()` hook with success, error, and info variants
-- Confirm dialog system: `useConfirm()` hook with promise-based API and danger variant
-- Replaced all `window.confirm()` (4) and `window.alert()` (1) with polished UI dialogs
-- Success feedback on all destructive actions (delete diagram, folder, workspace, user, member)
-- Error feedback on failed operations instead of silent catches
-- Consistent design across Dashboard, WorkspaceSettings, and AdminUsers
-- Admin delete user modal replaced with shared ConfirmDialog
-- Style guide: documented Toast, ConfirmDialog, Drawer, Theme Toggle, Color Picker, Connection Badges
-- Style guide: categorized table of contents with anchor navigation
-
-### Security, Testing & Architecture (v0.8)
-- **Security hardening**: Helmet headers, rate limiting (5 req/min auth, 20/min general), setup lock middleware
-- **Security fixes**: Drive GraphQL injection, folder auth bypass, cookie deduplication
-- **Setup wizard**: 3-step guided flow (admin account → instance config → integrations) with progress bar
-- **Integration secrets**: AES-256-GCM encrypted feature keys in DB, editable from admin UI
-- **Structured audit logger**: logs security-sensitive operations (login, role changes, deletions)
-- **Maintenance mode**: site-wide access control during deployments
-- **React Error Boundary**: catches BoardEditor rendering crashes gracefully
-- **Operational readiness**: improved `/health` endpoint, `GET /api/version`, automated DB backups with 7-day retention
-- **Redis adapter**: Socket.IO horizontal scaling across multiple containers
-- **Backend refactoring**: composition root extraction, `validate()` middleware, `requireAccess` helpers, `withTransaction` for atomic operations
-- **Frontend refactoring**: split `useCollaboration` into 4 focused hooks, consolidated hooks directory, component extraction, Axios response interceptor (removed 59 manual `.then(r => r.data)` calls)
-- **Comprehensive E2E testing**: 5-phase Playwright suite (permissions, CRUD, sharing, auth, visual regression) + smoke tests
-- **Documentation**: LICENSE, CONTRIBUTING, SECURITY files; CLAUDE.md project instructions
-
-### Developer Templates (v0.9)
-- Template system with built-in + user-created custom templates
-- 7 built-in templates: System Architecture, ER Diagram, Sequence Diagram, Sprint Retro, ADR Visual, API Flow, User Flow
-- Template Picker modal replaces blank "New Diagram" flow
-- Save as Template from board sidebar with workspace sharing ("Share with [Workspace Name]")
-- Template API: full CRUD + `POST /api/templates/:id/use`
-- Category filtering (Architecture, Database, Agile, Process, My Templates)
-- Usage count tracking per template
-- **My Templates dashboard view**: dedicated sidebar nav item with template grid (thumbnail, category badge, scope badge, usage count, rename, delete, use)
-- Workspace-scoped templates visible in "My Templates" regardless of workspace association
-
-### Diagram as Code — Mermaid Live Import (v0.9)
-- "Import from Code" panel in board sidebar (same pattern as Export/Share/Template panels)
-- Paste Mermaid code → live SVG preview (debounced) → "Add to canvas" inserts editable Excalidraw elements
-- Supports all Mermaid diagram types (flowchart, sequence, class, state, etc.)
-- Replace toggle to replace existing elements or append
-- Zero backend changes — fully client-side using `@excalidraw/mermaid-to-excalidraw` + `convertToExcalidrawElements()`
-
-### Workspace Ownership Transfer (v0.9)
-- Transfer workspace ownership to any admin member
-- Optional bulk transfer of diagrams and templates along with workspace
-- Old owner remains as admin member after transfer
-- Delete account guard: must transfer shared workspaces before account deletion
-- Transfer Ownership UI in Workspace Settings with admin selector and resource transfer checkbox
-- `POST /api/workspaces/:id/transfer-ownership`, `POST /api/diagrams/transfer-ownership`, `POST /api/templates/transfer-ownership`
-- `GET /api/workspaces/owned-shared` for delete-account pre-check
-
-### Board & Dashboard Polish (v0.9)
-- Reusable SidebarDrawer component: inline drawer with outside-click, Escape handling, and dynamic width per panel
-- Sidebar UX: reorganized buttons into semantic groups (Create & Import, View & Collaborate, Save, Navigation)
-- SceneTabBar restored: floating tab bar at bottom-left of canvas for scene switching, rename, delete
-- Excalidraw UI cleanup: hidden redundant canvas actions (library, export, save-as-image, load scene)
-- Axios type safety: module augmentation for AxiosInstance reflecting the response.data interceptor — resolved all pre-existing type errors
+| Area | Capabilities | Since |
+|------|-------------|-------|
+| **Editor** | Excalidraw engine, multi-scene with tab bar, auto-save, thumbnails | v0.1 |
+| **Templates** | 7 built-in templates, custom templates with workspace sharing, template picker, My Templates view, category filtering, usage tracking | v0.9 |
+| **Diagram as Code** | Mermaid live import → editable Excalidraw elements, live SVG preview, replace/append toggle | v0.9 |
+| **Collaboration** | Real-time cursors + presence, viewport follow, threaded comments with resolve workflow, comment reactions | v0.1 |
+| **Workspaces** | Multi-tenant spaces (admin/editor/viewer roles), member invites, workspace-scoped folders + diagrams, ownership transfer with bulk resource transfer | v0.7 |
+| **Dashboard** | Recent/Starred cross-workspace views, folders as content sections, grid/list toggle, starred diagrams, duplicate, inline rename, workspace switcher | v0.4 |
+| **Sharing** | Share links with roles + expiration, guest access via tokens, read-only embeds (`/embed/:token`) | v0.1 |
+| **Export & Import** | PNG/SVG export, `.excalidraw` file import, Google Drive import | v0.3 |
+| **Google Drive** | OAuth login + linking, Drive export, Drive import, auto-backup on save, scope upgrade flow | v0.7 |
+| **Auth** | Register/login/logout, sessions, forgot password with email reset, Google OAuth, account deletion with cascade, delete guard for workspace owners | v0.1 |
+| **Admin** | User management, metrics, registration toggle, invite via email (Resend), setup wizard (3-step), integration secrets (AES-256-GCM), maintenance mode | v0.3 |
+| **Security** | Helmet headers, rate limiting, audit logger, RBAC, cookie hardening, encrypted secrets in DB | v0.8 |
+| **UI & Branding** | Dark/light theme, Bauhaus-inspired branding, toast notifications, confirm dialogs, style guide, board sidebar with semantic groups | v0.6 |
+| **Landing Page** | Hero with real screenshots, "Why Drawhaus?" value props, "How it works" deploy steps, 12-feature grid, comparison badges, tech stack logos, automated Playwright screenshots | v0.9 |
+| **DevOps** | Docker + Kamal deploy, Cloudflare Pages SPA, automated DB backups (7-day retention), health endpoint, `/api/version`, Redis adapter for horizontal scaling | v0.1 |
+| **Testing** | 5-phase Playwright E2E suite (permissions, CRUD, sharing, auth, visual regression), backend unit tests, marketing screenshot automation | v0.8 |
+| **Architecture** | Clean Architecture (application/domain/infrastructure), Vite + React Router + Axios, composition root, `validate()` middleware, `withTransaction`, response interceptor | v0.5 |
 
 ---
 
 ## What's Next
 
-- Backup All to Google Drive: bulk sync all diagrams in active workspace to Drive with folder structure and real-time progress (POST returning 202, socket.io progress events, concurrency limit of 3).
+Features prioritized and ready to build. Full implementation specs live in [`docs/specs/`](docs/specs/).
 
-### Admin Polish
+### How to use this section
 
-> Not required for v1.0, but nice improvements for the admin experience.
+Move items through these statuses:
 
-| # | Feature | Type | Description |
-|---|---------|------|-------------|
-| 5 | Admin analytics | Full | Charts (recharts) for user growth, diagram creation, active sessions |
-| 6 | Admin backup & logs | Frontend | ~~Manual backup trigger~~ (done in v0.8), DB dump download, log viewer |
-| 7 | Export CSV from admin | Frontend | Client-side CSV generation from user table |
+| Status | Meaning |
+|--------|---------|
+| `backlog` | Spec written, ready to start |
+| `in-progress` | Actively being built |
+| `done` | Shipped — move row to "What's Been Built" and update CHANGELOG |
 
-### Nice to Have — Backlog
-
-> Low priority. Pick these up when there are no active features in progress.
-
-| # | Feature | Description | Effort |
-|---|---------|-------------|--------|
-| 13 | AI assist | Generate diagrams from text prompts (Claude API) | L |
-| 14 | MCP server | Expose Drawhaus to AI agents for automated diagram creation | M |
-| 15 | Public API | REST API for external integrations and automation | M |
-| 17 | @mention in comments | User search + notification system | M |
-| 18 | Diagram as Code — PlantUML | PlantUML live import with custom converter (class, sequence, activity diagrams) | M |
-| 19 | Webhooks | Notify external systems on diagram changes (CI/CD, Slack, docs rebuild) | S |
-| 20 | CLI tool | `drawhaus create`, `drawhaus export`, `drawhaus import` from terminal | M |
-| 21 | Link previews (OpenGraph) | Thumbnail preview when pasting Drawhaus links in Slack/Discord/GitHub | S |
-| 22 | Embed SDK | Lightweight JS SDK for embedding live diagrams in Docusaurus/wikis | M |
-
-### Not Planned
-
-| Feature | Reason |
-|---------|--------|
-| E2EE | Breaks collab merge logic; self-hosted = you control the data |
-| Voice / screenshare | Use Meet/Discord instead |
-| Offline mode | Requires service worker + CRDT rewrite |
-| SSO / SAML | Enterprise feature, overkill for personal/small team |
-| Library marketplace | No community to serve |
-
-### Archived / Discarded
-
-> Evaluated but not worth the effort for current scope.
-
-| # | Feature | Reason discarded |
-|---|---------|-----------------|
-| 8 | Versioning (snapshot history, timeline UI) | Complex for low usage; snapshots in DB are enough |
-| 9 | PDF/PPTX export | PNG/SVG export covers the need; use external tools for slides |
-| 10 | Presentations (slideshow mode) | Niche feature; use actual presentation tools instead |
-| 11 | Libraries (reusable components) | Over-engineering for personal/small team use |
-| 12 | Archive / soft delete | Simple delete is fine; DB backups cover recovery |
-| 16 | Social OAuth (Apple) | Google OAuth shipped; Apple sign-in not worth the effort |
+| # | Feature | Summary | Priority | Effort | Status | Spec |
+|---|---------|---------|----------|--------|--------|------|
+| 1 | Backup All to Drive | One-click workspace backup to Google Drive with progress bar | High | M | in-progress | [spec](docs/specs/backup-all-to-drive.md) |
+| 2 | MCP Server | AI agents create/read/update diagrams via MCP protocol | High | M | backlog | [spec](docs/specs/mcp-server.md) |
+| 3 | PlantUML Import | Custom PlantUML → editable Excalidraw elements (class, sequence, activity) | Medium | M | backlog | [spec](docs/specs/plantuml-import.md) |
 
 ---
 
-## Changelog & Release Process
+## Backlog
 
-### Versioning
+Ideas evaluated but not yet prioritized. When ready to build, write a spec in `docs/specs/` and move to "What's Next".
 
-Drawhaus uses **semantic versioning** (major.minor.patch):
+| # | Feature | Summary | Effort | Spec |
+|---|---------|---------|--------|------|
+| 1 | AI assist | Text → Excalidraw elements via Claude API with preview/accept flow | L | — |
+| 2 | Webhooks | Notify external systems on diagram events. HMAC-SHA256 signed, retry queue, failure log | S | [spec](docs/specs/webhooks.md) |
+| 3 | Link previews (OpenGraph) | Lightweight HTML endpoint serving OG meta tags + 302 redirect to SPA. Uses existing thumbnails as `og:image` | S | — |
+| 4 | GitHub Gist export | Export `.excalidraw` to Gist (public/secret). Per-user PAT, encrypted storage | S | [spec](docs/specs/github-gist-export.md) |
+| 5 | Public API | REST API with API key authentication for external integrations | M | — |
+| 6 | @mention in comments | User search + notification system in threaded comments | M | — |
+| 7 | Embed SDK | JS SDK (`@drawhaus/embed`) — iframe + postMessage for theme, zoom, events | M | — |
+| 8 | CLI tool | `drawhaus create/export/import` from terminal. Requires Public API first | M | — |
+| 9 | DX polish | ADRs in `docs/adr/`, OpenAPI spec, Makefile wrapper, husky + lint-staged | S–M | — |
+| 10 | Admin analytics | Charts (recharts) for user growth, diagram creation, active sessions | M | — |
+| 11 | Admin backup & logs | DB dump download, log viewer | S | — |
+| 12 | Admin CSV export | Client-side CSV generation from user table | S | — |
 
-- **Major** (1.0, 2.0): Breaking changes or major milestones
-- **Minor** (0.7, 0.8): New features or significant enhancements
-- **Patch** (0.6.1): Bug fixes and small improvements
+---
 
-### Release Process
+## Not Doing
 
-1. **Develop** on feature branches, merge to `master` via PR
-2. **Tag** the release: `git tag v0.x.0 && git push --tags`
-3. **Bump** `version` in root `package.json`
-4. **Update** `CHANGELOG.md` with a summary of changes
-5. **Deploy** by pushing to the `production` branch — GitHub Actions builds, pushes to GHCR, and deploys via Kamal
+Evaluated and decided against. Includes full context so the reasoning is preserved.
 
-### Changelog
+### E2EE (End-to-End Encryption)
 
-See [CHANGELOG.md](CHANGELOG.md) for the full version history.
+**The idea**: Encrypt diagram content client-side so the server never sees plaintext data. Only users with the key can decrypt.
+
+**Why not**: Breaks the real-time collaboration merge logic — the server needs to see element state to resolve conflicts. Also redundant for a self-hosted tool where you own the server and the database. The threat model doesn't justify the complexity.
+
+**How it could be done**: Web Crypto API for client-side encryption, per-diagram key wrapped with user's master key, key exchange protocol for shared diagrams. Would require rewriting the collab layer to merge encrypted payloads blindly or decrypt server-side (defeating the purpose).
+
+**Revisit if**: Multi-tenant hosting with untrusted tenants sharing the same instance, or regulatory requirements mandate it.
+
+### Voice / Screenshare
+
+**The idea**: Built-in voice chat and screen sharing during collaboration sessions.
+
+**Why not**: WebRTC infrastructure is complex to self-host reliably (TURN servers, NAT traversal). Users already have Meet, Discord, Slack huddles. Building a worse version of existing tools adds maintenance burden with no unique value.
+
+**How it could be done**: WebRTC with a TURN server (coturn), signaling via existing Socket.IO channel, `<video>` overlay on canvas. Would need STUN/TURN config in setup wizard, bandwidth management, and fallback for restricted networks.
+
+**Revisit if**: Never — this is firmly out of scope.
+
+### Offline Mode
+
+**The idea**: Service worker + local storage so the editor works without a server connection. Sync changes when reconnecting.
+
+**Why not**: Requires a CRDT rewrite of the collaboration layer to handle offline conflict resolution. The current architecture assumes a connected server for state merging. Massive effort for a self-hosted tool where the server is always on your network.
+
+**How it could be done**: Service worker for asset caching, IndexedDB for diagram storage, Yjs or Automerge CRDT for conflict-free merging, sync queue that replays operations on reconnect. The Excalidraw collab protocol would need to be replaced entirely.
+
+**Revisit if**: Mobile PWA becomes a priority, or CRDT libraries mature enough to drop in without rewriting collab.
+
+### SSO / SAML
+
+**The idea**: Enterprise single sign-on with SAML 2.0 or OpenID Connect for corporate identity providers.
+
+**Why not**: Enterprise feature that adds significant complexity. Drawhaus is built for personal and small team use. Google OAuth covers the "social login" need. SAML libraries are notoriously painful.
+
+**How it could be done**: `passport-saml` or `openid-client` strategy, IdP metadata endpoint, attribute mapping config in setup wizard, JIT user provisioning on first login.
+
+**Revisit if**: Enterprise customers appear with budget, or a clean SAML library makes it trivial.
+
+### Library Marketplace
+
+**The idea**: Shared component library where users upload and browse reusable shapes, icons, and diagram fragments.
+
+**Why not**: No community to serve. Drawhaus is a personal/small-team tool. Building discovery, moderation, and distribution for a marketplace of one user is pure overhead.
+
+**How it could be done**: Library items as JSON blobs in DB, tags + search, thumbnail generation, import/export, optional public gallery with moderation queue.
+
+**Revisit if**: Drawhaus grows a community of 100+ active users.
+
+### Versioning (Snapshot History)
+
+**The idea**: Timeline UI to browse previous versions of a diagram, diff changes, and restore old snapshots.
+
+**Why not**: Complex UI and storage for low usage. Current approach (full JSONB snapshots in DB + automated backups) provides recovery without the UI overhead. Most users don't need visual diffs.
+
+**How it could be done**: `diagram_versions` table with trigger on save (debounced), timeline sidebar with thumbnail previews per version, visual diff overlay highlighting added/removed/moved elements.
+
+**Revisit if**: Actual user demand, or a simple "last 10 saves" list proves useful without the full timeline UI.
+
+### PDF / PPTX Export
+
+**The idea**: Export diagrams as PDF documents or PowerPoint slides directly from the app.
+
+**Why not**: PNG/SVG export covers the need. Users who need slides can paste SVG into their presentation tool. Building PDF/PPTX generation adds dependencies (puppeteer or pptxgenjs) for a niche use case.
+
+**How it could be done**: `pptxgenjs` for PPTX (SVG → slide), `jspdf` or Puppeteer for PDF (render SVG to canvas → PDF page). Multi-scene → multi-page/slide.
+
+**Revisit if**: Multiple users request it, or a lightweight library makes it trivial.
+
+### Presentations (Slideshow Mode)
+
+**The idea**: Turn multi-scene diagrams into a fullscreen slideshow with transitions.
+
+**Why not**: Niche feature that competes with actual presentation tools. Better to focus on what Drawhaus does uniquely (collaborative diagramming) than build a worse Keynote.
+
+**How it could be done**: Fullscreen API, scene array as slides, keyboard/swipe navigation, CSS transitions between scenes, presenter notes in a secondary panel.
+
+**Revisit if**: Never — use presentation tools for presentations.
+
+### Reusable Component Libraries
+
+**The idea**: Save and organize reusable shapes/groups that can be dragged onto any diagram.
+
+**Why not**: Over-engineering for personal/small team use. Excalidraw's built-in library feature covers basic needs. Custom libraries need management UI, versioning, and sharing — too much complexity.
+
+**How it could be done**: `library_items` table, drag-and-drop panel, group selection → "Save to Library", workspace-level sharing, optional export as `.excalidrawlib` file.
+
+**Revisit if**: Template system proves insufficient for reuse patterns.
+
+### Social OAuth (Apple Sign-In)
+
+**The idea**: Sign in with Apple ID alongside existing Google OAuth.
+
+**Why not**: Apple's sign-in implementation is notoriously painful (key rotation, email relay, App Store requirements). Google OAuth is shipped and covers the need. Diminishing returns.
+
+**How it could be done**: `passport-apple` strategy, Apple Developer Program membership ($99/yr), private key + key ID config, email relay domain verification.
+
+**Revisit if**: Never — Google OAuth + email/password is sufficient.
 
 ---
 
@@ -256,6 +201,11 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 | Workspaces over per-diagram collaborators | Workspace-level access | Contractor use case: separate clients cleanly, share all diagrams in a workspace at once instead of one by one |
 | Tags per-user, not per-workspace | Personal organization | Industry standard; tags are a personal view, not shared state |
 | Lazy personal workspace | Created on first `/api/workspaces` list call | No migration code in app; existing users get personal workspace on next login |
+| Diagram as Code: import only | Live Import panel, not native code editor | No bidirectional export (canvas → text); keeps scope manageable |
+| PlantUML: custom converter over Kroki embed | Editable elements, not static SVG | Users can move/style/edit imported elements; Kroki fallback for unsupported types |
+| Landing page: badges over comparison table | Friendly "plus" framing | Avoid adversarial positioning against Excalidraw (same engine) |
+| Screenshots: automated Playwright | Regenerable on UI changes | Prevents stale marketing assets; seeded with attractive demo data |
+| Gist auth: per-user PAT, not OAuth | Simpler, no GitHub OAuth app needed | User manages their own token; encrypted with existing ENCRYPTION_KEY infra |
 
 ---
 
@@ -269,4 +219,4 @@ See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ---
 
-*Last updated: 2026-03-13*
+*Last updated: 2026-03-14*
