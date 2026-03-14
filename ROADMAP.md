@@ -139,6 +139,15 @@ Everything below is shipped and working in production.
 - Replace toggle to replace existing elements or append
 - Zero backend changes — fully client-side using `@excalidraw/mermaid-to-excalidraw` + `convertToExcalidrawElements()`
 
+### Workspace Ownership Transfer (v0.9)
+- Transfer workspace ownership to any admin member
+- Optional bulk transfer of diagrams and templates along with workspace
+- Old owner remains as admin member after transfer
+- Delete account guard: must transfer shared workspaces before account deletion
+- Transfer Ownership UI in Workspace Settings with admin selector and resource transfer checkbox
+- `POST /api/workspaces/:id/transfer-ownership`, `POST /api/diagrams/transfer-ownership`, `POST /api/templates/transfer-ownership`
+- `GET /api/workspaces/owned-shared` for delete-account pre-check
+
 ### Board & Dashboard Polish (v0.9)
 - Reusable SidebarDrawer component: inline drawer with outside-click, Escape handling, and dynamic width per panel
 - Sidebar UX: reorganized buttons into semantic groups (Create & Import, View & Collaborate, Save, Navigation)

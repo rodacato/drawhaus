@@ -440,6 +440,8 @@ kamal rollback -c config/deploy.backend.yml
 | `POST` | `/api/workspaces/:id/invite` | Invite member |
 | `PATCH` | `/api/workspaces/:id/members/:userId` | Update member role |
 | `DELETE` | `/api/workspaces/:id/members/:userId` | Remove member |
+| `POST` | `/api/workspaces/:id/transfer-ownership` | Transfer workspace ownership to admin member |
+| `GET` | `/api/workspaces/owned-shared` | List owned workspaces with other members |
 
 ### Share
 | Method | Endpoint | Description |
@@ -458,6 +460,12 @@ kamal rollback -c config/deploy.backend.yml
 | `POST` | `/api/templates/:id/use` | Create a new diagram from a template |
 | `PATCH` | `/api/templates/:id` | Update custom template (title, description, category) |
 | `DELETE` | `/api/templates/:id` | Delete custom template |
+| `POST` | `/api/templates/transfer-ownership` | Bulk transfer template ownership |
+
+### Diagrams — Transfer
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/diagrams/transfer-ownership` | Bulk transfer diagram ownership |
 
 ### Drive
 | Method | Endpoint | Description |

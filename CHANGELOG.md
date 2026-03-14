@@ -7,6 +7,12 @@ All notable changes to Drawhaus are documented here.
 ## v0.9.0 — Developer Templates & Diagram as Code (2026-03)
 
 ### Added
+- **Workspace ownership transfer** — owners can transfer workspace ownership to any admin member, with optional bulk transfer of diagrams and templates
+- **Diagram ownership transfer** — bulk transfer diagram ownership to another workspace member via `POST /api/diagrams/transfer-ownership`
+- **Template ownership transfer** — bulk transfer template ownership to another workspace member via `POST /api/templates/transfer-ownership`
+- **Delete account guard** — users who own shared workspaces must transfer ownership before deleting their account (409 Conflict with workspace list)
+- **Transfer Ownership UI** — new section in Workspace Settings with admin selector, resource transfer checkbox, and confirmation flow
+- **Owned Shared Workspaces endpoint** — `GET /api/workspaces/owned-shared` lists workspaces requiring transfer before account deletion
 - **Template system** — create new diagrams from built-in or custom templates
 - **7 built-in developer templates**: System Architecture, ER Diagram, Sequence Diagram, Sprint Retro Board, ADR Visual, API Flow, User Flow
 - **Custom templates** — save any diagram as a reusable template from the board sidebar
