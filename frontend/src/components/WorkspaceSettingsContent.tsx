@@ -35,6 +35,12 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
   const [inviting, setInviting] = useState(false);
   const [inviteStatus, setInviteStatus] = useState<string | null>(null);
 
+  // Transfer ownership state
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [transferTarget, setTransferTarget] = useState("");
+  const [transferResources, setTransferResources] = useState(true);
+  const [transferring, setTransferring] = useState(false);
+
   const loadData = useCallback(async () => {
     try {
       const data = await workspacesApi.get(workspaceId);
@@ -106,6 +112,30 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
       toast(isSelf ? "You left the workspace" : "Member removed");
       loadData();
     } catch { toast("Failed to remove member.", "error"); }
+  }
+
+  async function handleTransferOwnership() {
+    if (!transferTarget || !workspace) return;
+    const targetMember = members.find((m) => m.userId === transferTarget);
+    const ok = await confirm({
+      title: "Transfer Ownership",
+      message: `Transfer ownership of "${workspace.name}" to ${targetMember?.userName ?? "this member"}?${transferResources ? " Your diagrams and templates in this workspace will also be transferred." : ""} This action cannot be undone.`,
+      confirmLabel: "Transfer",
+      variant: "danger",
+    });
+    if (!ok) return;
+    setTransferring(true);
+    try {
+      const result = await workspacesApi.transferOwnership(workspaceId, transferTarget, transferResources);
+      const parts = ["Ownership transferred"];
+      if (result.diagramCount > 0) parts.push(`${result.diagramCount} diagram${result.diagramCount !== 1 ? "s" : ""}`);
+      if (result.templateCount > 0) parts.push(`${result.templateCount} template${result.templateCount !== 1 ? "s" : ""}`);
+      toast(parts.join(", "));
+      setShowTransfer(false);
+      onWorkspaceUpdated?.();
+      loadData();
+    } catch { toast("Failed to transfer ownership.", "error"); }
+    setTransferring(false);
   }
 
   async function handleDelete() {
@@ -268,6 +298,61 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
           ))}
         </div>
       </section>
+
+      {/* Transfer Ownership (owner only) */}
+      {user?.id === workspace.ownerId && !workspace.isPersonal && (
+        <section className="rounded-xl border border-border bg-surface-raised p-6">
+          <h2 className="mb-2 text-lg font-semibold text-text-primary">Transfer Ownership</h2>
+          <p className="mb-4 text-sm text-text-secondary">
+            Transfer this workspace to another admin. You will remain as an admin after the transfer.
+          </p>
+          {!showTransfer ? (
+            <button onClick={() => setShowTransfer(true)} className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface" type="button">
+              Transfer Ownership...
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-text-secondary">New Owner</label>
+                <select
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none"
+                  value={transferTarget}
+                  onChange={(e) => setTransferTarget(e.target.value)}
+                >
+                  <option value="">Select an admin...</option>
+                  {members
+                    .filter((m) => m.role === "admin" && m.userId !== user?.id)
+                    .map((m) => (
+                      <option key={m.userId} value={m.userId}>{m.userName} ({m.userEmail})</option>
+                    ))}
+                </select>
+              </div>
+              <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={transferResources}
+                  onChange={(e) => setTransferResources(e.target.checked)}
+                  className="rounded border-border"
+                />
+                Also transfer my diagrams and templates in this workspace
+              </label>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleTransferOwnership}
+                  disabled={!transferTarget || transferring}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-50"
+                  type="button"
+                >
+                  {transferring ? "Transferring..." : "Confirm Transfer"}
+                </button>
+                <button onClick={() => setShowTransfer(false)} className="rounded-lg border border-border px-4 py-2 text-sm text-text-secondary transition hover:bg-surface" type="button">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Danger Zone */}
       {isAdmin && !workspace.isPersonal && (

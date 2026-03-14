@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { authApi } from "@/api/auth";
+import { workspacesApi } from "@/api/workspaces";
 import { ui } from "@/lib/ui";
 import { AdminUsers } from "@/pages/AdminUsers";
 import { AdminSettings as AdminSiteSettings } from "@/pages/AdminSettings";
@@ -35,6 +36,7 @@ export function Settings() {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteStatus, setDeleteStatus] = useState<{ type: "error"; message: string } | null>(null);
   const [deletePending, setDeletePending] = useState(false);
+  const [ownedSharedWorkspaces, setOwnedSharedWorkspaces] = useState<{ id: string; name: string }[]>([]);
 
   function switchTab(tab: Tab) {
     setActiveTab(tab);
@@ -88,8 +90,18 @@ export function Settings() {
       await authApi.deleteAccount(deletePassword);
       navigate("/login");
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Account deletion failed";
-      setDeleteStatus({ type: "error", message: msg === "Unauthorized" ? "Password is incorrect" : msg });
+      const resp = err as { response?: { data?: { error?: string }; status?: number } };
+      const msg = resp?.response?.data?.error ?? "Account deletion failed";
+      if (resp?.response?.status === 409) {
+        // Conflict: user owns shared workspaces
+        try {
+          const data = await workspacesApi.listOwnedShared();
+          setOwnedSharedWorkspaces(data.workspaces);
+        } catch { /* ignore */ }
+        setDeleteStatus({ type: "error", message: "You must transfer ownership of your shared workspaces before deleting your account." });
+      } else {
+        setDeleteStatus({ type: "error", message: msg === "Unauthorized" ? "Password is incorrect" : msg });
+      }
     } finally {
       setDeletePending(false);
     }
@@ -234,6 +246,15 @@ export function Settings() {
                     <p className="text-sm font-medium text-danger">Enter your password to confirm account deletion:</p>
                     <input className={ui.input} type="password" placeholder="Your password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} required autoFocus />
                     {deleteStatus && <p className={ui.alertError}>{deleteStatus.message}</p>}
+                    {ownedSharedWorkspaces.length > 0 && (
+                      <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm text-text-secondary">
+                        <p className="font-medium text-warning mb-1">Workspaces that need ownership transfer:</p>
+                        <ul className="list-disc pl-4 space-y-0.5">
+                          {ownedSharedWorkspaces.map((ws) => <li key={ws.id}>{ws.name}</li>)}
+                        </ul>
+                        <p className="mt-2 text-xs">Go to each workspace's settings to transfer ownership before deleting your account.</p>
+                      </div>
+                    )}
                     <div className="flex gap-2">
                       <button type="submit" className={`${ui.btn} ${ui.btnDanger}`} disabled={deletePending}>{deletePending ? "Deleting..." : "Permanently Delete"}</button>
                       <button type="button" className={`${ui.btn} ${ui.btnSecondary}`} onClick={() => { setDeleteConfirmOpen(false); setDeletePassword(""); setDeleteStatus(null); }}>Cancel</button>

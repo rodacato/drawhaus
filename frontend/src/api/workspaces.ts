@@ -50,4 +50,10 @@ export const workspacesApi = {
 
   resolveInvite: (token: string) =>
     api.get(`/api/workspaces/invite/${token}`) as Promise<{ workspaceName: string; role: string; email: string }>,
+
+  transferOwnership: (id: string, newOwnerId: string, transferResources?: boolean) =>
+    api.post(`/api/workspaces/${id}/transfer-ownership`, { newOwnerId, transferResources }) as Promise<{ success: boolean; diagramCount: number; templateCount: number }>,
+
+  listOwnedShared: () =>
+    api.get("/api/workspaces/owned-shared") as Promise<{ workspaces: { id: string; name: string }[] }>,
 };
