@@ -60,7 +60,7 @@ function getClearCookieOptions() {
   const isProduction = config.nodeEnv === "production";
   return {
     httpOnly: true,
-    sameSite: isProduction ? "none" as const : "lax" as const,
+    sameSite: (isProduction && config.cookieDomain) ? "none" as const : "lax" as const,
     secure: isProduction,
     path: "/",
     ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),

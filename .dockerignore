@@ -1,0 +1,10 @@
+node_modules
+.git
+e2e
+*.md
+!README.md
+.env*
+!.env.example
+test-results
+playwright-report
+.devcontainer

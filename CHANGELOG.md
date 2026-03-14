@@ -7,6 +7,13 @@ All notable changes to Drawhaus are documented here.
 ## v0.9.0 — Developer Templates & Diagram as Code (2026-03)
 
 ### Added
+- **Self-hosted frontend deployment** — frontend now deploys as a Kamal service (nginx container) alongside the backend on the same server, removing the dependency on Cloudflare Pages. Both services deploy sequentially via GitHub Actions with the backend health check as a gate.
+- **Frontend production Dockerfile** — multi-stage build with nginx serving the SPA, gzip compression, and immutable cache headers for Vite hashed assets
+
+### Fixed
+- **Cookie `sameSite` policy** — production cookies now use `sameSite: "lax"` (more secure) for same-origin deployments; `"none"` is only used when `COOKIE_DOMAIN` is set (cross-subdomain setups)
+
+### Added (continued)
 - **Workspace ownership transfer** — owners can transfer workspace ownership to any admin member, with optional bulk transfer of diagrams and templates
 - **Diagram ownership transfer** — bulk transfer diagram ownership to another workspace member via `POST /api/diagrams/transfer-ownership`
 - **Template ownership transfer** — bulk transfer template ownership to another workspace member via `POST /api/templates/transfer-ownership`
