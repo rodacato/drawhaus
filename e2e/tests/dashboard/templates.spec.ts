@@ -50,13 +50,18 @@ test.describe("Dashboard — My Templates", () => {
     await page.locator("nav").getByText("My Templates").first().click({ force: true });
     await page.waitForTimeout(1000);
 
-    await expect(page.getByText("Dashboard E2E Template")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Dashboard E2E Template").first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("shows empty state when no templates exist", async ({ page, request }) => {
-    // Delete the test template first
-    if (templateId) {
-      await request.delete(`/api/templates/${templateId}`);
+    // Delete ALL templates (not just the one from this run — others may exist from prior runs)
+    const listRes = await request.get("/api/templates");
+    if (listRes.ok()) {
+      const body = await listRes.json();
+      const templates = body.templates ?? body;
+      for (const t of templates) {
+        await request.delete(`/api/templates/${t.id}`).catch(() => {});
+      }
     }
 
     await page.goto("/dashboard");

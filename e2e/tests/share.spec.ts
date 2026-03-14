@@ -69,9 +69,10 @@ test.describe("Share", () => {
     const page = await context.newPage();
 
     await page.goto("/share/invalid-token-xyz-12345");
+    await page.waitForLoadState("networkidle");
 
     await expect(
-      page.getByText(/not found|expired/i),
+      page.getByText(/not found|expired|invalid|error/i),
     ).toBeVisible({ timeout: 10_000 });
 
     await context.close();

@@ -28,6 +28,14 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         storageState: "tests/.auth/user.json",
+        launchOptions: {
+          args: [
+            "--disable-dev-shm-usage",
+            "--no-sandbox",
+            "--disable-extensions",
+            "--disable-background-timer-throttling",
+          ],
+        },
       },
       dependencies: ["setup"],
     },

@@ -49,6 +49,9 @@ setup("create test user and save auth state", async ({ page }) => {
 
   // Create domain-specific users and save their auth states
   for (const user of DOMAIN_USERS) {
+    // Small delay between users to avoid rate limiting
+    await page.waitForTimeout(1000);
+
     // Register user (ignore 409 if already exists)
     const registerRes = await page.request.post("/api/auth/register", {
       data: { name: user.name, email: user.email, password: user.password },
@@ -66,6 +69,8 @@ setup("create test user and save auth state", async ({ page }) => {
         });
       }
     }
+
+    await page.waitForTimeout(500);
 
     // Login as this user and save auth state
     const ctx = await playwrightRequest.newContext({

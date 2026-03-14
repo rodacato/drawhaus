@@ -1,0 +1,95 @@
+{
+  "diagrams": [
+    {
+      "title": "User Onboarding Flow",
+      "folder": "Product",
+      "elements": [
+        { "type": "rectangle", "id": "start", "x": 60, "y": 40, "width": 140, "height": 50, "strokeColor": "#1e1e1e", "backgroundColor": "#b2f2bb", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "start-l", "x": 85, "y": 52, "width": 90, "height": 25, "text": "Sign Up", "fontSize": 18, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "verify", "x": 280, "y": 40, "width": 160, "height": 50, "strokeColor": "#1e1e1e", "backgroundColor": "#a5d8ff", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "verify-l", "x": 300, "y": 52, "width": 120, "height": 25, "text": "Verify Email", "fontSize": 18, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "diamond", "id": "check", "x": 530, "y": 20, "width": 90, "height": 90, "strokeColor": "#1e1e1e", "backgroundColor": "#ffec99", "fillStyle": "solid", "strokeWidth": 2 },
+        { "type": "text", "id": "check-l", "x": 548, "y": 52, "width": 54, "height": 25, "text": "Valid?", "fontSize": 14, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "profile", "x": 700, "y": 40, "width": 150, "height": 50, "strokeColor": "#1e1e1e", "backgroundColor": "#d0bfff", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "profile-l", "x": 718, "y": 52, "width": 114, "height": 25, "text": "Set Profile", "fontSize": 18, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "done", "x": 700, "y": 160, "width": 150, "height": 50, "strokeColor": "#1e1e1e", "backgroundColor": "#b2f2bb", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "done-l", "x": 720, "y": 172, "width": 110, "height": 25, "text": "Dashboard", "fontSize": 18, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "arrow", "id": "a1", "x": 200, "y": 65, "width": 80, "height": 0, "points": [[0,0],[80,0]], "strokeColor": "#1e1e1e", "strokeWidth": 2, "endArrowhead": "arrow" },
+        { "type": "arrow", "id": "a2", "x": 440, "y": 65, "width": 90, "height": 0, "points": [[0,0],[90,0]], "strokeColor": "#1e1e1e", "strokeWidth": 2, "endArrowhead": "arrow" },
+        { "type": "arrow", "id": "a3", "x": 620, "y": 65, "width": 80, "height": 0, "points": [[0,0],[80,0]], "strokeColor": "#1e1e1e", "strokeWidth": 2, "endArrowhead": "arrow" },
+        { "type": "arrow", "id": "a4", "x": 775, "y": 90, "width": 0, "height": 70, "points": [[0,0],[0,70]], "strokeColor": "#1e1e1e", "strokeWidth": 2, "endArrowhead": "arrow" }
+      ]
+    },
+    {
+      "title": "Database Schema v3",
+      "folder": "Backend",
+      "elements": [
+        { "type": "rectangle", "id": "users-tbl", "x": 60, "y": 40, "width": 180, "height": 120, "strokeColor": "#1e1e1e", "backgroundColor": "#a5d8ff", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "users-h", "x": 100, "y": 50, "width": 100, "height": 25, "text": "users", "fontSize": 20, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "text", "id": "users-f", "x": 75, "y": 85, "width": 150, "height": 60, "text": "id UUID PK\nname TEXT\nemail TEXT\nrole TEXT", "fontSize": 12, "fontFamily": 3, "textAlign": "left", "strokeColor": "#495057" },
+        { "type": "rectangle", "id": "diag-tbl", "x": 340, "y": 40, "width": 180, "height": 120, "strokeColor": "#1e1e1e", "backgroundColor": "#b2f2bb", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "diag-h", "x": 374, "y": 50, "width": 112, "height": 25, "text": "diagrams", "fontSize": 20, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "text", "id": "diag-f", "x": 355, "y": 85, "width": 150, "height": 60, "text": "id UUID PK\ntitle TEXT\ncreator_id FK\nworkspace_id FK", "fontSize": 12, "fontFamily": 3, "textAlign": "left", "strokeColor": "#495057" },
+        { "type": "rectangle", "id": "ws-tbl", "x": 340, "y": 220, "width": 180, "height": 100, "strokeColor": "#1e1e1e", "backgroundColor": "#d0bfff", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "ws-h", "x": 368, "y": 230, "width": 124, "height": 25, "text": "workspaces", "fontSize": 20, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "text", "id": "ws-f", "x": 355, "y": 260, "width": 150, "height": 45, "text": "id UUID PK\nname TEXT\nowner_id FK", "fontSize": 12, "fontFamily": 3, "textAlign": "left", "strokeColor": "#495057" },
+        { "type": "arrow", "id": "fk1", "x": 240, "y": 100, "width": 100, "height": 0, "points": [[0,0],[100,0]], "strokeColor": "#e03131", "strokeWidth": 2, "endArrowhead": "arrow" },
+        { "type": "arrow", "id": "fk2", "x": 430, "y": 160, "width": 0, "height": 60, "points": [[0,0],[0,60]], "strokeColor": "#e03131", "strokeWidth": 2, "endArrowhead": "arrow" }
+      ]
+    },
+    {
+      "title": "Sprint Retro — March",
+      "folder": null,
+      "elements": [
+        { "type": "rectangle", "id": "good", "x": 40, "y": 40, "width": 220, "height": 200, "strokeColor": "#2f9e44", "backgroundColor": "#b2f2bb", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "good-h", "x": 100, "y": 50, "width": 100, "height": 30, "text": "Went Well", "fontSize": 20, "fontFamily": 1, "textAlign": "center", "strokeColor": "#2f9e44" },
+        { "type": "text", "id": "good-items", "x": 55, "y": 90, "width": 190, "height": 130, "text": "• Ship templates v1\n• E2E test coverage\n• Fast PR reviews\n• Team morale high", "fontSize": 14, "fontFamily": 1, "textAlign": "left", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "improve", "x": 300, "y": 40, "width": 220, "height": 200, "strokeColor": "#e8590c", "backgroundColor": "#ffec99", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "improve-h", "x": 350, "y": 50, "width": 120, "height": 30, "text": "To Improve", "fontSize": 20, "fontFamily": 1, "textAlign": "center", "strokeColor": "#e8590c" },
+        { "type": "text", "id": "improve-items", "x": 315, "y": 90, "width": 190, "height": 130, "text": "• Docs lagging\n• Flaky CI on weekends\n• Deploy process slow\n• Need more logging", "fontSize": 14, "fontFamily": 1, "textAlign": "left", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "actions", "x": 560, "y": 40, "width": 220, "height": 200, "strokeColor": "#1971c2", "backgroundColor": "#a5d8ff", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "actions-h", "x": 615, "y": 50, "width": 110, "height": 30, "text": "Actions", "fontSize": 20, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1971c2" },
+        { "type": "text", "id": "actions-items", "x": 575, "y": 90, "width": 190, "height": 130, "text": "• Write CHANGELOG\n• Fix CI cron schedule\n• Automate deploys\n• Add structured logs", "fontSize": 14, "fontFamily": 1, "textAlign": "left", "strokeColor": "#1e1e1e" }
+      ]
+    },
+    {
+      "title": "API Integration Map",
+      "folder": "Backend",
+      "elements": [
+        { "type": "rectangle", "id": "frontend", "x": 60, "y": 120, "width": 140, "height": 60, "strokeColor": "#1e1e1e", "backgroundColor": "#a5d8ff", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "frontend-l", "x": 88, "y": 138, "width": 84, "height": 25, "text": "Frontend", "fontSize": 18, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "api", "x": 320, "y": 120, "width": 140, "height": 60, "strokeColor": "#1e1e1e", "backgroundColor": "#b2f2bb", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "api-l", "x": 352, "y": 138, "width": 76, "height": 25, "text": "Express", "fontSize": 18, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "stripe", "x": 580, "y": 30, "width": 140, "height": 50, "strokeColor": "#1e1e1e", "backgroundColor": "#d0bfff", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "stripe-l", "x": 618, "y": 42, "width": 64, "height": 25, "text": "Stripe", "fontSize": 16, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "drive", "x": 580, "y": 120, "width": 140, "height": 50, "strokeColor": "#1e1e1e", "backgroundColor": "#ffec99", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "drive-l", "x": 600, "y": 132, "width": 100, "height": 25, "text": "Google Drive", "fontSize": 14, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "smtp", "x": 580, "y": 210, "width": 140, "height": 50, "strokeColor": "#1e1e1e", "backgroundColor": "#ffc9c9", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "text", "id": "smtp-l", "x": 622, "y": 222, "width": 56, "height": 25, "text": "SMTP", "fontSize": 16, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "arrow", "id": "a1", "x": 200, "y": 150, "width": 120, "height": 0, "points": [[0,0],[120,0]], "strokeColor": "#1e1e1e", "strokeWidth": 2, "endArrowhead": "arrow" },
+        { "type": "arrow", "id": "a2", "x": 460, "y": 135, "width": 120, "height": -80, "points": [[0,0],[120,-80]], "strokeColor": "#1e1e1e", "strokeWidth": 2, "endArrowhead": "arrow" },
+        { "type": "arrow", "id": "a3", "x": 460, "y": 150, "width": 120, "height": 0, "points": [[0,0],[120,0]], "strokeColor": "#1e1e1e", "strokeWidth": 2, "endArrowhead": "arrow" },
+        { "type": "arrow", "id": "a4", "x": 460, "y": 165, "width": 120, "height": 70, "points": [[0,0],[120,70]], "strokeColor": "#1e1e1e", "strokeWidth": 2, "endArrowhead": "arrow" }
+      ]
+    },
+    {
+      "title": "Mobile App Wireframes",
+      "folder": "Product",
+      "elements": [
+        { "type": "rectangle", "id": "phone1", "x": 60, "y": 30, "width": 160, "height": 280, "strokeColor": "#1e1e1e", "backgroundColor": "#f8f9fa", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "rectangle", "id": "header1", "x": 60, "y": 30, "width": 160, "height": 40, "strokeColor": "#1e1e1e", "backgroundColor": "#a5d8ff", "fillStyle": "solid", "strokeWidth": 1 },
+        { "type": "text", "id": "h1", "x": 100, "y": 40, "width": 80, "height": 20, "text": "Home", "fontSize": 16, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "card1", "x": 72, "y": 85, "width": 136, "height": 50, "strokeColor": "#dee2e6", "backgroundColor": "#ffffff", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 1 },
+        { "type": "rectangle", "id": "card2", "x": 72, "y": 145, "width": 136, "height": 50, "strokeColor": "#dee2e6", "backgroundColor": "#ffffff", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 1 },
+        { "type": "rectangle", "id": "card3", "x": 72, "y": 205, "width": 136, "height": 50, "strokeColor": "#dee2e6", "backgroundColor": "#ffffff", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 1 },
+        { "type": "rectangle", "id": "phone2", "x": 300, "y": 30, "width": 160, "height": 280, "strokeColor": "#1e1e1e", "backgroundColor": "#f8f9fa", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 2 },
+        { "type": "rectangle", "id": "header2", "x": 300, "y": 30, "width": 160, "height": 40, "strokeColor": "#1e1e1e", "backgroundColor": "#b2f2bb", "fillStyle": "solid", "strokeWidth": 1 },
+        { "type": "text", "id": "h2", "x": 335, "y": 40, "width": 90, "height": 20, "text": "Detail", "fontSize": 16, "fontFamily": 1, "textAlign": "center", "strokeColor": "#1e1e1e" },
+        { "type": "rectangle", "id": "img-placeholder", "x": 312, "y": 85, "width": 136, "height": 80, "strokeColor": "#dee2e6", "backgroundColor": "#e9ecef", "fillStyle": "solid", "strokeWidth": 1 },
+        { "type": "rectangle", "id": "btn", "x": 330, "y": 250, "width": 100, "height": 35, "strokeColor": "#1e1e1e", "backgroundColor": "#4263eb", "fillStyle": "solid", "roundness": { "type": 3 }, "strokeWidth": 1 },
+        { "type": "text", "id": "btn-l", "x": 350, "y": 257, "width": 60, "height": 20, "text": "Action", "fontSize": 14, "fontFamily": 1, "textAlign": "center", "strokeColor": "#ffffff" },
+        { "type": "arrow", "id": "nav", "x": 220, "y": 170, "width": 80, "height": 0, "points": [[0,0],[80,0]], "strokeColor": "#4263eb", "strokeWidth": 2, "strokeStyle": "dashed", "endArrowhead": "arrow" }
+      ]
+    }
+  ]
+}

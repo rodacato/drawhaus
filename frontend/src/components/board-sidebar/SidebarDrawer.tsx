@@ -43,7 +43,7 @@ export function SidebarDrawer({ open, onClose, width = 300, children }: SidebarD
   return (
     <div
       ref={ref}
-      className="h-full overflow-y-auto border-r border-gray-200 bg-white transition-[width] duration-200 ease-out"
+      className="relative z-20 h-full overflow-y-auto border-r border-gray-200 bg-white shadow-lg transition-[width] duration-200 ease-out"
       style={{ width: open ? width : 0 }}
     >
       <div className="p-4" style={{ width }}>

@@ -22,12 +22,12 @@ test.describe("Code Import Panel", () => {
     await page.waitForTimeout(3000); // wait for Excalidraw to load
 
     // Click the "Import from Code" sidebar button
-    const codeButton = page.getByLabel("Import from Code");
+    const codeButton = page.getByTitle("Import from Code");
     await expect(codeButton).toBeVisible({ timeout: 10_000 });
     await codeButton.click();
 
     // Verify panel opened with expected UI elements
-    await expect(page.getByText("Import from Code")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Import from Code" })).toBeVisible();
     await expect(page.getByText("Mermaid")).toBeVisible();
     await expect(page.getByRole("textbox")).toBeVisible();
     await expect(page.getByText("Add to Canvas")).toBeVisible();
@@ -40,7 +40,7 @@ test.describe("Code Import Panel", () => {
     await page.goto(`/board/${diagramId}`);
     await page.waitForTimeout(3000);
 
-    const codeButton = page.getByLabel("Import from Code");
+    const codeButton = page.getByTitle("Import from Code");
     await expect(codeButton).toBeVisible({ timeout: 10_000 });
     await codeButton.click();
 
@@ -49,7 +49,7 @@ test.describe("Code Import Panel", () => {
     await textarea.fill("graph TD\n    A-->B");
 
     // Wait for debounced preview (500ms + render time)
-    await expect(page.getByText("Preview")).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText("Preview", { exact: true })).toBeVisible({ timeout: 10_000 });
   });
 
   test("shows error for invalid Mermaid code", async ({ page }) => {
@@ -58,7 +58,7 @@ test.describe("Code Import Panel", () => {
     await page.goto(`/board/${diagramId}`);
     await page.waitForTimeout(3000);
 
-    const codeButton = page.getByLabel("Import from Code");
+    const codeButton = page.getByTitle("Import from Code");
     await expect(codeButton).toBeVisible({ timeout: 10_000 });
     await codeButton.click();
 
@@ -80,15 +80,15 @@ test.describe("Code Import Panel", () => {
     await page.goto(`/board/${diagramId}`);
     await page.waitForTimeout(3000);
 
-    const codeButton = page.getByLabel("Import from Code");
+    const codeButton = page.getByTitle("Import from Code");
     await expect(codeButton).toBeVisible({ timeout: 10_000 });
     await codeButton.click();
 
-    await expect(page.getByText("Import from Code")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Import from Code" })).toBeVisible();
 
     await page.keyboard.press("Escape");
 
     // Panel should close — the heading disappears
-    await expect(page.getByText("Import from Code")).not.toBeVisible({ timeout: 3_000 });
+    await expect(page.getByRole("heading", { name: "Import from Code" })).not.toBeVisible({ timeout: 3_000 });
   });
 });

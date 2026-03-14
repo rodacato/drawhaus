@@ -26,12 +26,15 @@ All notable changes to Drawhaus are documented here.
 - **Sidebar UX redesign** — buttons reorganized into semantic groups (Create & Import, View & Collaborate, Save, Navigation)
 
 ### Improved
+- **Marketing screenshots** — automated Playwright script generates 7 screenshots (hero, dashboard, admin, code-import, templates, share, collab) with demo data, fake cursors, and proper auth contexts
+- **Landing page redesign** — stacked screenshots showing code import + template picker in the Developer section; realistic screenshots with populated dashboards and thumbnails
 - **Axios type safety** — module augmentation for AxiosInstance reflecting the response.data interceptor, resolving all pre-existing type errors across the frontend
 - **Excalidraw UI cleanup** — hidden redundant canvas actions (library, export, save-as-image, load scene, save-to-file)
 
 ### Fixed
 - **SceneTabBar restored** — floating tab bar for scene switching was accidentally removed in a prior refactor; now back at bottom-left of canvas
 - **Template listing bug** — `findByCreator()` excluded workspace-associated templates due to `AND workspace_id IS NULL` filter; templates now visible regardless of workspace association
+- **E2E test fixes** — code-import tests use `getByTitle` (not `getByLabel`), templates strict mode violation, share error text matching, admin redirect URL, preview strict mode with exact match
 
 ---
 

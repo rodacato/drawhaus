@@ -15,10 +15,7 @@
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
     "typecheck": "npm run typecheck --workspace=frontend && npm run typecheck --workspace=backend",
     "db:seed": "npm run db:seed --workspace=backend",
-    "db:reset": "npm run db:reset --workspace=backend",
-    "test:e2e": "npm test --workspace=e2e",
-    "test:e2e:ui": "npm run test:ui --workspace=e2e",
-    "test:e2e:headed": "npm run test:headed --workspace=e2e"
+    "db:reset": "npm run db:reset --workspace=backend"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"

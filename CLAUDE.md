@@ -26,11 +26,18 @@ When making changes that affect any of the following, update the corresponding d
 ```bash
 npm run dev              # Start frontend + backend
 npm test --workspace=backend  # Backend tests
-npm run test:e2e         # Playwright e2e (needs running services)
 npm run lint             # Lint all workspaces
 npm run typecheck        # Type-check all workspaces
 npm run db:seed          # Seed test data
 npm run db:reset         # Drop + recreate + seed
 npm run db:backup --workspace=backend   # On-demand backup
 npm run db:restore --workspace=backend -- latest  # Restore latest backup
+
+# Playwright (run from e2e/ directory)
+cd e2e
+npm test                 # Run all e2e tests
+npm run test:headed      # Run with browser visible
+npm run test:ui          # Open Playwright UI
+npm run test:debug       # Debug mode
+npm run test:update-snapshots  # Update visual snapshots
 ```

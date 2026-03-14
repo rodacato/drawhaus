@@ -143,8 +143,8 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `npm run lint` | Lint all workspaces |
 | `npm run typecheck` | Type-check all workspaces |
 | `npm test --workspace=backend` | Run backend unit & integration tests |
-| `npm run test:e2e` | Run Playwright end-to-end tests (requires running backend + frontend + PG) |
-| `npm run test:e2e:ui` | Open Playwright test runner UI |
+| `cd e2e && npm test` | Run Playwright end-to-end tests (requires running backend + frontend + PG) |
+| `cd e2e && npm run test:ui` | Open Playwright test runner UI |
 | `npm run db:seed` | Seed database with test data |
 | `npm run db:reset` | Drop all tables, recreate schema, and seed |
 | `npm run db:backup --workspace=backend` | Create an on-demand database backup |
@@ -532,11 +532,12 @@ docker compose up -d
 # Option B: Start services manually
 npm run dev  # in one terminal
 
-# Then run the tests
-npm run test:e2e
+# Then run the tests (from e2e/ directory)
+cd e2e
+npm test
 
 # Or open the Playwright UI
-npm run test:e2e:ui
+npm run test:ui
 ```
 
 > **Note:** The first run installs Playwright browsers automatically. Tests create their own test users via the global setup.

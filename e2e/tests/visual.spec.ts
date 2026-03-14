@@ -175,7 +175,7 @@ test.describe("Visual Regression", () => {
   });
 
   test("admin panel - users", async ({ page }) => {
-    await page.goto("/admin");
+    await page.goto("/settings?tab=admin-users");
     await page.waitForLoadState("networkidle");
     await stabilizePage(page);
 
