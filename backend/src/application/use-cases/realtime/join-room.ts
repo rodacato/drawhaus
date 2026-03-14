@@ -24,8 +24,7 @@ export class JoinRoomUseCase {
     const user = await this.sessions.findUserByToken(sessionToken);
     if (!user) throw new UnauthorizedError();
 
-    const role = await this.diagrams.findAccessRole(roomId, user.id);
-    requireAccess(role);
+    const role = requireAccess(await this.diagrams.findAccessRole(roomId, user.id));
 
     let scenes = await this.scenes.findByDiagram(roomId);
 
