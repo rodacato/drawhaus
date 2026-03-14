@@ -10,7 +10,6 @@ export const INTEGRATION_KEYS = [
   "GOOGLE_REDIRECT_URI",
   "RESEND_API_KEY",
   "FROM_EMAIL",
-  "HONEYBADGER_API_KEY",
 ] as const;
 
 export type IntegrationKey = (typeof INTEGRATION_KEYS)[number];

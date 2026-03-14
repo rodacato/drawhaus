@@ -15,7 +15,6 @@ const LABELS: Record<string, { label: string; group: string }> = {
   GOOGLE_REDIRECT_URI: { label: "Redirect URI", group: "Google OAuth" },
   RESEND_API_KEY: { label: "API Key", group: "Email (Resend)" },
   FROM_EMAIL: { label: "From Address", group: "Email (Resend)" },
-  HONEYBADGER_API_KEY: { label: "API Key", group: "Error Monitoring" },
 };
 
 export function IntegrationSecretsPanel() {
