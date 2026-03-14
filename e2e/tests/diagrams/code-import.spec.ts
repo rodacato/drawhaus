@@ -29,6 +29,7 @@ test.describe("Code Import Panel", () => {
     // Verify panel opened with expected UI elements
     await expect(page.getByRole("heading", { name: "Import from Code" })).toBeVisible();
     await expect(page.getByText("Mermaid")).toBeVisible();
+    await expect(page.getByText("PlantUML")).toBeVisible();
     await expect(page.getByRole("textbox")).toBeVisible();
     await expect(page.getByText("Add to Canvas")).toBeVisible();
     await expect(page.getByText("Replace existing elements")).toBeVisible();
