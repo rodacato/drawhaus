@@ -130,6 +130,13 @@ Everything below is shipped and working in production.
 - Category filtering (Architecture, Database, Agile, Process, My Templates)
 - Usage count tracking per template
 
+### Diagram as Code — Mermaid Live Import (v0.9)
+- "Import from Code" panel in board sidebar (same pattern as Export/Share/Template panels)
+- Paste Mermaid code → live SVG preview (debounced) → "Add to canvas" inserts editable Excalidraw elements
+- Supports all Mermaid diagram types (flowchart, sequence, class, state, etc.)
+- Replace toggle to replace existing elements or append
+- Zero backend changes — fully client-side using `@excalidraw/mermaid-to-excalidraw` + `convertToExcalidrawElements()`
+
 ---
 
 ## What's Next
@@ -156,7 +163,7 @@ Everything below is shipped and working in production.
 | 14 | MCP server | Expose Drawhaus to AI agents for automated diagram creation | M |
 | 15 | Public API | REST API for external integrations and automation | M |
 | 17 | @mention in comments | User search + notification system | M |
-| 18 | Diagram as Code | Import/export Mermaid, D2, PlantUML — bidirectional text-to-canvas | M |
+| 18 | Diagram as Code — PlantUML | PlantUML live import with custom converter (class, sequence, activity diagrams) | M |
 | 19 | Webhooks | Notify external systems on diagram changes (CI/CD, Slack, docs rebuild) | S |
 | 20 | CLI tool | `drawhaus create`, `drawhaus export`, `drawhaus import` from terminal | M |
 | 21 | Link previews (OpenGraph) | Thumbnail preview when pasting Drawhaus links in Slack/Discord/GitHub | S |

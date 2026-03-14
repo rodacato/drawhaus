@@ -4,7 +4,7 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
-## v0.9.0 — Developer Templates (2026-03)
+## v0.9.0 — Developer Templates & Diagram as Code (2026-03)
 
 ### Added
 - **Template system** — create new diagrams from built-in or custom templates
@@ -13,6 +13,7 @@ All notable changes to Drawhaus are documented here.
 - **Template Picker modal** — replaces blank "New Diagram" flow with categorized template selection (Architecture, Database, Agile, Process)
 - **Template API** — full CRUD for custom templates plus `POST /api/templates/:id/use` to create diagrams from templates
 - **Usage tracking** — templates track how many times they've been used
+- **Diagram as Code — Mermaid Live Import** — "Import from Code" panel in the board sidebar. Paste Mermaid code, see a live SVG preview, and add editable Excalidraw elements to the canvas. Supports flowcharts, sequence diagrams, class diagrams, and all Mermaid diagram types.
 
 ---
 
