@@ -4,22 +4,13 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
-## v0.9.0 — Developer Templates & Diagram as Code (2026-03)
+## v0.9.0 — Templates, Diagram as Code & Self-Hosted Frontend (2026-03)
 
 ### Added
-- **Self-hosted frontend deployment** — frontend now deploys as a Kamal service (nginx container) alongside the backend on the same server, removing the dependency on Cloudflare Pages. Both services deploy sequentially via GitHub Actions with the backend health check as a gate.
+- **Self-hosted frontend deployment** — frontend deploys as a Kamal service (nginx container) alongside the backend on the same server, removing the dependency on Cloudflare Pages. Both services deploy sequentially via GitHub Actions with the backend health check as a gate
 - **Frontend production Dockerfile** — multi-stage build with nginx serving the SPA, gzip compression, and immutable cache headers for Vite hashed assets
-
-### Fixed
-- **Cookie `sameSite` policy** — production cookies now use `sameSite: "lax"` (more secure) for same-origin deployments; `"none"` is only used when `COOKIE_DOMAIN` is set (cross-subdomain setups)
-
-### Added (continued)
-- **Workspace ownership transfer** — owners can transfer workspace ownership to any admin member, with optional bulk transfer of diagrams and templates
-- **Diagram ownership transfer** — bulk transfer diagram ownership to another workspace member via `POST /api/diagrams/transfer-ownership`
-- **Template ownership transfer** — bulk transfer template ownership to another workspace member via `POST /api/templates/transfer-ownership`
-- **Delete account guard** — users who own shared workspaces must transfer ownership before deleting their account (409 Conflict with workspace list)
-- **Transfer Ownership UI** — new section in Workspace Settings with admin selector, resource transfer checkbox, and confirmation flow
-- **Owned Shared Workspaces endpoint** — `GET /api/workspaces/owned-shared` lists workspaces requiring transfer before account deletion
+- **PlantUML class diagram import** — parse PlantUML class diagrams and convert to editable Excalidraw elements on the canvas
+- **Diagram as Code — Mermaid Live Import** — "Import from Code" panel in the board sidebar. Paste Mermaid code, see a live SVG preview, and add editable Excalidraw elements to the canvas. Supports flowcharts, sequence diagrams, class diagrams, and all Mermaid diagram types
 - **Template system** — create new diagrams from built-in or custom templates
 - **7 built-in developer templates**: System Architecture, ER Diagram, Sequence Diagram, Sprint Retro Board, ADR Visual, API Flow, User Flow
 - **Custom templates** — save any diagram as a reusable template from the board sidebar
@@ -28,20 +19,25 @@ All notable changes to Drawhaus are documented here.
 - **Usage tracking** — templates track how many times they've been used
 - **My Templates dashboard view** — dedicated "My Templates" nav item in dashboard sidebar with grid of template cards (thumbnail, category badge, scope label, usage count, inline rename, delete, use)
 - **Workspace template sharing** — "Share with [Workspace Name]" checkbox when saving templates; scope badge shows workspace name in My Templates view
-- **Diagram as Code — Mermaid Live Import** — "Import from Code" panel in the board sidebar. Paste Mermaid code, see a live SVG preview, and add editable Excalidraw elements to the canvas. Supports flowcharts, sequence diagrams, class diagrams, and all Mermaid diagram types.
+- **Workspace ownership transfer** — owners can transfer workspace ownership to any admin member, with optional bulk transfer of diagrams and templates
+- **Diagram ownership transfer** — bulk transfer diagram ownership to another workspace member via `POST /api/diagrams/transfer-ownership`
+- **Template ownership transfer** — bulk transfer template ownership to another workspace member via `POST /api/templates/transfer-ownership`
+- **Delete account guard** — users who own shared workspaces must transfer ownership before deleting their account (409 Conflict with workspace list)
+- **Transfer Ownership UI** — new section in Workspace Settings with admin selector, resource transfer checkbox, and confirmation flow
 - **Reusable SidebarDrawer** — extracted inline drawer component with outside-click/Escape handling and dynamic width per panel type
 - **Sidebar UX redesign** — buttons reorganized into semantic groups (Create & Import, View & Collaborate, Save, Navigation)
+- **Docker-in-Docker devcontainer feature** — enables running Kamal deploy commands from the devcontainer
 
 ### Improved
-- **Marketing screenshots** — automated Playwright script generates 7 screenshots (hero, dashboard, admin, code-import, templates, share, collab) with demo data, fake cursors, and proper auth contexts
 - **Landing page redesign** — stacked screenshots showing code import + template picker in the Developer section; realistic screenshots with populated dashboards and thumbnails
-- **Axios type safety** — module augmentation for AxiosInstance reflecting the response.data interceptor, resolving all pre-existing type errors across the frontend
+- **Marketing screenshots** — automated Playwright script generates 7 screenshots (hero, dashboard, admin, code-import, templates, share, collab) with demo data, fake cursors, and proper auth contexts
 - **Excalidraw UI cleanup** — hidden redundant canvas actions (library, export, save-as-image, load scene, save-to-file)
 
 ### Fixed
+- **Cookie `sameSite` policy** — production cookies now use `sameSite: "lax"` (more secure) for same-origin deployments; `"none"` is only used when `COOKIE_DOMAIN` is set (cross-subdomain setups)
 - **SceneTabBar restored** — floating tab bar for scene switching was accidentally removed in a prior refactor; now back at bottom-left of canvas
 - **Template listing bug** — `findByCreator()` excluded workspace-associated templates due to `AND workspace_id IS NULL` filter; templates now visible regardless of workspace association
-- **E2E test fixes** — code-import tests use `getByTitle` (not `getByLabel`), templates strict mode violation, share error text matching, admin redirect URL, preview strict mode with exact match
+- **TypeScript build errors** — resolved type errors for Docker production builds
 
 ---
 
