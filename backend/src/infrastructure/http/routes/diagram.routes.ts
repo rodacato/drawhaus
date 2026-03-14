@@ -9,6 +9,7 @@ import type { DeleteDiagramUseCase } from "../../../application/use-cases/diagra
 import type { UpdateThumbnailUseCase } from "../../../application/use-cases/diagrams/update-thumbnail";
 import type { ToggleStarUseCase } from "../../../application/use-cases/diagrams/toggle-star";
 import type { DuplicateDiagramUseCase } from "../../../application/use-cases/diagrams/duplicate-diagram";
+import type { TransferDiagramOwnershipUseCase } from "../../../application/use-cases/diagrams/transfer-ownership";
 import type { MoveDiagramUseCase } from "../../../application/use-cases/folders/move-diagram";
 import { asyncRoute } from "../middleware/async-handler";
 import { validate } from "../middleware/validate";
@@ -67,6 +68,7 @@ export function createDiagramRoutes(
     toggleStar: ToggleStarUseCase;
     duplicate: DuplicateDiagramUseCase;
     move: MoveDiagramUseCase;
+    transferOwnership: TransferDiagramOwnershipUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
   tagRepo?: TagRepository,
@@ -150,6 +152,17 @@ export function createDiagramRoutes(
 
   router.delete("/:id", asyncRoute(async (req, res) => {
     await useCases.delete.execute(String(req.params.id), req.authUser.id);
+    return res.json({ success: true });
+  }));
+
+  // Transfer ownership (bulk)
+  const transferSchema = z.object({
+    diagramIds: z.array(z.string().uuid()).min(1),
+    newOwnerId: z.string().uuid(),
+  });
+
+  router.post("/transfer-ownership", validate(transferSchema), asyncRoute(async (req, res) => {
+    await useCases.transferOwnership.execute(req.body.diagramIds, req.authUser.id, req.body.newOwnerId);
     return res.json({ success: true });
   }));
 

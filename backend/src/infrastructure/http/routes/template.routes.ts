@@ -6,6 +6,7 @@ import type { ListTemplatesUseCase } from "../../../application/use-cases/templa
 import type { UpdateTemplateUseCase } from "../../../application/use-cases/templates/update-template";
 import type { DeleteTemplateUseCase } from "../../../application/use-cases/templates/delete-template";
 import type { UseTemplateUseCase } from "../../../application/use-cases/templates/use-template";
+import type { TransferTemplateOwnershipUseCase } from "../../../application/use-cases/templates/transfer-ownership";
 import { asyncRoute } from "../middleware/async-handler";
 import { validate } from "../middleware/validate";
 import type { Template } from "../../../domain/entities/template";
@@ -63,6 +64,7 @@ export function createTemplateRoutes(
     update: UpdateTemplateUseCase;
     delete: DeleteTemplateUseCase;
     use: UseTemplateUseCase;
+    transferOwnership: TransferTemplateOwnershipUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
 ) {
@@ -127,6 +129,17 @@ export function createTemplateRoutes(
   // Delete custom template
   router.delete("/:id", asyncRoute(async (req, res) => {
     await useCases.delete.execute(String(req.params.id), req.authUser.id);
+    return res.json({ success: true });
+  }));
+
+  // Transfer ownership (bulk)
+  const transferSchema = z.object({
+    templateIds: z.array(z.string().uuid()).min(1),
+    newCreatorId: z.string().uuid(),
+  });
+
+  router.post("/transfer-ownership", validate(transferSchema), asyncRoute(async (req, res) => {
+    await useCases.transferOwnership.execute(req.body.templateIds, req.authUser.id, req.body.newCreatorId);
     return res.json({ success: true });
   }));
 

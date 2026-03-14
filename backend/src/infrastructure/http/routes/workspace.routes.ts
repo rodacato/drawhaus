@@ -9,6 +9,7 @@ import type { AddWorkspaceMemberUseCase, UpdateWorkspaceMemberRoleUseCase, Remov
 import type { InviteToWorkspaceUseCase } from "../../../application/use-cases/workspaces/invite-to-workspace";
 import type { AcceptWorkspaceInviteUseCase } from "../../../application/use-cases/workspaces/accept-workspace-invite";
 import type { EnsurePersonalWorkspaceUseCase } from "../../../application/use-cases/workspaces/ensure-personal-workspace";
+import type { TransferWorkspaceOwnershipUseCase } from "../../../application/use-cases/workspaces/transfer-ownership";
 import { asyncRoute } from "../middleware/async-handler";
 import { validate } from "../middleware/validate";
 
@@ -48,6 +49,7 @@ export function createWorkspaceRoutes(
     invite: InviteToWorkspaceUseCase;
     acceptInvite: AcceptWorkspaceInviteUseCase;
     ensurePersonal: EnsurePersonalWorkspaceUseCase;
+    transferOwnership: TransferWorkspaceOwnershipUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
 ) {
@@ -94,6 +96,18 @@ export function createWorkspaceRoutes(
     return res.status(201).json({ workspace });
   }));
 
+  // Must be before /:id to avoid "owned-shared" being parsed as UUID
+  router.get("/owned-shared", asyncRoute(async (req, res) => {
+    const { pool } = await import("../../db");
+    const { rows } = await pool.query(
+      `SELECT w.id, w.name FROM workspaces w
+       WHERE w.owner_id = $1 AND w.is_personal = false
+       AND (SELECT COUNT(*) FROM workspace_members wm WHERE wm.workspace_id = w.id) > 1`,
+      [req.authUser.id],
+    );
+    return res.json({ workspaces: rows });
+  }));
+
   router.get("/:id", asyncRoute(async (req, res) => {
     const result = await useCases.get.execute(String(req.params.id), req.authUser.id);
     return res.json(result);
@@ -129,6 +143,22 @@ export function createWorkspaceRoutes(
   router.delete("/:id/members/:userId", asyncRoute(async (req, res) => {
     await useCases.removeMember.execute(String(req.params.id), req.authUser.id, String(req.params.userId));
     return res.json({ success: true });
+  }));
+
+  // Transfer ownership
+  const transferSchema = z.object({
+    newOwnerId: z.string().uuid(),
+    transferResources: z.boolean().optional(),
+  });
+
+  router.post("/:id/transfer-ownership", validate(transferSchema), asyncRoute(async (req, res) => {
+    const result = await useCases.transferOwnership.execute(
+      String(req.params.id),
+      req.authUser.id,
+      req.body.newOwnerId,
+      req.body.transferResources,
+    );
+    return res.json({ success: true, ...result });
   }));
 
   return router;
