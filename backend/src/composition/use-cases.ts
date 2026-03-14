@@ -100,6 +100,11 @@ import { UpdateTemplateUseCase } from "../application/use-cases/templates/update
 import { DeleteTemplateUseCase } from "../application/use-cases/templates/delete-template";
 import { UseTemplateUseCase } from "../application/use-cases/templates/use-template";
 
+// --- Ownership Transfer ---
+import { TransferWorkspaceOwnershipUseCase } from "../application/use-cases/workspaces/transfer-ownership";
+import { TransferDiagramOwnershipUseCase } from "../application/use-cases/diagrams/transfer-ownership";
+import { TransferTemplateOwnershipUseCase } from "../application/use-cases/templates/transfer-ownership";
+
 import type { Repositories } from "./repositories";
 import type { Services } from "./services";
 
@@ -114,7 +119,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   const acceptInvite = new AcceptInviteUseCase(repos.userRepo, repos.sessionRepo, repos.invitationRepo, services.hasher);
   const forgotPassword = new ForgotPasswordUseCase(repos.userRepo, repos.passwordResetRepo, services.emailService);
   const resetPassword = new ResetPasswordUseCase(repos.userRepo, repos.sessionRepo, repos.passwordResetRepo, services.hasher);
-  const deleteAccount = new DeleteAccountUseCase(repos.userRepo, services.hasher, services.auditLogger);
+  const deleteAccount = new DeleteAccountUseCase(repos.userRepo, services.hasher, services.auditLogger, repos.workspaceRepo);
   const googleAuth = new GoogleAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo);
 
   // Diagrams
@@ -208,6 +213,11 @@ export function createUseCases(repos: Repositories, services: Services) {
   const deleteTemplate = new DeleteTemplateUseCase(repos.templateRepo);
   const useTemplate = new UseTemplateUseCase(repos.templateRepo, repos.diagramRepo);
 
+  // Ownership Transfer
+  const transferWorkspaceOwnership = new TransferWorkspaceOwnershipUseCase(repos.workspaceRepo, repos.diagramRepo, repos.templateRepo, services.auditLogger);
+  const transferDiagramOwnership = new TransferDiagramOwnershipUseCase(repos.diagramRepo, repos.workspaceRepo, services.auditLogger);
+  const transferTemplateOwnership = new TransferTemplateOwnershipUseCase(repos.templateRepo, repos.workspaceRepo, services.auditLogger);
+
   return {
     // auth
     register, login, logout, getCurrentUser, updateProfile, changePassword,
@@ -237,6 +247,8 @@ export function createUseCases(repos: Repositories, services: Services) {
     syncToDrive, exportToDrive, getDriveStatus, toggleDriveBackup, disconnectDrive, listDriveFiles, importFromDrive,
     // templates
     createTemplate, getTemplate, listTemplates, updateTemplate, deleteTemplate, useTemplate,
+    // ownership transfer
+    transferWorkspaceOwnership, transferDiagramOwnership, transferTemplateOwnership,
   };
 }
 
