@@ -12,6 +12,8 @@
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
     "axios": "^1.13.6",
+    "dagre": "^0.8.5",
+    "dompurify": "^3.3.3",
     "react": "^18",
     "react-dom": "^18",
     "react-error-boundary": "^6.1.1",
@@ -21,6 +23,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.1",
+    "@types/dagre": "^0.7.54",
+    "@types/dompurify": "^3.0.5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -28,6 +32,7 @@
     "@typescript-eslint/parser": "^7",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^8",
+    "peggy": "^5.1.0",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
     "typescript": "^5",
