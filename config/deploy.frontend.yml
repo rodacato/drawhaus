@@ -1,0 +1,44 @@
+service: drawhaus-frontend
+
+image: ghcr.io/rodacato/drawhaus-frontend
+
+ssh:
+  user: deploy
+
+servers:
+  web:
+    hosts:
+      - <%= ENV["HOST_IP"] %>
+
+proxy:
+  ssl: false
+  host: drawhaus.notdefined.dev
+  app_port: 80
+  healthcheck:
+    interval: 10
+    path: /
+    timeout: 5
+
+registry:
+  server: ghcr.io
+  username: rodacato
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  context: frontend/
+  dockerfile: frontend/Dockerfile
+  target: production
+  arch: amd64
+  args:
+    VITE_API_URL: <%= ENV["VITE_API_URL"] %>
+    VITE_WS_URL: <%= ENV["VITE_WS_URL"] %>
+    VITE_GOOGLE_API_KEY: <%= ENV["VITE_GOOGLE_API_KEY"] %>
+  cache:
+    type: gha
+
+logging:
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"

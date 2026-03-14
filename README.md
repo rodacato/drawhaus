@@ -191,7 +191,7 @@ drawhaus/
 | Backend | Express + Socket.IO + Zod |
 | Database | PostgreSQL 16 |
 | Email | Resend (transactional) |
-| Deployment | Kamal + Cloudflare Tunnel |
+| Deployment | Kamal (backend + frontend) |
 | CI | GitHub Actions |
 | Monitoring | Honeybadger |
 
@@ -199,36 +199,33 @@ drawhaus/
 
 ## Deployment
 
-Drawhaus uses a split deployment model:
+Drawhaus is fully self-hosted — both frontend and backend deploy to your server via **Kamal**:
 
-- **Frontend** — Static SPA on **Cloudflare Pages** (auto-deploys from Git)
-- **Backend** — Docker container on your server via **Kamal** (deploys via GitHub Actions)
+- **Frontend** — Nginx container serving the static SPA (deployed via Kamal)
+- **Backend** — Express + Socket.IO container (deployed via Kamal)
 - **Database** — PostgreSQL on the same server (managed as a Kamal accessory)
 
 ### Architecture
 
 ```
-          ┌──────────────────────────────────────────┐
-          │            Cloudflare Network             │
-          │                                          │
-          │   Cloudflare Pages    Cloudflare Tunnel  │
-          │   (static SPA)        (secure proxy)     │
-          └──────┬───────────────────┬───────────────┘
-                 │                   │
-          draw.yourdomain.com   api.yourdomain.com
-                 │                   │
-          React + Vite         Kamal Proxy (Thruster)
-          (CDN-served)               │
-                               Express + Socket.IO
-                                     │
-                                 PostgreSQL
+       yourdomain.com         api.yourdomain.com
+              │                       │
+              ▼                       ▼
+        ┌───────────────────────────────────┐
+        │          Kamal Proxy              │
+        │    (routes by host header)        │
+        └──────┬──────────────┬─────────────┘
+               │              │
+          Nginx (SPA)    Express + Socket.IO
+          :80                 :4000
+                              │
+                          PostgreSQL
 ```
 
 ### Prerequisites
 
 - A VPS or dedicated server with Docker installed
-- A domain name with DNS managed by Cloudflare
-- A Cloudflare account (free tier works)
+- A domain name (any DNS provider works)
 - A GitHub account (for GHCR container registry)
 
 ### Step 1: Backend setup
@@ -240,7 +237,7 @@ Drawhaus uses a split deployment model:
    usermod -aG docker deploy
    ```
 
-2. **Configure GitHub Actions secrets** — see the [GitHub Actions secrets](#github-actions-secrets) table below. Kamal reads these from the CI environment during deploy.
+2. **Configure GitHub Actions secrets** — see the [GitHub Actions secrets](#github-actions-secrets) table below. These are stored in the `production` environment in your GitHub repo (Settings → Environments → production). Both backend and frontend deploy jobs share this environment.
 
 3. **First deploy with Kamal** (from your local machine):
    ```bash
@@ -250,42 +247,18 @@ Drawhaus uses a split deployment model:
 
 4. **Subsequent deploys** happen automatically via GitHub Actions when you push to the `production` branch. You can also trigger manually from the Actions tab.
 
-### Step 2: Frontend setup (Cloudflare Pages)
+### Step 2: Frontend setup
 
-1. Go to **Cloudflare Dashboard → Workers & Pages → Create → Pages → Connect to Git**
-2. Select your `drawhaus` repository
-3. Configure the build:
+The frontend is deployed as a separate Kamal service on the same server. No external hosting (Cloudflare Pages, Vercel, etc.) is needed.
 
-   | Setting | Value |
-   |---------|-------|
-   | Production branch | `production` |
-   | Build command | `cd frontend && npm ci && npm run build` |
-   | Build output directory | `frontend/dist` |
-   | Root directory | `/` (leave empty) |
+1. **First deploy** (from your local machine):
+   ```bash
+   kamal setup -c config/deploy.frontend.yml
+   ```
 
-4. Add **environment variables** (Settings → Environment Variables):
+2. **Subsequent deploys** are automatic — the GitHub Actions workflow deploys the frontend after the backend (sequentially, with the backend health check as a gate).
 
-   | Variable | Value |
-   |----------|-------|
-   | `VITE_API_URL` | `https://api.yourdomain.com` |
-   | `VITE_WS_URL` | `https://api.yourdomain.com` |
-   | `VITE_GOOGLE_API_KEY` | Your Google Picker API key (optional — enables Drive file picker) |
-   | `NODE_VERSION` | `22` |
-
-5. (Optional) Add a **custom domain** under the Custom Domains tab (e.g. `draw.yourdomain.com`)
-
-Cloudflare Pages will auto-deploy on every push to `production`.
-
-### Step 3: Cloudflare Tunnel (optional but recommended)
-
-If you don't want to expose your server's IP directly, set up a Cloudflare Tunnel to proxy traffic to your backend:
-
-```bash
-# On your server
-cloudflared tunnel create drawhaus
-cloudflared tunnel route dns drawhaus api.yourdomain.com
-cloudflared tunnel run drawhaus
-```
+3. **DNS**: Point your frontend domain (e.g. `yourdomain.com`) and backend domain (e.g. `api.yourdomain.com`) to your server's IP. Kamal Proxy routes by host header.
 
 ### Deploy workflow
 
@@ -299,13 +272,16 @@ git checkout master && git pull
 git push origin master:production
 ```
 
-This triggers:
-- **GitHub Actions** ([build-push.yml](.github/workflows/build-push.yml)): builds the backend Docker image, pushes to GHCR, and deploys via Kamal
-- **Cloudflare Pages**: detects the push and builds/deploys the frontend SPA
+This triggers the GitHub Actions [deploy workflow](.github/workflows/build-push.yml):
+
+1. **Build backend** → push image to GHCR
+2. **Build frontend** → push image to GHCR (runs in parallel with step 1)
+3. **Deploy backend** via Kamal → health check passes
+4. **Deploy frontend** via Kamal → waits for backend to be healthy first
 
 ### GitHub Actions secrets
 
-For the backend deploy workflow to work, configure these secrets in your GitHub repo (Settings → Secrets and variables → Actions):
+Configure these in your GitHub repo under **Settings → Environments → production** (both backend and frontend deploy jobs use the `production` environment):
 
 | Secret | Description |
 |--------|-------------|
@@ -313,8 +289,8 @@ For the backend deploy workflow to work, configure these secrets in your GitHub 
 | `SSH_PRIVATE_KEY` | SSH key for the `deploy` user on your server |
 | `DATABASE_URL` | PostgreSQL connection string (e.g. `postgres://drawhaus:PASSWORD@localhost:5433/drawhaus_production`) |
 | `SESSION_SECRET` | Random string for session signing (`openssl rand -hex 32`) |
-| `FRONTEND_URL` | Your frontend URL (e.g. `https://draw.yourdomain.com`) |
-| `COOKIE_DOMAIN` | Parent domain for cookies (e.g. `.yourdomain.com`) |
+| `FRONTEND_URL` | Your frontend URL (e.g. `https://yourdomain.com`) |
+| `COOKIE_DOMAIN` | (Optional) Parent domain for cookies (e.g. `.yourdomain.com`) — only needed for cross-subdomain setups |
 | `POSTGRES_PASSWORD` | PostgreSQL password (`openssl rand -hex 32`) |
 | `HONEYBADGER_API_KEY` | (Optional) Honeybadger error monitoring key |
 | `RESEND_API_KEY` | (Optional) Resend API key for emails — without it, emails log to console |
@@ -331,17 +307,20 @@ For the backend deploy workflow to work, configure these secrets in your GitHub 
 # Deploy backend manually (from local machine)
 kamal deploy -c config/deploy.backend.yml
 
-# Check backend status
+# Deploy frontend manually
+kamal deploy -c config/deploy.frontend.yml
+
+# Check status
 kamal details -c config/deploy.backend.yml
+kamal details -c config/deploy.frontend.yml
 
-# View backend logs
+# View logs
 kamal app logs -c config/deploy.backend.yml
+kamal app logs -c config/deploy.frontend.yml
 
-# Rollback backend to previous version
+# Rollback
 kamal rollback -c config/deploy.backend.yml
-
-# Force re-deploy frontend on Cloudflare Pages
-# Go to Cloudflare Dashboard → Pages → drawhaus → Deployments → Retry deployment
+kamal rollback -c config/deploy.frontend.yml
 ```
 
 ---
