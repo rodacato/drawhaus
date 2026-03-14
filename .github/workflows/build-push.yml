@@ -168,4 +168,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Deploy frontend with Kamal
-        run: kamal deploy -c config/deploy.frontend.yml
+        run: |
+          kamal app details -c config/deploy.frontend.yml 2>/dev/null && \
+            kamal deploy -c config/deploy.frontend.yml || \
+            kamal setup -c config/deploy.frontend.yml
