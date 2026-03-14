@@ -20,7 +20,7 @@ export function validateQuery(schema: ZodSchema) {
       res.status(400).json({ error: "Invalid query parameters" });
       return;
     }
-    (req as any).query = parsed.data;
+    (req as unknown as Record<string, unknown>).query = parsed.data;
     next();
   };
 }

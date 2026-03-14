@@ -8,7 +8,7 @@ export async function startBackupScheduler(): Promise<void> {
   // Stop existing scheduler if running (for restarts on config change)
   stopBackupScheduler();
 
-  const { schedule, enabled, retentionDays } = await getBackupConfig();
+  const { schedule, enabled } = await getBackupConfig();
 
   if (!enabled) {
     logger.info("Backup scheduler disabled");

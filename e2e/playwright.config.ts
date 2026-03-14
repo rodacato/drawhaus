@@ -55,6 +55,7 @@ export default defineConfig({
         SESSION_SECRET: process.env.SESSION_SECRET ?? "e2e-test-secret",
         PORT: "4000",
         FRONTEND_URL: "http://localhost:5173",
+        REDIS_URL: process.env.REDIS_URL ?? "redis://localhost:6379",
       },
       timeout: 60_000,
     },

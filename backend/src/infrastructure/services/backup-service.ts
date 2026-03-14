@@ -124,7 +124,7 @@ export async function restoreBackup(filename: string): Promise<void> {
 
   const exitCode = await new Promise<number>((resolve, reject) => {
     pipeline(input, gunzip, psql.stdin).catch((err) => {
-      if ((err as NodeJS.ErrnoException).code !== "EPIPE") reject(err);
+      if ((err as { code?: string }).code !== "EPIPE") reject(err);
     });
     psql.on("close", (code) => resolve(code ?? 1));
     psql.on("error", reject);
