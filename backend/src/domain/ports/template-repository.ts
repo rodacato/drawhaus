@@ -18,4 +18,8 @@ export interface TemplateRepository {
   update(id: string, data: Partial<Pick<Template, "title" | "description" | "category" | "thumbnail">>): Promise<Template | null>;
   incrementUsageCount(id: string): Promise<void>;
   delete(id: string): Promise<void>;
+
+  // Ownership transfer
+  transferBulkOwnership(templateIds: string[], newCreatorId: string): Promise<void>;
+  findByCreatorInWorkspace(creatorId: string, workspaceId: string): Promise<Template[]>;
 }

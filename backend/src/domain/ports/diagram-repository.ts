@@ -13,4 +13,8 @@ export interface DiagramRepository {
   search(userId: string, query: string): Promise<Diagram[]>;
   delete(id: string): Promise<void>;
   toggleStar(id: string, starred: boolean): Promise<void>;
+
+  // Ownership transfer
+  transferBulkOwnership(diagramIds: string[], newOwnerId: string): Promise<void>;
+  findByOwnerInWorkspace(ownerId: string, workspaceId: string): Promise<Diagram[]>;
 }

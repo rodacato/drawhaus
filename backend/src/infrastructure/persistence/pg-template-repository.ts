@@ -127,4 +127,20 @@ export class PgTemplateRepository implements TemplateRepository {
   async delete(id: string): Promise<void> {
     await pool.query("DELETE FROM templates WHERE id = $1", [id]);
   }
+
+  async transferBulkOwnership(templateIds: string[], newCreatorId: string): Promise<void> {
+    if (templateIds.length === 0) return;
+    await pool.query(
+      `UPDATE templates SET creator_id = $1, updated_at = now() WHERE id = ANY($2)`,
+      [newCreatorId, templateIds],
+    );
+  }
+
+  async findByCreatorInWorkspace(creatorId: string, workspaceId: string): Promise<Template[]> {
+    const { rows } = await pool.query<TemplateRow>(
+      `SELECT ${COLS} FROM templates WHERE creator_id = $1 AND workspace_id = $2 ORDER BY updated_at DESC`,
+      [creatorId, workspaceId],
+    );
+    return rows.map(toDomain);
+  }
 }

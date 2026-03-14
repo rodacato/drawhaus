@@ -16,4 +16,8 @@ export interface WorkspaceRepository {
   removeMember(workspaceId: string, userId: string): Promise<void>;
   countByOwner(userId: string): Promise<number>;
   countMembers(workspaceId: string): Promise<number>;
+
+  // Ownership transfer
+  transferOwnership(workspaceId: string, newOwnerId: string): Promise<void>;
+  findOwnedSharedWorkspaces(userId: string): Promise<Workspace[]>;
 }

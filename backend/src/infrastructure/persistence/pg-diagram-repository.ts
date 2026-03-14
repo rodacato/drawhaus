@@ -210,4 +210,20 @@ export class PgDiagramRepository implements DiagramRepository {
   async toggleStar(id: string, starred: boolean): Promise<void> {
     await pool.query("UPDATE diagrams SET starred = $1 WHERE id = $2", [starred, id]);
   }
+
+  async transferBulkOwnership(diagramIds: string[], newOwnerId: string): Promise<void> {
+    if (diagramIds.length === 0) return;
+    await pool.query(
+      `UPDATE diagrams SET owner_id = $1, updated_at = now() WHERE id = ANY($2)`,
+      [newOwnerId, diagramIds],
+    );
+  }
+
+  async findByOwnerInWorkspace(ownerId: string, workspaceId: string): Promise<Diagram[]> {
+    const { rows } = await pool.query<DiagramRow>(
+      `SELECT ${COLS} FROM diagrams WHERE owner_id = $1 AND workspace_id = $2 ORDER BY updated_at DESC`,
+      [ownerId, workspaceId],
+    );
+    return rows.map(toDomain);
+  }
 }

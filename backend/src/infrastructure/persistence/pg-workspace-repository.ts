@@ -180,4 +180,47 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
     );
     return parseInt(rows[0].count, 10);
   }
+
+  async transferOwnership(workspaceId: string, newOwnerId: string): Promise<void> {
+    await withTransaction(async (client) => {
+      // Get current owner before transfer
+      const { rows: wsRows } = await client.query<{ owner_id: string }>(
+        `SELECT owner_id FROM workspaces WHERE id = $1`,
+        [workspaceId],
+      );
+      const oldOwnerId = wsRows[0]?.owner_id;
+
+      // Transfer ownership
+      await client.query(
+        `UPDATE workspaces SET owner_id = $1, updated_at = now() WHERE id = $2`,
+        [newOwnerId, workspaceId],
+      );
+
+      // Ensure new owner is admin
+      await client.query(
+        `INSERT INTO workspace_members (workspace_id, user_id, role)
+         VALUES ($1, $2, 'admin')
+         ON CONFLICT (workspace_id, user_id) DO UPDATE SET role = 'admin'`,
+        [workspaceId, newOwnerId],
+      );
+
+      // Demote old owner to admin (keep as member, don't remove)
+      if (oldOwnerId && oldOwnerId !== newOwnerId) {
+        await client.query(
+          `UPDATE workspace_members SET role = 'admin' WHERE workspace_id = $1 AND user_id = $2`,
+          [workspaceId, oldOwnerId],
+        );
+      }
+    });
+  }
+
+  async findOwnedSharedWorkspaces(userId: string): Promise<Workspace[]> {
+    const { rows } = await pool.query<WorkspaceRow>(
+      `SELECT ${COLS} FROM workspaces w
+       WHERE w.owner_id = $1 AND w.is_personal = false
+       AND (SELECT COUNT(*) FROM workspace_members wm WHERE wm.workspace_id = w.id) > 1`,
+      [userId],
+    );
+    return rows.map(toDomain);
+  }
 }
