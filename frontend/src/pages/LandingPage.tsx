@@ -37,7 +37,7 @@ const FEATURES = [
   },
   {
     title: "Diagram as Code",
-    description: "Paste Mermaid code and get editable Excalidraw elements on your canvas.",
+    description: "Paste Mermaid or PlantUML code and get editable Excalidraw elements on your canvas.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
@@ -123,7 +123,7 @@ const EXTRAS = [
   "Workspaces & team roles",
   "Admin panel & metrics",
   "Developer templates",
-  "Mermaid code import",
+  "Mermaid & PlantUML import",
   "Google Drive backup",
   "Threaded comments",
   "Auth & RBAC",
@@ -221,7 +221,7 @@ export function LandingPage() {
             </h1>
 
             <p className="max-w-lg text-lg text-text-secondary">
-              Real-time collaboration, developer templates, Mermaid import — all self-hosted.
+              Real-time collaboration, developer templates, Mermaid &amp; PlantUML import — all self-hosted.
               Deploy in 5 minutes with Docker.
             </p>
 
@@ -295,18 +295,18 @@ export function LandingPage() {
         {/* Section C: Developer workflow */}
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="space-y-4">
-            <ScreenshotFrame src="/screenshots/screenshot-code-import.png" alt="drawhaus — code import" />
-            <ScreenshotFrame src="/screenshots/screenshot-templates.png" alt="drawhaus — templates" />
+            <ScreenshotFrame src="/screenshots/screenshot-code-import-plantuml.png" alt="drawhaus — PlantUML import" />
+            <ScreenshotFrame src="/screenshots/screenshot-code-import-mermaid.png" alt="drawhaus — Mermaid import" />
           </div>
           <div>
             <h3 className="font-sora text-2xl font-bold">Developer-first workflow</h3>
             <p className="mt-3 text-text-secondary">
-              Paste Mermaid code and get editable elements. Pick from built-in templates
-              or save your own. Auto-backup to Google Drive.
+              Paste Mermaid or PlantUML code and get editable elements. Pick from built-in
+              templates or save your own. Auto-backup to Google Drive.
             </p>
             <ul className="mt-4 space-y-2 text-sm text-text-secondary">
               <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />7 built-in developer templates</li>
-              <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Mermaid diagram-as-code import</li>
+              <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Mermaid &amp; PlantUML diagram-as-code import</li>
               <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Custom templates with categories</li>
               <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Google Drive sync on save</li>
             </ul>
