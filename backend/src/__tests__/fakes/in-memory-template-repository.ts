@@ -69,4 +69,14 @@ export class InMemoryTemplateRepository implements TemplateRepository {
   async delete(id: string): Promise<void> {
     this.store = this.store.filter((t) => t.id !== id);
   }
+
+  async transferBulkOwnership(templateIds: string[], newCreatorId: string): Promise<void> {
+    for (const t of this.store) {
+      if (templateIds.includes(t.id)) t.creatorId = newCreatorId;
+    }
+  }
+
+  async findByCreatorInWorkspace(creatorId: string, workspaceId: string): Promise<Template[]> {
+    return this.store.filter((t) => t.creatorId === creatorId && t.workspaceId === workspaceId);
+  }
 }

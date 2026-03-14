@@ -13,6 +13,7 @@ import { ForgotPasswordUseCase } from "../../application/use-cases/auth/forgot-p
 import { ResetPasswordUseCase } from "../../application/use-cases/auth/reset-password";
 import { DeleteAccountUseCase } from "../../application/use-cases/auth/delete-account";
 import { GoogleAuthUseCase } from "../../application/use-cases/auth/google-auth";
+import { InMemoryWorkspaceRepository } from "../fakes/in-memory-workspace-repository";
 import { createAuthRoutes } from "../../infrastructure/http/routes/auth.routes";
 import { createRequireAuth } from "../../infrastructure/http/middleware/require-auth";
 import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
@@ -45,7 +46,7 @@ function createApp() {
   const acceptInvite = new AcceptInviteUseCase(users, sessions, invitations, hasher);
   const forgotPassword = new ForgotPasswordUseCase(users, passwordResets, emailService);
   const resetPassword = new ResetPasswordUseCase(users, sessions, passwordResets, hasher);
-  const deleteAccount = new DeleteAccountUseCase(users, hasher, audit);
+  const deleteAccount = new DeleteAccountUseCase(users, hasher, audit, new InMemoryWorkspaceRepository());
   const oauthTokens = new InMemoryOAuthTokenRepository();
   const googleAuth = new GoogleAuthUseCase(users, sessions, oauthTokens);
   const requireAuth = createRequireAuth(getCurrentUser);

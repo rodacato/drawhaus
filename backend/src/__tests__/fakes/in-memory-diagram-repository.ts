@@ -96,4 +96,14 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     const diagram = this.store.find((d) => d.id === id);
     if (diagram) diagram.starred = starred;
   }
+
+  async transferBulkOwnership(diagramIds: string[], newOwnerId: string): Promise<void> {
+    for (const d of this.store) {
+      if (diagramIds.includes(d.id)) d.ownerId = newOwnerId;
+    }
+  }
+
+  async findByOwnerInWorkspace(ownerId: string, workspaceId: string): Promise<Diagram[]> {
+    return this.store.filter((d) => d.ownerId === ownerId && d.workspaceId === workspaceId);
+  }
 }

@@ -35,7 +35,9 @@ import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-res
 import { InMemoryOAuthTokenRepository } from "../fakes/in-memory-oauth-token-repository";
 import { NoopEmailService } from "../fakes/noop-email-service";
 import { GoogleAuthUseCase } from "../../application/use-cases/auth/google-auth";
+import { TransferDiagramOwnershipUseCase } from "../../application/use-cases/diagrams/transfer-ownership";
 import { NoopAuditLogger } from "../fakes/noop-audit-logger";
+import { InMemoryWorkspaceRepository } from "../fakes/in-memory-workspace-repository";
 
 let diagrams: InMemoryDiagramRepository;
 
@@ -63,7 +65,7 @@ function createApp() {
     acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
     forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
     resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger()),
+    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), new InMemoryWorkspaceRepository()),
     googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
   }, requireAuth));
   const folders = new InMemoryFolderRepository();
@@ -78,6 +80,7 @@ function createApp() {
     toggleStar: new ToggleStarUseCase(diagrams),
     duplicate: new DuplicateDiagramUseCase(diagrams),
     move: new MoveDiagramUseCase(diagrams, folders),
+    transferOwnership: new TransferDiagramOwnershipUseCase(diagrams, new InMemoryWorkspaceRepository(), new NoopAuditLogger()),
   }, requireAuth));
   return app;
 }
