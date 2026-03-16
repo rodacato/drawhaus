@@ -1,0 +1,31 @@
+# .notdefined.yml — metadata para notdefined.dev/projects
+# Spec: https://github.com/rodacato/notdefined/blob/master/docs/notdefined-yml-spec.md
+
+# --- Identidad ---
+tagline: "Dibuja diagramas en equipo sin depender de servicios externos"
+description: >
+  Alternativa self-hosted a Excalidraw con colaboracion en tiempo real,
+  multi-escenas, comentarios y templates. TypeScript, React y Express
+  con PostgreSQL. Lo hice porque queria diagramar sin que mis datos
+  vivieran en servidores de terceros.
+icon: docs/branding/logo.svg
+background_color: "#111827"
+screenshot: docs/screenshots/notdefined.png
+
+# --- Clasificacion ---
+category: producto
+status: activo
+lang: TypeScript
+tags:
+  - excalidraw
+  - collaboration
+  - self-hosted
+  - docker
+  - diagramming
+
+# --- Links ---
+repo: https://github.com/rodacato/drawhaus
+url: https://drawhaus.notdefined.dev
+
+# --- Orden en notdefined.dev ---
+order: 1
