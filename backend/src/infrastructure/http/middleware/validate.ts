@@ -24,3 +24,14 @@ export function validateQuery(schema: ZodSchema) {
     next();
   };
 }
+
+export function validateParams(schema: ZodSchema) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const parsed = schema.safeParse(req.params);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid path parameters" });
+      return;
+    }
+    next();
+  };
+}

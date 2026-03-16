@@ -12,7 +12,9 @@ import type { IntegrationSecretsRepository } from "../../../domain/ports/integra
 import type { ConfigProvider } from "../../services/config-provider";
 import { INTEGRATION_KEYS } from "../../../domain/entities/integration-secret";
 import { asyncRoute } from "../middleware/async-handler";
-import { validate } from "../middleware/validate";
+import { validate, validateParams } from "../middleware/validate";
+
+const uuidParams = z.object({ id: z.string().uuid() });
 import { requireAdmin } from "../middleware/require-admin";
 import { createBackup, listBackups, getBackupConfig } from "../../services/backup-service";
 
@@ -66,13 +68,13 @@ export function createAdminRoutes(
     return res.json({ users });
   }));
 
-  router.patch("/users/:id", validate(updateUserSchema), asyncRoute(async (req, res) => {
+  router.patch("/users/:id", validateParams(uuidParams), validate(updateUserSchema), asyncRoute(async (req, res) => {
     const targetId = req.params.id as string;
     const user = await useCases.updateUser.execute(targetId, req.authUser.id, req.body);
     return res.json({ user });
   }));
 
-  router.delete("/users/:id", asyncRoute(async (req, res) => {
+  router.delete("/users/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
     const targetId = req.params.id as string;
     await useCases.deleteUser.execute(targetId, req.authUser.id);
     return res.json({ success: true });

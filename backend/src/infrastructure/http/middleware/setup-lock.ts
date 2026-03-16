@@ -25,7 +25,10 @@ export function createSetupLock(siteSettingsRepo: SiteSettingsRepository): { mid
   const CACHE_TTL = 30_000;
 
   const middleware: RequestHandler = async (req, res, next) => {
-    if (cached === null || Date.now() - cacheTime > CACHE_TTL) {
+    // Only cache when setupCompleted is true (it never reverts to false).
+    // When false, always re-check so that auto-setup via first registration
+    // is picked up immediately instead of waiting for the cache TTL.
+    if (!cached || Date.now() - cacheTime > CACHE_TTL) {
       const settings = await siteSettingsRepo.get();
       cached = settings.setupCompleted;
       cacheTime = Date.now();

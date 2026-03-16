@@ -12,7 +12,9 @@ import type { DuplicateDiagramUseCase } from "../../../application/use-cases/dia
 import type { TransferDiagramOwnershipUseCase } from "../../../application/use-cases/diagrams/transfer-ownership";
 import type { MoveDiagramUseCase } from "../../../application/use-cases/folders/move-diagram";
 import { asyncRoute } from "../middleware/async-handler";
-import { validate } from "../middleware/validate";
+import { validate, validateParams } from "../middleware/validate";
+
+const uuidParams = z.object({ id: z.string().uuid() });
 import type { Diagram } from "../../../domain/entities/diagram";
 import type { Tag } from "../../../domain/entities/tag";
 import type { TagRepository } from "../../../domain/ports/tag-repository";
@@ -100,7 +102,7 @@ export function createDiagramRoutes(
     return res.json({ diagrams: diagrams.map((d) => formatDiagram(d)) });
   }));
 
-  router.get("/:id", asyncRoute(async (req, res) => {
+  router.get("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
     const diagram = await useCases.get.execute(String(req.params.id), req.authUser.id);
     if (tagRepo) {
       const tags = await tagRepo.listForDiagram(diagram.id);
@@ -123,34 +125,34 @@ export function createDiagramRoutes(
 
   const thumbnailSchema = z.object({ thumbnail: z.string().min(1) });
 
-  router.put("/:id/thumbnail", validate(thumbnailSchema), asyncRoute(async (req, res) => {
+  router.put("/:id/thumbnail", validateParams(uuidParams), validate(thumbnailSchema), asyncRoute(async (req, res) => {
     await useCases.updateThumbnail.execute(String(req.params.id), req.authUser.id, req.body.thumbnail);
     return res.json({ success: true });
   }));
 
-  router.post("/:id/move", validate(moveSchema), asyncRoute(async (req, res) => {
+  router.post("/:id/move", validateParams(uuidParams), validate(moveSchema), asyncRoute(async (req, res) => {
     await useCases.move.execute(String(req.params.id), req.authUser.id, req.body.folderId);
     return res.json({ success: true });
   }));
 
-  router.patch("/:id/star", asyncRoute(async (req, res) => {
+  router.patch("/:id/star", validateParams(uuidParams), asyncRoute(async (req, res) => {
     const starred = req.body?.starred;
     if (typeof starred !== "boolean") return res.status(400).json({ error: "starred is required" });
     await useCases.toggleStar.execute(String(req.params.id), req.authUser.id, starred);
     return res.json({ success: true });
   }));
 
-  router.post("/:id/duplicate", asyncRoute(async (req, res) => {
+  router.post("/:id/duplicate", validateParams(uuidParams), asyncRoute(async (req, res) => {
     const diagram = await useCases.duplicate.execute(String(req.params.id), req.authUser.id);
     return res.status(201).json({ diagram: formatDiagram(diagram) });
   }));
 
-  router.patch("/:id", validate(patchSchema), asyncRoute(async (req, res) => {
+  router.patch("/:id", validateParams(uuidParams), validate(patchSchema), asyncRoute(async (req, res) => {
     const diagram = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
     return res.json({ diagram: formatDiagram(diagram) });
   }));
 
-  router.delete("/:id", asyncRoute(async (req, res) => {
+  router.delete("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
     await useCases.delete.execute(String(req.params.id), req.authUser.id);
     return res.json({ success: true });
   }));
