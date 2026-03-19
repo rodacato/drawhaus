@@ -124,7 +124,7 @@ export function createUseCases(repos: Repositories, services: Services) {
 
   // Diagrams
   const createDiagram = new CreateDiagramUseCase(repos.diagramRepo);
-  const getDiagram = new GetDiagramUseCase(repos.diagramRepo);
+  const getDiagram = new GetDiagramUseCase(repos.diagramRepo, repos.sceneRepo);
   const listDiagrams = new ListDiagramsUseCase(repos.diagramRepo);
   const searchDiagrams = new SearchDiagramsUseCase(repos.diagramRepo);
   const updateDiagram = new UpdateDiagramUseCase(repos.diagramRepo);
