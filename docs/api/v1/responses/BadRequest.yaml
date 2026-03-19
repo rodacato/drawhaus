@@ -1,0 +1,7 @@
+description: Invalid request body or query parameters
+content:
+  application/json:
+    schema:
+      $ref: "../schemas/Error.yaml"
+    example:
+      error: "Invalid request body"

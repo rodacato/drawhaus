@@ -1,0 +1,94 @@
+parameters:
+  - $ref: "../parameters/DiagramId.yaml"
+
+get:
+  operationId: getDiagram
+  summary: Get a diagram
+  description: |
+    Returns a single diagram with full scene data (elements and appState).
+    The diagram must belong to the workspace associated with the API key.
+  tags: [Diagrams]
+  parameters:
+    - $ref: "../parameters/XDrawhausClient.yaml"
+  responses:
+    "200":
+      description: Diagram found
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/DiagramDetailResponse.yaml"
+    "401":
+      $ref: "../responses/Unauthorized.yaml"
+    "403":
+      $ref: "../responses/Forbidden.yaml"
+    "404":
+      $ref: "../responses/NotFound.yaml"
+
+patch:
+  operationId: updateDiagram
+  summary: Update a diagram
+  description: |
+    Updates one or more fields of a diagram. At least one field must be provided.
+    The diagram must belong to the workspace associated with the API key.
+    Text fields in elements are sanitized to prevent stored XSS.
+  tags: [Diagrams]
+  parameters:
+    - $ref: "../parameters/XDrawhausClient.yaml"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../schemas/UpdateDiagramRequest.yaml"
+        examples:
+          renameOnly:
+            summary: Rename diagram
+            value:
+              title: "Updated Architecture"
+          fullUpdate:
+            summary: Update title and scene
+            value:
+              title: "Updated Architecture"
+              elements:
+                - id: "rect1"
+                  type: "rectangle"
+                  x: 100
+                  y: 100
+                  width: 200
+                  height: 100
+              appState:
+                viewBackgroundColor: "#f0f0f0"
+  responses:
+    "200":
+      description: Diagram updated
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/DiagramDetailResponse.yaml"
+    "400":
+      $ref: "../responses/BadRequest.yaml"
+    "401":
+      $ref: "../responses/Unauthorized.yaml"
+    "403":
+      $ref: "../responses/Forbidden.yaml"
+    "404":
+      $ref: "../responses/NotFound.yaml"
+
+delete:
+  operationId: deleteDiagram
+  summary: Delete a diagram
+  description: |
+    Permanently deletes a diagram. This action cannot be undone.
+    The diagram must belong to the workspace associated with the API key.
+  tags: [Diagrams]
+  parameters:
+    - $ref: "../parameters/XDrawhausClient.yaml"
+  responses:
+    "204":
+      description: Diagram deleted
+    "401":
+      $ref: "../responses/Unauthorized.yaml"
+    "403":
+      $ref: "../responses/Forbidden.yaml"
+    "404":
+      $ref: "../responses/NotFound.yaml"

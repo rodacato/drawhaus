@@ -1,0 +1,13 @@
+allOf:
+  - $ref: "./DiagramSummary.yaml"
+  - type: object
+    required: [elements, appState]
+    properties:
+      elements:
+        type: array
+        items: {}
+        description: Excalidraw elements array
+      appState:
+        type: object
+        additionalProperties: true
+        description: Excalidraw app state object

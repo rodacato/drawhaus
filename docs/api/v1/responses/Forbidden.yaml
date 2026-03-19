@@ -1,0 +1,7 @@
+description: Diagram does not belong to the API key's workspace
+content:
+  application/json:
+    schema:
+      $ref: "../schemas/Error.yaml"
+    example:
+      error: "Forbidden"

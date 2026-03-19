@@ -1,0 +1,14 @@
+type: object
+required: [data, total, limit, offset]
+properties:
+  data:
+    type: array
+    items:
+      $ref: "./DiagramSummary.yaml"
+  total:
+    type: integer
+    description: Total number of diagrams matching the query
+  limit:
+    type: integer
+  offset:
+    type: integer

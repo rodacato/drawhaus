@@ -1,0 +1,121 @@
+openapi: 3.1.0
+info:
+  title: Drawhaus Public API
+  version: 1.0.0
+  description: |
+    Programmatic access to Drawhaus diagrams. Create, read, update, and delete
+    diagrams in your workspace using API keys.
+
+    ## Authentication
+
+    All endpoints (except `/v1/health`) require two headers:
+
+    1. **Authorization** — Bearer token with your API key (`dhk_` prefix)
+    2. **X-Drawhaus-Client** — Client identifier string (e.g. `mcp-server`, `cli`, your app name)
+
+    ### Getting an API key
+
+    1. Go to **Settings → API Keys** in the Drawhaus UI
+    2. Click **Create API Key** and select a workspace
+    3. Copy the key — it is shown only once
+
+    ### Example request
+
+    ```bash
+    export DHK_TOKEN="dhk_..."  # your API key
+    curl -X GET "${baseUrl}/v1/diagrams" \
+      -H "Authorization: Bearer $DHK_TOKEN" \
+      -H "X-Drawhaus-Client: my-app"
+    ```
+
+    ## Rate Limits
+
+    - **60 requests per minute** per API key
+    - Rate limit headers are included in every response:
+      - `X-RateLimit-Limit` — requests allowed per window
+      - `X-RateLimit-Remaining` — requests remaining
+      - `X-RateLimit-Reset` — seconds until the window resets
+
+    ## Quickstart
+
+    Create your first diagram in 3 commands:
+
+    ```bash
+    export DHK_TOKEN="dhk_..."  # your API key
+
+    # 1. Check connectivity
+    curl ${baseUrl}/v1/health
+
+    # 2. Create a diagram
+    curl -X POST "${baseUrl}/v1/diagrams" \
+      -H "Authorization: Bearer $DHK_TOKEN" \
+      -H "X-Drawhaus-Client: quickstart" \
+      -H "Content-Type: application/json" \
+      -d '{"title": "My first API diagram"}'
+
+    # 3. List all diagrams
+    curl "${baseUrl}/v1/diagrams" \
+      -H "Authorization: Bearer $DHK_TOKEN" \
+      -H "X-Drawhaus-Client: quickstart"
+    ```
+
+    ## MCP Setup
+
+    Add to your MCP client configuration:
+
+    **Claude Code (`~/.claude/mcp.json`)**
+    ```json
+    {
+      "drawhaus": {
+        "url": "${baseUrl}/v1",
+        "apiKey": "dhk_your_key"
+      }
+    }
+    ```
+
+    **VS Code (`.vscode/settings.json`)**
+    ```json
+    {
+      "mcp.servers": {
+        "drawhaus": {
+          "url": "${baseUrl}/v1",
+          "apiKey": "dhk_your_key"
+        }
+      }
+    }
+    ```
+
+servers:
+  - url: "{baseUrl}/v1"
+    description: Drawhaus API server
+    variables:
+      baseUrl:
+        default: http://localhost:4000
+        description: Base URL of your Drawhaus instance
+
+security:
+  - apiKey: []
+
+tags:
+  - name: Health
+    description: Connectivity and status checks (no auth required)
+  - name: Diagrams
+    description: CRUD operations for diagrams
+
+paths:
+  /health:
+    $ref: "./paths/health.yaml"
+  /diagrams:
+    $ref: "./paths/diagrams.yaml"
+  /diagrams/{id}:
+    $ref: "./paths/diagrams_{id}.yaml"
+
+components:
+  securitySchemes:
+    apiKey:
+      type: http
+      scheme: bearer
+      description: |
+        API key with `dhk_` prefix. Create one in Settings → API Keys.
+
+        Example: `Authorization: Bearer dhk_abc123...`

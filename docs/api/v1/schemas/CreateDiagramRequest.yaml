@@ -1,0 +1,20 @@
+type: object
+properties:
+  title:
+    type: string
+    minLength: 1
+    maxLength: 200
+    default: Untitled
+    description: Diagram title
+  folderId:
+    type: ["string", "null"]
+    format: uuid
+    description: Optional folder to place the diagram in
+  elements:
+    type: array
+    items: {}
+    description: Excalidraw elements array
+  appState:
+    type: object
+    additionalProperties: true
+    description: Excalidraw app state object

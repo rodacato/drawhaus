@@ -1,0 +1,7 @@
+description: Diagram not found or no access
+content:
+  application/json:
+    schema:
+      $ref: "../schemas/Error.yaml"
+    example:
+      error: "Diagram not found"

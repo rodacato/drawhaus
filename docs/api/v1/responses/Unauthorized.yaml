@@ -1,0 +1,7 @@
+description: Missing, invalid, or expired API key
+content:
+  application/json:
+    schema:
+      $ref: "../schemas/Error.yaml"
+    example:
+      error: "Invalid or expired API key"

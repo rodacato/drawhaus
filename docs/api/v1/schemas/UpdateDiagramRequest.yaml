@@ -1,0 +1,15 @@
+type: object
+minProperties: 1
+properties:
+  title:
+    type: string
+    minLength: 1
+    maxLength: 200
+  elements:
+    type: array
+    items: {}
+    description: Excalidraw elements array
+  appState:
+    type: object
+    additionalProperties: true
+    description: Excalidraw app state object

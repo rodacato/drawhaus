@@ -1,0 +1,115 @@
+get:
+  operationId: listDiagrams
+  summary: List diagrams
+  description: |
+    Returns all diagrams in the workspace associated with the API key.
+    Results are paginated and sorted by last updated (newest first).
+    Scene data (elements, appState) is not included in list responses — use GET `/diagrams/{id}` for full data.
+  tags: [Diagrams]
+  parameters:
+    - $ref: "../parameters/XDrawhausClient.yaml"
+    - name: folderId
+      in: query
+      description: Filter by folder UUID. Omit to list all diagrams.
+      schema:
+        type: string
+        format: uuid
+    - name: limit
+      in: query
+      description: Maximum number of diagrams to return (1–100).
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+    - name: offset
+      in: query
+      description: Number of diagrams to skip for pagination.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+  responses:
+    "200":
+      description: List of diagrams
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/DiagramListResponse.yaml"
+          example:
+            data:
+              - id: "550e8400-e29b-41d4-a716-446655440000"
+                title: "Architecture Overview"
+                url: "https://draw.example.com/board/550e8400-e29b-41d4-a716-446655440000"
+                createdVia: api
+                folderId: null
+                createdAt: "2026-03-19T10:00:00.000Z"
+                updatedAt: "2026-03-19T12:30:00.000Z"
+            total: 1
+            limit: 50
+            offset: 0
+    "400":
+      $ref: "../responses/BadRequest.yaml"
+    "401":
+      $ref: "../responses/Unauthorized.yaml"
+
+post:
+  operationId: createDiagram
+  summary: Create a diagram
+  description: |
+    Creates a new diagram in the workspace associated with the API key.
+    The diagram is owned by the user who created the API key.
+
+    - `title` defaults to `"Untitled"` if omitted
+    - `elements` and `appState` accept Excalidraw scene format
+    - Text fields in elements are sanitized to prevent stored XSS
+    - `createdVia` is automatically set to `"api"`
+  tags: [Diagrams]
+  parameters:
+    - $ref: "../parameters/XDrawhausClient.yaml"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../schemas/CreateDiagramRequest.yaml"
+        examples:
+          minimal:
+            summary: Minimal (title only)
+            value:
+              title: "Class Diagram"
+          withScene:
+            summary: With Excalidraw scene data
+            value:
+              title: "Architecture"
+              elements:
+                - id: "rect1"
+                  type: "rectangle"
+                  x: 100
+                  y: 100
+                  width: 200
+                  height: 100
+              appState:
+                viewBackgroundColor: "#ffffff"
+  responses:
+    "201":
+      description: Diagram created
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/DiagramDetailResponse.yaml"
+          example:
+            data:
+              id: "550e8400-e29b-41d4-a716-446655440000"
+              title: "Class Diagram"
+              url: "https://draw.example.com/board/550e8400-e29b-41d4-a716-446655440000"
+              createdVia: api
+              folderId: null
+              elements: []
+              appState: {}
+              createdAt: "2026-03-19T10:00:00.000Z"
+              updatedAt: "2026-03-19T10:00:00.000Z"
+    "400":
+      $ref: "../responses/BadRequest.yaml"
+    "401":
+      $ref: "../responses/Unauthorized.yaml"

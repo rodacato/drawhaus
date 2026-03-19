@@ -1,0 +1,9 @@
+name: X-Drawhaus-Client
+in: header
+required: true
+description: |
+  Client identifier string. Used for request tracking and analytics.
+  Example values: `mcp-server`, `cli`, `my-integration`.
+schema:
+  type: string
+  minLength: 1

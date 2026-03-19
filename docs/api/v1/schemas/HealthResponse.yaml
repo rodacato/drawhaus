@@ -1,0 +1,14 @@
+type: object
+required: [status, version, database]
+properties:
+  status:
+    type: string
+    enum: [ok, degraded]
+    description: Overall service status
+  version:
+    type: string
+    description: Application version
+  database:
+    type: string
+    enum: [ok, error]
+    description: Database connectivity status

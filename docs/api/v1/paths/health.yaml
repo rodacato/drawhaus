@@ -1,0 +1,29 @@
+get:
+  operationId: getHealth
+  summary: Health check
+  description: |
+    Returns the current health status of the API. Does not require authentication.
+    Use this endpoint to verify connectivity before making authenticated requests.
+  tags: [Health]
+  security: []
+  responses:
+    "200":
+      description: Service is healthy
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/HealthResponse.yaml"
+          example:
+            status: ok
+            version: "0.10.0"
+            database: ok
+    "503":
+      description: Service is degraded (database unreachable)
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/HealthResponse.yaml"
+          example:
+            status: degraded
+            version: "0.10.0"
+            database: error

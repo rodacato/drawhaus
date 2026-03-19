@@ -1,0 +1,25 @@
+type: object
+required: [id, title, url, createdVia, folderId, createdAt, updatedAt]
+properties:
+  id:
+    type: string
+    format: uuid
+  title:
+    type: string
+  url:
+    type: string
+    format: uri
+    description: Direct link to open the diagram in the Drawhaus UI
+  createdVia:
+    type: string
+    enum: [ui, api]
+    description: How the diagram was created
+  folderId:
+    type: ["string", "null"]
+    format: uuid
+  createdAt:
+    type: string
+    format: date-time
+  updatedAt:
+    type: string
+    format: date-time

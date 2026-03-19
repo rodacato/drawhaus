@@ -2,6 +2,7 @@ import Honeybadger from "@honeybadger-io/js";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import path from "path";
 import { createServer } from "http";
 import { authLimiter, generalLimiter } from "./infrastructure/http/middleware/rate-limit";
 import { createSetupLock } from "./infrastructure/http/middleware/setup-lock";
@@ -134,6 +135,7 @@ app.use("/api/api-keys", createApiKeyRoutes({ create: useCases.createApiKey, lis
 
 // --- Public API /v1/ ---
 app.use("/v1/health", createV1HealthRoutes());
+app.use("/v1/docs", express.static(path.resolve(__dirname, "../../docs/api")));
 
 const requireApiKey = createRequireApiKey(useCases.validateApiKey);
 const logApiRequest = createLogApiRequest(repos.apiKeyRepo);
