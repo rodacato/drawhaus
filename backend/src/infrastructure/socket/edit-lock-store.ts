@@ -11,8 +11,8 @@ export interface EditLockChecker {
   touchLock(diagramId: string, userId: string): void;
 }
 
-/** Auto-release after 3 seconds of inactivity */
-const INACTIVITY_TIMEOUT_MS = 3_000;
+/** Auto-release after 2 seconds of inactivity */
+const INACTIVITY_TIMEOUT_MS = 2_000;
 
 export class EditLockStore implements EditLockChecker {
   private locks = new Map<string, LockHolder>();

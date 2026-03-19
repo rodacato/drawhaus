@@ -30,11 +30,13 @@ export function useSocketConnection({
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     const socket = createSocket();
     socketRef.current = socket;
     setSocketGeneration((g) => g + 1);
 
     function joinRoom() {
+      if (cancelled) return;
       if (joinMode.type === "authenticated") {
         socket.emit("join-room", { roomId: joinMode.roomId });
       } else {
@@ -42,18 +44,23 @@ export function useSocketConnection({
       }
     }
 
-    socket.on("connect", () => { setConnectionState("connected"); setConnectionError(null); joinRoom(); });
-    socket.on("connect_error", (err) => { console.warn("Socket connect_error:", err.message); setConnectionState("error"); setConnectionError(err.message); });
-    socket.on("disconnect", (reason) => { console.warn("Socket disconnected:", reason); setConnectionState("disconnected"); });
-    socket.on("room-error", ({ message }: { message: string }) => { console.warn("Room error:", message); setConnectionError(message); setConnectionState("error"); });
+    socket.on("connect", () => { if (cancelled) return; setConnectionState("connected"); setConnectionError(null); joinRoom(); });
+    socket.on("connect_error", (err) => { if (cancelled) return; console.warn("Socket connect_error:", err.message); setConnectionState("error"); setConnectionError(err.message); });
+    socket.on("disconnect", (reason) => { if (cancelled) return; console.warn("Socket disconnected:", reason); setConnectionState("disconnected"); });
+    socket.on("room-error", ({ message }: { message: string }) => { if (cancelled) return; console.warn("Room error:", message); setConnectionError(message); setConnectionState("error"); });
 
     socket.on("room-joined", ({ role, userId }: { role?: string; userId?: string }) => {
+      if (cancelled) return;
       if (role) setUserRole(role);
       if (userId) setSelfUserId(userId);
       setConnectionError(null);
     });
 
-    return () => { socket.disconnect(); socketRef.current = null; };
+    return () => {
+      cancelled = true;
+      socket.disconnect();
+      socketRef.current = null;
+    };
   }, [diagramId]);
 
   return { socketRef, socketGeneration, connectionState, connectionError, userRole, selfUserId };
