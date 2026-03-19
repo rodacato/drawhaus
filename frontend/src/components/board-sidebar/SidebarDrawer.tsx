@@ -18,8 +18,11 @@ export function SidebarDrawer({ open, onClose, width = 300, children }: SidebarD
   useEffect(() => {
     if (!open) return;
     function handleClick(e: MouseEvent) {
+      const target = e.target as HTMLElement;
       const sidebar = document.getElementById("board-sidebar");
-      if (sidebar && !sidebar.contains(e.target as Node)) {
+      // Ignore clicks inside the sidebar or inside portals (modals/previews)
+      if (sidebar && !sidebar.contains(target)) {
+        if (target.closest("[data-portal]") || target.closest(".fixed.inset-0.z-50")) return;
         onClose();
       }
     }

@@ -344,17 +344,31 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
     setLoadingPreview(null);
   }, [getSnapshot]);
 
+  // Use refs to avoid stale closures in preview callbacks
+  const previewSnapshotRef = useRef(previewSnapshot);
+  previewSnapshotRef.current = previewSnapshot;
+  const restoreSnapshotRef = useRef(restoreSnapshot);
+  restoreSnapshotRef.current = restoreSnapshot;
+
   const handlePreviewRestore = useCallback(async () => {
-    if (!previewSnapshot) return;
-    await handleRestore(previewSnapshot.id);
-  }, [previewSnapshot, restoreSnapshot, excalidrawApiRef, onRestored]);
+    const snap = previewSnapshotRef.current;
+    if (!snap) return;
+    try {
+      const full = await restoreSnapshotRef.current(snap.id);
+      if (full && excalidrawApiRef.current) {
+        excalidrawApiRef.current.updateScene({ elements: full.elements });
+      }
+      setPreviewSnapshot(null);
+      onRestored?.();
+    } catch { /* ignore */ }
+  }, [excalidrawApiRef, onRestored]);
 
   const handlePreviewRename = useCallback(async (name: string) => {
-    if (!previewSnapshot) return;
-    await renameSnapshot(previewSnapshot.id, name);
-    // Update preview in-place with new name
+    const snap = previewSnapshotRef.current;
+    if (!snap) return;
+    await renameSnapshot(snap.id, name);
     setPreviewSnapshot((prev) => prev ? { ...prev, name } : null);
-  }, [previewSnapshot, renameSnapshot]);
+  }, [renameSnapshot]);
 
   function renderList(items: SnapshotMeta[], label: string) {
     if (items.length === 0) return null;
