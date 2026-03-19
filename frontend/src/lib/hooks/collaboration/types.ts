@@ -14,8 +14,6 @@ export type CollaborationOptions = {
   canvasPrefs: CanvasPrefs;
 };
 
-export type SceneInfo = { id: string; name: string; sortOrder: number };
-
 export type LockHolderInfo = { userId: string; userName: string };
 
 export type CollaborationState = {
@@ -34,13 +32,7 @@ export type CollaborationState = {
   saveLabel: string;
   saveColor: string;
   lastSavedAt: string | null;
-  scenes: SceneInfo[];
   activeSceneId: string | null;
-  switchingScene: boolean;
-  switchScene: (sceneId: string) => void;
-  createScene: (name?: string) => Promise<void>;
-  deleteScene: (sceneId: string) => Promise<void>;
-  renameScene: (sceneId: string, name: string) => Promise<void>;
   flushSave: () => Promise<void>;
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
   socketRef: React.MutableRefObject<import("socket.io-client").Socket | null>;

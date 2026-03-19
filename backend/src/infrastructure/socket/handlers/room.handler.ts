@@ -133,27 +133,6 @@ export function registerRoomHandlers(
     }
   });
 
-  // Switch active scene
-  socket.on("switch-scene", async ({
-    roomId,
-    sceneId,
-  }: {
-    roomId: string;
-    sceneId: string;
-  }) => {
-    if (!socket.rooms.has(roomId)) return;
-
-    // Leave previous scene sub-room
-    const prevSceneId = socket.data.activeSceneId as string | undefined;
-    if (prevSceneId) {
-      socket.leave(`${roomId}:${prevSceneId}`);
-    }
-
-    // Join new scene sub-room
-    socket.join(`${roomId}:${sceneId}`);
-    socket.data.activeSceneId = sceneId;
-  });
-
   socket.on("disconnecting", async () => {
     const myData = socket.data as SocketData;
 

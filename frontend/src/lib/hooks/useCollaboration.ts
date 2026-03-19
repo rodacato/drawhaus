@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ExcalidrawApi } from "@/lib/types";
 
 // Re-export types for consumers
-export type { JoinMode, CollaborationOptions, SceneInfo, CollaborationState } from "./collaboration/types";
+export type { JoinMode, CollaborationOptions, CollaborationState } from "./collaboration/types";
 import type { CollaborationOptions, CollaborationState } from "./collaboration/types";
 
 // Sub-hooks
@@ -66,7 +66,7 @@ export function useCollaboration({
   hasEditLockRef.current = editLock.hasEditLock;
 
   /* ─── 3. Save manager ─── */
-  const { saveState, saveLabel, saveColor, lastSavedAt, onChange, flushSave, cancelPendingTimers } = useSaveManager({
+  const { saveState, saveLabel, saveColor, lastSavedAt, onChange, flushSave } = useSaveManager({
     socketRef,
     socketGeneration,
     diagramId,
@@ -92,15 +92,13 @@ export function useCollaboration({
   });
 
   /* ─── 5. Scene manager ─── */
-  const { scenes, activeSceneId, switchingScene, switchScene, createScene, deleteScene, renameScene } = useSceneManager({
+  const { activeSceneId } = useSceneManager({
     socketRef,
     socketGeneration,
-    diagramId,
     excalidrawApiRef,
     applyingRemoteCounter,
     activeSceneIdRef,
     pendingSceneRef,
-    cancelPendingTimers,
   });
 
   /* ─── 6. Force viewModeEnabled when user cannot edit (no lock or following) ─── */
@@ -136,8 +134,7 @@ export function useCollaboration({
     presenceUsers, cursors, userRole,
     followingUserId, setFollowingUserId, toolbarOpen, setToolbarOpen,
     initialData, canEdit, saveLabel, saveColor, lastSavedAt,
-    scenes, activeSceneId, switchingScene,
-    switchScene, createScene, deleteScene, renameScene,
+    activeSceneId,
     excalidrawApiRef, socketRef, onExcalidrawApi, onChange, onPointerMove, flushSave,
     // Edit lock
     editLockHolder: editLock.editLockHolder,

@@ -19,7 +19,7 @@ Drawhaus is a self-hosted Excalidraw alternative for developers and small teams 
 
 - **Full Excalidraw editor** — all the drawing tools you know
 - **Real-time collaboration** — live cursors, presence, viewport follow
-- **Multi-scene diagrams** — multiple pages per diagram with tab navigation
+
 - **Share links** — invite collaborators with editor/viewer roles and expiration
 - **Guest access** — join via share token, no account required
 - **Comments** — threaded discussions with resolve/unresolve workflow
@@ -371,14 +371,6 @@ kamal rollback -c config/deploy.frontend.yml
 | `POST` | `/api/diagrams/:id/move` | Move to folder |
 | `PATCH` | `/api/diagrams/:id/star` | Toggle starred |
 | `POST` | `/api/diagrams/:id/duplicate` | Duplicate diagram |
-
-### Scenes
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/diagrams/:id/scenes` | List scenes |
-| `POST` | `/api/diagrams/:id/scenes` | Create scene |
-| `PATCH` | `/api/diagrams/:id/scenes/:sceneId` | Rename scene |
-| `DELETE` | `/api/diagrams/:id/scenes/:sceneId` | Delete scene |
 
 ### Comments
 | Method | Endpoint | Description |

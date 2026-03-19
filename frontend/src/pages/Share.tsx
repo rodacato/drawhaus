@@ -6,7 +6,6 @@ import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
 import { EditingBubble } from "@/components/EditLockOverlay";
-import { SceneTabBar } from "@/components/SceneTabBar";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
 import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import { ui } from "@/lib/ui";
@@ -225,11 +224,6 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
       <div className="relative h-full w-full" onPointerDown={handleCanvasPointerDown} onPointerMove={collab.onPointerMove}>
         <ExcalidrawCanvas excalidrawAPI={collab.onExcalidrawApi} initialData={collab.initialData} onChange={collab.onChange} />
       </div>
-      {collab.scenes.length > 0 && (
-        <div className="pointer-events-none fixed bottom-3 left-1/2 z-20 -translate-x-1/2">
-          <SceneTabBar scenes={collab.scenes} activeSceneId={collab.activeSceneId} switchingScene={collab.switchingScene} canEdit={canEdit} onSwitch={collab.switchScene} onCreate={collab.createScene} onDelete={collab.deleteScene} onRename={collab.renameScene} />
-        </div>
-      )}
     </div>
   );
 }

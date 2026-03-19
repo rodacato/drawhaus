@@ -25,7 +25,7 @@ import { createDiagramRoutes } from "./infrastructure/http/routes/diagram.routes
 import { createFolderRoutes } from "./infrastructure/http/routes/folder.routes";
 import { createShareRoutes } from "./infrastructure/http/routes/share.routes";
 import { createAdminRoutes } from "./infrastructure/http/routes/admin.routes";
-import { createSceneRoutes } from "./infrastructure/http/routes/scene.routes";
+
 import { createCommentRoutes } from "./infrastructure/http/routes/comment.routes";
 import { createTagRoutes } from "./infrastructure/http/routes/tag.routes";
 import { createDriveRoutes } from "./infrastructure/http/routes/drive.routes";
@@ -103,7 +103,7 @@ app.use("/api", generalLimiter);
 app.use("/api/setup", createSetupRoutes({ getSettings: useCases.getSettings, updateSettings: useCases.updateSettings }, repos.userRepo, requireAuth, setupLock.invalidate));
 app.use("/api/auth", createAuthRoutes({ register: useCases.register, login: useCases.login, logout: useCases.logout, getCurrentUser: useCases.getCurrentUser, updateProfile: useCases.updateProfile, changePassword: useCases.changePassword, acceptInvite: useCases.acceptInvite, forgotPassword: useCases.forgotPassword, resetPassword: useCases.resetPassword, deleteAccount: useCases.deleteAccount, googleAuth: useCases.googleAuth }, requireAuth));
 app.use("/api/diagrams", createDiagramRoutes({ create: useCases.createDiagram, get: useCases.getDiagram, list: useCases.listDiagrams, search: useCases.searchDiagrams, update: useCases.updateDiagram, updateThumbnail: useCases.updateThumbnail, delete: useCases.deleteDiagram, toggleStar: useCases.toggleStar, duplicate: useCases.duplicateDiagram, move: useCases.moveDiagram, transferOwnership: useCases.transferDiagramOwnership }, requireAuth, repos.tagRepo));
-app.use("/api/diagrams/:diagramId/scenes", createSceneRoutes({ list: useCases.listScenes, get: useCases.getScene, create: useCases.createScene, rename: useCases.renameScene, delete: useCases.deleteScene }, requireAuth));
+
 app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: useCases.listComments, create: useCases.createComment, reply: useCases.replyComment, resolve: useCases.resolveComment, delete: useCases.deleteComment, toggleLike: useCases.toggleLike }, requireAuth));
 app.use("/api/tags", createTagRoutes({ create: useCases.createTag, list: useCases.listTags, delete: useCases.deleteTag, update: useCases.updateTag, assign: useCases.assignTag, unassign: useCases.unassignTag }, requireAuth));
 app.use("/api/folders", createFolderRoutes({ create: useCases.createFolder, list: useCases.listFolders, rename: useCases.renameFolder, delete: useCases.deleteFolder }, requireAuth));

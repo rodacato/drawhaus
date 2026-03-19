@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { ui } from "@/lib/ui";
 import type { ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 import { SidebarButton } from "./board-sidebar/SidebarButton";
-import { ExportIcon, CommentIcon, ShareIcon, PlusIcon, HomeIcon, GearIcon, TemplateIcon, CodeIcon } from "./board-sidebar/icons";
+import { ExportIcon, CommentIcon, ShareIcon, HomeIcon, GearIcon, TemplateIcon, CodeIcon } from "./board-sidebar/icons";
 import { SidebarDrawer } from "./board-sidebar/SidebarDrawer";
 import { ExportPanel } from "./board-sidebar/ExportPanel";
 import { SharePanel } from "./board-sidebar/SharePanel";
@@ -33,7 +33,6 @@ type BoardSidebarProps = {
   onFollow: (userId: string | null) => void;
   onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
   canEdit: boolean;
-  onCreateScene: () => void;
   saveState: string;
   onBeforeLeave: () => Promise<void>;
   workspaceId?: string | null;
@@ -54,7 +53,6 @@ export function BoardSidebar({
   onFollow,
   onCreateShareLink,
   canEdit,
-  onCreateScene,
   saveState,
   onBeforeLeave,
   workspaceId,
@@ -89,7 +87,6 @@ export function BoardSidebar({
         {/* Create & Import */}
         {canEdit && (
           <div className="flex flex-col items-center gap-1.5">
-            <SidebarButton icon={<PlusIcon />} label="New scene" accent onClick={onCreateScene} />
             <SidebarButton icon={<CodeIcon />} label="Import from Code" active={activePanel === "code"} onClick={() => togglePanel("code")} />
           </div>
         )}

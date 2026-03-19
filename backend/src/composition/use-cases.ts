@@ -58,9 +58,7 @@ import { InviteUserUseCase } from "../application/use-cases/admin/invite-user";
 // --- Scenes ---
 import { ListScenesUseCase } from "../application/use-cases/scenes/list-scenes";
 import { GetSceneUseCase } from "../application/use-cases/scenes/get-scene";
-import { CreateSceneUseCase } from "../application/use-cases/scenes/create-scene";
-import { RenameSceneUseCase } from "../application/use-cases/scenes/rename-scene";
-import { DeleteSceneUseCase } from "../application/use-cases/scenes/delete-scene";
+
 
 // --- Tags ---
 import { CreateTagUseCase } from "../application/use-cases/tags/create-tag";
@@ -171,9 +169,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   // Scenes
   const listScenes = new ListScenesUseCase(repos.sceneRepo, repos.diagramRepo);
   const getScene = new GetSceneUseCase(repos.sceneRepo, repos.diagramRepo);
-  const createScene = new CreateSceneUseCase(repos.sceneRepo, repos.diagramRepo);
-  const renameScene = new RenameSceneUseCase(repos.sceneRepo, repos.diagramRepo);
-  const deleteScene = new DeleteSceneUseCase(repos.sceneRepo, repos.diagramRepo);
+
 
   // Tags
   const createTag = new CreateTagUseCase(repos.tagRepo);
@@ -236,7 +232,7 @@ export function createUseCases(repos: Repositories, services: Services) {
     // admin
     listUsers, adminUpdateUser, adminDeleteUser, getSettings, updateSettings, getMetrics, inviteUser,
     // scenes
-    listScenes, getScene, createScene, renameScene, deleteScene,
+    listScenes, getScene,
     // tags
     createTag, listTags, deleteTag, updateTag, assignTag, unassignTag,
     // comments
