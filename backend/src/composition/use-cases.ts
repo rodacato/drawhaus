@@ -106,6 +106,12 @@ import { RenameSnapshotUseCase } from "../application/use-cases/snapshots/rename
 import { DeleteSnapshotUseCase } from "../application/use-cases/snapshots/delete-snapshot";
 import { GetSnapshotUseCase } from "../application/use-cases/snapshots/get-snapshot";
 
+// --- API Keys ---
+import { CreateApiKeyUseCase } from "../application/use-cases/api-keys/create-api-key";
+import { ListApiKeysUseCase } from "../application/use-cases/api-keys/list-api-keys";
+import { RevokeApiKeyUseCase } from "../application/use-cases/api-keys/revoke-api-key";
+import { ValidateApiKeyUseCase } from "../application/use-cases/api-keys/validate-api-key";
+
 // --- Ownership Transfer ---
 import { TransferWorkspaceOwnershipUseCase } from "../application/use-cases/workspaces/transfer-ownership";
 import { TransferDiagramOwnershipUseCase } from "../application/use-cases/diagrams/transfer-ownership";
@@ -225,6 +231,12 @@ export function createUseCases(repos: Repositories, services: Services) {
   const renameSnapshot = new RenameSnapshotUseCase(repos.snapshotRepo, repos.diagramRepo);
   const deleteSnapshot = new DeleteSnapshotUseCase(repos.snapshotRepo, repos.diagramRepo);
 
+  // API Keys
+  const createApiKey = new CreateApiKeyUseCase(repos.apiKeyRepo, repos.workspaceRepo);
+  const listApiKeys = new ListApiKeysUseCase(repos.apiKeyRepo);
+  const revokeApiKey = new RevokeApiKeyUseCase(repos.apiKeyRepo);
+  const validateApiKey = new ValidateApiKeyUseCase(repos.apiKeyRepo, repos.userRepo);
+
   // Ownership Transfer
   const transferWorkspaceOwnership = new TransferWorkspaceOwnershipUseCase(repos.workspaceRepo, repos.diagramRepo, repos.templateRepo, services.auditLogger);
   const transferDiagramOwnership = new TransferDiagramOwnershipUseCase(repos.diagramRepo, repos.workspaceRepo, services.auditLogger);
@@ -261,6 +273,8 @@ export function createUseCases(repos: Repositories, services: Services) {
     createTemplate, getTemplate, listTemplates, updateTemplate, deleteTemplate, useTemplate,
     // snapshots
     createSnapshot, listSnapshots, getSnapshot, restoreSnapshot, renameSnapshot, deleteSnapshot,
+    // api keys
+    createApiKey, listApiKeys, revokeApiKey, validateApiKey,
     // ownership transfer
     transferWorkspaceOwnership, transferDiagramOwnership, transferTemplateOwnership,
   };

@@ -33,6 +33,7 @@ import { createDriveRoutes } from "./infrastructure/http/routes/drive.routes";
 import { createWorkspaceRoutes } from "./infrastructure/http/routes/workspace.routes";
 import { createTemplateRoutes } from "./infrastructure/http/routes/template.routes";
 import { createSetupRoutes } from "./infrastructure/http/routes/setup.routes";
+import { createApiKeyRoutes } from "./infrastructure/http/routes/api-key.routes";
 import { createRequireAuth } from "./infrastructure/http/middleware/require-auth";
 
 // --- Socket ---
@@ -121,6 +122,7 @@ app.use("/api/admin", createAdminRoutes(
 ));
 app.use("/api/templates", createTemplateRoutes({ create: useCases.createTemplate, get: useCases.getTemplate, list: useCases.listTemplates, update: useCases.updateTemplate, delete: useCases.deleteTemplate, use: useCases.useTemplate, transferOwnership: useCases.transferTemplateOwnership }, requireAuth));
 app.use("/api/drive", createDriveRoutes({ getDriveStatus: useCases.getDriveStatus, toggleDriveBackup: useCases.toggleDriveBackup, disconnectDrive: useCases.disconnectDrive, exportToDrive: useCases.exportToDrive, listDriveFiles: useCases.listDriveFiles, importFromDrive: useCases.importFromDrive }, services.tokenRefresher, requireAuth));
+app.use("/api/api-keys", createApiKeyRoutes({ create: useCases.createApiKey, list: useCases.listApiKeys, revoke: useCases.revokeApiKey }, requireAuth));
 
 // --- Honeybadger error handler (must be after all routes) ---
 if (config.honeybadgerApiKey) {
