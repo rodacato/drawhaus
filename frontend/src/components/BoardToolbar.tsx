@@ -12,6 +12,7 @@ export function BoardToolbarTrigger({
 }) {
   return (
     <button
+      onMouseDown={(e) => e.stopPropagation()}
       onClick={onToggle}
       className={`pointer-events-auto flex items-center gap-1.5 rounded-lg px-3 text-xs font-medium shadow-sm transition ${
         open
