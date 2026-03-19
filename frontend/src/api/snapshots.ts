@@ -4,6 +4,8 @@ export type SnapshotMeta = {
   id: string;
   diagramId: string;
   createdBy: string | null;
+  createdByName: string | null;
+  activeUsers: number;
   trigger: "open" | "close" | "interval" | "manual";
   name: string | null;
   createdAt: string;

@@ -23,6 +23,8 @@ function formatSnapshot(s: DiagramSnapshot) {
     id: s.id,
     diagramId: s.diagramId,
     createdBy: s.createdBy,
+    createdByName: s.createdByName,
+    activeUsers: s.activeUsers,
     trigger: s.trigger,
     name: s.name,
     createdAt: s.createdAt.toISOString(),

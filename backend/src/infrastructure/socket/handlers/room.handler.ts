@@ -72,8 +72,6 @@ export function registerRoomHandlers(
         users: await getRoomPresenceUsers(io, roomId),
       });
 
-      // Fire-and-forget: snapshot on diagram open
-      useCases.createSnapshot.execute(roomId, result.user.id, "open").catch(() => {});
     } catch (error: unknown) {
       logger.error(error, "join-room failed");
       socket.emit("room-error", { message: "Join failed" });
@@ -163,7 +161,9 @@ export function registerRoomHandlers(
       // Snapshot on close if this was the last editor leaving
       const hasRemainingEditors = futureUsers.some((u) => !u.isGuest);
       if (!hasRemainingEditors && myData.userId) {
-        useCases.createSnapshot.execute(roomId, myData.userId.startsWith("guest_") ? null : myData.userId, "close").catch(() => {});
+        // +1 to include the disconnecting user in the count
+        const activeCount = futureUsers.length + 1;
+        useCases.createSnapshot.execute(roomId, myData.userId.startsWith("guest_") ? null : myData.userId, "close", undefined, activeCount).catch(() => {});
       }
 
       // Auto-assign lock to next editor if this room had a lock released

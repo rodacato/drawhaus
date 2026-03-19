@@ -6,6 +6,8 @@ export interface SnapshotRepository {
     createdBy: string | null;
     trigger: SnapshotTrigger;
     name?: string | null;
+    activeUsers?: number;
+    contentHash?: string | null;
     elements: unknown[];
     appState: Record<string, unknown>;
   }): Promise<DiagramSnapshot>;
@@ -19,8 +21,8 @@ export interface SnapshotRepository {
 
   delete(id: string): Promise<void>;
 
-  /** Get the most recent snapshot for deduplication checks. */
-  findLatest(diagramId: string, trigger: SnapshotTrigger): Promise<DiagramSnapshot | null>;
+  /** Get the most recent snapshot for any trigger (cross-trigger dedup). */
+  findLatestForDiagram(diagramId: string): Promise<DiagramSnapshot | null>;
 
   /** Count named snapshots for a diagram. */
   countNamed(diagramId: string): Promise<number>;

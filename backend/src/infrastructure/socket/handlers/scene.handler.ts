@@ -6,7 +6,7 @@ import type { EditLockChecker } from "../edit-lock-store";
 import { type SocketData, canEdit, checkRateLimit, RATE_LIMIT_MAX_SCENE } from "../helpers";
 import { logger } from "../../logger";
 
-const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const SNAPSHOT_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const lastIntervalSnapshot = new Map<string, number>();
 
 export function registerSceneHandlers(
@@ -71,7 +71,9 @@ export function registerSceneHandlers(
         const lastTs = lastIntervalSnapshot.get(roomId) ?? 0;
         if (now - lastTs >= SNAPSHOT_INTERVAL_MS) {
           lastIntervalSnapshot.set(roomId, now);
-          useCases.createSnapshot.execute(roomId, saveUserId, "interval").catch(() => {});
+          const sockets = await io.in(roomId).fetchSockets();
+          const uniqueIds = new Set(sockets.map((s) => (s.data as SocketData).userId).filter(Boolean));
+          useCases.createSnapshot.execute(roomId, saveUserId, "interval", undefined, uniqueIds.size || 1).catch(() => {});
         }
 
         // Fire-and-forget: sync to Google Drive if enabled

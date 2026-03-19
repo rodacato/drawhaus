@@ -348,6 +348,8 @@ export async function initSchema(): Promise<void> {
       created_by UUID REFERENCES users(id) ON DELETE SET NULL,
       trigger TEXT NOT NULL DEFAULT 'manual',
       name TEXT,
+      active_users SMALLINT NOT NULL DEFAULT 1,
+      content_hash TEXT,
       elements JSONB NOT NULL DEFAULT '[]',
       app_state JSONB NOT NULL DEFAULT '{}',
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -357,5 +359,9 @@ export async function initSchema(): Promise<void> {
       ON diagram_snapshots (diagram_id, created_at DESC);
     CREATE INDEX IF NOT EXISTS diagram_snapshots_named_idx
       ON diagram_snapshots (diagram_id) WHERE name IS NOT NULL;
+
+    -- Migrations: safe to re-run (idempotent ALTERs for existing tables)
+    ALTER TABLE diagram_snapshots ADD COLUMN IF NOT EXISTS active_users SMALLINT NOT NULL DEFAULT 1;
+    ALTER TABLE diagram_snapshots ADD COLUMN IF NOT EXISTS content_hash TEXT;
   `);
 }
