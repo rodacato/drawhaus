@@ -149,6 +149,9 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `npm run db:reset` | Drop all tables, recreate schema, and seed |
 | `npm run db:backup --workspace=backend` | Create an on-demand database backup |
 | `npm run db:restore --workspace=backend -- latest` | Restore database from most recent backup |
+| `npm run docs:lint` | Lint OpenAPI spec with Redocly |
+| `npm run docs:build` | Build static API docs to `docs/api/` |
+| `npm run docs:preview` | Preview API docs locally |
 
 ---
 
@@ -472,6 +475,26 @@ kamal rollback -c config/deploy.frontend.yml
 | `PATCH` | `/api/admin/integrations` | Update integration secrets |
 | `GET` | `/api/admin/backups` | List database backups |
 | `POST` | `/api/admin/backups/trigger` | Trigger manual backup |
+
+### API Keys
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/api-keys` | List API keys for current user |
+| `POST` | `/api/api-keys` | Create a new API key |
+| `DELETE` | `/api/api-keys/:id` | Revoke an API key |
+
+### Public API `/v1/`
+
+All `/v1/` endpoints (except health) require `Authorization: Bearer dhk_...` and `X-Drawhaus-Client` headers. Operations are scoped to the API key's workspace.
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `GET` | `/v1/health` | None | Health check (DB connectivity) |
+| `POST` | `/v1/diagrams` | API Key | Create a diagram |
+| `GET` | `/v1/diagrams` | API Key | List diagrams (paginated) |
+| `GET` | `/v1/diagrams/:id` | API Key | Get diagram with scene data |
+| `PATCH` | `/v1/diagrams/:id` | API Key | Update diagram |
+| `DELETE` | `/v1/diagrams/:id` | API Key | Delete diagram |
 
 ---
 

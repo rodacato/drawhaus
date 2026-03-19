@@ -29,6 +29,7 @@ Shipped and working in production. See [CHANGELOG.md](CHANGELOG.md) for full ver
 | **Landing Page** | Hero with real screenshots, "Why Drawhaus?" value props, "How it works" deploy steps, 12-feature grid, comparison badges, tech stack logos, automated Playwright screenshots | v0.9 |
 | **DevOps** | Docker + Kamal deploy (backend + frontend), automated DB backups (7-day retention), health endpoint, `/api/version`, Redis adapter for horizontal scaling, nginx frontend with immutable asset caching, node-pg-migrate versioned migrations | v0.1 |
 | **Testing** | 5-phase Playwright E2E suite (permissions, CRUD, sharing, auth, visual regression), backend unit tests, marketing screenshot automation | v0.8 |
+| **Public API** | API key management (create/revoke), `/v1/` REST endpoints for diagrams (CRUD), workspace-scoped auth, rate limiting, request logging, OpenAPI 3.1 spec + Redocly docs | v0.11 |
 | **Architecture** | Clean Architecture (application/domain/infrastructure), Vite + React Router + Axios, composition root, `validate()` middleware, `withTransaction`, response interceptor | v0.5 |
 
 ---
@@ -50,9 +51,9 @@ Move items through these statuses:
 | # | Feature | Summary | Priority | Effort | Status | Spec |
 |---|---------|---------|----------|--------|--------|------|
 | 1 | Backup All to Drive | One-click workspace backup to Google Drive with progress bar | High | M | in-progress | [spec](docs/specs/backup-all-to-drive.md) |
-| 2 | API Keys | API key infrastructure for `/v1/` public API auth, management UI | High | M | backlog | [spec](docs/specs/api-keys.md) |
-| 3 | Public API /v1/ | RESTful CRUD endpoints for diagrams at `/v1/`, authenticated with API keys | High | M | backlog | [spec](docs/specs/public-api-v1.md) |
-| 4 | OpenAPI + Redocly | Machine-readable spec and interactive docs for `/v1/` | High | S | backlog | [spec](docs/specs/openapi-redocly.md) |
+| 2 | API Keys | API key infrastructure for `/v1/` public API auth, management UI | High | M | done | [spec](docs/specs/api-keys.md) |
+| 3 | Public API /v1/ | RESTful CRUD endpoints for diagrams at `/v1/`, authenticated with API keys | High | M | done | [spec](docs/specs/public-api-v1.md) |
+| 4 | OpenAPI + Redocly | Machine-readable spec and interactive docs for `/v1/` | High | S | done | [spec](docs/specs/openapi-redocly.md) |
 | 5 | MCP Server | AI agents create/read/update diagrams via MCP protocol | High | M | backlog | [spec](docs/specs/mcp-server.md) |
 | 6 | PlantUML Import | Custom PlantUML → editable Excalidraw elements (class, sequence, activity) | Medium | M | backlog | [spec](docs/specs/plantuml-import.md) |
 
@@ -68,7 +69,7 @@ Ideas evaluated but not yet prioritized. When ready to build, write a spec in `d
 | 2 | Webhooks | Notify external systems on diagram events. HMAC-SHA256 signed, retry queue, failure log | S | [spec](docs/specs/webhooks.md) |
 | 3 | Link previews (OpenGraph) | Lightweight HTML endpoint serving OG meta tags + 302 redirect to SPA. Uses existing thumbnails as `og:image` | S | — |
 | 4 | GitHub Gist export | Export `.excalidraw` to Gist (public/secret). Per-user PAT, encrypted storage | S | [spec](docs/specs/github-gist-export.md) |
-| 5 | Public API | REST API with API key authentication for external integrations | M | — |
+| 5 | ~~Public API~~ | ~~REST API with API key authentication~~ — shipped in v0.11 | — | — |
 | 6 | @mention in comments | User search + notification system in threaded comments | M | — |
 | 7 | Embed SDK | JS SDK (`@drawhaus/embed`) — iframe + postMessage for theme, zoom, events | M | — |
 | 8 | CLI tool | `drawhaus create/export/import` from terminal. Requires Public API first | M | — |

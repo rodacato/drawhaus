@@ -1,0 +1,25 @@
+extends:
+  - recommended
+
+rules:
+  no-unused-components: error
+  operation-operationId: error
+  operation-summary: error
+  tag-description: warn
+  info-license: off
+  operation-4xx-response: off
+
+theme:
+  openapi:
+    htmlTemplate: ./api/template.html
+    theme:
+      colors:
+        primary:
+          main: "#6366f1"
+      typography:
+        fontFamily: "Inter, system-ui, sans-serif"
+        headings:
+          fontFamily: "Inter, system-ui, sans-serif"
+      sidebar:
+        backgroundColor: "#1e1e2e"
+        textColor: "#cdd6f4"

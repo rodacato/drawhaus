@@ -15,9 +15,13 @@
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
     "typecheck": "npm run typecheck --workspace=frontend && npm run typecheck --workspace=backend",
     "db:seed": "npm run db:seed --workspace=backend",
-    "db:reset": "npm run db:reset --workspace=backend"
+    "db:reset": "npm run db:reset --workspace=backend",
+    "docs:lint": "redocly lint docs/openapi.yaml --config docs/redocly.yaml",
+    "docs:build": "redocly build-docs docs/openapi.yaml --config docs/redocly.yaml -o docs/api/index.html",
+    "docs:preview": "redocly preview docs/openapi.yaml --config docs/redocly.yaml"
   },
   "devDependencies": {
+    "@redocly/cli": "^1.34.0",
     "concurrently": "^9.0.0"
   }
 }

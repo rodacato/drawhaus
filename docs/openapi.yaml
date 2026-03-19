@@ -1,0 +1,545 @@
+openapi: 3.1.0
+info:
+  title: Drawhaus Public API
+  version: 1.0.0
+  description: |
+    Programmatic access to Drawhaus diagrams. Create, read, update, and delete
+    diagrams in your workspace using API keys.
+
+    ## Authentication
+
+    All endpoints (except `/v1/health`) require two headers:
+
+    1. **Authorization** — Bearer token with your API key (`dhk_` prefix)
+    2. **X-Drawhaus-Client** — Client identifier string (e.g. `mcp-server`, `cli`, your app name)
+
+    ### Getting an API key
+
+    1. Go to **Settings → API Keys** in the Drawhaus UI
+    2. Click **Create API Key** and select a workspace
+    3. Copy the key — it is shown only once
+
+    ### Example request
+
+    ```bash
+    export DHK_TOKEN="dhk_..."  # your API key
+    curl -X GET "${baseUrl}/v1/diagrams" \
+      -H "Authorization: Bearer $DHK_TOKEN" \
+      -H "X-Drawhaus-Client: my-app"
+    ```
+
+    ## Rate Limits
+
+    - **60 requests per minute** per API key
+    - Rate limit headers are included in every response:
+      - `X-RateLimit-Limit` — requests allowed per window
+      - `X-RateLimit-Remaining` — requests remaining
+      - `X-RateLimit-Reset` — seconds until the window resets
+
+    ## Quickstart
+
+    Create your first diagram in 3 commands:
+
+    ```bash
+    export DHK_TOKEN="dhk_..."  # your API key
+
+    # 1. Check connectivity
+    curl ${baseUrl}/v1/health
+
+    # 2. Create a diagram
+    curl -X POST "${baseUrl}/v1/diagrams" \
+      -H "Authorization: Bearer $DHK_TOKEN" \
+      -H "X-Drawhaus-Client: quickstart" \
+      -H "Content-Type: application/json" \
+      -d '{"title": "My first API diagram"}'
+
+    # 3. List all diagrams
+    curl "${baseUrl}/v1/diagrams" \
+      -H "Authorization: Bearer $DHK_TOKEN" \
+      -H "X-Drawhaus-Client: quickstart"
+    ```
+
+    ## MCP Setup
+
+    Add to your MCP client configuration:
+
+    **Claude Code (`~/.claude/mcp.json`)**
+    ```json
+    {
+      "drawhaus": {
+        "url": "${baseUrl}/v1",
+        "apiKey": "dhk_your_key"
+      }
+    }
+    ```
+
+    **VS Code (`.vscode/settings.json`)**
+    ```json
+    {
+      "mcp.servers": {
+        "drawhaus": {
+          "url": "${baseUrl}/v1",
+          "apiKey": "dhk_your_key"
+        }
+      }
+    }
+    ```
+
+servers:
+  - url: "{baseUrl}/v1"
+    description: Drawhaus API server
+    variables:
+      baseUrl:
+        default: http://localhost:4000
+        description: Base URL of your Drawhaus instance
+
+security:
+  - apiKey: []
+
+tags:
+  - name: Health
+    description: Connectivity and status checks (no auth required)
+  - name: Diagrams
+    description: CRUD operations for diagrams
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: |
+        Returns the current health status of the API. Does not require authentication.
+        Use this endpoint to verify connectivity before making authenticated requests.
+      tags: [Health]
+      security: []
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: ok
+                version: "0.10.0"
+                database: ok
+        "503":
+          description: Service is degraded (database unreachable)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: degraded
+                version: "0.10.0"
+                database: error
+
+  /diagrams:
+    get:
+      operationId: listDiagrams
+      summary: List diagrams
+      description: |
+        Returns all diagrams in the workspace associated with the API key.
+        Results are paginated and sorted by last updated (newest first).
+        Scene data (elements, appState) is not included in list responses — use GET `/diagrams/{id}` for full data.
+      tags: [Diagrams]
+      parameters:
+        - $ref: "#/components/parameters/XDrawhausClient"
+        - name: folderId
+          in: query
+          description: Filter by folder UUID. Omit to list all diagrams.
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          description: Maximum number of diagrams to return (1–100).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of diagrams to skip for pagination.
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: List of diagrams
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiagramListResponse"
+              example:
+                data:
+                  - id: "550e8400-e29b-41d4-a716-446655440000"
+                    title: "Architecture Overview"
+                    url: "https://draw.example.com/board/550e8400-e29b-41d4-a716-446655440000"
+                    createdVia: api
+                    folderId: null
+                    createdAt: "2026-03-19T10:00:00.000Z"
+                    updatedAt: "2026-03-19T12:30:00.000Z"
+                total: 1
+                limit: 50
+                offset: 0
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    post:
+      operationId: createDiagram
+      summary: Create a diagram
+      description: |
+        Creates a new diagram in the workspace associated with the API key.
+        The diagram is owned by the user who created the API key.
+
+        - `title` defaults to `"Untitled"` if omitted
+        - `elements` and `appState` accept Excalidraw scene format
+        - Text fields in elements are sanitized to prevent stored XSS
+        - `createdVia` is automatically set to `"api"`
+      tags: [Diagrams]
+      parameters:
+        - $ref: "#/components/parameters/XDrawhausClient"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDiagramRequest"
+            examples:
+              minimal:
+                summary: Minimal (title only)
+                value:
+                  title: "Class Diagram"
+              withScene:
+                summary: With Excalidraw scene data
+                value:
+                  title: "Architecture"
+                  elements:
+                    - id: "rect1"
+                      type: "rectangle"
+                      x: 100
+                      y: 100
+                      width: 200
+                      height: 100
+                  appState:
+                    viewBackgroundColor: "#ffffff"
+      responses:
+        "201":
+          description: Diagram created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiagramDetailResponse"
+              example:
+                data:
+                  id: "550e8400-e29b-41d4-a716-446655440000"
+                  title: "Class Diagram"
+                  url: "https://draw.example.com/board/550e8400-e29b-41d4-a716-446655440000"
+                  createdVia: api
+                  folderId: null
+                  elements: []
+                  appState: {}
+                  createdAt: "2026-03-19T10:00:00.000Z"
+                  updatedAt: "2026-03-19T10:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /diagrams/{id}:
+    parameters:
+      - $ref: "#/components/parameters/DiagramId"
+
+    get:
+      operationId: getDiagram
+      summary: Get a diagram
+      description: |
+        Returns a single diagram with full scene data (elements and appState).
+        The diagram must belong to the workspace associated with the API key.
+      tags: [Diagrams]
+      parameters:
+        - $ref: "#/components/parameters/XDrawhausClient"
+      responses:
+        "200":
+          description: Diagram found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiagramDetailResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      operationId: updateDiagram
+      summary: Update a diagram
+      description: |
+        Updates one or more fields of a diagram. At least one field must be provided.
+        The diagram must belong to the workspace associated with the API key.
+        Text fields in elements are sanitized to prevent stored XSS.
+      tags: [Diagrams]
+      parameters:
+        - $ref: "#/components/parameters/XDrawhausClient"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDiagramRequest"
+            examples:
+              renameOnly:
+                summary: Rename diagram
+                value:
+                  title: "Updated Architecture"
+              fullUpdate:
+                summary: Update title and scene
+                value:
+                  title: "Updated Architecture"
+                  elements:
+                    - id: "rect1"
+                      type: "rectangle"
+                      x: 100
+                      y: 100
+                      width: 200
+                      height: 100
+                  appState:
+                    viewBackgroundColor: "#f0f0f0"
+      responses:
+        "200":
+          description: Diagram updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiagramDetailResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      operationId: deleteDiagram
+      summary: Delete a diagram
+      description: |
+        Permanently deletes a diagram. This action cannot be undone.
+        The diagram must belong to the workspace associated with the API key.
+      tags: [Diagrams]
+      parameters:
+        - $ref: "#/components/parameters/XDrawhausClient"
+      responses:
+        "204":
+          description: Diagram deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    apiKey:
+      type: http
+      scheme: bearer
+      description: |
+        API key with `dhk_` prefix. Create one in Settings → API Keys.
+
+        Example: `Authorization: Bearer dhk_abc123...`
+
+  parameters:
+    DiagramId:
+      name: id
+      in: path
+      required: true
+      description: Diagram UUID
+      schema:
+        type: string
+        format: uuid
+
+    XDrawhausClient:
+      name: X-Drawhaus-Client
+      in: header
+      required: true
+      description: |
+        Client identifier string. Used for request tracking and analytics.
+        Example values: `mcp-server`, `cli`, `my-integration`.
+      schema:
+        type: string
+        minLength: 1
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, version, database]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+          description: Overall service status
+        version:
+          type: string
+          description: Application version
+        database:
+          type: string
+          enum: [ok, error]
+          description: Database connectivity status
+
+    DiagramSummary:
+      type: object
+      required: [id, title, url, createdVia, folderId, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+          description: Direct link to open the diagram in the Drawhaus UI
+        createdVia:
+          type: string
+          enum: [ui, api]
+          description: How the diagram was created
+        folderId:
+          type: ["string", "null"]
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DiagramDetail:
+      allOf:
+        - $ref: "#/components/schemas/DiagramSummary"
+        - type: object
+          required: [elements, appState]
+          properties:
+            elements:
+              type: array
+              items: {}
+              description: Excalidraw elements array
+            appState:
+              type: object
+              additionalProperties: true
+              description: Excalidraw app state object
+
+    CreateDiagramRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          default: Untitled
+          description: Diagram title
+        folderId:
+          type: ["string", "null"]
+          format: uuid
+          description: Optional folder to place the diagram in
+        elements:
+          type: array
+          items: {}
+          description: Excalidraw elements array
+        appState:
+          type: object
+          additionalProperties: true
+          description: Excalidraw app state object
+
+    UpdateDiagramRequest:
+      type: object
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        elements:
+          type: array
+          items: {}
+          description: Excalidraw elements array
+        appState:
+          type: object
+          additionalProperties: true
+          description: Excalidraw app state object
+
+    DiagramListResponse:
+      type: object
+      required: [data, total, limit, offset]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiagramSummary"
+        total:
+          type: integer
+          description: Total number of diagrams matching the query
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    DiagramDetailResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/DiagramDetail"
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+
+  responses:
+    BadRequest:
+      description: Invalid request body or query parameters
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: "Invalid request body"
+
+    Unauthorized:
+      description: Missing, invalid, or expired API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: "Invalid or expired API key"
+
+    Forbidden:
+      description: Diagram does not belong to the API key's workspace
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: "Forbidden"
+
+    NotFound:
+      description: Diagram not found or no access
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: "Diagram not found"

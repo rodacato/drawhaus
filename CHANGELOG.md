@@ -4,6 +4,22 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
+## v0.11.0 — Public API & API Keys (2026-03)
+
+### Added
+- **API key management** — create, list, and revoke workspace-scoped API keys (`dhk_` prefix) from Settings → API Keys
+- **Public API `/v1/`** — REST endpoints for diagrams (create, list, get, update, delete) authenticated via API keys
+- **`/v1/health`** — unauthenticated health check endpoint for connectivity verification
+- **Element sanitization** — HTML tag stripping on text fields to prevent stored XSS via API
+- **`created_via` tracking** — diagrams record whether they were created via UI or API
+- **SDK header requirement** — `X-Drawhaus-Client` header required for API requests (client identification)
+- **API rate limiting** — 60 requests/minute per API key
+- **Request logging** — API requests logged with method, path, status, and response time
+- **OpenAPI 3.1 spec** — machine-readable API documentation at `docs/openapi.yaml`
+- **Redocly integration** — `npm run docs:lint`, `docs:build`, `docs:preview` for API documentation
+
+---
+
 ## v0.10.0 — Snapshots, Editor Lock & Single-Scene (2026-03)
 
 ### Added
