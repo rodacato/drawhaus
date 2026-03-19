@@ -50,8 +50,11 @@ Move items through these statuses:
 | # | Feature | Summary | Priority | Effort | Status | Spec |
 |---|---------|---------|----------|--------|--------|------|
 | 1 | Backup All to Drive | One-click workspace backup to Google Drive with progress bar | High | M | in-progress | [spec](docs/specs/backup-all-to-drive.md) |
-| 2 | MCP Server | AI agents create/read/update diagrams via MCP protocol | High | M | backlog | [spec](docs/specs/mcp-server.md) |
-| 3 | PlantUML Import | Custom PlantUML → editable Excalidraw elements (class, sequence, activity) | Medium | M | backlog | [spec](docs/specs/plantuml-import.md) |
+| 2 | API Keys | API key infrastructure for `/v1/` public API auth, management UI | High | M | backlog | [spec](docs/specs/api-keys.md) |
+| 3 | Public API /v1/ | RESTful CRUD endpoints for diagrams at `/v1/`, authenticated with API keys | High | M | backlog | [spec](docs/specs/public-api-v1.md) |
+| 4 | OpenAPI + Redocly | Machine-readable spec and interactive docs for `/v1/` | High | S | backlog | [spec](docs/specs/openapi-redocly.md) |
+| 5 | MCP Server | AI agents create/read/update diagrams via MCP protocol | High | M | backlog | [spec](docs/specs/mcp-server.md) |
+| 6 | PlantUML Import | Custom PlantUML → editable Excalidraw elements (class, sequence, activity) | Medium | M | backlog | [spec](docs/specs/plantuml-import.md) |
 
 ---
 
