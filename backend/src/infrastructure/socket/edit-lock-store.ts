@@ -11,12 +11,23 @@ export interface EditLockChecker {
   touchLock(diagramId: string, userId: string): void;
 }
 
-/** Auto-release after 2 seconds of inactivity */
-const INACTIVITY_TIMEOUT_MS = 2_000;
+/** Auto-release after 5 seconds of inactivity */
+const INACTIVITY_TIMEOUT_MS = 5_000;
+
+/** Grace period: previous holder gets priority to re-acquire after auto-release */
+const RECONNECT_GRACE_MS = 3_000;
+
+interface GraceHolder {
+  userId: string;
+  userName: string;
+  expiresAt: number;
+}
 
 export class EditLockStore implements EditLockChecker {
   private locks = new Map<string, LockHolder>();
   private timers = new Map<string, ReturnType<typeof setTimeout>>();
+  private graceHolders = new Map<string, GraceHolder>();
+  private graceTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private onRelease: ((diagramId: string, previousHolder: LockHolder) => void) | null = null;
 
   /** Register callback invoked when a lock is auto-released by inactivity */
@@ -33,6 +44,12 @@ export class EditLockStore implements EditLockChecker {
   ): { acquired: boolean; holder: LockHolder | null } {
     const existing = this.locks.get(diagramId);
     if (!existing) {
+      // Grace period: previous holder gets priority to re-acquire
+      const grace = this.graceHolders.get(diagramId);
+      if (grace && grace.userId !== userId && grace.expiresAt > Date.now()) {
+        return { acquired: false, holder: null };
+      }
+      this.clearGrace(diagramId);
       this.acquireLock(diagramId, userId, userName, socketId);
       return { acquired: true, holder: null };
     }
@@ -109,6 +126,8 @@ export class EditLockStore implements EditLockChecker {
           const prev = { ...holder };
           this.locks.delete(diagramId);
           this.timers.delete(diagramId);
+          // Set grace period so the same user can re-acquire quickly
+          this.setGrace(diagramId, prev.userId, prev.userName);
           this.onRelease?.(diagramId, prev);
         }
       }, INACTIVITY_TIMEOUT_MS),
@@ -123,9 +142,37 @@ export class EditLockStore implements EditLockChecker {
     }
   }
 
+  private setGrace(diagramId: string, userId: string, userName: string): void {
+    this.clearGrace(diagramId);
+    this.graceHolders.set(diagramId, {
+      userId,
+      userName,
+      expiresAt: Date.now() + RECONNECT_GRACE_MS,
+    });
+    this.graceTimers.set(
+      diagramId,
+      setTimeout(() => {
+        this.graceHolders.delete(diagramId);
+        this.graceTimers.delete(diagramId);
+      }, RECONNECT_GRACE_MS),
+    );
+  }
+
+  private clearGrace(diagramId: string): void {
+    const timer = this.graceTimers.get(diagramId);
+    if (timer) {
+      clearTimeout(timer);
+      this.graceTimers.delete(diagramId);
+    }
+    this.graceHolders.delete(diagramId);
+  }
+
   stopAll(): void {
     for (const timer of this.timers.values()) clearTimeout(timer);
     this.timers.clear();
+    for (const timer of this.graceTimers.values()) clearTimeout(timer);
+    this.graceTimers.clear();
+    this.graceHolders.clear();
     this.locks.clear();
   }
 }

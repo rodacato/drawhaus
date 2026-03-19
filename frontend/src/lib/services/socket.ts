@@ -8,8 +8,8 @@ export function createSocket(): Socket {
     transports: ["websocket", "polling"],
     withCredentials: true,
     reconnection: true,
-    reconnectionAttempts: 3,
-    reconnectionDelay: 1000,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 500,
     reconnectionDelayMax: 5000,
   });
 }
