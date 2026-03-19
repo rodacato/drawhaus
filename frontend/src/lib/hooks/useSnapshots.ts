@@ -49,6 +49,12 @@ export function useSnapshots(diagramId: string | null) {
     await refresh();
   }, [diagramId, refresh]);
 
+  const getSnapshot = useCallback(async (snapshotId: string): Promise<SnapshotFull | null> => {
+    if (!diagramId) return null;
+    const { snapshot } = await snapshotsApi.get(diagramId, snapshotId);
+    return snapshot;
+  }, [diagramId]);
+
   const named = snapshots.filter((s) => s.name !== null);
   const auto = snapshots.filter((s) => s.name === null);
 
@@ -59,6 +65,7 @@ export function useSnapshots(diagramId: string | null) {
     loading,
     refresh,
     createSnapshot,
+    getSnapshot,
     restoreSnapshot,
     renameSnapshot,
     deleteSnapshot,
