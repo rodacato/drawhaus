@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ExcalidrawApi } from "@/lib/types";
 
 // Re-export types for consumers
@@ -7,6 +7,7 @@ import type { CollaborationOptions, CollaborationState } from "./collaboration/t
 
 // Sub-hooks
 import { useSocketConnection } from "./collaboration/useSocketConnection";
+import { useEditLock } from "./collaboration/useEditLock";
 import { useSaveManager } from "./collaboration/useSaveManager";
 import { usePresence } from "./collaboration/usePresence";
 import { useSceneManager } from "./collaboration/useSceneManager";
@@ -32,18 +33,21 @@ export function useCollaboration({
 
   const cacheKey = `drawhaus_scene_${diagramId}`;
 
-  /* ─── initial data (with localStorage cache) ─── */
+  /* ─── initial data (server-first, localStorage only as offline fallback) ─── */
   const initialData = useMemo(() => {
     let elements = initialElements;
     let appState = initialAppState;
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed.elements) && parsed.elements.length > 0) elements = parsed.elements;
-        if (parsed.appState) appState = parsed.appState;
-      }
-    } catch { /* ignore */ }
+    // Only use localStorage cache when server returned nothing (offline fallback)
+    if (!elements || elements.length === 0) {
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed.elements) && parsed.elements.length > 0) elements = parsed.elements;
+          if (parsed.appState) appState = parsed.appState;
+        }
+      } catch { /* ignore */ }
+    }
     return {
       elements,
       appState: { ...appState, ...canvasPrefs, collaborators: new Map(), theme: "light" },
@@ -56,7 +60,12 @@ export function useCollaboration({
     joinMode,
   });
 
-  /* ─── 2. Save manager ─── */
+  /* ─── 2. Edit lock ─── */
+  const editLock = useEditLock({ socketRef, socketGeneration, selfUserId });
+  const hasEditLockRef = useRef(false);
+  hasEditLockRef.current = editLock.hasEditLock;
+
+  /* ─── 3. Save manager ─── */
   const { saveState, saveLabel, saveColor, lastSavedAt, onChange, flushSave, cancelPendingTimers } = useSaveManager({
     socketRef,
     socketGeneration,
@@ -67,9 +76,10 @@ export function useCollaboration({
     followingUserIdRef,
     followedViewportRef,
     canEdit,
+    hasEditLockRef,
   });
 
-  /* ─── 3. Presence ─── */
+  /* ─── 4. Presence ─── */
   const { presenceUsers, cursors, followingUserId, setFollowingUserId, onPointerMove } = usePresence({
     socketRef,
     socketGeneration,
@@ -81,7 +91,7 @@ export function useCollaboration({
     selfUserId,
   });
 
-  /* ─── 4. Scene manager ─── */
+  /* ─── 5. Scene manager ─── */
   const { scenes, activeSceneId, switchingScene, switchScene, createScene, deleteScene, renameScene } = useSceneManager({
     socketRef,
     socketGeneration,
@@ -93,9 +103,22 @@ export function useCollaboration({
     cancelPendingTimers,
   });
 
+  /* ─── 6. Force viewModeEnabled via Excalidraw API when lock state changes ─── */
+  useEffect(() => {
+    const api = excalidrawApiRef.current;
+    if (!api) return;
+    const viewMode = !canEdit || !editLock.hasEditLock || !!followingUserIdRef.current;
+    applyingRemoteCounter.current += 1;
+    api.updateScene({ appState: { viewModeEnabled: viewMode } });
+    setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+  }, [editLock.hasEditLock, editLock.editLockHolder, canEdit]);
+
   /* ─── excalidraw API init ─── */
   const onExcalidrawApi = useCallback((excalidrawApi: ExcalidrawApi) => {
     excalidrawApiRef.current = excalidrawApi;
+    // Apply initial viewMode
+    const viewMode = !canEdit || !hasEditLockRef.current;
+    excalidrawApi.updateScene({ appState: { viewModeEnabled: viewMode } });
     if (pendingSceneRef.current) {
       const pending = pendingSceneRef.current;
       pendingSceneRef.current = null;
@@ -103,7 +126,7 @@ export function useCollaboration({
       excalidrawApi.updateScene({ elements: pending.elements });
       setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
     }
-  }, []);
+  }, [canEdit]);
 
   return {
     saveState, connectionState, connectionError,
@@ -113,5 +136,9 @@ export function useCollaboration({
     scenes, activeSceneId, switchingScene,
     switchScene, createScene, deleteScene, renameScene,
     excalidrawApiRef, socketRef, onExcalidrawApi, onChange, onPointerMove, flushSave,
+    // Edit lock
+    editLockHolder: editLock.editLockHolder,
+    hasEditLock: editLock.hasEditLock,
+    tryAcquireEditLock: editLock.tryAcquireEditLock,
   };
 }
