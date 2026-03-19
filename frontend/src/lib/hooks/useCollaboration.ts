@@ -116,16 +116,18 @@ export function useCollaboration({
   /* ─── excalidraw API init ─── */
   const onExcalidrawApi = useCallback((excalidrawApi: ExcalidrawApi) => {
     excalidrawApiRef.current = excalidrawApi;
-    // Apply initial viewMode — block editing until lock is acquired
-    const viewMode = !canEdit || !hasEditLockRef.current;
-    excalidrawApi.updateScene({ appState: { viewModeEnabled: viewMode } });
-    if (pendingSceneRef.current) {
-      const pending = pendingSceneRef.current;
-      pendingSceneRef.current = null;
-      applyingRemoteCounter.current += 1;
-      excalidrawApi.updateScene({ elements: pending.elements });
-      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
-    }
+    // Defer to next frame to avoid setState-before-mount warning from Excalidraw
+    requestAnimationFrame(() => {
+      const viewMode = !canEdit || !hasEditLockRef.current;
+      excalidrawApi.updateScene({ appState: { viewModeEnabled: viewMode } });
+      if (pendingSceneRef.current) {
+        const pending = pendingSceneRef.current;
+        pendingSceneRef.current = null;
+        applyingRemoteCounter.current += 1;
+        excalidrawApi.updateScene({ elements: pending.elements });
+        setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+      }
+    });
   }, [canEdit]);
 
   return {
