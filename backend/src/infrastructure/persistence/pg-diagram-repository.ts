@@ -12,6 +12,7 @@ type DiagramRow = {
   app_state: Record<string, unknown>;
   thumbnail: string | null;
   starred: boolean;
+  created_via: string;
   created_at: string;
   updated_at: string;
 };
@@ -22,7 +23,7 @@ type AccessRow = {
   wm_role: "admin" | "editor" | "viewer" | null;
 };
 
-const COLS = "id, owner_id, workspace_id, folder_id, title, elements, app_state, thumbnail, starred, created_at, updated_at";
+const COLS = "id, owner_id, workspace_id, folder_id, title, elements, app_state, thumbnail, starred, created_via, created_at, updated_at";
 
 function toDomain(row: DiagramRow): Diagram {
   return {
@@ -35,6 +36,7 @@ function toDomain(row: DiagramRow): Diagram {
     appState: row.app_state,
     thumbnail: row.thumbnail,
     starred: row.starred,
+    createdVia: row.created_via ?? "ui",
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -134,19 +136,20 @@ export class PgDiagramRepository implements DiagramRepository {
     return "viewer";
   }
 
-  async create(data: { title: string; ownerId: string; workspaceId?: string | null; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown>; thumbnail?: string | null }): Promise<Diagram> {
+  async create(data: { title: string; ownerId: string; workspaceId?: string | null; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown>; thumbnail?: string | null; createdVia?: string }): Promise<Diagram> {
     const folderId = data.folderId ?? null;
     const workspaceId = data.workspaceId ?? null;
+    const createdVia = data.createdVia ?? "ui";
     const hasScene = data.elements !== undefined;
 
     const sql = hasScene
-      ? `INSERT INTO diagrams (owner_id, workspace_id, folder_id, title, elements, app_state, thumbnail)
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING ${COLS}`
-      : `INSERT INTO diagrams (owner_id, workspace_id, folder_id, title, thumbnail)
-         VALUES ($1, $2, $3, $4, $5) RETURNING ${COLS}`;
+      ? `INSERT INTO diagrams (owner_id, workspace_id, folder_id, title, elements, app_state, thumbnail, created_via)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ${COLS}`
+      : `INSERT INTO diagrams (owner_id, workspace_id, folder_id, title, thumbnail, created_via)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${COLS}`;
     const params = hasScene
-      ? [data.ownerId, workspaceId, folderId, data.title, JSON.stringify(data.elements), JSON.stringify(data.appState ?? {}), data.thumbnail ?? null]
-      : [data.ownerId, workspaceId, folderId, data.title, data.thumbnail ?? null];
+      ? [data.ownerId, workspaceId, folderId, data.title, JSON.stringify(data.elements), JSON.stringify(data.appState ?? {}), data.thumbnail ?? null, createdVia]
+      : [data.ownerId, workspaceId, folderId, data.title, data.thumbnail ?? null, createdVia];
 
     const { rows } = await pool.query<DiagramRow>(sql, params);
     return toDomain(rows[0]);

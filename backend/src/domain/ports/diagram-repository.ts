@@ -4,7 +4,7 @@ export interface DiagramRepository {
   findById(id: string): Promise<Diagram | null>;
   findByUser(userId: string, folderId?: string | null, workspaceId?: string): Promise<Diagram[]>;
   findAccessRole(diagramId: string, userId: string): Promise<DiagramRole | null>;
-  create(data: { title: string; ownerId: string; workspaceId?: string | null; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown>; thumbnail?: string | null }): Promise<Diagram>;
+  create(data: { title: string; ownerId: string; workspaceId?: string | null; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown>; thumbnail?: string | null; createdVia?: string }): Promise<Diagram>;
   update(id: string, data: Partial<Pick<Diagram, "title" | "elements" | "appState">>): Promise<Diagram | null>;
   updateScene(id: string, elements: unknown[], appState: Record<string, unknown>): Promise<void>;
   moveTo(id: string, folderId: string | null): Promise<void>;

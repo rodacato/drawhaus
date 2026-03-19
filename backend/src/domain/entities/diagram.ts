@@ -8,6 +8,7 @@ export type Diagram = {
   appState: Record<string, unknown>;
   thumbnail: string | null;
   starred: boolean;
+  createdVia: string;
   createdAt: Date;
   updatedAt: Date;
 };

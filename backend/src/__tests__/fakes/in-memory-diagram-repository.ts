@@ -29,7 +29,7 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     return member?.role ?? null;
   }
 
-  async create(data: { title: string; ownerId: string; workspaceId?: string | null; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown> }): Promise<Diagram> {
+  async create(data: { title: string; ownerId: string; workspaceId?: string | null; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown>; createdVia?: string }): Promise<Diagram> {
     const diagram: Diagram = {
       id: crypto.randomUUID(),
       ownerId: data.ownerId,
@@ -40,6 +40,7 @@ export class InMemoryDiagramRepository implements DiagramRepository {
       appState: data.appState ?? {},
       thumbnail: null,
       starred: false,
+      createdVia: data.createdVia ?? "ui",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
