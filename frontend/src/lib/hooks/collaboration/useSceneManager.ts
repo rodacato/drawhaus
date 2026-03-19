@@ -85,7 +85,8 @@ export function useSceneManager({
     if (currentSceneId && excalidrawApiRef.current && socketRef.current?.connected) {
       const currentElements = excalidrawApiRef.current.getSceneElements?.() ?? [];
       const currentAppState = excalidrawApiRef.current.getAppState?.() ?? {};
-      const sanitizedAppState = jsonSafe({ ...currentAppState, collaborators: undefined });
+      const { collaborators: _c, viewBackgroundColor: _bg, gridModeEnabled: _gm, gridSize: _gs, ...restAppState } = currentAppState;
+      const sanitizedAppState = jsonSafe(restAppState);
       socketRef.current.emit("save-scene", { roomId: diagramId, sceneId: currentSceneId, elements: jsonSafe([...currentElements]), appState: sanitizedAppState });
     }
     socketRef.current?.emit("switch-scene", { roomId: diagramId, sceneId });

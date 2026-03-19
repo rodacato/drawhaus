@@ -9,6 +9,8 @@ import { SceneTabBar } from "@/components/SceneTabBar";
 import { CommentsPanel } from "@/components/CommentsPanel";
 import { CommentIndicators } from "@/components/CommentIndicators";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
+import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
+import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import { useComments } from "@/lib/hooks/useComments";
 import { shareApi } from "@/api/share";
 import { diagramsApi } from "@/api/diagrams";
@@ -37,13 +39,21 @@ export default function BoardEditor({
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
 
+  const { prefs: canvasPrefs, updatePrefs: updateCanvasPrefs } = useCanvasPrefs();
+
   const collab = useCollaboration({
     diagramId,
     canEdit: true,
     joinMode: { type: "authenticated", roomId: diagramId },
     initialElements,
     initialAppState,
+    canvasPrefs,
   });
+
+  const handleCanvasPrefsChange = useCallback((patch: Partial<CanvasPrefs>) => {
+    updateCanvasPrefs(patch);
+    collab.excalidrawApiRef.current?.updateScene({ appState: patch });
+  }, [updateCanvasPrefs, collab.excalidrawApiRef]);
 
   const comments = useComments({ diagramId, sceneId: collab.activeSceneId, socketRef: collab.socketRef });
 
@@ -201,6 +211,8 @@ export default function BoardEditor({
         saveState={collab.saveState}
         onBeforeLeave={collab.flushSave}
         workspaceId={workspaceId}
+        canvasPrefs={canvasPrefs}
+        onCanvasPrefsChange={handleCanvasPrefsChange}
       />
 
       {/* Main content area */}

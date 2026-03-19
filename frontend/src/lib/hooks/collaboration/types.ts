@@ -1,4 +1,5 @@
 import type { SaveState, ConnectionState, PresenceUser, CursorInfo, ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
+import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 
 export type JoinMode =
   | { type: "authenticated"; roomId: string }
@@ -10,6 +11,7 @@ export type CollaborationOptions = {
   joinMode: JoinMode;
   initialElements: unknown[];
   initialAppState: Record<string, unknown>;
+  canvasPrefs: CanvasPrefs;
 };
 
 export type SceneInfo = { id: string; name: string; sortOrder: number };

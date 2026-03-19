@@ -83,7 +83,8 @@ export function useSaveManager({
       if (forSceneId && forSceneId !== activeSceneIdRef.current) return;
       setSaveState("saving");
       try {
-        const sanitizedAppState = jsonSafe({ ...appState, collaborators: undefined });
+        const { collaborators: _c, viewBackgroundColor: _bg, gridModeEnabled: _gm, gridSize: _gs, ...restAppState } = appState;
+        const sanitizedAppState = jsonSafe(restAppState);
         const safeElements = jsonSafe(elements);
         try { localStorage.setItem(cacheKey, JSON.stringify({ elements: safeElements, appState: sanitizedAppState })); } catch { /* quota exceeded */ }
         if (socketRef.current?.connected) {

@@ -17,6 +17,7 @@ export function useCollaboration({
   joinMode,
   initialElements,
   initialAppState,
+  canvasPrefs,
 }: CollaborationOptions): CollaborationState {
   /* ─── toolbar state (owned by parent, not a sub-hook concern) ─── */
   const [toolbarOpen, setToolbarOpen] = useState(false);
@@ -45,7 +46,7 @@ export function useCollaboration({
     } catch { /* ignore */ }
     return {
       elements,
-      appState: { ...appState, collaborators: new Map(), gridModeEnabled: true, theme: "light", viewBackgroundColor: "#f8f9fc" },
+      appState: { ...appState, ...canvasPrefs, collaborators: new Map(), theme: "light" },
     };
   }, [initialElements, initialAppState, cacheKey]);
 

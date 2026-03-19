@@ -7,6 +7,7 @@ import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
 import { SceneTabBar } from "@/components/SceneTabBar";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
+import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import { ui } from "@/lib/ui";
 
 type ShareData = {
@@ -140,12 +141,14 @@ function ShareViewInner({ shareToken, data }: { shareToken: string; data: ShareD
 
 function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data: ShareData; guestName: string }) {
   const canEdit = data.role === "editor";
+  const { prefs: canvasPrefs } = useCanvasPrefs();
   const collab = useCollaboration({
     diagramId: data.diagramId,
     canEdit,
     joinMode: { type: "guest", shareToken, guestName },
     initialElements: data.elements,
     initialAppState: data.appState,
+    canvasPrefs,
   });
 
   return (

@@ -11,6 +11,7 @@ import { SharePanel } from "./board-sidebar/SharePanel";
 import { SettingsPanel } from "./board-sidebar/SettingsPanel";
 import { SaveTemplatePanel } from "./board-sidebar/SaveTemplatePanel";
 import { CodeImportPanel } from "./board-sidebar/CodeImportPanel";
+import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 
 /* ───────────────────────── types ───────────────────────── */
 
@@ -36,6 +37,8 @@ type BoardSidebarProps = {
   saveState: string;
   onBeforeLeave: () => Promise<void>;
   workspaceId?: string | null;
+  canvasPrefs: CanvasPrefs;
+  onCanvasPrefsChange: (patch: Partial<CanvasPrefs>) => void;
 };
 
 /* ───────────────────────── main sidebar ───────────────────────── */
@@ -55,6 +58,8 @@ export function BoardSidebar({
   saveState,
   onBeforeLeave,
   workspaceId,
+  canvasPrefs,
+  onCanvasPrefsChange,
 }: BoardSidebarProps) {
   const navigate = useNavigate();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
@@ -144,7 +149,7 @@ export function BoardSidebar({
             onCreateShareLink={onCreateShareLink}
           />
         )}
-        {activePanel === "settings" && <SettingsPanel userEmail={userEmail} onDashboardClick={() => setLeaveOpen(true)} />}
+        {activePanel === "settings" && <SettingsPanel userEmail={userEmail} onDashboardClick={() => setLeaveOpen(true)} canvasPrefs={canvasPrefs} onCanvasPrefsChange={onCanvasPrefsChange} />}
         {activePanel === "template" && <SaveTemplatePanel excalidrawApiRef={excalidrawApiRef} workspaceId={workspaceId} />}
         {activePanel === "code" && <CodeImportPanel excalidrawApiRef={excalidrawApiRef} onClose={closePanel} />}
       </SidebarDrawer>
