@@ -433,6 +433,16 @@ kamal rollback -c config/deploy.frontend.yml
 | `DELETE` | `/api/templates/:id` | Delete custom template |
 | `POST` | `/api/templates/transfer-ownership` | Bulk transfer template ownership |
 
+### Snapshots
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/diagrams/:id/snapshots` | List snapshots (metadata only) |
+| `POST` | `/api/diagrams/:id/snapshots` | Create snapshot (manual trigger) |
+| `GET` | `/api/diagrams/:id/snapshots/:snapshotId` | Get full snapshot (with elements) |
+| `POST` | `/api/diagrams/:id/snapshots/:snapshotId/restore` | Restore snapshot (creates pre-restore backup) |
+| `PATCH` | `/api/diagrams/:id/snapshots/:snapshotId` | Rename snapshot |
+| `DELETE` | `/api/diagrams/:id/snapshots/:snapshotId` | Delete snapshot |
+
 ### Diagrams — Transfer
 | Method | Endpoint | Description |
 |--------|----------|-------------|

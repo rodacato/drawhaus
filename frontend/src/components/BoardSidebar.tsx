@@ -4,18 +4,19 @@ import { createPortal } from "react-dom";
 import { ui } from "@/lib/ui";
 import type { ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 import { SidebarButton } from "./board-sidebar/SidebarButton";
-import { ExportIcon, CommentIcon, ShareIcon, HomeIcon, GearIcon, TemplateIcon, CodeIcon } from "./board-sidebar/icons";
+import { ExportIcon, CommentIcon, ShareIcon, HomeIcon, GearIcon, TemplateIcon, CodeIcon, HistoryIcon } from "./board-sidebar/icons";
 import { SidebarDrawer } from "./board-sidebar/SidebarDrawer";
 import { ExportPanel } from "./board-sidebar/ExportPanel";
 import { SharePanel } from "./board-sidebar/SharePanel";
 import { SettingsPanel } from "./board-sidebar/SettingsPanel";
 import { SaveTemplatePanel } from "./board-sidebar/SaveTemplatePanel";
 import { CodeImportPanel } from "./board-sidebar/CodeImportPanel";
+import { SnapshotPanel } from "./board-sidebar/SnapshotPanel";
 import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 
 /* ───────────────────────── types ───────────────────────── */
 
-type ActivePanel = "export" | "share" | "settings" | "template" | "code" | null;
+type ActivePanel = "export" | "share" | "settings" | "template" | "code" | "snapshots" | null;
 
 /** Panel width overrides — default is 300 */
 const PANEL_WIDTH: Partial<Record<NonNullable<ActivePanel>, number>> = {
@@ -23,6 +24,7 @@ const PANEL_WIDTH: Partial<Record<NonNullable<ActivePanel>, number>> = {
 };
 
 type BoardSidebarProps = {
+  diagramId: string;
   userEmail: string;
   excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
   commentCount: number;
@@ -35,6 +37,7 @@ type BoardSidebarProps = {
   canEdit: boolean;
   saveState: string;
   onBeforeLeave: () => Promise<void>;
+  onSnapshotRestored?: () => void;
   workspaceId?: string | null;
   canvasPrefs: CanvasPrefs;
   onCanvasPrefsChange: (patch: Partial<CanvasPrefs>) => void;
@@ -43,6 +46,7 @@ type BoardSidebarProps = {
 /* ───────────────────────── main sidebar ───────────────────────── */
 
 export function BoardSidebar({
+  diagramId,
   userEmail,
   excalidrawApiRef,
   commentCount,
@@ -55,6 +59,7 @@ export function BoardSidebar({
   canEdit,
   saveState,
   onBeforeLeave,
+  onSnapshotRestored,
   workspaceId,
   canvasPrefs,
   onCanvasPrefsChange,
@@ -114,10 +119,11 @@ export function BoardSidebar({
 
         <div className="mx-3 my-3 h-px w-6 bg-gray-200" />
 
-        {/* Save */}
+        {/* Save & History */}
         {canEdit && (
           <div className="flex flex-col items-center gap-1.5">
             <SidebarButton icon={<TemplateIcon />} label="Save as Template" active={activePanel === "template"} onClick={() => togglePanel("template")} />
+            <SidebarButton icon={<HistoryIcon />} label="Version History" active={activePanel === "snapshots"} onClick={() => togglePanel("snapshots")} />
           </div>
         )}
 
@@ -149,6 +155,7 @@ export function BoardSidebar({
         {activePanel === "settings" && <SettingsPanel userEmail={userEmail} onDashboardClick={() => setLeaveOpen(true)} canvasPrefs={canvasPrefs} onCanvasPrefsChange={onCanvasPrefsChange} />}
         {activePanel === "template" && <SaveTemplatePanel excalidrawApiRef={excalidrawApiRef} workspaceId={workspaceId} />}
         {activePanel === "code" && <CodeImportPanel excalidrawApiRef={excalidrawApiRef} onClose={closePanel} />}
+        {activePanel === "snapshots" && <SnapshotPanel diagramId={diagramId} canEdit={canEdit} excalidrawApiRef={excalidrawApiRef} onRestored={onSnapshotRestored} />}
       </SidebarDrawer>
 
       {leaveOpen && createPortal(

@@ -33,6 +33,7 @@ export type CollaborationState = {
   saveColor: string;
   lastSavedAt: string | null;
   activeSceneId: string | null;
+  selfUserId: string | null;
   flushSave: () => Promise<void>;
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
   socketRef: React.MutableRefObject<import("socket.io-client").Socket | null>;

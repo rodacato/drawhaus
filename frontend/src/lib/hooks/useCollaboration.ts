@@ -130,7 +130,7 @@ export function useCollaboration({
   }, []);
 
   return {
-    saveState, connectionState, connectionError,
+    saveState, connectionState, connectionError, selfUserId,
     presenceUsers, cursors, userRole,
     followingUserId, setFollowingUserId, toolbarOpen, setToolbarOpen,
     initialData, canEdit, saveLabel, saveColor, lastSavedAt,

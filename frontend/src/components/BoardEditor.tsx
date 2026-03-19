@@ -7,10 +7,13 @@ import { FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "@/components/BoardSidebar";
 import { useToast } from "@/components/Toast";
 import { EditingBubble } from "@/components/EditLockOverlay";
+import { OfflineRecoveryDialog } from "@/components/OfflineRecoveryDialog";
 
 import { CommentsPanel } from "@/components/CommentsPanel";
 import { CommentIndicators } from "@/components/CommentIndicators";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
+import { useOfflineSnapshot } from "@/lib/hooks/collaboration/useOfflineSnapshot";
+import type { OfflineSnapshot } from "@/lib/offline-storage";
 import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import { useComments } from "@/lib/hooks/useComments";
@@ -56,6 +59,18 @@ export default function BoardEditor({
     updateCanvasPrefs(patch);
     collab.excalidrawApiRef.current?.updateScene({ appState: patch });
   }, [updateCanvasPrefs, collab.excalidrawApiRef]);
+
+  // Offline snapshot recovery
+  const [offlineSnapshot, setOfflineSnapshot] = useState<OfflineSnapshot | null>(null);
+  const selfUser = collab.presenceUsers.find((u) => u.isSelf);
+  const { clearOfflineSnapshot } = useOfflineSnapshot({
+    diagramId,
+    connectionState: collab.connectionState,
+    excalidrawApiRef: collab.excalidrawApiRef,
+    selfUserId: collab.selfUserId,
+    selfUserName: selfUser?.name,
+    onConflict: setOfflineSnapshot,
+  });
 
   const comments = useComments({ diagramId, sceneId: collab.activeSceneId, socketRef: collab.socketRef });
 
@@ -230,6 +245,7 @@ export default function BoardEditor({
     <div className="flex h-screen w-screen">
       {/* Sidebar — icon bar + expandable drawer (pushes canvas) */}
       <BoardSidebar
+        diagramId={diagramId}
         userEmail={userEmail}
         excalidrawApiRef={collab.excalidrawApiRef}
         commentCount={unresolvedCount}
@@ -356,6 +372,27 @@ export default function BoardEditor({
           />
         )}
       </div>
+
+      {/* Offline recovery dialog */}
+      {offlineSnapshot && (
+        <OfflineRecoveryDialog
+          snapshot={offlineSnapshot}
+          onKeepMine={(elements, appState) => {
+            collab.excalidrawApiRef.current?.updateScene({ elements, appState });
+            clearOfflineSnapshot();
+            setOfflineSnapshot(null);
+          }}
+          onKeepServer={() => {
+            clearOfflineSnapshot();
+            setOfflineSnapshot(null);
+          }}
+          onSaveAsSnapshot={() => {
+            clearOfflineSnapshot();
+            setOfflineSnapshot(null);
+          }}
+          onClose={() => setOfflineSnapshot(null)}
+        />
+      )}
     </div>
   );
 }
