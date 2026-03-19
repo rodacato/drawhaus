@@ -52,8 +52,7 @@ export function useSceneManager({
       if (scenesList) setScenes(scenesList);
       if (sceneId) setActiveSceneId(sceneId);
       if (!excalidrawApiRef.current) { pendingSceneRef.current = { elements }; return; }
-      const localElements = excalidrawApiRef.current.getSceneElements?.() ?? [];
-      if (localElements.length > 0) return;
+      // Always apply server data — it's the source of truth on join
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current.updateScene({ elements });
       setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
