@@ -10,8 +10,9 @@ import { AdminSettings as AdminSiteSettings } from "@/pages/AdminSettings";
 import { AdminStyleGuide } from "@/pages/AdminStyleGuide";
 import { AdminOverview } from "@/pages/AdminDashboard";
 import { DriveIntegrationCard } from "@/components/DriveIntegrationCard";
+import { ApiKeysSettings } from "@/components/ApiKeysSettings";
 
-type Tab = "profile" | "security" | "billing" | "preferences" | "integrations" | "admin-overview" | "admin-users" | "admin-site" | "admin-style";
+type Tab = "profile" | "security" | "billing" | "api-keys" | "preferences" | "integrations" | "admin-overview" | "admin-users" | "admin-site" | "admin-style";
 
 export function Settings() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -129,6 +130,11 @@ export function Settings() {
       id: "integrations",
       label: "Integrations",
       icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>,
+    },
+    {
+      id: "api-keys" as Tab,
+      label: "API Keys",
+      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>,
     },
     {
       id: "preferences",
@@ -294,6 +300,8 @@ export function Settings() {
               <DriveIntegrationCard />
             </div>
           )}
+
+          {activeTab === "api-keys" && <ApiKeysSettings />}
 
           {activeTab === "preferences" && (
             <div className={ui.card}>
