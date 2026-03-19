@@ -10,11 +10,14 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     return this.store.find((d) => d.id === id) ?? null;
   }
 
-  async findByUser(userId: string, folderId?: string | null): Promise<Diagram[]> {
+  async findByUser(userId: string, folderId?: string | null, workspaceId?: string): Promise<Diagram[]> {
     const memberDiagramIds = new Set(
       this.members.filter((m) => m.userId === userId).map((m) => m.diagramId),
     );
     let results = this.store.filter((d) => d.ownerId === userId || memberDiagramIds.has(d.id));
+    if (workspaceId) {
+      results = results.filter((d) => d.workspaceId === workspaceId);
+    }
     if (folderId !== undefined) {
       results = results.filter((d) => d.folderId === folderId);
     }
