@@ -50,7 +50,7 @@ export function useCollaboration({
     }
     return {
       elements,
-      appState: { ...appState, ...canvasPrefs, collaborators: new Map(), theme: "light", viewModeEnabled: !canEdit },
+      appState: { ...appState, ...canvasPrefs, collaborators: new Map(), theme: "light", viewModeEnabled: true },
     };
   }, [initialElements, initialAppState, cacheKey]);
 
