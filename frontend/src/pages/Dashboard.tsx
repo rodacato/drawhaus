@@ -271,8 +271,8 @@ export function Dashboard() {
     } catch { toast("Failed to delete folder.", "error"); }
   }
 
-  async function moveDiagram(diagramId: string, targetFolderId: string | null) {
-    try { await diagramsApi.move(diagramId, targetFolderId); loadData(); } catch { /* silent */ }
+  async function moveDiagram(diagramId: string, targetFolderId: string | null, workspaceId?: string) {
+    try { await diagramsApi.move(diagramId, targetFolderId, workspaceId); loadData(); } catch { /* silent */ }
   }
 
   async function deleteDiagram(diagramId: string, title: string) {
@@ -486,6 +486,8 @@ export function Dashboard() {
                   actionPending={actionPending}
                   onCreateDiagram={openTemplatePicker}
                   onDeleteFolder={deleteFolder}
+                  workspaces={workspaces}
+                  activeWorkspaceId={activeWorkspaceId}
                   {...diagramActions}
                 />
               ) : (
@@ -495,6 +497,8 @@ export function Dashboard() {
                   allTags={allTags}
                   viewMode={viewMode}
                   emptyMessage={emptyMessage}
+                  workspaces={workspaces}
+                  activeWorkspaceId={activeWorkspaceId}
                   {...diagramActions}
                 />
               )}

@@ -39,6 +39,7 @@ const patchSchema = z
 
 const moveSchema = z.object({
   folderId: z.string().uuid().nullable(),
+  workspaceId: z.string().uuid().optional(),
 });
 
 function formatDiagram(d: Diagram, tags?: Tag[]) {
@@ -131,7 +132,7 @@ export function createDiagramRoutes(
   }));
 
   router.post("/:id/move", validateParams(uuidParams), validate(moveSchema), asyncRoute(async (req, res) => {
-    await useCases.move.execute(String(req.params.id), req.authUser.id, req.body.folderId);
+    await useCases.move.execute(String(req.params.id), req.authUser.id, req.body.folderId, req.body.workspaceId);
     return res.json({ success: true });
   }));
 

@@ -19,8 +19,8 @@ export const diagramsApi = {
   updateThumbnail: (id: string, thumbnail: string) =>
     api.put(`/api/diagrams/${id}/thumbnail`, { thumbnail }),
 
-  move: (id: string, folderId: string | null) =>
-    api.post(`/api/diagrams/${id}/move`, { folderId }),
+  move: (id: string, folderId: string | null, workspaceId?: string) =>
+    api.post(`/api/diagrams/${id}/move`, { folderId, ...(workspaceId && { workspaceId }) }),
 
   delete: (id: string) =>
     api.delete(`/api/diagrams/${id}`),

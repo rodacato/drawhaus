@@ -5,6 +5,8 @@ import { FolderSection } from "./FolderSection";
 type Diagram = { id: string; title: string; folderId: string | null; thumbnail: string | null; starred?: boolean; tags?: Tag[]; updatedAt?: string; updated_at?: string };
 type Folder = { id: string; name: string };
 
+type WorkspaceOption = { id: string; name: string; isPersonal: boolean };
+
 type WorkspaceViewProps = DiagramActions & {
   diagrams: Diagram[];
   folders: Folder[];
@@ -13,9 +15,11 @@ type WorkspaceViewProps = DiagramActions & {
   actionPending: boolean;
   onCreateDiagram: (folderId?: string) => void;
   onDeleteFolder: (id: string) => void;
+  workspaces?: WorkspaceOption[];
+  activeWorkspaceId?: string | null;
 };
 
-export function WorkspaceView({ diagrams, folders, allTags, viewMode, actionPending, onCreateDiagram, onDeleteFolder, ...actions }: WorkspaceViewProps) {
+export function WorkspaceView({ diagrams, folders, allTags, viewMode, actionPending, onCreateDiagram, onDeleteFolder, workspaces, activeWorkspaceId, ...actions }: WorkspaceViewProps) {
   const unfiled = diagrams.filter((d) => !d.folderId);
   const sortedFolders = [...folders].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -29,6 +33,8 @@ export function WorkspaceView({ diagrams, folders, allTags, viewMode, actionPend
         viewMode={viewMode}
         actionPending={actionPending}
         onCreateDiagram={() => onCreateDiagram()}
+        workspaces={workspaces}
+        activeWorkspaceId={activeWorkspaceId}
         {...actions}
       />
       {sortedFolders.map((folder) => (
@@ -43,6 +49,8 @@ export function WorkspaceView({ diagrams, folders, allTags, viewMode, actionPend
           actionPending={actionPending}
           onCreateDiagram={() => onCreateDiagram(folder.id)}
           onDeleteFolder={() => onDeleteFolder(folder.id)}
+          workspaces={workspaces}
+          activeWorkspaceId={activeWorkspaceId}
           {...actions}
         />
       ))}

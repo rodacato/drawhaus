@@ -6,6 +6,7 @@ import type { Diagram } from "./shared/DiagramTypes";
 import { TagBadges } from "./shared/TagBadges";
 
 type Folder = { id: string; name: string };
+type WorkspaceOption = { id: string; name: string; isPersonal: boolean };
 
 const TAG_COLORS = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#F97316"];
 
@@ -13,7 +14,9 @@ export interface DiagramCardProps {
   diagram: Diagram;
   folders: Folder[];
   allTags: Tag[];
-  onMove: (id: string, folderId: string | null) => void;
+  workspaces?: WorkspaceOption[];
+  activeWorkspaceId?: string | null;
+  onMove: (id: string, folderId: string | null, workspaceId?: string) => void;
   onDelete: (id: string, title: string) => void;
   onDuplicate: (id: string) => void;
   onToggleStar: (id: string, starred: boolean) => void;
@@ -30,6 +33,8 @@ export function DiagramCard({
   diagram,
   folders,
   allTags,
+  workspaces,
+  activeWorkspaceId,
   onMove,
   onDelete,
   onDuplicate,
@@ -59,6 +64,7 @@ export function DiagramCard({
   } = useInlineRename(diagram.title, onRename, diagram.id);
 
   const moveOptions = [{ id: null as string | null, name: "Unfiled" }, ...folders].filter((f) => f.id !== diagram.folderId);
+  const otherWorkspaces = (workspaces ?? []).filter((w) => w.id !== activeWorkspaceId);
 
   function toggleMenu() {
     if (!menuOpen && menuBtnRef.current) {
@@ -197,18 +203,38 @@ export function DiagramCard({
                 </span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
               </button>
-              {moveSubOpen && moveOptions.length > 0 && (
-                <div className="absolute left-full top-0 ml-1 w-40 rounded-lg border border-border bg-surface-raised py-1 shadow-xl">
-                  {moveOptions.map((opt) => (
-                    <button
-                      key={opt.id ?? "unfiled"}
-                      onClick={() => { closeMenu(); onMove(diagram.id, opt.id); }}
-                      className="w-full px-3 py-1.5 text-left text-sm text-text-secondary transition hover:bg-surface"
-                      type="button"
-                    >
-                      {opt.name}
-                    </button>
-                  ))}
+              {moveSubOpen && (moveOptions.length > 0 || otherWorkspaces.length > 0) && (
+                <div className="absolute left-full top-0 ml-1 w-48 rounded-lg border border-border bg-surface-raised py-1 shadow-xl max-h-64 overflow-y-auto">
+                  {moveOptions.length > 0 && (
+                    <>
+                      <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-text-muted">Folders</div>
+                      {moveOptions.map((opt) => (
+                        <button
+                          key={opt.id ?? "unfiled"}
+                          onClick={() => { closeMenu(); onMove(diagram.id, opt.id); }}
+                          className="w-full px-3 py-1.5 text-left text-sm text-text-secondary transition hover:bg-surface"
+                          type="button"
+                        >
+                          {opt.name}
+                        </button>
+                      ))}
+                    </>
+                  )}
+                  {otherWorkspaces.length > 0 && (
+                    <>
+                      <div className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-text-muted${moveOptions.length > 0 ? " mt-1 border-t border-border pt-2" : ""}`}>Workspaces</div>
+                      {otherWorkspaces.map((ws) => (
+                        <button
+                          key={ws.id}
+                          onClick={() => { closeMenu(); onMove(diagram.id, null, ws.id); }}
+                          className="w-full px-3 py-1.5 text-left text-sm text-text-secondary transition hover:bg-surface"
+                          type="button"
+                        >
+                          {ws.isPersonal ? "Personal" : ws.name}
+                        </button>
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
             </div>

@@ -13,6 +13,7 @@ export class DuplicateDiagramUseCase {
     return this.diagramRepo.create({
       title: `${original.title} (copy)`,
       ownerId: userId,
+      workspaceId: original.workspaceId,
       folderId: original.folderId,
       elements: original.elements,
       appState: original.appState,

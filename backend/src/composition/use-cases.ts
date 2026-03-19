@@ -151,7 +151,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   const listFolders = new ListFoldersUseCase(repos.folderRepo, repos.workspaceRepo);
   const renameFolder = new RenameFolderUseCase(repos.folderRepo);
   const deleteFolder = new DeleteFolderUseCase(repos.folderRepo);
-  const moveDiagram = new MoveDiagramUseCase(repos.diagramRepo, repos.folderRepo);
+  const moveDiagram = new MoveDiagramUseCase(repos.diagramRepo, repos.folderRepo, repos.workspaceRepo);
 
   // Share
   const createLink = new CreateShareLinkUseCase(repos.shareRepo, repos.diagramRepo);

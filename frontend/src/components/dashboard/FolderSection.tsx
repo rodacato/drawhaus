@@ -5,6 +5,8 @@ import { NewDiagramCard } from "./NewDiagramCard";
 type Diagram = { id: string; title: string; folderId: string | null; thumbnail: string | null; starred?: boolean; tags?: Tag[]; updatedAt?: string; updated_at?: string };
 type Folder = { id: string; name: string };
 
+type WorkspaceOption = { id: string; name: string; isPersonal: boolean };
+
 type FolderSectionProps = DiagramActions & {
   title: string;
   icon?: boolean;
@@ -15,9 +17,11 @@ type FolderSectionProps = DiagramActions & {
   actionPending: boolean;
   onCreateDiagram: () => void;
   onDeleteFolder?: () => void;
+  workspaces?: WorkspaceOption[];
+  activeWorkspaceId?: string | null;
 };
 
-export function FolderSection({ title, icon, diagrams, folders, allTags, viewMode, actionPending, onCreateDiagram, onDeleteFolder, ...actions }: FolderSectionProps) {
+export function FolderSection({ title, icon, diagrams, folders, allTags, viewMode, actionPending, onCreateDiagram, onDeleteFolder, workspaces, activeWorkspaceId, ...actions }: FolderSectionProps) {
   const newCard = <NewDiagramCard onClick={onCreateDiagram} disabled={actionPending} />;
 
   return (
@@ -58,6 +62,8 @@ export function FolderSection({ title, icon, diagrams, folders, allTags, viewMod
           allTags={allTags}
           viewMode={viewMode}
           appendToGrid={newCard}
+          workspaces={workspaces}
+          activeWorkspaceId={activeWorkspaceId}
           {...actions}
         />
       )}
