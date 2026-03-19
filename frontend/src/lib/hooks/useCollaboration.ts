@@ -116,8 +116,8 @@ export function useCollaboration({
   /* ─── excalidraw API init ─── */
   const onExcalidrawApi = useCallback((excalidrawApi: ExcalidrawApi) => {
     excalidrawApiRef.current = excalidrawApi;
-    // Defer to next frame to avoid setState-before-mount warning from Excalidraw
-    requestAnimationFrame(() => {
+    // Defer to allow Excalidraw to fully mount before calling updateScene
+    setTimeout(() => {
       const viewMode = !canEdit || !hasEditLockRef.current;
       excalidrawApi.updateScene({ appState: { viewModeEnabled: viewMode } });
       if (pendingSceneRef.current) {
@@ -127,7 +127,7 @@ export function useCollaboration({
         excalidrawApi.updateScene({ elements: pending.elements });
         setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
       }
-    });
+    }, 50);
   }, [canEdit]);
 
   return {
