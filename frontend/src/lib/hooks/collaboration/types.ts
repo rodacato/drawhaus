@@ -16,6 +16,8 @@ export type CollaborationOptions = {
 
 export type SceneInfo = { id: string; name: string; sortOrder: number };
 
+export type LockHolderInfo = { userId: string; userName: string };
+
 export type CollaborationState = {
   saveState: SaveState;
   connectionState: ConnectionState;
@@ -45,4 +47,8 @@ export type CollaborationState = {
   onExcalidrawApi: (api: ExcalidrawApi) => void;
   onChange: (elements: readonly unknown[], appState: Record<string, unknown>) => void;
   onPointerMove: (e: { clientX: number; clientY: number }) => void;
+  // Edit lock
+  editLockHolder: LockHolderInfo | null;
+  hasEditLock: boolean;
+  tryAcquireEditLock: () => void;
 };

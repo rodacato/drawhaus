@@ -1,6 +1,7 @@
 import type { Server, Socket } from "socket.io";
 import type { SaveSceneUseCase } from "../../../application/use-cases/realtime/save-scene";
 import type { SyncToDriveUseCase } from "../../../application/use-cases/drive/sync-to-drive";
+import type { EditLockChecker } from "../edit-lock-store";
 import { type SocketData, canEdit, checkRateLimit, RATE_LIMIT_MAX_SCENE } from "../helpers";
 import { logger } from "../../logger";
 
@@ -8,6 +9,7 @@ export function registerSceneHandlers(
   io: Server,
   socket: Socket,
   useCases: { saveScene: SaveSceneUseCase; syncToDrive?: SyncToDriveUseCase },
+  lockChecker: EditLockChecker,
 ) {
   socket.on(
     "scene-update",
@@ -15,6 +17,10 @@ export function registerSceneHandlers(
       if (!socket.rooms.has(roomId)) return;
       if (!canEdit(socket, roomId)) return;
       if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
+
+      const userId = (socket.data as SocketData).userId;
+      if (!lockChecker.hasLock(roomId, userId)) return;
+      lockChecker.touchLock(roomId, userId);
 
       const targetSceneId = sceneId ?? (socket.data.activeSceneId as string | undefined);
       const broadcastRoom = targetSceneId ? `${roomId}:${targetSceneId}` : roomId;
@@ -46,6 +52,10 @@ export function registerSceneHandlers(
         if (!socket.rooms.has(roomId)) return;
         if (!canEdit(socket, roomId)) return;
 
+        const saveUserId = (socket.data as SocketData).userId;
+        if (!lockChecker.hasLock(roomId, saveUserId)) return;
+        lockChecker.touchLock(roomId, saveUserId);
+
         const targetSceneId = sceneId ?? (socket.data.activeSceneId as string | undefined);
         if (!targetSceneId) return;
 
@@ -53,7 +63,7 @@ export function registerSceneHandlers(
         socket.emit("scene-saved", { roomId, sceneId: targetSceneId });
 
         // Fire-and-forget: sync to Google Drive if enabled
-        const userId = (socket.data as SocketData).userId;
+        const userId = saveUserId;
         if (useCases.syncToDrive && userId) {
           useCases.syncToDrive
             .execute(userId, roomId, targetSceneId, elements, appState)

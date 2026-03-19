@@ -14,6 +14,7 @@ export interface UseSaveManagerParams {
   followingUserIdRef: React.MutableRefObject<string | null>;
   followedViewportRef: React.MutableRefObject<{ scrollX: number; scrollY: number; zoom: number } | null>;
   canEdit: boolean;
+  hasEditLockRef: React.MutableRefObject<boolean>;
 }
 
 export interface UseSaveManagerReturn {
@@ -36,6 +37,7 @@ export function useSaveManager({
   followingUserIdRef,
   followedViewportRef,
   canEdit,
+  hasEditLockRef,
 }: UseSaveManagerParams): UseSaveManagerReturn {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -135,6 +137,7 @@ export function useSaveManager({
         return; // Skip editing while following
       }
       if (!canEdit) return;
+      if (!hasEditLockRef.current) return;
       setSaveState("pending");
       const throttleMs = getAdaptiveThrottleMs(elements.length);
       const elapsed = now - lastEmitTime.current;
@@ -164,7 +167,8 @@ export function useSaveManager({
   /* ─── flush save ─── */
   const flushSave = useCallback(async () => {
     const a = excalidrawApiRef.current;
-    if (!a || saveState === "saved" || saveState === "idle") return;
+    if (!a) return;
+    if (!hasEditLockRef.current) return;
     const elements = a.getSceneElements();
     const appState = a.getAppState();
     await persistScene([...elements], appState as Record<string, unknown>, activeSceneIdRef.current);

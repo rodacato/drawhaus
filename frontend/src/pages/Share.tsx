@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { shareApi } from "@/api/share";
 import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
 import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
+import { LockOverlay, EditingBubble } from "@/components/EditLockOverlay";
 import { SceneTabBar } from "@/components/SceneTabBar";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
 import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
@@ -151,26 +152,86 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
     canvasPrefs,
   });
 
+  // Track lock holder changes for editing bubble
+  const [bubbleHolder, setBubbleHolder] = useState<{ name: string; isSelf: boolean } | null>(null);
+  const prevHolderRef = useRef<string | null>(null);
+  useEffect(() => {
+    const holderId = collab.editLockHolder?.userId ?? null;
+    if (holderId !== prevHolderRef.current && holderId) {
+      setBubbleHolder({
+        name: collab.editLockHolder!.userName,
+        isSelf: collab.hasEditLock,
+      });
+    } else if (!holderId) {
+      setBubbleHolder(null);
+    }
+    prevHolderRef.current = holderId;
+  }, [collab.editLockHolder, collab.hasEditLock]);
+
+  // Auto-acquire lock on canvas interaction when nobody has it
+  const handleCanvasPointerDown = useCallback(() => {
+    if (canEdit && !collab.hasEditLock) {
+      collab.tryAcquireEditLock();
+    }
+  }, [canEdit, collab.hasEditLock, collab.tryAcquireEditLock]);
+
+  const showLockOverlay = canEdit && !collab.hasEditLock && !!collab.editLockHolder && !collab.followingUserId;
+
+  // Status badge logic
+  let statusBadge: { label: string; className: string };
+  if (!canEdit) {
+    statusBadge = { label: "View only", className: "bg-gray-100 text-gray-600" };
+  } else if (collab.hasEditLock) {
+    statusBadge = { label: collab.saveLabel, className: collab.saveColor };
+  } else if (collab.editLockHolder) {
+    statusBadge = { label: "Observando", className: "bg-amber-100 text-amber-700" };
+  } else {
+    statusBadge = { label: "Conectando...", className: "bg-gray-100 text-gray-500" };
+  }
+
   return (
     <div className="relative h-screen w-screen">
-      <div className="pointer-events-none fixed left-4 top-3 z-20 flex items-center gap-3">
-        <div className="pointer-events-auto rounded-lg bg-white px-4 py-2 shadow-sm"><span className="text-lg font-medium text-[#1b1b1f]">{data.title || "Untitled"}</span></div>
-        <div className="pointer-events-auto rounded-full bg-purple-100 px-2.5 py-1 text-[10px] font-medium text-purple-700 shadow-sm">{guestName} (guest)</div>
-        {canEdit ? (
-          <div className={`pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}>{collab.saveLabel}</div>
-        ) : (
-          <div className="pointer-events-auto rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-medium text-gray-600 shadow-sm">View only</div>
-        )}
-        <div className="pointer-events-auto relative">
-          <BoardToolbarTrigger open={collab.toolbarOpen} onToggle={() => collab.setToolbarOpen(!collab.toolbarOpen)} userCount={collab.presenceUsers.length || 1} />
-          {collab.toolbarOpen && <BoardToolbarPanel presenceUsers={collab.presenceUsers} followingUserId={collab.followingUserId} onFollow={collab.setFollowingUserId} onCreateShareLink={async () => null} showShare={false} onClose={() => collab.setToolbarOpen(false)} />}
+      <div className="pointer-events-none fixed left-4 top-3 z-20 flex flex-col gap-1">
+        <div className="flex items-center gap-3">
+          <div className="pointer-events-auto rounded-lg bg-white px-4 py-2 shadow-sm"><span className="text-lg font-medium text-[#1b1b1f]">{data.title || "Untitled"}</span></div>
+          <div className="pointer-events-auto rounded-full bg-purple-100 px-2.5 py-1 text-[10px] font-medium text-purple-700 shadow-sm">{guestName} (guest)</div>
+          <div className="pointer-events-auto relative">
+            <BoardToolbarTrigger open={collab.toolbarOpen} onToggle={() => collab.setToolbarOpen(!collab.toolbarOpen)} userCount={collab.presenceUsers.length || 1} />
+            {collab.toolbarOpen && <BoardToolbarPanel presenceUsers={collab.presenceUsers} followingUserId={collab.followingUserId} onFollow={collab.setFollowingUserId} onCreateShareLink={async () => null} showShare={false} onClose={() => collab.setToolbarOpen(false)} />}
+          </div>
+          <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
         </div>
-        <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
+        <div className="pointer-events-auto flex items-center gap-2">
+          <div className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${statusBadge.className}`}>{statusBadge.label}</div>
+          {collab.hasEditLock && (
+            <div className="w-fit rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-medium text-emerald-700 shadow-sm">Editando</div>
+          )}
+          {!collab.hasEditLock && collab.editLockHolder && (
+            <div className="w-fit rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-medium text-amber-700 shadow-sm">{collab.editLockHolder.userName} editando</div>
+          )}
+        </div>
       </div>
+
       {collab.followingUserId && <FollowingBanner presenceUsers={collab.presenceUsers} followingUserId={collab.followingUserId} onStop={() => collab.setFollowingUserId(null)} />}
+
+      {/* Editing bubble — shows briefly when lock holder changes */}
+      {bubbleHolder && (
+        <EditingBubble
+          key={`${bubbleHolder.name}-${bubbleHolder.isSelf}`}
+          holderName={bubbleHolder.name}
+          isSelf={bubbleHolder.isSelf}
+        />
+      )}
+
       <CursorOverlay cursors={collab.cursors} />
-      <div className="h-full w-full" onPointerMove={collab.onPointerMove}>
-        <ExcalidrawCanvas excalidrawAPI={collab.onExcalidrawApi} initialData={collab.initialData} onChange={collab.onChange} viewModeEnabled={!canEdit || !!collab.followingUserId} />
+      <div className="relative h-full w-full" onPointerDown={handleCanvasPointerDown} onPointerMove={collab.onPointerMove}>
+        <ExcalidrawCanvas excalidrawAPI={collab.onExcalidrawApi} initialData={collab.initialData} onChange={collab.onChange} viewModeEnabled={false} />
+        {showLockOverlay && (
+          <LockOverlay
+            holderName={collab.editLockHolder!.userName}
+            onTryAcquire={collab.tryAcquireEditLock}
+          />
+        )}
       </div>
       {collab.scenes.length > 0 && (
         <div className="pointer-events-none fixed bottom-3 left-1/2 z-20 -translate-x-1/2">

@@ -5,6 +5,8 @@ import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { DriveSyncBadge, type DriveSyncState } from "@/components/DriveSyncBadge";
 import { FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "@/components/BoardSidebar";
+import { useToast } from "@/components/Toast";
+import { LockOverlay, EditingBubble } from "@/components/EditLockOverlay";
 import { SceneTabBar } from "@/components/SceneTabBar";
 import { CommentsPanel } from "@/components/CommentsPanel";
 import { CommentIndicators } from "@/components/CommentIndicators";
@@ -122,17 +124,41 @@ export default function BoardEditor({
     [],
   );
 
-  // Keyboard shortcut: Cmd+/ to toggle comments
+  const toast = useToast();
+
+  // Keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "/") {
         e.preventDefault();
         setCommentsPanelOpen((prev) => !prev);
       }
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        if (collab.hasEditLock) {
+          collab.flushSave().then(() => toast("Diagrama guardado", "success"));
+        }
+      }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [collab.hasEditLock, collab.flushSave, toast]);
+
+  // Track lock holder changes for the editing bubble
+  const [bubbleHolder, setBubbleHolder] = useState<{ name: string; isSelf: boolean } | null>(null);
+  const prevHolderRef = useRef<string | null>(null);
+  useEffect(() => {
+    const holderId = collab.editLockHolder?.userId ?? null;
+    if (holderId !== prevHolderRef.current && holderId) {
+      setBubbleHolder({
+        name: collab.editLockHolder!.userName,
+        isSelf: collab.hasEditLock,
+      });
+    } else if (!holderId) {
+      setBubbleHolder(null);
+    }
+    prevHolderRef.current = holderId;
+  }, [collab.editLockHolder, collab.hasEditLock]);
 
   const handleCreateShareLink = useCallback(async (role: "viewer" | "editor"): Promise<string | null> => {
     const cacheShareKey = `drawhaus_share_${diagramId}_${role}`;
@@ -173,6 +199,13 @@ export default function BoardEditor({
     setCommentsPanelOpen(true);
   }, [handleHighlightElement]);
 
+  // Auto-acquire lock on canvas interaction when nobody has it
+  const handleCanvasPointerDown = useCallback(() => {
+    if (canEdit && !collab.hasEditLock) {
+      collab.tryAcquireEditLock();
+    }
+  }, [canEdit, collab.hasEditLock, collab.tryAcquireEditLock]);
+
   function startEditingTitle() {
     if (!canEdit) return;
     setTitleDraft(diagramTitle || "");
@@ -190,6 +223,9 @@ export default function BoardEditor({
       setDiagramTitle(diagramTitle);
     }
   }
+
+  // Show lock overlay only when another user has the lock and we can edit
+  const showLockOverlay = canEdit && !collab.hasEditLock && !!collab.editLockHolder && !collab.followingUserId;
 
   const unresolvedCount = comments.threads.filter((t) => !t.resolved).length;
 
@@ -249,11 +285,21 @@ export default function BoardEditor({
               <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
             </div>
           </div>
-          {/* Save status + Drive sync */}
+          {/* Save status + Lock status + Drive sync */}
           <div className="pointer-events-auto flex items-center gap-2">
             {canEdit && (
               <div className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}>
                 {collab.saveLabel}
+              </div>
+            )}
+            {collab.hasEditLock && (
+              <div className="w-fit rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-medium text-emerald-700 shadow-sm">
+                Editando
+              </div>
+            )}
+            {!collab.hasEditLock && collab.editLockHolder && (
+              <div className="w-fit rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-medium text-amber-700 shadow-sm">
+                {collab.editLockHolder.userName} editando
               </div>
             )}
             <DriveSyncBadge state={driveSyncState} error={driveSyncError} />
@@ -265,6 +311,15 @@ export default function BoardEditor({
             presenceUsers={collab.presenceUsers}
             followingUserId={collab.followingUserId}
             onStop={() => collab.setFollowingUserId(null)}
+          />
+        )}
+
+        {/* Editing bubble — shows briefly when lock holder changes */}
+        {bubbleHolder && (
+          <EditingBubble
+            key={`${bubbleHolder.name}-${bubbleHolder.isSelf}`}
+            holderName={bubbleHolder.name}
+            isSelf={bubbleHolder.isSelf}
           />
         )}
 
@@ -303,13 +358,20 @@ export default function BoardEditor({
         )}
 
         {/* Canvas */}
-        <div className="relative flex-1 h-full min-w-0" onPointerMove={collab.onPointerMove}>
+        <div className="relative flex-1 h-full min-w-0" onPointerDown={handleCanvasPointerDown} onPointerMove={collab.onPointerMove}>
           <ExcalidrawCanvas
             excalidrawAPI={collab.onExcalidrawApi}
             initialData={collab.initialData}
             onChange={handleChange}
-            viewModeEnabled={!!collab.followingUserId}
+            viewModeEnabled={false}
           />
+          {/* Lock overlay — captures click when someone else is editing */}
+          {showLockOverlay && (
+            <LockOverlay
+              holderName={collab.editLockHolder!.userName}
+              onTryAcquire={collab.tryAcquireEditLock}
+            />
+          )}
         </div>
 
         {/* Comments panel */}

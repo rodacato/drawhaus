@@ -2,7 +2,8 @@ import type { Server, Socket } from "socket.io";
 import { parse } from "cookie";
 import type { JoinRoomUseCase } from "../../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../../application/use-cases/realtime/join-room-guest";
-import { type SocketData, type PresenceUser, getRoomPresenceUsers } from "../helpers";
+import type { EditLockStore } from "../edit-lock-store";
+import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers } from "../helpers";
 import { config } from "../../config";
 import { logger } from "../../logger";
 
@@ -10,10 +11,19 @@ function formatScene(s: { id: string; name: string; sortOrder: number }) {
   return { id: s.id, name: s.name, sortOrder: s.sortOrder };
 }
 
+function emitLockStatus(io: Server, roomId: string, lockStore: EditLockStore) {
+  const holder = lockStore.getLock(roomId);
+  io.to(roomId).emit("edit-lock-status", {
+    roomId,
+    holder: holder ? { userId: holder.userId, userName: holder.userName } : null,
+  });
+}
+
 export function registerRoomHandlers(
   io: Server,
   socket: Socket,
   useCases: { joinRoom: JoinRoomUseCase; joinRoomGuest: JoinRoomGuestUseCase },
+  lockStore: EditLockStore,
 ) {
   socket.on("join-room", async ({ roomId }: { roomId: string }) => {
     try {
@@ -45,6 +55,16 @@ export function registerRoomHandlers(
       });
 
       socket.emit("room-joined", { roomId, role: result.role, userId: result.user.id });
+
+      // Emit current lock status to the joining user
+      emitLockStatus(io, roomId, lockStore);
+
+      // Auto-acquire lock if no one holds it and user can edit
+      if (!lockStore.getLock(roomId) && canEdit(socket, roomId)) {
+        lockStore.acquireLock(roomId, result.user.id, result.user.name, socket.id);
+        socket.emit("edit-lock-acquired", { roomId, holder: { userId: result.user.id, userName: result.user.name } });
+        emitLockStatus(io, roomId, lockStore);
+      }
 
       io.to(roomId).emit("room-presence", {
         roomId,
@@ -93,6 +113,16 @@ export function registerRoomHandlers(
 
       socket.emit("room-joined", { roomId, role: result.role, userId: guestId });
 
+      // Emit current lock status to the joining guest
+      emitLockStatus(io, roomId, lockStore);
+
+      // Auto-acquire lock if no one holds it and guest can edit
+      if (!lockStore.getLock(roomId) && canEdit(socket, roomId)) {
+        lockStore.acquireLock(roomId, guestId, name, socket.id);
+        socket.emit("edit-lock-acquired", { roomId, holder: { userId: guestId, userName: name } });
+        emitLockStatus(io, roomId, lockStore);
+      }
+
       io.to(roomId).emit("room-presence", {
         roomId,
         users: await getRoomPresenceUsers(io, roomId),
@@ -126,6 +156,10 @@ export function registerRoomHandlers(
 
   socket.on("disconnecting", async () => {
     const myData = socket.data as SocketData;
+
+    // Release any locks held by this socket
+    const releasedRoomIds = lockStore.releaseBySocketId(socket.id);
+
     for (const roomId of socket.rooms) {
       if (roomId === socket.id) continue;
       if (roomId.includes(":")) continue;
@@ -141,6 +175,11 @@ export function registerRoomHandlers(
           seen.add(data.userId);
           futureUsers.push({ userId: data.userId, name: data.userName, isGuest: data.isGuest ?? false });
         }
+      }
+
+      // Broadcast cleared lock status if this room had a lock released
+      if (releasedRoomIds.includes(roomId)) {
+        emitLockStatus(io, roomId, lockStore);
       }
 
       socket.to(roomId).emit("room-presence", { roomId, users: futureUsers });
