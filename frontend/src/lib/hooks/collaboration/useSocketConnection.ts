@@ -11,6 +11,7 @@ export interface UseSocketConnectionParams {
 
 export interface UseSocketConnectionReturn {
   socketRef: React.MutableRefObject<Socket | null>;
+  socketGeneration: number;
   connectionState: ConnectionState;
   connectionError: string | null;
   userRole: string | null;
@@ -25,11 +26,13 @@ export function useSocketConnection({
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [selfUserId, setSelfUserId] = useState<string | null>(null);
+  const [socketGeneration, setSocketGeneration] = useState(0);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
     const socket = createSocket();
     socketRef.current = socket;
+    setSocketGeneration((g) => g + 1);
 
     function joinRoom() {
       if (joinMode.type === "authenticated") {
@@ -53,5 +56,5 @@ export function useSocketConnection({
     return () => { socket.disconnect(); socketRef.current = null; };
   }, [diagramId]);
 
-  return { socketRef, connectionState, connectionError, userRole, selfUserId };
+  return { socketRef, socketGeneration, connectionState, connectionError, userRole, selfUserId };
 }

@@ -55,7 +55,7 @@ export async function setupSocketServer(
       saveScene: useCases.saveScene,
       syncToDrive: useCases.syncToDrive,
     });
-    registerCursorHandlers(socket);
+    registerCursorHandlers(socket, io);
     registerCommentHandlers(io, socket, {
       createComment: useCases.createComment,
       replyComment: useCases.replyComment,

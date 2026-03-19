@@ -5,6 +5,7 @@ import type { PresenceUser, CursorInfo, ExcalidrawApi, PresenceUserWithSelf } fr
 
 export interface UsePresenceParams {
   socketRef: React.MutableRefObject<Socket | null>;
+  socketGeneration: number;
   diagramId: string;
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
   applyingRemoteCounter: React.MutableRefObject<number>;
@@ -22,6 +23,7 @@ export interface UsePresenceReturn {
 
 export function usePresence({
   socketRef,
+  socketGeneration,
   diagramId,
   excalidrawApiRef,
   applyingRemoteCounter,
@@ -29,9 +31,26 @@ export function usePresence({
   selfUserId,
 }: UsePresenceParams): UsePresenceReturn {
   const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
-  const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
   const [followingUserId, setFollowingUserId] = useState<string | null>(null);
   const lastCursorEmitTime = useRef(0);
+
+  /* ─── Mejora 3: cursors in ref + periodic sync to state ─── */
+  const cursorsRef = useRef<Record<string, CursorInfo>>({});
+  const [cursors, setCursors] = useState<Record<string, CursorInfo>>({});
+  const cursorsDirty = useRef(false);
+
+  useEffect(() => {
+    let rafId: number;
+    const sync = () => {
+      if (cursorsDirty.current) {
+        cursorsDirty.current = false;
+        setCursors({ ...cursorsRef.current });
+      }
+      rafId = requestAnimationFrame(sync);
+    };
+    rafId = requestAnimationFrame(sync);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   /* ─── sync followingUserIdRef ─── */
   useEffect(() => { followingUserIdRef.current = followingUserId; }, [followingUserId]);
@@ -39,14 +58,17 @@ export function usePresence({
   /* ─── stale cursor cleanup ─── */
   useEffect(() => {
     const interval = setInterval(() => {
-      setCursors((prev) => {
-        const now = Date.now();
-        const next: Record<string, CursorInfo> = {};
-        for (const [k, v] of Object.entries(prev)) {
-          if (now - v.lastSeen < 5000) next[k] = v;
+      const now = Date.now();
+      let changed = false;
+      for (const [k, v] of Object.entries(cursorsRef.current)) {
+        if (now - v.lastSeen >= 5000) {
+          delete cursorsRef.current[k];
+          changed = true;
         }
-        return Object.keys(next).length !== Object.keys(prev).length ? next : prev;
-      });
+      }
+      if (changed) {
+        cursorsDirty.current = true;
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -58,37 +80,66 @@ export function usePresence({
     }
   }, [presenceUsers, followingUserId]);
 
-  /* ─── socket event listeners for presence ─── */
+  /* ─── Mejora 2: request viewport when starting to follow ─── */
+  useEffect(() => {
+    if (followingUserId) {
+      socketRef.current?.emit("request-viewport", { roomId: diagramId, targetUserId: followingUserId });
+    }
+  }, [followingUserId, diagramId]);
+
+  /* ─── Mejora 1: socket event listeners — use socketGeneration as dep ─── */
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket) return;
 
     const handlePresence = ({ users }: { users: PresenceUser[] }) => { setPresenceUsers(users); };
+
     const handleCursorMoved = ({ userId, name: cursorName, x, y }: { userId: string; name: string; x: number; y: number }) => {
-      setCursors((prev) => ({ ...prev, [userId]: { name: cursorName, x, y, lastSeen: Date.now() } }));
+      cursorsRef.current[userId] = { name: cursorName, x, y, lastSeen: Date.now() };
+      cursorsDirty.current = true;
     };
+
     const handleCursorLeft = ({ userId }: { userId: string }) => {
-      setCursors((prev) => { const next = { ...prev }; delete next[userId]; return next; });
+      delete cursorsRef.current[userId];
+      cursorsDirty.current = true;
     };
+
+    /* ─── Mejora 5: use setTimeout(0) instead of rAF for applyingRemoteCounter ─── */
     const handleViewport = ({ userId, scrollX, scrollY, zoom }: { userId: string; scrollX: number; scrollY: number; zoom: number }) => {
       if (followingUserIdRef.current !== userId) return;
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ appState: { scrollX, scrollY, zoom: { value: zoom } } });
-      requestAnimationFrame(() => { applyingRemoteCounter.current -= 1; });
+      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+    };
+
+    /* ─── Mejora 2: respond to viewport requests from followers ─── */
+    const handleProvideViewport = () => {
+      const api = excalidrawApiRef.current;
+      if (!api) return;
+      const appState = api.getAppState();
+      const zoom = (appState.zoom as { value: number })?.value ?? 1;
+      socket.emit("viewport-update", {
+        roomId: diagramId,
+        scrollX: appState.scrollX,
+        scrollY: appState.scrollY,
+        zoom,
+      });
     };
 
     socket.on("room-presence", handlePresence);
     socket.on("cursor-moved", handleCursorMoved);
     socket.on("cursor-left", handleCursorLeft);
     socket.on("viewport-updated", handleViewport);
+    socket.on("provide-viewport", handleProvideViewport);
 
     return () => {
       socket.off("room-presence", handlePresence);
       socket.off("cursor-moved", handleCursorMoved);
       socket.off("cursor-left", handleCursorLeft);
       socket.off("viewport-updated", handleViewport);
+      socket.off("provide-viewport", handleProvideViewport);
     };
-  }, [socketRef.current]);
+  }, [socketGeneration, diagramId]);
 
   /* ─── cursor emit ─── */
   const onPointerMove = useCallback((e: { clientX: number; clientY: number }) => {

@@ -7,6 +7,7 @@ import type { SceneInfo } from "./types";
 
 export interface UseSceneManagerParams {
   socketRef: React.MutableRefObject<Socket | null>;
+  socketGeneration: number;
   diagramId: string;
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
   applyingRemoteCounter: React.MutableRefObject<number>;
@@ -27,6 +28,7 @@ export interface UseSceneManagerReturn {
 
 export function useSceneManager({
   socketRef,
+  socketGeneration,
   diagramId,
   excalidrawApiRef,
   applyingRemoteCounter,
@@ -54,7 +56,7 @@ export function useSceneManager({
       if (localElements.length > 0) return;
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current.updateScene({ elements });
-      requestAnimationFrame(() => { applyingRemoteCounter.current -= 1; });
+      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
     };
 
     const handleSceneUpdated = ({ fromSocketId, elements: remoteElements }: { fromSocketId: string; elements: unknown[] }) => {
@@ -63,7 +65,7 @@ export function useSceneManager({
       const merged = mergeElements(localElements, remoteElements);
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ elements: merged });
-      requestAnimationFrame(() => { applyingRemoteCounter.current -= 1; });
+      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
     };
 
     socket.on("scene-from-db", handleSceneFromDb);
@@ -73,7 +75,7 @@ export function useSceneManager({
       socket.off("scene-from-db", handleSceneFromDb);
       socket.off("scene-updated", handleSceneUpdated);
     };
-  }, [socketRef.current]);
+  }, [socketGeneration]);
 
   /* ─── scene operations ─── */
   const switchScene = useCallback(async (sceneId: string) => {
@@ -94,7 +96,7 @@ export function useSceneManager({
       const scene = data.scene as { elements: unknown[]; appState: Record<string, unknown> };
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ elements: scene.elements ?? [] });
-      requestAnimationFrame(() => { applyingRemoteCounter.current -= 1; });
+      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
     } catch { /* ignore */ } finally { setSwitchingScene(false); }
   }, [diagramId, cancelPendingTimers]);
 
@@ -106,7 +108,7 @@ export function useSceneManager({
       switchScene(newScene.id);
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ elements: [] });
-      requestAnimationFrame(() => { applyingRemoteCounter.current -= 1; });
+      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
     } catch { /* ignore */ }
   }, [diagramId, switchScene]);
 

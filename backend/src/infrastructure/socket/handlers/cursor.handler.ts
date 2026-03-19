@@ -1,7 +1,7 @@
-import type { Socket } from "socket.io";
+import type { Socket, Server } from "socket.io";
 import { type SocketData, checkRateLimit, RATE_LIMIT_MAX_CURSOR } from "../helpers";
 
-export function registerCursorHandlers(socket: Socket) {
+export function registerCursorHandlers(socket: Socket, io: Server) {
   socket.on(
     "cursor-move",
     ({ roomId, x, y }: { roomId: string; x: number; y: number }) => {
@@ -41,6 +41,29 @@ export function registerCursorHandlers(socket: Socket) {
         scrollY,
         zoom,
       });
+    },
+  );
+
+  /* ─── request-viewport: ask a specific user to send their viewport ─── */
+  socket.on(
+    "request-viewport",
+    async ({
+      roomId,
+      targetUserId,
+    }: {
+      roomId: string;
+      targetUserId: string;
+    }) => {
+      if (!socket.rooms.has(roomId)) return;
+
+      const remoteSockets = await io.in(roomId).fetchSockets();
+      for (const s of remoteSockets) {
+        const d = s.data as SocketData;
+        if (d.userId === targetUserId) {
+          s.emit("provide-viewport", { requesterId: (socket.data as SocketData).userId });
+          break;
+        }
+      }
     },
   );
 }

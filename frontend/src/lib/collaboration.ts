@@ -50,6 +50,7 @@ export const THROTTLE_MS = 50;
 export const THROTTLE_MS_HEAVY = 100;
 export const HEAVY_ELEMENT_THRESHOLD = 200;
 export const CURSOR_THROTTLE_MS = 30;
+export const VIEWPORT_THROTTLE_MS = 100;
 export const SAVE_DEBOUNCE_MS = 1200;
 
 /** Return a higher throttle interval when the scene has many elements. */

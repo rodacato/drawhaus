@@ -49,7 +49,7 @@ export function useCollaboration({
   }, [initialElements, initialAppState, cacheKey]);
 
   /* ─── 1. Socket connection ─── */
-  const { socketRef, connectionState, connectionError, userRole, selfUserId } = useSocketConnection({
+  const { socketRef, socketGeneration, connectionState, connectionError, userRole, selfUserId } = useSocketConnection({
     diagramId,
     joinMode,
   });
@@ -57,6 +57,7 @@ export function useCollaboration({
   /* ─── 2. Save manager ─── */
   const { saveState, saveLabel, saveColor, lastSavedAt, onChange, flushSave, cancelPendingTimers } = useSaveManager({
     socketRef,
+    socketGeneration,
     diagramId,
     activeSceneIdRef,
     excalidrawApiRef,
@@ -68,6 +69,7 @@ export function useCollaboration({
   /* ─── 3. Presence ─── */
   const { presenceUsers, cursors, followingUserId, setFollowingUserId, onPointerMove } = usePresence({
     socketRef,
+    socketGeneration,
     diagramId,
     excalidrawApiRef,
     applyingRemoteCounter,
@@ -78,6 +80,7 @@ export function useCollaboration({
   /* ─── 4. Scene manager ─── */
   const { scenes, activeSceneId, switchingScene, switchScene, createScene, deleteScene, renameScene } = useSceneManager({
     socketRef,
+    socketGeneration,
     diagramId,
     excalidrawApiRef,
     applyingRemoteCounter,
@@ -94,7 +97,7 @@ export function useCollaboration({
       pendingSceneRef.current = null;
       applyingRemoteCounter.current += 1;
       excalidrawApi.updateScene({ elements: pending.elements });
-      requestAnimationFrame(() => { applyingRemoteCounter.current -= 1; });
+      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
     }
   }, []);
 

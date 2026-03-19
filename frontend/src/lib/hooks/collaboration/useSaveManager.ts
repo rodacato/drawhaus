@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
-import { jsonSafe, getAdaptiveThrottleMs, CURSOR_THROTTLE_MS, SAVE_DEBOUNCE_MS } from "@/lib/collaboration";
+import { jsonSafe, getAdaptiveThrottleMs, VIEWPORT_THROTTLE_MS, SAVE_DEBOUNCE_MS } from "@/lib/collaboration";
 import type { SaveState, ExcalidrawApi } from "@/lib/types";
 import { diagramsApi } from "@/api/diagrams";
 
 export interface UseSaveManagerParams {
   socketRef: React.MutableRefObject<Socket | null>;
+  socketGeneration: number;
   diagramId: string;
   activeSceneIdRef: React.MutableRefObject<string | null>;
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
@@ -26,6 +27,7 @@ export interface UseSaveManagerReturn {
 
 export function useSaveManager({
   socketRef,
+  socketGeneration,
   diagramId,
   activeSceneIdRef,
   excalidrawApiRef,
@@ -103,7 +105,7 @@ export function useSaveManager({
     const handler = () => { lastSavedAt.current = new Date().toLocaleTimeString(); setSaveState("saved"); };
     socket.on("scene-saved", handler);
     return () => { socket.off("scene-saved", handler); };
-  }, [socketRef.current]);
+  }, [socketGeneration]);
 
   /* ─── onChange handler ─── */
   const onChange = useCallback(
@@ -111,7 +113,7 @@ export function useSaveManager({
       if (applyingRemoteCounter.current > 0) return;
       const now = Date.now();
       if (!followingUserIdRef.current) {
-        if (now - lastViewportEmitTime.current >= CURSOR_THROTTLE_MS) {
+        if (now - lastViewportEmitTime.current >= VIEWPORT_THROTTLE_MS) {
           lastViewportEmitTime.current = now;
           const zoom = (appState.zoom as { value: number })?.value ?? 1;
           socketRef.current?.emit("viewport-update", { roomId: diagramId, scrollX: appState.scrollX, scrollY: appState.scrollY, zoom });
