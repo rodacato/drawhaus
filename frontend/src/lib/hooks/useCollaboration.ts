@@ -50,7 +50,7 @@ export function useCollaboration({
     }
     return {
       elements,
-      appState: { ...appState, ...canvasPrefs, collaborators: new Map(), theme: "light" },
+      appState: { ...appState, ...canvasPrefs, collaborators: new Map(), theme: "light", viewModeEnabled: !canEdit },
     };
   }, [initialElements, initialAppState, cacheKey]);
 
@@ -116,19 +116,20 @@ export function useCollaboration({
   /* ─── excalidraw API init ─── */
   const onExcalidrawApi = useCallback((excalidrawApi: ExcalidrawApi) => {
     excalidrawApiRef.current = excalidrawApi;
-    // Defer to allow Excalidraw to fully mount before calling updateScene
-    setTimeout(() => {
-      const viewMode = !canEdit || !hasEditLockRef.current;
-      excalidrawApi.updateScene({ appState: { viewModeEnabled: viewMode } });
-      if (pendingSceneRef.current) {
-        const pending = pendingSceneRef.current;
-        pendingSceneRef.current = null;
+    // Don't call updateScene here — it fires during Excalidraw's constructor
+    // before mount. viewModeEnabled is set via initialData.appState and the
+    // useEffect above handles subsequent changes after mount.
+    if (pendingSceneRef.current) {
+      const pending = pendingSceneRef.current;
+      pendingSceneRef.current = null;
+      // Defer pending scene apply to after mount
+      setTimeout(() => {
         applyingRemoteCounter.current += 1;
         excalidrawApi.updateScene({ elements: pending.elements });
         setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
-      }
-    }, 50);
-  }, [canEdit]);
+      }, 0);
+    }
+  }, []);
 
   return {
     saveState, connectionState, connectionError,
