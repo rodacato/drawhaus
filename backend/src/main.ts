@@ -36,6 +36,14 @@ import { createSetupRoutes } from "./infrastructure/http/routes/setup.routes";
 import { createApiKeyRoutes } from "./infrastructure/http/routes/api-key.routes";
 import { createRequireAuth } from "./infrastructure/http/middleware/require-auth";
 
+// --- Public API /v1/ ---
+import { requireSdkHeader } from "./infrastructure/http/public-api/middleware/require-sdk-header";
+import { createRequireApiKey } from "./infrastructure/http/public-api/middleware/require-api-key";
+import { createLogApiRequest } from "./infrastructure/http/public-api/middleware/log-api-request";
+import { apiKeyRateLimiter } from "./infrastructure/http/public-api/middleware/api-rate-limit";
+import { createV1DiagramRoutes } from "./infrastructure/http/public-api/v1-diagram.routes";
+import { createV1HealthRoutes } from "./infrastructure/http/public-api/v1-health.routes";
+
 // --- Socket ---
 import { setupSocketServer } from "./infrastructure/socket";
 
@@ -123,6 +131,14 @@ app.use("/api/admin", createAdminRoutes(
 app.use("/api/templates", createTemplateRoutes({ create: useCases.createTemplate, get: useCases.getTemplate, list: useCases.listTemplates, update: useCases.updateTemplate, delete: useCases.deleteTemplate, use: useCases.useTemplate, transferOwnership: useCases.transferTemplateOwnership }, requireAuth));
 app.use("/api/drive", createDriveRoutes({ getDriveStatus: useCases.getDriveStatus, toggleDriveBackup: useCases.toggleDriveBackup, disconnectDrive: useCases.disconnectDrive, exportToDrive: useCases.exportToDrive, listDriveFiles: useCases.listDriveFiles, importFromDrive: useCases.importFromDrive }, services.tokenRefresher, requireAuth));
 app.use("/api/api-keys", createApiKeyRoutes({ create: useCases.createApiKey, list: useCases.listApiKeys, revoke: useCases.revokeApiKey }, requireAuth));
+
+// --- Public API /v1/ ---
+app.use("/v1/health", createV1HealthRoutes());
+
+const requireApiKey = createRequireApiKey(useCases.validateApiKey);
+const logApiRequest = createLogApiRequest(repos.apiKeyRepo);
+app.use("/v1", apiKeyRateLimiter, requireSdkHeader, requireApiKey, logApiRequest);
+app.use("/v1/diagrams", createV1DiagramRoutes({ create: useCases.createDiagram, get: useCases.getDiagram, list: useCases.listDiagrams, update: useCases.updateDiagram, delete: useCases.deleteDiagram }, config.frontendUrl));
 
 // --- Honeybadger error handler (must be after all routes) ---
 if (config.honeybadgerApiKey) {
