@@ -3,6 +3,8 @@ import type { ExcalidrawApi } from "@/lib/types";
 import type { ConnectionState } from "@/lib/types";
 import { saveOfflineSnapshot, getOfflineSnapshot, deleteOfflineSnapshot, type OfflineSnapshot } from "@/lib/offline-storage";
 
+const OFFLINE_GRACE_MS = 5 * 60 * 1000; // 5 minutes — wait before saving offline snapshot
+
 export interface UseOfflineSnapshotParams {
   diagramId: string;
   connectionState: ConnectionState;
@@ -24,33 +26,49 @@ export function useOfflineSnapshot({
 }: UseOfflineSnapshotParams) {
   const prevConnectionState = useRef<ConnectionState>(connectionState);
   const hasOfflineEdits = useRef(false);
+  const offlineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const disconnectedAtRef = useRef<number | null>(null);
 
-  // Save snapshot when going offline
   useEffect(() => {
     const wasConnected = prevConnectionState.current === "connected";
     const isDisconnected = connectionState === "disconnected" || connectionState === "error";
 
+    // Going offline: start grace period timer
     if (wasConnected && isDisconnected) {
-      const api = excalidrawApiRef.current;
-      if (api && selfUserId) {
-        const elements = api.getSceneElements() as unknown[];
-        const appState = api.getAppState() as Record<string, unknown>;
-        saveOfflineSnapshot({
-          diagramId,
-          userId: selfUserId,
-          userName: selfUserName ?? "Unknown",
-          elements,
-          appState,
-          savedAt: new Date().toISOString(),
-        }).then(() => {
-          hasOfflineEdits.current = true;
-          onOfflineSave?.();
-        }).catch(() => {});
-      }
+      disconnectedAtRef.current = Date.now();
+
+      // Clear any existing timer
+      if (offlineTimerRef.current) clearTimeout(offlineTimerRef.current);
+
+      offlineTimerRef.current = setTimeout(() => {
+        // Still disconnected after grace period — save snapshot
+        const api = excalidrawApiRef.current;
+        if (api && selfUserId) {
+          const elements = api.getSceneElements() as unknown[];
+          const appState = api.getAppState() as Record<string, unknown>;
+          saveOfflineSnapshot({
+            diagramId,
+            userId: selfUserId,
+            userName: selfUserName ?? "Unknown",
+            elements,
+            appState,
+            savedAt: new Date().toISOString(),
+          }).then(() => {
+            hasOfflineEdits.current = true;
+            onOfflineSave?.();
+          }).catch(() => {});
+        }
+      }, OFFLINE_GRACE_MS);
     }
 
-    // Check for offline snapshot on reconnect
+    // Reconnected: cancel timer if still pending, check for conflict
     if (prevConnectionState.current !== "connected" && connectionState === "connected") {
+      // Cancel pending offline save — reconnected before grace period
+      if (offlineTimerRef.current) {
+        clearTimeout(offlineTimerRef.current);
+        offlineTimerRef.current = null;
+      }
+
       if (hasOfflineEdits.current) {
         getOfflineSnapshot(diagramId).then((snapshot) => {
           if (snapshot) {
@@ -59,17 +77,27 @@ export function useOfflineSnapshot({
           hasOfflineEdits.current = false;
         }).catch(() => {});
       }
+
+      disconnectedAtRef.current = null;
     }
 
     prevConnectionState.current = connectionState;
   }, [connectionState, diagramId]);
 
-  // Save on beforeunload if disconnected
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (offlineTimerRef.current) clearTimeout(offlineTimerRef.current);
+    };
+  }, []);
+
+  // Save on beforeunload if disconnected long enough
   useEffect(() => {
     function handleBeforeUnload() {
       const api = excalidrawApiRef.current;
-      if (api && selfUserId && (connectionState === "disconnected" || connectionState === "error")) {
-        // Best-effort synchronous-ish save
+      const isOffline = connectionState === "disconnected" || connectionState === "error";
+      const offlineLongEnough = disconnectedAtRef.current && (Date.now() - disconnectedAtRef.current) >= OFFLINE_GRACE_MS;
+      if (api && selfUserId && isOffline && offlineLongEnough) {
         const elements = api.getSceneElements() as unknown[];
         const appState = api.getAppState() as Record<string, unknown>;
         saveOfflineSnapshot({
