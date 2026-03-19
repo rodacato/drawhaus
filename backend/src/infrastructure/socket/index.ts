@@ -15,7 +15,6 @@ import { registerCursorHandlers } from "./handlers/cursor.handler";
 import { registerCommentHandlers } from "./handlers/comment.handler";
 import { registerLockHandlers } from "./handlers/lock.handler";
 import { EditLockStore } from "./edit-lock-store";
-import { findNextEditor } from "./helpers";
 import { config } from "../config";
 import { attachRedisAdapter } from "./redis-adapter";
 
@@ -47,16 +46,12 @@ export async function setupSocketServer(
   await attachRedisAdapter(io);
 
   const lockStore = new EditLockStore();
-  lockStore.setOnRelease(async (diagramId) => {
-    // Auto-assign to next eligible editor in the room
-    const next = await findNextEditor(io, diagramId);
-    if (next) {
-      lockStore.acquireLock(diagramId, next.userId, next.userName, next.socketId);
-      io.to(next.socketId).emit("edit-lock-acquired", { roomId: diagramId, holder: { userId: next.userId, userName: next.userName } });
-    }
+  lockStore.setOnRelease((diagramId) => {
+    // On inactivity release, just clear the lock — don't auto-assign
+    // (auto-assign on disconnect only, to avoid acquire/release loops)
     io.to(diagramId).emit("edit-lock-status", {
       roomId: diagramId,
-      holder: next ? { userId: next.userId, userName: next.userName } : null,
+      holder: null,
     });
   });
 
