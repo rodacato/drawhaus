@@ -4,6 +4,39 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
+## v0.10.0 — Snapshots, Editor Lock & Single-Scene (2026-03)
+
+### Added
+- **Persistent snapshot system** — auto-triggered snapshots (on save, on join, periodically) with full REST API for listing, creating, restoring, renaming, and deleting snapshots
+- **Snapshot panel UI** — sidebar panel to browse, preview, restore, and rename snapshots with offline recovery support
+- **Snapshot preview modal** — visual preview with restore and rename actions directly from the modal
+- **Snapshot count badge** — dashboard diagram cards show named snapshot count; "Open as new diagram" action from snapshots
+- **Real-time snapshot sync** — broadcast `snapshot-created` events to keep the snapshot panel in sync across users; notify active users when a snapshot is restored
+- **Editor lock system** — single-writer collaborative editing with lock acquisition, release on inactivity, and automatic reassignment on disconnect
+- **Canvas settings panel** — grid toggle and background color controls with separated canvas preferences from shared appState
+- **Object snapping** — enabled Excalidraw snapping for better element alignment
+- **Move-to-workspace** — duplicate diagrams preserve workspace; move diagrams between workspaces
+- **Database migrations** — adopted `node-pg-migrate` for versioned, repeatable database migrations
+- **Gitleaks pre-commit hook** — prevents accidental secret commits
+
+### Improved
+- **Collaboration stability** — stabilized follow mode, reduced jank, locked viewport/editing while following
+- **Canvas data loading** — server data prioritized over stale localStorage cache; first scene data loaded in initial API response to prevent visual jump
+- **Collaboration merge** — preserved element order during real-time merge
+- **Socket reconnection** — automatic reconnection with room re-join on recovery; grace period for reconnection added
+
+### Removed
+- **Multi-scene support** — removed scene tabs, multi-scene API endpoints, and related UI in favor of single-scene diagrams
+
+### Fixed
+- **Edit lock UX** — canvas starts in view-only mode until lock is confirmed; pan/zoom allowed when another user holds the lock; hidden redundant "Tienes el control" bubble for self lock; guarded socket callbacks against React Strict Mode cleanup
+- **Snapshot noise** — content hash deduplication, cross-trigger dedup, 5-minute grace period before offline snapshots
+- **Preview modal** — prevented preview modal from closing the sidebar on restore
+- **Setup flow** — fixed setup-lock cache bug and added UUID parameter validation
+- **CI** — fixed lint errors and e2e backend startup failure
+
+---
+
 ## v0.9.0 — Templates, Diagram as Code & Self-Hosted Frontend (2026-03)
 
 ### Added

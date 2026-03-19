@@ -12,10 +12,11 @@ Shipped and working in production. See [CHANGELOG.md](CHANGELOG.md) for full ver
 
 | Area | Capabilities | Since |
 |------|-------------|-------|
-| **Editor** | Excalidraw engine, multi-scene with tab bar, auto-save, thumbnails | v0.1 |
+| **Editor** | Excalidraw engine, auto-save, thumbnails, object snapping, canvas settings (grid, background) | v0.1 |
 | **Templates** | 7 built-in templates, custom templates with workspace sharing, template picker, My Templates view, category filtering, usage tracking | v0.9 |
 | **Diagram as Code** | Mermaid live import → editable Excalidraw elements, live SVG preview, replace/append toggle | v0.9 |
-| **Collaboration** | Real-time cursors + presence, viewport follow, threaded comments with resolve workflow, comment reactions | v0.1 |
+| **Collaboration** | Real-time cursors + presence, viewport follow, editor lock (single-writer), threaded comments with resolve workflow, comment reactions | v0.1 |
+| **Snapshots** | Persistent snapshot system with auto-triggers, snapshot panel UI, preview modal, restore/rename, offline recovery, real-time sync, dashboard badges | v0.10 |
 | **Workspaces** | Multi-tenant spaces (admin/editor/viewer roles), member invites, workspace-scoped folders + diagrams, ownership transfer with bulk resource transfer | v0.7 |
 | **Dashboard** | Recent/Starred cross-workspace views, folders as content sections, grid/list toggle, starred diagrams, duplicate, inline rename, workspace switcher | v0.4 |
 | **Sharing** | Share links with roles + expiration, guest access via tokens, read-only embeds (`/embed/:token`) | v0.1 |
@@ -26,7 +27,7 @@ Shipped and working in production. See [CHANGELOG.md](CHANGELOG.md) for full ver
 | **Security** | Helmet headers, rate limiting, audit logger, RBAC, cookie hardening, encrypted secrets in DB | v0.8 |
 | **UI & Branding** | Dark/light theme, Bauhaus-inspired branding, toast notifications, confirm dialogs, style guide, board sidebar with semantic groups | v0.6 |
 | **Landing Page** | Hero with real screenshots, "Why Drawhaus?" value props, "How it works" deploy steps, 12-feature grid, comparison badges, tech stack logos, automated Playwright screenshots | v0.9 |
-| **DevOps** | Docker + Kamal deploy (backend + frontend), automated DB backups (7-day retention), health endpoint, `/api/version`, Redis adapter for horizontal scaling, nginx frontend with immutable asset caching | v0.1 |
+| **DevOps** | Docker + Kamal deploy (backend + frontend), automated DB backups (7-day retention), health endpoint, `/api/version`, Redis adapter for horizontal scaling, nginx frontend with immutable asset caching, node-pg-migrate versioned migrations | v0.1 |
 | **Testing** | 5-phase Playwright E2E suite (permissions, CRUD, sharing, auth, visual regression), backend unit tests, marketing screenshot automation | v0.8 |
 | **Architecture** | Clean Architecture (application/domain/infrastructure), Vite + React Router + Axios, composition root, `validate()` middleware, `withTransaction`, response interceptor | v0.5 |
 
@@ -129,15 +130,9 @@ Evaluated and decided against. Includes full context so the reasoning is preserv
 
 **Revisit if**: Drawhaus grows a community of 100+ active users.
 
-### Versioning (Snapshot History)
+### ~~Versioning (Snapshot History)~~ → Shipped in v0.10.0
 
-**The idea**: Timeline UI to browse previous versions of a diagram, diff changes, and restore old snapshots.
-
-**Why not**: Complex UI and storage for low usage. Current approach (full JSONB snapshots in DB + automated backups) provides recovery without the UI overhead. Most users don't need visual diffs.
-
-**How it could be done**: `diagram_versions` table with trigger on save (debounced), timeline sidebar with thumbnail previews per version, visual diff overlay highlighting added/removed/moved elements.
-
-**Revisit if**: Actual user demand, or a simple "last 10 saves" list proves useful without the full timeline UI.
+Shipped as the **Snapshot System** — persistent snapshots with auto-triggers, sidebar panel UI, preview modal, restore/rename actions, offline recovery, and real-time sync across users. See CHANGELOG v0.10.0.
 
 ### PDF / PPTX Export
 
@@ -197,7 +192,7 @@ Evaluated and decided against. Includes full context so the reasoning is preserv
 | API keys: hybrid env + DB | Infra secrets in env, feature secrets encrypted in DB | Allows admin UI config without server access; keeps boot deps in env |
 | Setup wizard over manual .env | Wizard for feature config, env for infra | Reduces deploy friction; validates credentials before saving |
 | No CSRF tokens | SameSite=Lax + CORS origin lock + httpOnly cookies | SPA architecture already mitigates CSRF; tokens add complexity without value |
-| No migration system (v1.0) | Inline `initSchema()` with idempotent DDL | Single operator; `CREATE IF NOT EXISTS` is sufficient; revisit if team grows |
+| Versioned migrations | `node-pg-migrate` over inline DDL | Adopted in v0.10.0; schema changes now tracked as versioned migration files |
 | Workspaces over per-diagram collaborators | Workspace-level access | Contractor use case: separate clients cleanly, share all diagrams in a workspace at once instead of one by one |
 | Tags per-user, not per-workspace | Personal organization | Industry standard; tags are a personal view, not shared state |
 | Lazy personal workspace | Created on first `/api/workspaces` list call | No migration code in app; existing users get personal workspace on next login |
@@ -219,4 +214,4 @@ Evaluated and decided against. Includes full context so the reasoning is preserv
 
 ---
 
-*Last updated: 2026-03-14*
+*Last updated: 2026-03-19*
