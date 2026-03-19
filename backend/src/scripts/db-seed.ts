@@ -12,7 +12,7 @@
  * Safe to run multiple times (uses ON CONFLICT DO NOTHING).
  */
 
-import { pool, initSchema } from "../infrastructure/db";
+import { pool, runMigrations } from "../infrastructure/db";
 import { hashSync } from "bcryptjs";
 
 const SEED_ADMIN = {
@@ -35,7 +35,7 @@ async function seed() {
   console.log("🌱 Seeding database...\n");
 
   // Ensure schema exists
-  await initSchema();
+  await runMigrations();
   console.log("  ✓ Schema initialized");
 
   // Create users

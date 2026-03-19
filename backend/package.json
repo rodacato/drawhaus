@@ -14,7 +14,10 @@
     "test:unit": "tsx --test --test-concurrency=1 'src/__tests__/unit/**/*.test.ts'",
     "test:integration": "tsx --test --test-concurrency=1 'src/__tests__/integration/**/*.test.ts'",
     "db:backup": "tsx --env-file=../.env src/scripts/db-backup.ts",
-    "db:restore": "tsx --env-file=../.env src/scripts/db-restore.ts"
+    "db:restore": "tsx --env-file=../.env src/scripts/db-restore.ts",
+    "db:migrate": "node-pg-migrate -m src/migrations up",
+    "db:migrate:create": "node-pg-migrate -m src/migrations -j sql create",
+    "db:migrate:down": "node-pg-migrate -m src/migrations down"
   },
   "dependencies": {
     "@honeybadger-io/js": "^6.12.3",
@@ -25,8 +28,9 @@
     "express": "^4.21.2",
     "express-rate-limit": "^8.3.1",
     "helmet": "^8.1.0",
-    "node-cron": "^3.0.3",
     "ioredis": "^5.10.0",
+    "node-cron": "^3.0.3",
+    "node-pg-migrate": "^8.0.4",
     "pg": "^8.20.0",
     "pino": "^10.3.1",
     "resend": "^6.9.3",

@@ -9,7 +9,7 @@
  * ⚠️  WARNING: This destroys all data. Only use in development.
  */
 
-import { pool, initSchema } from "../infrastructure/db";
+import { pool, runMigrations } from "../infrastructure/db";
 
 async function reset() {
   const nodeEnv = process.env.NODE_ENV ?? "development";
@@ -39,7 +39,7 @@ async function reset() {
   }
 
   // Recreate schema
-  await initSchema();
+  await runMigrations();
   console.log("  ✓ Schema recreated\n");
 
   // Run seed

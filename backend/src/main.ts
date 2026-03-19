@@ -6,7 +6,7 @@ import { createServer } from "http";
 import { authLimiter, generalLimiter } from "./infrastructure/http/middleware/rate-limit";
 import { createSetupLock } from "./infrastructure/http/middleware/setup-lock";
 import { config } from "./infrastructure/config";
-import { initSchema, pool } from "./infrastructure/db";
+import { runMigrations, pool } from "./infrastructure/db";
 import { logger } from "./infrastructure/logger";
 import { requestId } from "./infrastructure/http/middleware/request-id";
 import { requestLogger } from "./infrastructure/http/middleware/request-logger";
@@ -132,7 +132,7 @@ if (config.honeybadgerApiKey) {
 // ============================================================
 
 async function startServer(): Promise<void> {
-  await initSchema();
+  await runMigrations();
   const httpServer = createServer(app);
   ioHolder.io = await setupSocketServer(httpServer, { joinRoom: useCases.joinRoom, joinRoomGuest: useCases.joinRoomGuest, saveScene: useCases.saveScene, syncToDrive: useCases.syncToDrive, createComment: useCases.createComment, replyComment: useCases.replyComment, resolveComment: useCases.resolveComment, deleteComment: useCases.deleteComment, createSnapshot: useCases.createSnapshot });
 
