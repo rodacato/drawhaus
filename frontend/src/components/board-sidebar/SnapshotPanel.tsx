@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ui } from "@/lib/ui";
 import { useSnapshots } from "@/lib/hooks/useSnapshots";
+import { diagramsApi } from "@/api/diagrams";
 import type { SnapshotMeta, SnapshotFull } from "@/api/snapshots";
 import type { ExcalidrawApi } from "@/lib/types";
 
@@ -60,6 +61,7 @@ function SnapshotPreview({
   const [naming, setNaming] = useState(false);
   const [nameValue, setNameValue] = useState(snapshot.name ?? "");
   const [restoring, setRestoring] = useState(false);
+  const [creatingDiagram, setCreatingDiagram] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -169,6 +171,31 @@ function SnapshotPreview({
             )}
           </div>
         )}
+
+        {/* Open as new diagram */}
+        <button
+          type="button"
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-sm text-text-secondary transition hover:border-primary hover:text-primary"
+          disabled={creatingDiagram}
+          onClick={async () => {
+            setCreatingDiagram(true);
+            try {
+              const title = snapshot.name
+                ? `${snapshot.name} (copy)`
+                : `Snapshot ${new Date(snapshot.createdAt).toLocaleDateString()} (copy)`;
+              const res = await diagramsApi.create({ title, elements: snapshot.elements }) as { id: string };
+              window.open(`/board/${res.id}`, "_blank");
+            } catch { /* ignore */ }
+            setCreatingDiagram(false);
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+          {creatingDiagram ? "Creating..." : "Open as new diagram"}
+        </button>
       </div>
     </div>,
     document.body,

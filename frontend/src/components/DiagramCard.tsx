@@ -289,6 +289,13 @@ export function DiagramCard({
           <p className="mt-1 text-xs text-text-secondary">{new Date(diagram.updatedAt ?? diagram.updated_at ?? "").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5 pl-2">
+          {/* Snapshot count badge */}
+          {!!diagram.namedSnapshotCount && diagram.namedSnapshotCount > 0 && (
+            <span className="flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary" title={`${diagram.namedSnapshotCount} saved snapshot${diagram.namedSnapshotCount > 1 ? "s" : ""}`}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+              {diagram.namedSnapshotCount}
+            </span>
+          )}
           {/* Star button */}
           <button
             onClick={() => onToggleStar(diagram.id, !diagram.starred)}

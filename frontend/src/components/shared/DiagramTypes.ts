@@ -9,4 +9,5 @@ export type Diagram = {
   tags?: Tag[];
   updatedAt?: string;
   updated_at?: string;
+  namedSnapshotCount?: number;
 };
