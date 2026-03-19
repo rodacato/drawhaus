@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
+import type { Socket } from "socket.io-client";
 import { ui } from "@/lib/ui";
 import { useSnapshots } from "@/lib/hooks/useSnapshots";
 import { diagramsApi } from "@/api/diagrams";
@@ -11,6 +12,7 @@ type SnapshotPanelProps = {
   canEdit: boolean;
   excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
   onRestored?: () => void;
+  socketRef?: React.RefObject<Socket | null>;
 };
 
 const TRIGGER_LABELS: Record<string, string> = {
@@ -327,8 +329,25 @@ function SnapshotItem({
 }
 
 /* ─── Main panel ─── */
-export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored }: SnapshotPanelProps) {
+export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored, socketRef }: SnapshotPanelProps) {
   const { named, auto, loading, getSnapshot, createSnapshot, restoreSnapshot, renameSnapshot, deleteSnapshot, refresh } = useSnapshots(diagramId);
+
+  // Auto-refresh when other users create snapshots
+  useEffect(() => {
+    const socket = socketRef?.current;
+    if (!socket) return;
+    let debounceTimer: ReturnType<typeof setTimeout>;
+    function handleSnapshotCreated(data: { diagramId: string }) {
+      if (data.diagramId !== diagramId) return;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => refresh(), 300);
+    }
+    socket.on("snapshot-created", handleSnapshotCreated);
+    return () => {
+      socket.off("snapshot-created", handleSnapshotCreated);
+      clearTimeout(debounceTimer);
+    };
+  }, [socketRef, diagramId, refresh]);
   const [creating, setCreating] = useState(false);
   const [confirmRestore, setConfirmRestore] = useState<SnapshotMeta | null>(null);
   const [restoring, setRestoring] = useState(false);

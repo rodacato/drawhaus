@@ -13,6 +13,7 @@ import { SaveTemplatePanel } from "./board-sidebar/SaveTemplatePanel";
 import { CodeImportPanel } from "./board-sidebar/CodeImportPanel";
 import { SnapshotPanel } from "./board-sidebar/SnapshotPanel";
 import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
+import type { Socket } from "socket.io-client";
 
 /* ───────────────────────── types ───────────────────────── */
 
@@ -41,6 +42,7 @@ type BoardSidebarProps = {
   workspaceId?: string | null;
   canvasPrefs: CanvasPrefs;
   onCanvasPrefsChange: (patch: Partial<CanvasPrefs>) => void;
+  socketRef?: React.RefObject<Socket | null>;
 };
 
 /* ───────────────────────── main sidebar ───────────────────────── */
@@ -63,6 +65,7 @@ export function BoardSidebar({
   workspaceId,
   canvasPrefs,
   onCanvasPrefsChange,
+  socketRef,
 }: BoardSidebarProps) {
   const navigate = useNavigate();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
@@ -155,7 +158,7 @@ export function BoardSidebar({
         {activePanel === "settings" && <SettingsPanel userEmail={userEmail} onDashboardClick={() => setLeaveOpen(true)} canvasPrefs={canvasPrefs} onCanvasPrefsChange={onCanvasPrefsChange} />}
         {activePanel === "template" && <SaveTemplatePanel excalidrawApiRef={excalidrawApiRef} workspaceId={workspaceId} />}
         {activePanel === "code" && <CodeImportPanel excalidrawApiRef={excalidrawApiRef} onClose={closePanel} />}
-        {activePanel === "snapshots" && <SnapshotPanel diagramId={diagramId} canEdit={canEdit} excalidrawApiRef={excalidrawApiRef} onRestored={onSnapshotRestored} />}
+        {activePanel === "snapshots" && <SnapshotPanel diagramId={diagramId} canEdit={canEdit} excalidrawApiRef={excalidrawApiRef} onRestored={onSnapshotRestored} socketRef={socketRef} />}
       </SidebarDrawer>
 
       {leaveOpen && createPortal(

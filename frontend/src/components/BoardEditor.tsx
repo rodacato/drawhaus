@@ -141,6 +141,19 @@ export default function BoardEditor({
 
   const toast = useToast();
 
+  // Notify when another user restores a snapshot
+  useEffect(() => {
+    const socket = collab.socketRef.current;
+    if (!socket) return;
+    const handler = ({ restoredBy }: { diagramId: string; restoredBy: { userId: string; userName: string } }) => {
+      if (restoredBy.userId !== collab.selfUserId) {
+        toast(`${restoredBy.userName} restauro una version anterior`, "info");
+      }
+    };
+    socket.on("snapshot-restored", handler);
+    return () => { socket.off("snapshot-restored", handler); };
+  }, [collab.socketRef, collab.selfUserId, toast]);
+
   // Keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -261,6 +274,7 @@ export default function BoardEditor({
         workspaceId={workspaceId}
         canvasPrefs={canvasPrefs}
         onCanvasPrefsChange={handleCanvasPrefsChange}
+        socketRef={collab.socketRef}
       />
 
       {/* Main content area */}

@@ -73,7 +73,16 @@ export function registerSceneHandlers(
           lastIntervalSnapshot.set(roomId, now);
           const sockets = await io.in(roomId).fetchSockets();
           const uniqueIds = new Set(sockets.map((s) => (s.data as SocketData).userId).filter(Boolean));
-          useCases.createSnapshot.execute(roomId, saveUserId, "interval", undefined, uniqueIds.size || 1).catch(() => {});
+          useCases.createSnapshot.execute(roomId, saveUserId, "interval", undefined, uniqueIds.size || 1)
+            .then((snap) => {
+              if (snap) {
+                io.to(roomId).emit("snapshot-created", {
+                  diagramId: roomId,
+                  snapshot: { id: snap.id, trigger: snap.trigger, name: snap.name, createdBy: snap.createdBy, createdByName: snap.createdByName, activeUsers: snap.activeUsers, createdAt: snap.createdAt.toISOString() },
+                });
+              }
+            })
+            .catch(() => {});
         }
 
         // Fire-and-forget: sync to Google Drive if enabled

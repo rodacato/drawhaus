@@ -163,7 +163,16 @@ export function registerRoomHandlers(
       if (!hasRemainingEditors && myData.userId) {
         // +1 to include the disconnecting user in the count
         const activeCount = futureUsers.length + 1;
-        useCases.createSnapshot.execute(roomId, myData.userId.startsWith("guest_") ? null : myData.userId, "close", undefined, activeCount).catch(() => {});
+        useCases.createSnapshot.execute(roomId, myData.userId.startsWith("guest_") ? null : myData.userId, "close", undefined, activeCount)
+          .then((snap) => {
+            if (snap) {
+              socket.to(roomId).emit("snapshot-created", {
+                diagramId: roomId,
+                snapshot: { id: snap.id, trigger: snap.trigger, name: snap.name, createdBy: snap.createdBy, createdByName: snap.createdByName, activeUsers: snap.activeUsers, createdAt: snap.createdAt.toISOString() },
+              });
+            }
+          })
+          .catch(() => {});
       }
 
       // Auto-assign lock to next editor if this room had a lock released

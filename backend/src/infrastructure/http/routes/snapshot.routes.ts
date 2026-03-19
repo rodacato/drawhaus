@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import type { Server } from "socket.io";
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
 import type { ListSnapshotsUseCase } from "../../../application/use-cases/snapshots/list-snapshots";
 import type { GetSnapshotUseCase } from "../../../application/use-cases/snapshots/get-snapshot";
@@ -9,6 +10,8 @@ import type { DeleteSnapshotUseCase } from "../../../application/use-cases/snaps
 import { asyncRoute } from "../middleware/async-handler";
 import { validate } from "../middleware/validate";
 import type { DiagramSnapshot } from "../../../domain/entities/diagram-snapshot";
+
+export type IoHolder = { io: Server | null };
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
@@ -49,6 +52,7 @@ export function createSnapshotRoutes(
     delete: DeleteSnapshotUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
+  ioHolder?: IoHolder,
 ) {
   const router = Router({ mergeParams: true });
   router.use(requireAuth);
@@ -61,8 +65,9 @@ export function createSnapshotRoutes(
 
   // POST /api/diagrams/:diagramId/snapshots
   router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
+    const diagramId = String(req.params.diagramId);
     const snapshot = await useCases.create.execute(
-      String(req.params.diagramId),
+      diagramId,
       req.authUser.id,
       "manual",
       req.body.name,
@@ -70,6 +75,7 @@ export function createSnapshotRoutes(
     if (!snapshot) {
       return res.status(429).json({ error: "Snapshot creation throttled" });
     }
+    ioHolder?.io?.to(diagramId).emit("snapshot-created", { diagramId, snapshot: formatSnapshot(snapshot) });
     return res.status(201).json({ snapshot: formatSnapshot(snapshot) });
   }));
 
@@ -82,6 +88,26 @@ export function createSnapshotRoutes(
   // POST /api/diagrams/:diagramId/snapshots/:snapshotId/restore
   router.post("/:snapshotId/restore", asyncRoute(async (req, res) => {
     const result = await useCases.restore.execute(String(req.params.snapshotId), req.authUser.id);
+
+    if (ioHolder?.io) {
+      const { diagramId } = result;
+      // Notify all users in the room about the restore
+      ioHolder.io.to(diagramId).emit("snapshot-restored", {
+        diagramId,
+        restoredBy: { userId: req.authUser.id, userName: req.authUser.name },
+        snapshotId: req.params.snapshotId,
+      });
+      // Broadcast restored scene to all users so their canvas updates
+      if (result.sceneId) {
+        ioHolder.io.to(diagramId).emit("scene-from-db", {
+          elements: result.elements,
+          appState: result.appState,
+        });
+      }
+      // Trigger snapshot list refresh (pre-restore backup was created)
+      ioHolder.io.to(diagramId).emit("snapshot-created", { diagramId });
+    }
+
     return res.json({ success: true, diagramId: result.diagramId });
   }));
 
