@@ -181,7 +181,7 @@ export function BoardToolbarPanel({
                   </div>
                 </div>
                 <button
-                  onClick={() => onFollow(isFollowing ? null : user.userId)}
+                  onClick={() => { onFollow(isFollowing ? null : user.userId); if (!isFollowing) onClose(); }}
                   className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                     isFollowing
                       ? "bg-indigo-600 text-white hover:bg-indigo-700"

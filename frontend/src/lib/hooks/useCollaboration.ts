@@ -26,6 +26,7 @@ export function useCollaboration({
   const applyingRemoteCounter = useRef(0);
   const activeSceneIdRef = useRef<string | null>(null);
   const followingUserIdRef = useRef<string | null>(null);
+  const followedViewportRef = useRef<{ scrollX: number; scrollY: number; zoom: number } | null>(null);
   const pendingSceneRef = useRef<{ elements: unknown[] } | null>(null);
 
   const cacheKey = `drawhaus_scene_${diagramId}`;
@@ -63,6 +64,7 @@ export function useCollaboration({
     excalidrawApiRef,
     applyingRemoteCounter,
     followingUserIdRef,
+    followedViewportRef,
     canEdit,
   });
 
@@ -74,6 +76,7 @@ export function useCollaboration({
     excalidrawApiRef,
     applyingRemoteCounter,
     followingUserIdRef,
+    followedViewportRef,
     selfUserId,
   });
 

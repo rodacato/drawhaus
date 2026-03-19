@@ -10,6 +10,7 @@ export interface UsePresenceParams {
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
   applyingRemoteCounter: React.MutableRefObject<number>;
   followingUserIdRef: React.MutableRefObject<string | null>;
+  followedViewportRef: React.MutableRefObject<{ scrollX: number; scrollY: number; zoom: number } | null>;
   selfUserId: string | null;
 }
 
@@ -28,6 +29,7 @@ export function usePresence({
   excalidrawApiRef,
   applyingRemoteCounter,
   followingUserIdRef,
+  followedViewportRef,
   selfUserId,
 }: UsePresenceParams): UsePresenceReturn {
   const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
@@ -53,7 +55,10 @@ export function usePresence({
   }, []);
 
   /* ─── sync followingUserIdRef ─── */
-  useEffect(() => { followingUserIdRef.current = followingUserId; }, [followingUserId]);
+  useEffect(() => {
+    followingUserIdRef.current = followingUserId;
+    if (!followingUserId) followedViewportRef.current = null;
+  }, [followingUserId]);
 
   /* ─── stale cursor cleanup ─── */
   useEffect(() => {
@@ -107,6 +112,7 @@ export function usePresence({
     /* ─── Mejora 5: use setTimeout(0) instead of rAF for applyingRemoteCounter ─── */
     const handleViewport = ({ userId, scrollX, scrollY, zoom }: { userId: string; scrollX: number; scrollY: number; zoom: number }) => {
       if (followingUserIdRef.current !== userId) return;
+      followedViewportRef.current = { scrollX, scrollY, zoom };
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ appState: { scrollX, scrollY, zoom: { value: zoom } } });
       setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);

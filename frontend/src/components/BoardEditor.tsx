@@ -296,6 +296,7 @@ export default function BoardEditor({
             excalidrawAPI={collab.onExcalidrawApi}
             initialData={collab.initialData}
             onChange={handleChange}
+            viewModeEnabled={!!collab.followingUserId}
           />
         </div>
 

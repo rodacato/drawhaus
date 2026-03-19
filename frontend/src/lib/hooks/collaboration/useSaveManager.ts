@@ -12,6 +12,7 @@ export interface UseSaveManagerParams {
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
   applyingRemoteCounter: React.MutableRefObject<number>;
   followingUserIdRef: React.MutableRefObject<string | null>;
+  followedViewportRef: React.MutableRefObject<{ scrollX: number; scrollY: number; zoom: number } | null>;
   canEdit: boolean;
 }
 
@@ -33,6 +34,7 @@ export function useSaveManager({
   excalidrawApiRef,
   applyingRemoteCounter,
   followingUserIdRef,
+  followedViewportRef,
   canEdit,
 }: UseSaveManagerParams): UseSaveManagerReturn {
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -118,6 +120,18 @@ export function useSaveManager({
           const zoom = (appState.zoom as { value: number })?.value ?? 1;
           socketRef.current?.emit("viewport-update", { roomId: diagramId, scrollX: appState.scrollX, scrollY: appState.scrollY, zoom });
         }
+      } else {
+        // Lock viewport while following — restore to followed user's viewport
+        const fv = followedViewportRef.current;
+        if (fv) {
+          const currentZoom = (appState.zoom as { value: number })?.value ?? 1;
+          if (appState.scrollX !== fv.scrollX || appState.scrollY !== fv.scrollY || currentZoom !== fv.zoom) {
+            applyingRemoteCounter.current += 1;
+            excalidrawApiRef.current?.updateScene({ appState: { scrollX: fv.scrollX, scrollY: fv.scrollY, zoom: { value: fv.zoom } } });
+            setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+          }
+        }
+        return; // Skip editing while following
       }
       if (!canEdit) return;
       setSaveState("pending");

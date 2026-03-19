@@ -167,7 +167,7 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
       {collab.followingUserId && <FollowingBanner presenceUsers={collab.presenceUsers} followingUserId={collab.followingUserId} onStop={() => collab.setFollowingUserId(null)} />}
       <CursorOverlay cursors={collab.cursors} />
       <div className="h-full w-full" onPointerMove={collab.onPointerMove}>
-        <ExcalidrawCanvas excalidrawAPI={collab.onExcalidrawApi} initialData={collab.initialData} onChange={collab.onChange} viewModeEnabled={!canEdit} />
+        <ExcalidrawCanvas excalidrawAPI={collab.onExcalidrawApi} initialData={collab.initialData} onChange={collab.onChange} viewModeEnabled={!canEdit || !!collab.followingUserId} />
       </div>
       {collab.scenes.length > 0 && (
         <div className="pointer-events-none fixed bottom-3 left-1/2 z-20 -translate-x-1/2">
