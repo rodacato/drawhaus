@@ -7,5 +7,9 @@ export function createSocket(): Socket {
     parser: msgpackParser,
     transports: ["websocket", "polling"],
     withCredentials: true,
+    reconnection: true,
+    reconnectionAttempts: 3,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
   });
 }
