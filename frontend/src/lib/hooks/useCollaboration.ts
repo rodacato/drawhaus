@@ -103,11 +103,11 @@ export function useCollaboration({
     cancelPendingTimers,
   });
 
-  /* ─── 6. Force viewModeEnabled only when following (lock uses overlay instead) ─── */
+  /* ─── 6. Force viewModeEnabled when user cannot edit (no lock or following) ─── */
   useEffect(() => {
     const api = excalidrawApiRef.current;
     if (!api) return;
-    const viewMode = !!followingUserIdRef.current;
+    const viewMode = !canEdit || !editLock.hasEditLock || !!followingUserIdRef.current;
     applyingRemoteCounter.current += 1;
     api.updateScene({ appState: { viewModeEnabled: viewMode } });
     setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
@@ -116,8 +116,9 @@ export function useCollaboration({
   /* ─── excalidraw API init ─── */
   const onExcalidrawApi = useCallback((excalidrawApi: ExcalidrawApi) => {
     excalidrawApiRef.current = excalidrawApi;
-    // Start with viewMode off — lock overlay handles edit blocking
-    excalidrawApi.updateScene({ appState: { viewModeEnabled: false } });
+    // Apply initial viewMode — block editing until lock is acquired
+    const viewMode = !canEdit || !hasEditLockRef.current;
+    excalidrawApi.updateScene({ appState: { viewModeEnabled: viewMode } });
     if (pendingSceneRef.current) {
       const pending = pendingSceneRef.current;
       pendingSceneRef.current = null;

@@ -42,6 +42,19 @@ export function canEdit(socket: { data: Record<string, unknown> }, roomId: strin
   return role === "owner" || role === "editor";
 }
 
+/** Find the next canEdit user in a room (excluding a given socketId) */
+export async function findNextEditor(io: Server, roomId: string, excludeSocketId?: string): Promise<{ userId: string; userName: string; socketId: string } | null> {
+  const sockets = await io.in(roomId).fetchSockets();
+  for (const s of sockets) {
+    if (excludeSocketId && s.id === excludeSocketId) continue;
+    const data = s.data as SocketData;
+    if (data.userId && canEdit(s, roomId)) {
+      return { userId: data.userId, userName: data.userName, socketId: s.id };
+    }
+  }
+  return null;
+}
+
 export async function getRoomPresenceUsers(io: Server, roomId: string): Promise<PresenceUser[]> {
   const seen = new Set<string>();
   const users: PresenceUser[] = [];

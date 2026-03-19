@@ -3,7 +3,7 @@ import { parse } from "cookie";
 import type { JoinRoomUseCase } from "../../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../../application/use-cases/realtime/join-room-guest";
 import type { EditLockStore } from "../edit-lock-store";
-import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers } from "../helpers";
+import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers, findNextEditor } from "../helpers";
 import { config } from "../../config";
 import { logger } from "../../logger";
 
@@ -177,8 +177,13 @@ export function registerRoomHandlers(
         }
       }
 
-      // Broadcast cleared lock status if this room had a lock released
+      // Auto-assign lock to next editor if this room had a lock released
       if (releasedRoomIds.includes(roomId)) {
+        const next = await findNextEditor(io, roomId, socket.id);
+        if (next) {
+          lockStore.acquireLock(roomId, next.userId, next.userName, next.socketId);
+          io.to(next.socketId).emit("edit-lock-acquired", { roomId, holder: { userId: next.userId, userName: next.userName } });
+        }
         emitLockStatus(io, roomId, lockStore);
       }
 
