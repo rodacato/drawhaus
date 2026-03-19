@@ -5,7 +5,7 @@ import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
 import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
-import { LockOverlay, EditingBubble } from "@/components/EditLockOverlay";
+import { EditingBubble } from "@/components/EditLockOverlay";
 import { SceneTabBar } from "@/components/SceneTabBar";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
 import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
@@ -175,8 +175,6 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
     }
   }, [canEdit, collab.hasEditLock, collab.tryAcquireEditLock]);
 
-  const showLockOverlay = canEdit && !collab.hasEditLock && !!collab.editLockHolder && !collab.followingUserId;
-
   // Status badge logic
   let statusBadge: { label: string; className: string };
   if (!canEdit) {
@@ -226,12 +224,6 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
       <CursorOverlay cursors={collab.cursors} />
       <div className="relative h-full w-full" onPointerDown={handleCanvasPointerDown} onPointerMove={collab.onPointerMove}>
         <ExcalidrawCanvas excalidrawAPI={collab.onExcalidrawApi} initialData={collab.initialData} onChange={collab.onChange} viewModeEnabled={false} />
-        {showLockOverlay && (
-          <LockOverlay
-            holderName={collab.editLockHolder!.userName}
-            onTryAcquire={collab.tryAcquireEditLock}
-          />
-        )}
       </div>
       {collab.scenes.length > 0 && (
         <div className="pointer-events-none fixed bottom-3 left-1/2 z-20 -translate-x-1/2">

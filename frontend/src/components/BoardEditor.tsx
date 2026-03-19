@@ -6,7 +6,7 @@ import { DriveSyncBadge, type DriveSyncState } from "@/components/DriveSyncBadge
 import { FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "@/components/BoardSidebar";
 import { useToast } from "@/components/Toast";
-import { LockOverlay, EditingBubble } from "@/components/EditLockOverlay";
+import { EditingBubble } from "@/components/EditLockOverlay";
 import { SceneTabBar } from "@/components/SceneTabBar";
 import { CommentsPanel } from "@/components/CommentsPanel";
 import { CommentIndicators } from "@/components/CommentIndicators";
@@ -224,9 +224,6 @@ export default function BoardEditor({
     }
   }
 
-  // Show lock overlay only when another user has the lock and we can edit
-  const showLockOverlay = canEdit && !collab.hasEditLock && !!collab.editLockHolder && !collab.followingUserId;
-
   const unresolvedCount = comments.threads.filter((t) => !t.resolved).length;
 
   return (
@@ -365,13 +362,6 @@ export default function BoardEditor({
             onChange={handleChange}
             viewModeEnabled={false}
           />
-          {/* Lock overlay — captures click when someone else is editing */}
-          {showLockOverlay && (
-            <LockOverlay
-              holderName={collab.editLockHolder!.userName}
-              onTryAcquire={collab.tryAcquireEditLock}
-            />
-          )}
         </div>
 
         {/* Comments panel */}
