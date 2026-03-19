@@ -17,6 +17,7 @@ import { validate, validateParams } from "../middleware/validate";
 const uuidParams = z.object({ id: z.string().uuid() });
 import type { Diagram } from "../../../domain/entities/diagram";
 import type { Tag } from "../../../domain/entities/tag";
+import type { SnapshotRepository } from "../../../domain/ports/snapshot-repository";
 import type { TagRepository } from "../../../domain/ports/tag-repository";
 
 const createSchema = z.object({
@@ -75,6 +76,7 @@ export function createDiagramRoutes(
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
   tagRepo?: TagRepository,
+  snapshotRepo?: SnapshotRepository,
 ) {
   const router = Router();
   router.use(requireAuth);
@@ -96,11 +98,17 @@ export function createDiagramRoutes(
     const folderId = folderParam === "null" ? null : (typeof folderParam === "string" ? folderParam : undefined);
     const workspaceId = typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
     const diagrams = await useCases.list.execute(req.authUser.id, folderId, workspaceId);
-    if (tagRepo && diagrams.length > 0) {
-      const tagsMap = await tagRepo.listForDiagrams(diagrams.map((d) => d.id));
-      return res.json({ diagrams: diagrams.map((d) => formatDiagram(d, tagsMap.get(d.id))) });
-    }
-    return res.json({ diagrams: diagrams.map((d) => formatDiagram(d)) });
+    const ids = diagrams.map((d) => d.id);
+    const [tagsMap, snapshotCounts] = await Promise.all([
+      tagRepo && ids.length > 0 ? tagRepo.listForDiagrams(ids) : Promise.resolve(new Map<string, Tag[]>()),
+      snapshotRepo && ids.length > 0 ? snapshotRepo.countNamedBatch(ids) : Promise.resolve(new Map<string, number>()),
+    ]);
+    return res.json({
+      diagrams: diagrams.map((d) => ({
+        ...formatDiagram(d, tagsMap.get(d.id)),
+        namedSnapshotCount: snapshotCounts.get(d.id) ?? 0,
+      })),
+    });
   }));
 
   router.get("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {

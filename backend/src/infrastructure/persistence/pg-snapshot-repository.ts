@@ -150,6 +150,23 @@ export class PgSnapshotRepository implements SnapshotRepository {
     return parseInt(rows[0].count, 10);
   }
 
+  async countNamedBatch(diagramIds: string[]): Promise<Map<string, number>> {
+    if (diagramIds.length === 0) return new Map();
+    const placeholders = diagramIds.map((_, i) => `$${i + 1}`).join(",");
+    const { rows } = await pool.query<{ diagram_id: string; count: string }>(
+      `SELECT diagram_id, COUNT(*)::text AS count
+       FROM diagram_snapshots
+       WHERE diagram_id IN (${placeholders}) AND name IS NOT NULL
+       GROUP BY diagram_id`,
+      diagramIds,
+    );
+    const map = new Map<string, number>();
+    for (const row of rows) {
+      map.set(row.diagram_id, parseInt(row.count, 10));
+    }
+    return map;
+  }
+
   async purgeAuto(diagramId: string, keepCount: number, keepDays: number): Promise<number> {
     const { rowCount } = await pool.query(
       `DELETE FROM diagram_snapshots

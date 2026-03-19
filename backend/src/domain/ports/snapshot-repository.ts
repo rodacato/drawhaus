@@ -27,6 +27,9 @@ export interface SnapshotRepository {
   /** Count named snapshots for a diagram. */
   countNamed(diagramId: string): Promise<number>;
 
+  /** Batch count named snapshots for multiple diagrams. */
+  countNamedBatch(diagramIds: string[]): Promise<Map<string, number>>;
+
   /** Purge auto-snapshots beyond retention limits. */
   purgeAuto(diagramId: string, keepCount: number, keepDays: number): Promise<number>;
 }
