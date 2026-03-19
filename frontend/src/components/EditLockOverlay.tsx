@@ -44,7 +44,7 @@ export function LockOverlay({
   );
 }
 
-/** Transient bubble that shows when lock holder changes */
+/** Transient bubble that shows when another user takes the edit lock */
 export function EditingBubble({
   holderName,
   isSelf,
@@ -52,9 +52,10 @@ export function EditingBubble({
   holderName: string;
   isSelf: boolean;
 }) {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(!isSelf);
 
   useEffect(() => {
+    if (isSelf) { setVisible(false); return; }
     setVisible(true);
     const timer = setTimeout(() => setVisible(false), 2500);
     return () => clearTimeout(timer);
@@ -64,13 +65,9 @@ export function EditingBubble({
 
   return (
     <div className="fixed top-14 left-1/2 z-40 -translate-x-1/2 animate-in fade-in slide-in-from-top-2 duration-300">
-      <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium shadow-lg backdrop-blur-sm ${
-        isSelf
-          ? "bg-emerald-600/90 text-white"
-          : "bg-gray-900/90 text-white"
-      }`}>
-        <span className={`flex h-2 w-2 rounded-full ${isSelf ? "bg-white" : "bg-amber-400"} animate-pulse`} />
-        {isSelf ? "Tienes el control" : `${holderName} está editando`}
+      <div className="flex items-center gap-2 rounded-full bg-gray-900/90 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-sm">
+        <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+        {holderName} está editando
       </div>
     </div>
   );
