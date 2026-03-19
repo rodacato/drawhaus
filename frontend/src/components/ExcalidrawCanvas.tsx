@@ -16,6 +16,7 @@ type ExcalidrawCanvasProps = {
   };
   onChange?: (elements: readonly unknown[], appState: Record<string, unknown>) => void;
   viewModeEnabled?: boolean;
+  objectsSnapModeEnabled?: boolean;
   UIOptions?: Record<string, unknown>;
 };
 

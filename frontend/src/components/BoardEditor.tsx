@@ -361,6 +361,7 @@ export default function BoardEditor({
             initialData={collab.initialData}
             onChange={handleChange}
             viewModeEnabled={false}
+            objectsSnapModeEnabled={canvasPrefs.objectsSnapModeEnabled}
           />
         </div>
 

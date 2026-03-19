@@ -25,7 +25,7 @@ type Props = {
 
 export function SettingsPanel({ userEmail, onDashboardClick, canvasPrefs, onCanvasPrefsChange }: Props) {
   const { logout } = useAuth();
-  const { gridModeEnabled, gridSize, viewBackgroundColor } = canvasPrefs;
+  const { gridModeEnabled, gridSize, viewBackgroundColor, objectsSnapModeEnabled } = canvasPrefs;
 
   return (
     <div className="space-y-5">
@@ -62,6 +62,20 @@ export function SettingsPanel({ userEmail, onDashboardClick, canvasPrefs, onCanv
             ))}
           </div>
         )}
+
+        {/* Object snap toggle */}
+        <div className="flex items-center justify-between rounded-lg px-3 py-2.5">
+          <span className="text-sm text-gray-700">Ajuste a objetos</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={objectsSnapModeEnabled}
+            onClick={() => onCanvasPrefsChange({ objectsSnapModeEnabled: !objectsSnapModeEnabled })}
+            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors ${objectsSnapModeEnabled ? "bg-blue-600" : "bg-gray-300"}`}
+          >
+            <span className={`pointer-events-none inline-block h-4 w-4 translate-y-0.5 rounded-full bg-white shadow transition-transform ${objectsSnapModeEnabled ? "translate-x-4" : "translate-x-0.5"}`} />
+          </button>
+        </div>
 
         {/* Background color */}
         <div className="mt-2 px-3">

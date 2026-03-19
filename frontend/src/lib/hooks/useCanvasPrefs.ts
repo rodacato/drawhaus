@@ -4,6 +4,7 @@ export type CanvasPrefs = {
   gridModeEnabled: boolean;
   gridSize: number;
   viewBackgroundColor: string;
+  objectsSnapModeEnabled: boolean;
 };
 
 const STORAGE_KEY = "drawhaus_canvas_prefs";
@@ -12,6 +13,7 @@ const DEFAULTS: CanvasPrefs = {
   gridModeEnabled: true,
   gridSize: 10,
   viewBackgroundColor: "#f8f9fc",
+  objectsSnapModeEnabled: true,
 };
 
 function load(): CanvasPrefs {
