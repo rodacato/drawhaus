@@ -12,7 +12,7 @@ export class RestoreSnapshotUseCase {
     private diagrams: DiagramRepository,
   ) {}
 
-  async execute(snapshotId: string, userId: string): Promise<{ diagramId: string }> {
+  async execute(snapshotId: string, userId: string): Promise<{ diagramId: string; elements: unknown[]; appState: Record<string, unknown>; sceneId: string | null }> {
     const snapshot = await this.snapshots.findById(snapshotId);
     if (!snapshot) throw new NotFoundError("Snapshot");
 
@@ -38,6 +38,11 @@ export class RestoreSnapshotUseCase {
       await this.scenes.updateScene(currentScene.id, snapshot.elements, snapshot.appState);
     }
 
-    return { diagramId: snapshot.diagramId };
+    return {
+      diagramId: snapshot.diagramId,
+      elements: snapshot.elements as unknown[],
+      appState: snapshot.appState as Record<string, unknown>,
+      sceneId: currentScene?.id ?? null,
+    };
   }
 }
