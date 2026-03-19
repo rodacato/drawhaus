@@ -98,6 +98,14 @@ import { UpdateTemplateUseCase } from "../application/use-cases/templates/update
 import { DeleteTemplateUseCase } from "../application/use-cases/templates/delete-template";
 import { UseTemplateUseCase } from "../application/use-cases/templates/use-template";
 
+// --- Snapshots ---
+import { CreateSnapshotUseCase } from "../application/use-cases/snapshots/create-snapshot";
+import { ListSnapshotsUseCase } from "../application/use-cases/snapshots/list-snapshots";
+import { RestoreSnapshotUseCase } from "../application/use-cases/snapshots/restore-snapshot";
+import { RenameSnapshotUseCase } from "../application/use-cases/snapshots/rename-snapshot";
+import { DeleteSnapshotUseCase } from "../application/use-cases/snapshots/delete-snapshot";
+import { GetSnapshotUseCase } from "../application/use-cases/snapshots/get-snapshot";
+
 // --- Ownership Transfer ---
 import { TransferWorkspaceOwnershipUseCase } from "../application/use-cases/workspaces/transfer-ownership";
 import { TransferDiagramOwnershipUseCase } from "../application/use-cases/diagrams/transfer-ownership";
@@ -209,6 +217,14 @@ export function createUseCases(repos: Repositories, services: Services) {
   const deleteTemplate = new DeleteTemplateUseCase(repos.templateRepo);
   const useTemplate = new UseTemplateUseCase(repos.templateRepo, repos.diagramRepo);
 
+  // Snapshots
+  const createSnapshot = new CreateSnapshotUseCase(repos.snapshotRepo, repos.sceneRepo, repos.diagramRepo);
+  const listSnapshots = new ListSnapshotsUseCase(repos.snapshotRepo, repos.diagramRepo);
+  const getSnapshot = new GetSnapshotUseCase(repos.snapshotRepo, repos.diagramRepo);
+  const restoreSnapshot = new RestoreSnapshotUseCase(repos.snapshotRepo, repos.sceneRepo, repos.diagramRepo);
+  const renameSnapshot = new RenameSnapshotUseCase(repos.snapshotRepo, repos.diagramRepo);
+  const deleteSnapshot = new DeleteSnapshotUseCase(repos.snapshotRepo, repos.diagramRepo);
+
   // Ownership Transfer
   const transferWorkspaceOwnership = new TransferWorkspaceOwnershipUseCase(repos.workspaceRepo, repos.diagramRepo, repos.templateRepo, services.auditLogger);
   const transferDiagramOwnership = new TransferDiagramOwnershipUseCase(repos.diagramRepo, repos.workspaceRepo, services.auditLogger);
@@ -243,6 +259,8 @@ export function createUseCases(repos: Repositories, services: Services) {
     syncToDrive, exportToDrive, getDriveStatus, toggleDriveBackup, disconnectDrive, listDriveFiles, importFromDrive,
     // templates
     createTemplate, getTemplate, listTemplates, updateTemplate, deleteTemplate, useTemplate,
+    // snapshots
+    createSnapshot, listSnapshots, getSnapshot, restoreSnapshot, renameSnapshot, deleteSnapshot,
     // ownership transfer
     transferWorkspaceOwnership, transferDiagramOwnership, transferTemplateOwnership,
   };

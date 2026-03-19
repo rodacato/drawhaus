@@ -1,14 +1,18 @@
 import type { Server, Socket } from "socket.io";
 import type { SaveSceneUseCase } from "../../../application/use-cases/realtime/save-scene";
 import type { SyncToDriveUseCase } from "../../../application/use-cases/drive/sync-to-drive";
+import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
 import type { EditLockChecker } from "../edit-lock-store";
 import { type SocketData, canEdit, checkRateLimit, RATE_LIMIT_MAX_SCENE } from "../helpers";
 import { logger } from "../../logger";
 
+const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const lastIntervalSnapshot = new Map<string, number>();
+
 export function registerSceneHandlers(
   io: Server,
   socket: Socket,
-  useCases: { saveScene: SaveSceneUseCase; syncToDrive?: SyncToDriveUseCase },
+  useCases: { saveScene: SaveSceneUseCase; syncToDrive?: SyncToDriveUseCase; createSnapshot: CreateSnapshotUseCase },
   lockChecker: EditLockChecker,
 ) {
   socket.on(
@@ -61,6 +65,14 @@ export function registerSceneHandlers(
 
         await useCases.saveScene.execute(targetSceneId, elements, appState);
         socket.emit("scene-saved", { roomId, sceneId: targetSceneId });
+
+        // Fire-and-forget: interval snapshot every 5 minutes
+        const now = Date.now();
+        const lastTs = lastIntervalSnapshot.get(roomId) ?? 0;
+        if (now - lastTs >= SNAPSHOT_INTERVAL_MS) {
+          lastIntervalSnapshot.set(roomId, now);
+          useCases.createSnapshot.execute(roomId, saveUserId, "interval").catch(() => {});
+        }
 
         // Fire-and-forget: sync to Google Drive if enabled
         const userId = saveUserId;

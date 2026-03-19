@@ -2,6 +2,7 @@ import type { Server, Socket } from "socket.io";
 import { parse } from "cookie";
 import type { JoinRoomUseCase } from "../../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../../application/use-cases/realtime/join-room-guest";
+import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
 import type { EditLockStore } from "../edit-lock-store";
 import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers, findNextEditor } from "../helpers";
 import { config } from "../../config";
@@ -22,7 +23,7 @@ function emitLockStatus(io: Server, roomId: string, lockStore: EditLockStore) {
 export function registerRoomHandlers(
   io: Server,
   socket: Socket,
-  useCases: { joinRoom: JoinRoomUseCase; joinRoomGuest: JoinRoomGuestUseCase },
+  useCases: { joinRoom: JoinRoomUseCase; joinRoomGuest: JoinRoomGuestUseCase; createSnapshot: CreateSnapshotUseCase },
   lockStore: EditLockStore,
 ) {
   socket.on("join-room", async ({ roomId }: { roomId: string }) => {
@@ -70,6 +71,9 @@ export function registerRoomHandlers(
         roomId,
         users: await getRoomPresenceUsers(io, roomId),
       });
+
+      // Fire-and-forget: snapshot on diagram open
+      useCases.createSnapshot.execute(roomId, result.user.id, "open").catch(() => {});
     } catch (error: unknown) {
       logger.error(error, "join-room failed");
       socket.emit("room-error", { message: "Join failed" });
@@ -154,6 +158,12 @@ export function registerRoomHandlers(
           seen.add(data.userId);
           futureUsers.push({ userId: data.userId, name: data.userName, isGuest: data.isGuest ?? false });
         }
+      }
+
+      // Snapshot on close if this was the last editor leaving
+      const hasRemainingEditors = futureUsers.some((u) => !u.isGuest);
+      if (!hasRemainingEditors && myData.userId) {
+        useCases.createSnapshot.execute(roomId, myData.userId.startsWith("guest_") ? null : myData.userId, "close").catch(() => {});
       }
 
       // Auto-assign lock to next editor if this room had a lock released

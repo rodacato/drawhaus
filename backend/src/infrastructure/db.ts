@@ -341,5 +341,21 @@ export async function initSchema(): Promise<void> {
 
     CREATE INDEX IF NOT EXISTS templates_creator_id_idx ON templates (creator_id);
     CREATE INDEX IF NOT EXISTS templates_workspace_id_idx ON templates (workspace_id);
+
+    CREATE TABLE IF NOT EXISTS diagram_snapshots (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      diagram_id UUID NOT NULL REFERENCES diagrams(id) ON DELETE CASCADE,
+      created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+      trigger TEXT NOT NULL DEFAULT 'manual',
+      name TEXT,
+      elements JSONB NOT NULL DEFAULT '[]',
+      app_state JSONB NOT NULL DEFAULT '{}',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS diagram_snapshots_diagram_idx
+      ON diagram_snapshots (diagram_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS diagram_snapshots_named_idx
+      ON diagram_snapshots (diagram_id) WHERE name IS NOT NULL;
   `);
 }

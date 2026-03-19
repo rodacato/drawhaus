@@ -14,6 +14,7 @@ import { PgDriveBackupRepository } from "../infrastructure/persistence/pg-drive-
 import { PgWorkspaceRepository } from "../infrastructure/persistence/pg-workspace-repository";
 import { PgIntegrationSecretsRepository } from "../infrastructure/persistence/pg-integration-secrets-repository";
 import { PgTemplateRepository } from "../infrastructure/persistence/pg-template-repository";
+import { PgSnapshotRepository } from "../infrastructure/persistence/pg-snapshot-repository";
 import { config } from "../infrastructure/config";
 
 export function createRepositories() {
@@ -35,12 +36,13 @@ export function createRepositories() {
     ? new PgIntegrationSecretsRepository(config.encryptionKey)
     : null;
   const templateRepo = new PgTemplateRepository();
+  const snapshotRepo = new PgSnapshotRepository();
 
   return {
     userRepo, sessionRepo, diagramRepo, shareRepo, siteSettingsRepo,
     folderRepo, sceneRepo, commentRepo, tagRepo, invitationRepo,
     passwordResetRepo, oauthTokenRepo, driveBackupRepo, workspaceRepo,
-    integrationSecretsRepo, templateRepo,
+    integrationSecretsRepo, templateRepo, snapshotRepo,
   };
 }
 

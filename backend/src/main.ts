@@ -26,6 +26,7 @@ import { createFolderRoutes } from "./infrastructure/http/routes/folder.routes";
 import { createShareRoutes } from "./infrastructure/http/routes/share.routes";
 import { createAdminRoutes } from "./infrastructure/http/routes/admin.routes";
 
+import { createSnapshotRoutes } from "./infrastructure/http/routes/snapshot.routes";
 import { createCommentRoutes } from "./infrastructure/http/routes/comment.routes";
 import { createTagRoutes } from "./infrastructure/http/routes/tag.routes";
 import { createDriveRoutes } from "./infrastructure/http/routes/drive.routes";
@@ -105,6 +106,7 @@ app.use("/api/auth", createAuthRoutes({ register: useCases.register, login: useC
 app.use("/api/diagrams", createDiagramRoutes({ create: useCases.createDiagram, get: useCases.getDiagram, list: useCases.listDiagrams, search: useCases.searchDiagrams, update: useCases.updateDiagram, updateThumbnail: useCases.updateThumbnail, delete: useCases.deleteDiagram, toggleStar: useCases.toggleStar, duplicate: useCases.duplicateDiagram, move: useCases.moveDiagram, transferOwnership: useCases.transferDiagramOwnership }, requireAuth, repos.tagRepo));
 
 app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: useCases.listComments, create: useCases.createComment, reply: useCases.replyComment, resolve: useCases.resolveComment, delete: useCases.deleteComment, toggleLike: useCases.toggleLike }, requireAuth));
+app.use("/api/diagrams/:diagramId/snapshots", createSnapshotRoutes({ create: useCases.createSnapshot, list: useCases.listSnapshots, get: useCases.getSnapshot, restore: useCases.restoreSnapshot, rename: useCases.renameSnapshot, delete: useCases.deleteSnapshot }, requireAuth));
 app.use("/api/tags", createTagRoutes({ create: useCases.createTag, list: useCases.listTags, delete: useCases.deleteTag, update: useCases.updateTag, assign: useCases.assignTag, unassign: useCases.unassignTag }, requireAuth));
 app.use("/api/folders", createFolderRoutes({ create: useCases.createFolder, list: useCases.listFolders, rename: useCases.renameFolder, delete: useCases.deleteFolder }, requireAuth));
 app.use("/api/workspaces", createWorkspaceRoutes({ create: useCases.createWorkspace, list: useCases.listWorkspaces, get: useCases.getWorkspace, update: useCases.updateWorkspace, delete: useCases.deleteWorkspace, addMember: useCases.addWorkspaceMember, updateMemberRole: useCases.updateWorkspaceMemberRole, removeMember: useCases.removeWorkspaceMember, invite: useCases.inviteToWorkspace, acceptInvite: useCases.acceptWorkspaceInvite, ensurePersonal: useCases.ensurePersonalWorkspace, transferOwnership: useCases.transferWorkspaceOwnership }, requireAuth));
@@ -130,7 +132,7 @@ if (config.honeybadgerApiKey) {
 async function startServer(): Promise<void> {
   await initSchema();
   const httpServer = createServer(app);
-  await setupSocketServer(httpServer, { joinRoom: useCases.joinRoom, joinRoomGuest: useCases.joinRoomGuest, saveScene: useCases.saveScene, syncToDrive: useCases.syncToDrive, createComment: useCases.createComment, replyComment: useCases.replyComment, resolveComment: useCases.resolveComment, deleteComment: useCases.deleteComment });
+  await setupSocketServer(httpServer, { joinRoom: useCases.joinRoom, joinRoomGuest: useCases.joinRoomGuest, saveScene: useCases.saveScene, syncToDrive: useCases.syncToDrive, createComment: useCases.createComment, replyComment: useCases.replyComment, resolveComment: useCases.resolveComment, deleteComment: useCases.deleteComment, createSnapshot: useCases.createSnapshot });
 
   // Start backup scheduler (cron-based, reads config from DB, no-op if disabled)
   const { startBackupScheduler } = await import("./infrastructure/services/backup-scheduler");

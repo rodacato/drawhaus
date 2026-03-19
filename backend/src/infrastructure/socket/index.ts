@@ -9,6 +9,7 @@ import type { CreateCommentUseCase } from "../../application/use-cases/comments/
 import type { ReplyCommentUseCase } from "../../application/use-cases/comments/reply-comment";
 import type { ResolveCommentUseCase } from "../../application/use-cases/comments/resolve-comment";
 import type { DeleteCommentUseCase } from "../../application/use-cases/comments/delete-comment";
+import type { CreateSnapshotUseCase } from "../../application/use-cases/snapshots/create-snapshot";
 import { registerRoomHandlers } from "./handlers/room.handler";
 import { registerSceneHandlers } from "./handlers/scene.handler";
 import { registerCursorHandlers } from "./handlers/cursor.handler";
@@ -29,6 +30,7 @@ export async function setupSocketServer(
     replyComment: ReplyCommentUseCase;
     resolveComment: ResolveCommentUseCase;
     deleteComment: DeleteCommentUseCase;
+    createSnapshot: CreateSnapshotUseCase;
   },
 ): Promise<Server> {
   const io = new Server(httpServer, {
@@ -62,10 +64,12 @@ export async function setupSocketServer(
     registerRoomHandlers(io, socket, {
       joinRoom: useCases.joinRoom,
       joinRoomGuest: useCases.joinRoomGuest,
+      createSnapshot: useCases.createSnapshot,
     }, lockStore);
     registerSceneHandlers(io, socket, {
       saveScene: useCases.saveScene,
       syncToDrive: useCases.syncToDrive,
+      createSnapshot: useCases.createSnapshot,
     }, lockStore);
     registerLockHandlers(io, socket, lockStore);
     registerCursorHandlers(socket, io);
