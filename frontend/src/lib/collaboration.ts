@@ -9,6 +9,10 @@ export function jsonSafe<T>(value: T): T {
  * For each element, keep whichever has the higher version.
  * Preserves local in-progress edits while accepting remote changes
  * for elements the local user hasn't touched.
+ *
+ * Iterates the remote array directly (instead of a Map) to preserve
+ * the canonical element order — critical for z-index, arrow bindings,
+ * and group relationships in Excalidraw.
  */
 export function mergeElements(
   localElements: readonly unknown[],
@@ -20,30 +24,31 @@ export function mergeElements(
     if (e.id) localMap.set(e.id, e);
   }
 
-  const remoteMap = new Map<string, ExcalidrawElement>();
+  const seen = new Set<string>();
+  const merged: ExcalidrawElement[] = [];
+
+  // Walk remote array in order — preserves canonical z-order
   for (const el of remoteElements) {
-    const e = el as ExcalidrawElement;
-    if (e.id) remoteMap.set(e.id, e);
-  }
-
-  const merged = new Map<string, ExcalidrawElement>();
-
-  for (const [id, remote] of remoteMap) {
-    const local = localMap.get(id);
+    const remote = el as ExcalidrawElement;
+    if (!remote.id) continue;
+    seen.add(remote.id);
+    const local = localMap.get(remote.id);
     if (local && (local.version ?? 0) >= (remote.version ?? 0)) {
-      merged.set(id, local);
+      merged.push(local);
     } else {
-      merged.set(id, remote);
+      merged.push(remote);
     }
   }
 
-  for (const [id, local] of localMap) {
-    if (!remoteMap.has(id)) {
-      merged.set(id, local);
+  // Append local-only elements (newly created by the local user)
+  for (const el of localElements) {
+    const e = el as ExcalidrawElement;
+    if (e.id && !seen.has(e.id)) {
+      merged.push(e);
     }
   }
 
-  return Array.from(merged.values());
+  return merged;
 }
 
 export const THROTTLE_MS = 50;
