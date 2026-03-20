@@ -10,6 +10,7 @@ import { Editor } from "./components/Editor";
 import { ExcalidrawCanvas } from "./components/ExcalidrawCanvas";
 import { Examples } from "./components/Examples";
 import { ExampleNav } from "./components/ExampleNav";
+import { PlantUMLPreview } from "./components/PlantUMLPreview";
 
 export function App() {
   const [code, setCode] = useState(DEFAULT_CODE);
@@ -125,6 +126,7 @@ export function App() {
           warning={warning}
           status={status}
         />
+        <PlantUMLPreview code={code} />
         <Examples activeCode={code} onSelect={handleExampleSelect} />
       </div>
       <div className="right-panel">

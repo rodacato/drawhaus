@@ -27,11 +27,13 @@
     "playground:build": "vite build --config playground/vite.config.ts"
   },
   "dependencies": {
-    "@drawhaus/helpers": "*"
+    "@drawhaus/helpers": "*",
+    "pako": "^2.1.0"
   },
   "devDependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
     "@types/node": "^20.11.0",
+    "@types/pako": "^2.0.4",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@vitejs/plugin-react": "^5.1.4",

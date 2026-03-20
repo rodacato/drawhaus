@@ -154,6 +154,43 @@ body {
   white-space: pre-wrap;
 }
 
+/* ── PlantUML preview ──────────────────────────── */
+
+.plantuml-preview {
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.plantuml-preview-header {
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+}
+
+.plantuml-preview-content {
+  padding: 16px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.plantuml-preview-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.plantuml-preview-error {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 20px;
+}
+
 /* ── Examples panel ─────────────────────────────── */
 
 .examples-panel {
