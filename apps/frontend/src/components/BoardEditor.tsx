@@ -30,6 +30,7 @@ type BoardEditorProps = {
   initialElements: unknown[];
   initialAppState: Record<string, unknown>;
   workspaceId?: string | null;
+  createdVia?: string;
 };
 
 export default function BoardEditor({
@@ -39,6 +40,7 @@ export default function BoardEditor({
   initialElements,
   initialAppState,
   workspaceId,
+  createdVia,
 }: BoardEditorProps) {
   const [commentsPanelOpen, setCommentsPanelOpen] = useState(false);
   const [showCommentIndicators, setShowCommentIndicators] = useState(true);
@@ -274,6 +276,11 @@ export default function BoardEditor({
                 >
                   {diagramTitle || "Untitled"}
                 </button>
+              )}
+              {createdVia && createdVia !== "ui" && (
+                <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-600">
+                  {createdVia}
+                </span>
               )}
             </div>
             {/* Connection badge */}

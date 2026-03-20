@@ -54,6 +54,7 @@ function formatDiagram(d: Diagram, tags?: Tag[]) {
     appState: d.appState,
     thumbnail: d.thumbnail,
     starred: d.starred,
+    createdVia: d.createdVia,
     createdAt: d.createdAt.toISOString(),
     updatedAt: d.updatedAt.toISOString(),
     tags: tags ? tags.map((t) => ({ id: t.id, name: t.name, color: t.color })) : [],

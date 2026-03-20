@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import { adminApi } from "@/api/admin";
 import { ui } from "@/lib/ui";
 
-type Metrics = { totalUsers: number; totalDiagrams: number; activeSessions: number };
+type Metrics = {
+  totalUsers: number;
+  totalDiagrams: number;
+  activeSessions: number;
+  diagramsByOrigin?: Record<string, number>;
+  apiRequests24h?: number;
+};
 
 const metricCards = [
   {
@@ -28,6 +34,43 @@ const metricCards = [
     bg: "bg-success/10",
   },
 ];
+
+function ApiMetricsCards({ metrics }: { metrics: Metrics }) {
+  const apiDiagrams = (metrics.diagramsByOrigin?.api ?? 0) + (metrics.diagramsByOrigin?.mcp ?? 0);
+  if (apiDiagrams === 0 && (metrics.apiRequests24h ?? 0) === 0) return null;
+
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      <div className={`${ui.card} group relative overflow-hidden`}>
+        <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-violet-500/5 transition-colors group-hover:bg-violet-500/10" />
+        <div className="relative z-10">
+          <div className="mb-2 text-violet-600">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg>
+          </div>
+          <p className={ui.muted}>Diagrams via API</p>
+          <div className="mt-1 flex items-baseline gap-2">
+            <p className="text-3xl font-bold text-text-primary">{apiDiagrams.toLocaleString()}</p>
+            {(metrics.diagramsByOrigin?.mcp ?? 0) > 0 && (
+              <p className="text-xs text-text-muted">{metrics.diagramsByOrigin!.mcp} MCP</p>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className={`${ui.card} group relative overflow-hidden`}>
+        <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-violet-500/5 transition-colors group-hover:bg-violet-500/10" />
+        <div className="relative z-10">
+          <div className="mb-2 text-violet-600">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+          </div>
+          <p className={ui.muted}>API Requests (24h)</p>
+          <div className="mt-1 flex items-baseline gap-2">
+            <p className="text-3xl font-bold text-text-primary">{(metrics.apiRequests24h ?? 0).toLocaleString()}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // --- Components ---
 
@@ -62,6 +105,7 @@ export function AdminOverview({ onNavigate }: { onNavigate: (tab: TabId) => void
           ))}
         </div>
       )}
+      {metrics && <ApiMetricsCards metrics={metrics} />}
       <div className="grid grid-cols-2 gap-4">
         <button onClick={() => onNavigate("admin-users")} className={`${ui.card} block text-left hover:border-primary transition-colors`} type="button">
           <div className="flex items-center gap-3">
@@ -131,6 +175,7 @@ export function AdminDashboard() {
           ))}
         </div>
       )}
+      {metrics && <ApiMetricsCards metrics={metrics} />}
       <div className="grid grid-cols-2 gap-4">
         <Link to="/admin/users" className={`${ui.card} block hover:border-primary transition-colors`}>
           <div className="flex items-center gap-3">

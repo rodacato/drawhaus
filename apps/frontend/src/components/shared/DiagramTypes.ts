@@ -10,4 +10,5 @@ export type Diagram = {
   updatedAt?: string;
   updated_at?: string;
   namedSnapshotCount?: number;
+  createdVia?: string;
 };

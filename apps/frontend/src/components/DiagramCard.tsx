@@ -286,7 +286,14 @@ export function DiagramCard({
               <TagBadges tags={diagram.tags} />
             </div>
           )}
-          <p className="mt-1 text-xs text-text-secondary">{new Date(diagram.updatedAt ?? diagram.updated_at ?? "").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+          <div className="mt-1 flex items-center gap-1.5">
+            <p className="text-xs text-text-secondary">{new Date(diagram.updatedAt ?? diagram.updated_at ?? "").toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+            {diagram.createdVia && diagram.createdVia !== "ui" && (
+              <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-600">
+                {diagram.createdVia}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-1.5 pl-2">
           {/* Snapshot count badge */}

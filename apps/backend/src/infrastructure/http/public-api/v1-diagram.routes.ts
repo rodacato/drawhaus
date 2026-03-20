@@ -92,7 +92,7 @@ export function createV1DiagramRoutes(
       folderId: req.body.folderId,
       elements,
       appState: req.body.appState,
-      createdVia: "api",
+      createdVia: String(req.headers["x-drawhaus-client"] ?? "").toLowerCase().includes("mcp") ? "mcp" : "api",
     });
 
     return res.status(201).json({ data: formatDiagram(diagram, frontendUrl, true) });
