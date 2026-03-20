@@ -35,6 +35,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Frontend tests
+        run: npm run test --workspace=frontend
+
       - name: Backend tests
         run: npm run test --workspace=backend
 

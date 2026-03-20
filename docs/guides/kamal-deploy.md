@@ -22,8 +22,8 @@ Production ✓
 
 | Image | Source | Purpose |
 |-------|--------|---------|
-| `ghcr.io/rodacato/drawhaus-backend` | `backend/Dockerfile` | Express API + Socket.IO (Node.js) |
-| `ghcr.io/rodacato/drawhaus-frontend` | `frontend/Dockerfile` | React SPA (nginx) |
+| `ghcr.io/rodacato/drawhaus-backend` | `apps/backend/Dockerfile` | Express API + Socket.IO (Node.js) |
+| `ghcr.io/rodacato/drawhaus-frontend` | `apps/frontend/Dockerfile` | React SPA (nginx) |
 
 **Kamal manages on the VPS:**
 
@@ -266,8 +266,8 @@ kamal app details -c config/deploy.frontend.yml
 | `.kamal/secrets` | Secret env var references |
 | `.github/workflows/build-push.yml` | CI/CD deploy workflow |
 | `.github/workflows/ci.yml` | CI tests (runs on PRs and master) |
-| `backend/Dockerfile` | Backend multi-stage build |
-| `frontend/Dockerfile` | Frontend multi-stage build (nginx) |
+| `apps/backend/Dockerfile` | Backend multi-stage build |
+| `apps/frontend/Dockerfile` | Frontend multi-stage build (nginx) |
 
 ---
 

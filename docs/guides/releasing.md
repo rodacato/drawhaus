@@ -19,8 +19,8 @@ Drawhaus follows [Semantic Versioning](https://semver.org/):
 | File | What to update |
 |------|----------------|
 | `package.json` (root) | `"version": "X.Y.Z"` |
-| `backend/package.json` | `"version": "X.Y.Z"` |
-| `frontend/package.json` | `"version": "X.Y.Z"` |
+| `apps/backend/package.json` | `"version": "X.Y.Z"` |
+| `apps/frontend/package.json` | `"version": "X.Y.Z"` |
 | `CHANGELOG.md` | New version section with Added/Improved/Fixed/Removed |
 | `ROADMAP.md` | Mark completed items as done (if applicable) |
 
@@ -37,10 +37,10 @@ Bump the version in all three package files:
 # package.json → "version": "X.Y.Z"
 
 # Backend
-# backend/package.json → "version": "X.Y.Z"
+# apps/backend/package.json → "version": "X.Y.Z"
 
 # Frontend
-# frontend/package.json → "version": "X.Y.Z"
+# apps/frontend/package.json → "version": "X.Y.Z"
 ```
 
 ### 2. Update CHANGELOG.md
@@ -76,7 +76,7 @@ If any roadmap items were completed in this release, mark them as done.
 Use the `release:` prefix for the commit message:
 
 ```bash
-git add package.json backend/package.json frontend/package.json CHANGELOG.md ROADMAP.md
+git add package.json apps/backend/package.json apps/frontend/package.json CHANGELOG.md ROADMAP.md
 git commit -m "release: vX.Y.Z"
 ```
 

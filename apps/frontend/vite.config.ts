@@ -18,7 +18,7 @@ function peggyPlugin(): Plugin {
 }
 
 export default defineConfig({
-  envDir: path.resolve(__dirname, ".."),
+  envDir: path.resolve(__dirname, "../.."),
   plugins: [react(), peggyPlugin()],
   resolve: {
     alias: {

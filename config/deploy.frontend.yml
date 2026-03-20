@@ -27,7 +27,7 @@ registry:
 
 builder:
   context: .
-  dockerfile: frontend/Dockerfile
+  dockerfile: apps/frontend/Dockerfile
   target: production
   arch: amd64
   args:

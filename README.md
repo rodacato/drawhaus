@@ -161,26 +161,29 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 
 ```
 drawhaus/
-├── frontend/          # React + Vite + Excalidraw SPA
-│   ├── src/
-│   │   ├── api/       # Axios API clients (auth, diagrams, admin, etc.)
-│   │   ├── components/ # Reusable UI components
-│   │   ├── contexts/  # React contexts (Auth, Theme)
-│   │   ├── hooks/     # Custom hooks (useAuth, useCollaboration)
-│   │   ├── layouts/   # Route layouts (Protected, Admin, Auth)
-│   │   ├── pages/     # Page components
-│   │   └── lib/       # Utilities, types, collaboration logic
-│   └── vite.config.ts
-├── backend/           # Express + Socket.IO + PostgreSQL (Clean Architecture)
-│   └── src/
-│       ├── application/    # Use cases (business logic, one file per action)
-│       ├── domain/         # Domain entities and interfaces
-│       └── infrastructure/ # Routes, repos, services, socket handlers
-│           ├── http/       # Express routes + middleware
-│           ├── repositories/ # PostgreSQL data access
-│           ├── services/   # External services (email, backup, encryption)
-│           └── socket/     # Socket.IO event handlers
-├── packages/mcp/      # @drawhaus/mcp — MCP server for AI tools
+├── apps/
+│   ├── frontend/          # React + Vite + Excalidraw SPA
+│   │   ├── src/
+│   │   │   ├── api/       # Axios API clients (auth, diagrams, admin, etc.)
+│   │   │   ├── components/ # Reusable UI components
+│   │   │   ├── contexts/  # React contexts (Auth, Theme)
+│   │   │   ├── hooks/     # Custom hooks (useAuth, useCollaboration)
+│   │   │   ├── layouts/   # Route layouts (Protected, Admin, Auth)
+│   │   │   ├── pages/     # Page components
+│   │   │   └── lib/       # Utilities, types, collaboration logic
+│   │   └── vite.config.ts
+│   └── backend/           # Express + Socket.IO + PostgreSQL (Clean Architecture)
+│       └── src/
+│           ├── application/    # Use cases (business logic, one file per action)
+│           ├── domain/         # Domain entities and interfaces
+│           └── infrastructure/ # Routes, repos, services, socket handlers
+│               ├── http/       # Express routes + middleware
+│               ├── repositories/ # PostgreSQL data access
+│               ├── services/   # External services (email, backup, encryption)
+│               └── socket/     # Socket.IO event handlers
+├── packages/
+│   └── mcp/               # @drawhaus/mcp — MCP server for AI tools
+├── e2e/               # Playwright end-to-end tests
 ├── config/            # Kamal deployment configs
 ├── docs/              # Branding assets, API spec, design mockups
 └── docker-compose.yml # Local dev orchestration

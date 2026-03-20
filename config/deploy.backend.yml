@@ -26,8 +26,8 @@ registry:
     - KAMAL_REGISTRY_PASSWORD
 
 builder:
-  context: backend/
-  dockerfile: backend/Dockerfile
+  context: apps/backend/
+  dockerfile: apps/backend/Dockerfile
   target: production
   arch: amd64
   cache:

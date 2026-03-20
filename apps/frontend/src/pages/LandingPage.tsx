@@ -1,7 +1,7 @@
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import pkg from "../../../package.json";
+import pkg from "../../../../package.json";
 
 const GITHUB_URL = "https://github.com/rodacato/drawhaus";
 const EXCALIDRAW_URL = "https://excalidraw.com";

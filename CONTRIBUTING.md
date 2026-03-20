@@ -20,9 +20,12 @@ Thanks for your interest in contributing to Drawhaus! This guide will help you g
 
 ```
 drawhaus/
-├── frontend/    # React + Vite + Excalidraw
-├── backend/     # Express + TypeScript (Clean Architecture)
-└── e2e/         # Playwright end-to-end tests
+├── apps/
+│   ├── frontend/    # React + Vite + Excalidraw
+│   └── backend/     # Express + TypeScript (Clean Architecture)
+├── packages/
+│   └── mcp/         # @drawhaus/mcp — MCP server for AI tools
+└── e2e/             # Playwright end-to-end tests
 ```
 
 ## Development Workflow

@@ -1,4 +1,4 @@
-import test, { describe, beforeEach } from "node:test";
+import test, { describe } from "node:test";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import express from "express";
@@ -42,6 +42,8 @@ function createApp() {
     passwordHash: "hashed",
     role: "user",
     disabled: false,
+    googleId: null,
+    avatarUrl: null,
     createdAt: new Date(),
   });
 
@@ -86,7 +88,7 @@ function createApp() {
   return app;
 }
 
-function authHeaders(app: ReturnType<typeof express>) {
+function _authHeaders(app: ReturnType<typeof express>) {
   return request(app)
     .get("/") // placeholder, overridden by caller
     .set("Authorization", `Bearer ${rawKey}`)

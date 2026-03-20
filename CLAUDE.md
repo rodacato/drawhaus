@@ -17,7 +17,7 @@ When making changes that affect any of the following, update the corresponding d
 - **Commits**: Do not add co-author lines unless explicitly asked.
 - **Backend architecture**: Clean Architecture — `application/` (use cases), `domain/` (entities), `infrastructure/` (routes, repos, services, sockets).
 - **Validation**: Use Zod schemas for all route input validation.
-- **Tests**: Backend unit tests in `backend/src/**/*.test.ts`. E2E tests in `e2e/` with Playwright.
+- **Tests**: Backend unit tests in `apps/backend/src/**/*.test.ts`. E2E tests in `e2e/` with Playwright.
 - **Rate limiting**: Disabled in `NODE_ENV=test` to prevent flaky e2e tests.
 - **Setup flow**: First registered user becomes admin and auto-completes setup.
 

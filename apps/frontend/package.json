@@ -7,7 +7,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --import ./src/__tests__/peggy-loader.mjs --test 'src/__tests__/**/*.test.ts'",
+    "test:coverage": "tsx --import ./src/__tests__/peggy-loader.mjs --test --experimental-test-coverage 'src/__tests__/**/*.test.ts'"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.0",

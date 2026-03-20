@@ -1,12 +1,12 @@
 services:
   frontend:
     build:
-      context: ./frontend
+      context: ./apps/frontend
     depends_on:
       backend:
         condition: service_started
     volumes:
-      - ./frontend:/app
+      - ./apps/frontend:/app
       - /app/node_modules
     ports:
       - "5173:5173"
@@ -18,7 +18,7 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: ./apps/backend
       target: dev
     depends_on:
       db:
@@ -26,7 +26,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./backend:/app
+      - ./apps/backend:/app
       - /app/node_modules
       - /app/dist
     ports:
