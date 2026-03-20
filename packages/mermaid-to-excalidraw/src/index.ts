@@ -26,7 +26,9 @@ import { fallbackParse } from "./fallback.js";
 
 // ── Register built-in custom converters ─────────────────────────
 import { convertClassDiagram } from "./converter/class.js";
+import { convertFlowchart } from "./converter/flowchart.js";
 registerConverter("classDiagram", convertClassDiagram);
+registerConverter("flowchart", convertFlowchart);
 
 /**
  * Parse a Mermaid diagram definition and convert it to Excalidraw elements.

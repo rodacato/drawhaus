@@ -90,8 +90,8 @@ export function createArrow(opts: {
     height: last.y - first.y,
     id: nextId(),
     points: relativePoints,
-    startArrowhead: opts.startArrowhead ?? null,
-    endArrowhead: opts.endArrowhead ?? "arrow",
+    startArrowhead: opts.startArrowhead !== undefined ? opts.startArrowhead : null,
+    endArrowhead: opts.endArrowhead !== undefined ? opts.endArrowhead : "arrow",
     strokeStyle: opts.strokeStyle ?? "solid",
     strokeColor: opts.strokeColor,
     strokeWidth: opts.strokeWidth,
@@ -100,6 +100,60 @@ export function createArrow(opts: {
       : {}),
     ...(opts.startId ? { start: { id: opts.startId } } : {}),
     ...(opts.endId ? { end: { id: opts.endId } } : {}),
+  };
+}
+
+export function createDiamond(opts: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label?: string;
+  backgroundColor?: string;
+  strokeColor?: string;
+  strokeStyle?: "solid" | "dashed" | "dotted";
+}): ExcalidrawElementSkeleton {
+  return {
+    type: "diamond",
+    x: opts.x,
+    y: opts.y,
+    width: opts.width,
+    height: opts.height,
+    id: nextId(),
+    backgroundColor: opts.backgroundColor ?? "transparent",
+    strokeColor: opts.strokeColor,
+    strokeStyle: opts.strokeStyle ?? "solid",
+    fillStyle: "solid",
+    ...(opts.label
+      ? { label: { text: opts.label, x: opts.x, y: opts.y } }
+      : {}),
+  };
+}
+
+export function createEllipse(opts: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label?: string;
+  backgroundColor?: string;
+  strokeColor?: string;
+  strokeStyle?: "solid" | "dashed" | "dotted";
+}): ExcalidrawElementSkeleton {
+  return {
+    type: "ellipse",
+    x: opts.x,
+    y: opts.y,
+    width: opts.width,
+    height: opts.height,
+    id: nextId(),
+    backgroundColor: opts.backgroundColor ?? "transparent",
+    strokeColor: opts.strokeColor,
+    strokeStyle: opts.strokeStyle ?? "solid",
+    fillStyle: "solid",
+    ...(opts.label
+      ? { label: { text: opts.label, x: opts.x, y: opts.y } }
+      : {}),
   };
 }
 

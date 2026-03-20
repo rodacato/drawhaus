@@ -27,15 +27,24 @@ export interface MermaidTheme {
   interface: ShapeStyle;
   enumeration: ShapeStyle;
 
+  // ── Flowchart ─────────────────────────────────
+  flowNode: ShapeStyle;
+  flowDecision: ShapeStyle;
+  flowDatabase: ShapeStyle;
+  flowCircle: ShapeStyle;
+  flowSubgraph: ShapeStyle;
+
   // ── Relations ──────────────────────────────────
   arrow: ArrowStyle;
   dependencyArrow: ArrowStyle;
+  thickArrow: ArrowStyle;
 
   // ── Typography ─────────────────────────────────
   headerText: TextStyle;
   memberText: TextStyle;
   stereotypeText: TextStyle;
   labelText: TextStyle;
+  nodeText: TextStyle;
 
   // ── Separators / Lines ─────────────────────────
   separator: ArrowStyle;
