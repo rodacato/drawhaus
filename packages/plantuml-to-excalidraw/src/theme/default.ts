@@ -125,6 +125,21 @@ export const DEFAULT_THEME: DiagramTheme = {
     strokeStyle: "solid",
   },
 
+  // ── Sequence Diagram ──────────────────────────
+  sequenceParticipant: {
+    fill: "#f0f4f8",         // very light blue-grey
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  sequenceLifeline: {
+    stroke: "#bbbbbb",
+    strokeWidth: 1,
+  },
+  sequenceMessage: {
+    stroke: "#555555",
+    strokeWidth: 1,
+  },
+
   // ── Relations ──────────────────────────────────
   arrow: {
     stroke: "#555555",

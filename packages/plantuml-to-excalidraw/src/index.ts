@@ -10,6 +10,7 @@ import { mapUseCaseDiagram } from "./converter/usecase.js";
 import { mapStateDiagram } from "./converter/state.js";
 import { mapComponentDiagram } from "./converter/component.js";
 import { mapDeploymentDiagram } from "./converter/deployment.js";
+import { mapSequenceDiagram } from "./converter/sequence.js";
 import { resetIdCounter } from "./elements.js";
 import { resolveTheme } from "./theme/index.js";
 
@@ -55,6 +56,10 @@ export type {
   DeploymentNode,
   DeploymentRelation,
   DeploymentNodeKind,
+  SequenceDiagramAST,
+  SequenceParticipant,
+  SequenceMessage,
+  SequenceNote,
 } from "./parser/types.js";
 
 export type {
@@ -139,6 +144,9 @@ export function parsePlantUMLToExcalidraw(
       break;
     case "deployment":
       elements = mapDeploymentDiagram(ast, theme);
+      break;
+    case "sequence":
+      elements = mapSequenceDiagram(ast, theme);
       break;
     default:
       throw new PlantUMLUnsupportedError(ast.type);

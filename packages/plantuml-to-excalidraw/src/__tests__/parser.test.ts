@@ -6,7 +6,7 @@ import {
   PlantUMLParseError,
   PlantUMLUnsupportedError,
 } from "../parser/index.js";
-import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST, StateDiagramAST, ComponentDiagramAST, DeploymentDiagramAST } from "../parser/types.js";
+import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST, StateDiagramAST, ComponentDiagramAST, DeploymentDiagramAST, SequenceDiagramAST } from "../parser/types.js";
 
 function parseClass(code: string): ClassDiagramAST {
   const ast = parsePlantUML(code);
@@ -111,9 +111,10 @@ describe("parsePlantUML", () => {
     assert.equal(ast.relations[0].label, "uses");
   });
 
-  test("throws PlantUMLUnsupportedError for sequence diagrams", () => {
-    const code = "@startuml\nparticipant Alice\n@enduml";
-    assert.throws(() => parsePlantUML(code), PlantUMLUnsupportedError);
+  test("parses sequence diagrams successfully", () => {
+    const code = "@startuml\nparticipant Alice\nAlice -> Bob: hello\n@enduml";
+    const ast = parsePlantUML(code);
+    assert.equal(ast.type, "sequence");
   });
 
   test("throws PlantUMLUnsupportedError for activity diagrams", () => {
@@ -369,7 +370,7 @@ User --> UC1
 
 describe("parsePlantUML - fallback mechanism", () => {
   test("unsupported type still throws PlantUMLUnsupportedError", () => {
-    const code = "@startuml\nparticipant Alice\n@enduml";
+    const code = "@startuml\nstart\n:Do something;\nstop\n@enduml";
     assert.throws(() => parsePlantUML(code), PlantUMLUnsupportedError);
   });
 
@@ -762,5 +763,165 @@ app --> db
 @enduml`;
     const ast = parseDeployment(code);
     assert.equal(ast.relations.length, 1);
+  });
+});
+
+// ── Sequence Diagram Parser Tests ───────────────────────────────
+
+describe("detectDiagramType - sequence", () => {
+  test("detects sequence diagram with participant keyword", () => {
+    assert.equal(detectDiagramType("@startuml\nparticipant Alice\n@enduml"), "sequence");
+  });
+
+  test("detects sequence diagram with arrow syntax", () => {
+    assert.equal(detectDiagramType("@startuml\nAlice -> Bob: hello\n@enduml"), "sequence");
+  });
+
+  test("detects sequence diagram with async arrow", () => {
+    assert.equal(detectDiagramType("@startuml\nAlice ->> Bob: hello\n@enduml"), "sequence");
+  });
+});
+
+describe("parsePlantUML - sequence diagrams", () => {
+  function parseSequence(code: string): SequenceDiagramAST {
+    const ast = parsePlantUML(code);
+    assert.equal(ast.type, "sequence");
+    return ast as SequenceDiagramAST;
+  }
+
+  test("parses explicit participant declarations", () => {
+    const code = `@startuml
+participant Alice
+participant Bob
+Alice -> Bob: hello
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.participants.length, 2);
+    assert.equal(ast.participants[0].name, "Alice");
+    assert.equal(ast.participants[1].name, "Bob");
+  });
+
+  test("parses participant with alias", () => {
+    const code = `@startuml
+participant "Authentication Service" as Auth
+participant "User DB" as DB
+Auth -> DB: query
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.participants.length, 2);
+    assert.equal(ast.participants[0].name, "Auth");
+    assert.equal(ast.participants[0].label, "Authentication Service");
+    assert.equal(ast.participants[1].name, "DB");
+  });
+
+  test("creates implicit participants from messages", () => {
+    const code = `@startuml
+Alice -> Bob: hello
+Bob -> Charlie: forward
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.participants.length, 3);
+    assert.equal(ast.participants[0].name, "Alice");
+    assert.equal(ast.participants[1].name, "Bob");
+    assert.equal(ast.participants[2].name, "Charlie");
+  });
+
+  test("parses different participant kinds", () => {
+    const code = `@startuml
+actor User
+boundary Frontend
+control Backend
+entity Service
+database DB
+User -> Frontend: request
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.participants[0].kind, "actor");
+    assert.equal(ast.participants[1].kind, "boundary");
+    assert.equal(ast.participants[2].kind, "control");
+    assert.equal(ast.participants[3].kind, "entity");
+    assert.equal(ast.participants[4].kind, "database");
+  });
+
+  test("parses sync message (->)", () => {
+    const code = `@startuml
+Alice -> Bob: Request
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.messages.length, 1);
+    assert.equal(ast.messages[0].from, "Alice");
+    assert.equal(ast.messages[0].to, "Bob");
+    assert.equal(ast.messages[0].label, "Request");
+    assert.equal(ast.messages[0].arrowType, "sync");
+  });
+
+  test("parses return message (-->)", () => {
+    const code = `@startuml
+Bob --> Alice: Response
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.messages[0].arrowType, "return");
+  });
+
+  test("parses async message (->>)", () => {
+    const code = `@startuml
+Alice ->> Bob: Async Request
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.messages[0].arrowType, "async");
+  });
+
+  test("parses reverse arrows", () => {
+    const code = `@startuml
+Alice <-- Bob: Response
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.messages[0].from, "Alice");
+    assert.equal(ast.messages[0].to, "Bob");
+    assert.equal(ast.messages[0].arrowType, "return");
+  });
+
+  test("parses multiple messages in order", () => {
+    const code = `@startuml
+Alice -> Bob: Request
+Bob --> Alice: Response
+Alice -> Charlie: Forward
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.messages.length, 3);
+    assert.equal(ast.messages[0].label, "Request");
+    assert.equal(ast.messages[1].label, "Response");
+    assert.equal(ast.messages[2].label, "Forward");
+  });
+
+  test("ignores comments", () => {
+    const code = `@startuml
+' This is a comment
+Alice -> Bob: hello
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.messages.length, 1);
+  });
+
+  test("ignores skinparam directives", () => {
+    const code = `@startuml
+skinparam sequenceArrowThickness 2
+Alice -> Bob: hello
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.messages.length, 1);
+  });
+
+  test("preserves participant declaration order", () => {
+    const code = `@startuml
+participant Charlie
+participant Alice
+participant Bob
+Alice -> Bob: hello
+@enduml`;
+    const ast = parseSequence(code);
+    assert.equal(ast.participants[0].name, "Charlie");
+    assert.equal(ast.participants[1].name, "Alice");
+    assert.equal(ast.participants[2].name, "Bob");
   });
 });

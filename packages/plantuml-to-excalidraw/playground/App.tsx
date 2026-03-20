@@ -87,7 +87,7 @@ export function App() {
           setElements([]);
           setError(null);
           setWarning(
-            `${err.diagramType} diagrams are not yet supported. Currently supported: class, object, use case, state, component, deployment.`,
+            `${err.diagramType} diagrams are not yet supported. Currently supported: class, object, use case, state, component, deployment, sequence.`,
           );
           setStatus(null);
         } else {

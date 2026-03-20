@@ -407,7 +407,7 @@ UserService --> Repository : uses
 
 const SEQUENCE_DIAGRAMS: ExampleSection = {
   title: "Sequence Diagrams",
-  supported: false,
+  supported: true,
   examples: [
     {
       title: "Basic Messages",
@@ -421,23 +421,51 @@ Alice <-- Bob: Another authentication Response
     },
     {
       title: "Participant Types",
-      description: "Actor, boundary, control, entity, database, queue",
+      description: "Actor, boundary, control, entity, database",
       code: `@startuml
-participant Participant as Foo
-actor Actor as Foo1
-boundary Boundary as Foo2
-control Control as Foo3
-entity Entity as Foo4
-database Database as Foo5
-collections Collections as Foo6
-queue Queue as Foo7
-Foo -> Foo1 : To actor
-Foo -> Foo2 : To boundary
-Foo -> Foo3 : To control
-Foo -> Foo4 : To entity
-Foo -> Foo5 : To database
-Foo -> Foo6 : To collections
-Foo -> Foo7 : To queue
+actor User
+boundary Frontend
+control API
+entity Service
+database DB
+User -> Frontend: Click
+Frontend -> API: REST call
+API -> Service: Process
+Service -> DB: Query
+DB --> Service: Result
+Service --> API: Response
+API --> Frontend: JSON
+Frontend --> User: Render
+@enduml`,
+    },
+    {
+      title: "Named Participants",
+      description: "Participants with display labels and aliases",
+      code: `@startuml
+participant "Web Browser" as Browser
+participant "API Gateway" as GW
+participant "Auth Service" as Auth
+participant "User Database" as DB
+Browser -> GW: POST /login
+GW -> Auth: Validate credentials
+Auth -> DB: SELECT user
+DB --> Auth: User record
+Auth --> GW: JWT token
+GW --> Browser: 200 OK + token
+@enduml`,
+    },
+    {
+      title: "Async Messages",
+      description: "Mix of sync, async, and return arrows",
+      code: `@startuml
+participant Client
+participant Server
+participant Worker
+Client -> Server: Submit job
+Server ->> Worker: Process async
+Server --> Client: Accepted
+Worker --> Server: Complete
+Server -> Client: Notify
 @enduml`,
     },
   ],
@@ -804,8 +832,8 @@ export const ALL_EXAMPLES: ExampleSection[] = [
   STATE_DIAGRAMS,
   COMPONENT_DIAGRAMS,
   DEPLOYMENT_DIAGRAMS,
-  // Unsupported
   SEQUENCE_DIAGRAMS,
+  // Unsupported
   ACTIVITY_DIAGRAMS,
   TIMING_DIAGRAMS,
 ];

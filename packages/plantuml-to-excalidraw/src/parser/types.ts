@@ -262,7 +262,8 @@ export interface SequenceDiagramAST {
 export interface SequenceParticipant {
   name: string;
   alias: string | null;
-  kind: "participant" | "actor" | "boundary" | "control" | "entity" | "database";
+  label: string | null;
+  kind: "participant" | "actor" | "boundary" | "control" | "entity" | "database" | "collections" | "queue";
 }
 
 export interface SequenceMessage {

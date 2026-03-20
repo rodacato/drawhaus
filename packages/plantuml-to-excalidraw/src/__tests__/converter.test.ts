@@ -146,9 +146,11 @@ B --> C
     assert.equal(uniquePositions.size, 3, "each class should have a unique position");
   });
 
-  test("throws PlantUMLUnsupportedError for sequence diagram", () => {
-    const code = "@startuml\nparticipant Alice\n@enduml";
-    assert.throws(() => parsePlantUMLToExcalidraw(code), PlantUMLUnsupportedError);
+  test("parses sequence diagram successfully", () => {
+    const code = "@startuml\nAlice -> Bob: hello\n@enduml";
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "sequence");
+    assert.ok(result.elements.length > 0);
   });
 
   test("includes separator lines between sections", () => {
@@ -660,5 +662,106 @@ webapp --> data
       texts.some((t) => t.text === "Web Application"),
       "should display the label, not the alias",
     );
+  });
+});
+
+// ── Sequence Diagram Converter Tests ────────────────────────────
+
+describe("parsePlantUMLToExcalidraw - sequence diagrams", () => {
+  test("converts basic sequence with participants and messages", () => {
+    const code = `@startuml
+Alice -> Bob: Request
+Bob --> Alice: Response
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "sequence");
+    assert.ok(result.elements.length > 0);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 4, "should have 4 participant boxes (2 top + 2 bottom)");
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.equal(arrows.length, 2, "should have 2 message arrows");
+
+    const lines = result.elements.filter((e) => e.type === "line");
+    assert.equal(lines.length, 2, "should have 2 lifelines");
+  });
+
+  test("renders participant display names", () => {
+    const code = `@startuml
+participant "Auth Service" as Auth
+participant "User DB" as DB
+Auth -> DB: query
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    const texts = result.elements.filter((e) => e.type === "text");
+    assert.ok(
+      texts.some((t) => t.text === "Auth Service"),
+      "should display the label",
+    );
+    assert.ok(
+      texts.some((t) => t.text === "User DB"),
+      "should display the label",
+    );
+  });
+
+  test("lifelines are vertical dashed lines", () => {
+    const code = `@startuml
+Alice -> Bob: hello
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    const lines = result.elements.filter((e) => e.type === "line");
+    assert.ok(lines.length >= 2, "should have lifelines");
+    for (const line of lines) {
+      assert.equal(line.strokeStyle, "dashed", "lifelines should be dashed");
+    }
+  });
+
+  test("return messages use dashed arrows", () => {
+    const code = `@startuml
+Alice -> Bob: Request
+Bob --> Alice: Response
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.equal(arrows[0].strokeStyle, "solid", "sync arrow should be solid");
+    assert.equal(arrows[1].strokeStyle, "dashed", "return arrow should be dashed");
+  });
+
+  test("participants have unique X positions", () => {
+    const code = `@startuml
+Alice -> Bob: one
+Bob -> Charlie: two
+Charlie -> Dave: three
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    // 4 participants x 2 (top + bottom) = 8 rects, but 4 unique X values
+    const xPositions = new Set(rects.map((r) => r.x));
+    assert.equal(xPositions.size, 4, "each participant should have unique X");
+  });
+
+  test("messages are ordered vertically", () => {
+    const code = `@startuml
+Alice -> Bob: first
+Bob -> Charlie: second
+Charlie -> Alice: third
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.ok(arrows[0].y < arrows[1].y, "first message above second");
+    assert.ok(arrows[1].y < arrows[2].y, "second message above third");
+  });
+
+  test("handles many participant types", () => {
+    const code = `@startuml
+actor User
+database DB
+User -> DB: query
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "sequence");
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 4, "2 participants x 2 (top + bottom)");
   });
 });

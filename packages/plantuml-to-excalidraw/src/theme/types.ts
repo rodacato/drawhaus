@@ -76,6 +76,11 @@ export interface DiagramTheme {
   choiceState: ShapeStyle;
   forkJoin: ShapeStyle;
 
+  // ── Sequence Diagram ──────────────────────────
+  sequenceParticipant: ShapeStyle;
+  sequenceLifeline: ArrowStyle;
+  sequenceMessage: ArrowStyle;
+
   // ── Relations ──────────────────────────────────
   arrow: ArrowStyle;
   dependencyArrow: ArrowStyle;

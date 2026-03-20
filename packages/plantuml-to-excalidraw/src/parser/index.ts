@@ -4,6 +4,7 @@ import { parse as parseUseCaseGrammar } from "./grammar/usecase.js";
 import { parse as parseStateGrammar } from "./grammar/state.js";
 import { parse as parseComponentGrammar } from "./grammar/component.js";
 import { parse as parseDeploymentGrammar } from "./grammar/deployment.js";
+import { parse as parseSequenceGrammar } from "./grammar/sequence.js";
 import type {
   DiagramAST,
   DiagramType,
@@ -32,6 +33,7 @@ const PARSERS = new Map<DiagramType, ParserFn>([
   ["state", (code) => parseWithPeggy(parseStateGrammar, code)],
   ["component", (code) => parseWithPeggy(parseComponentGrammar, code)],
   ["deployment", (code) => parseWithPeggy(parseDeploymentGrammar, code)],
+  ["sequence", (code) => parseWithPeggy(parseSequenceGrammar, code)],
 ]);
 
 // ── Detection Rules ─────────────────────────────────────────────
@@ -84,12 +86,26 @@ const DETECTION_RULES: DetectionRule[] = [
     fallbacks: ["deployment", "class"],
   },
 
-  // Sequence: participant declarations or message syntax (A -> B: msg)
+  // Sequence: participant/actor declarations or message syntax (A -> B: msg)
+  // Only match arrow syntax if no class/object/component keywords present
   {
     type: "sequence",
-    test: (stripped, lower) =>
-      lower.includes("participant ") ||
-      /^\s*\w+\s*->>?\s*\w+\s*:/m.test(stripped),
+    test: (stripped, lower) => {
+      if (lower.includes("participant ")) return true;
+      const hasArrowMessage = /^\s*\w+\s*(<-{1,2}|-{1,2}>>?)\s*\w+\s*:/m.test(stripped);
+      if (!hasArrowMessage) return false;
+      // Exclude if class/object/component keywords are present
+      const hasOtherKeywords =
+        lower.includes("class ") ||
+        lower.includes("interface ") ||
+        lower.includes("enum ") ||
+        lower.includes("abstract ") ||
+        /^\s*object\s+/m.test(lower) ||
+        /^\s*map\s+/m.test(lower) ||
+        /\[[\w\s]+\]/.test(stripped) ||
+        lower.includes("component ");
+      return !hasOtherKeywords;
+    },
     fallbacks: [],
   },
 
