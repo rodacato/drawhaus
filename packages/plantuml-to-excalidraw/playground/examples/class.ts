@@ -445,7 +445,7 @@ Foo -> Foo7 : To queue
 
 const USE_CASE_DIAGRAMS: ExampleSection = {
   title: "Use Case Diagrams",
-  supported: false,
+  supported: true,
   examples: [
     {
       title: "Restaurant System",
@@ -453,36 +453,47 @@ const USE_CASE_DIAGRAMS: ExampleSection = {
       code: `@startuml
 left to right direction
 actor Guest as g
-package Professional {
-  actor Chef as c
-  actor "Food Critic" as fc
-}
 package Restaurant {
   usecase "Eat Food" as UC1
   usecase "Pay for Food" as UC2
   usecase "Drink" as UC3
   usecase "Review" as UC4
 }
-fc --> UC4
 g --> UC1
 g --> UC2
 g --> UC3
 @enduml`,
     },
     {
-      title: "Checkout Flow",
-      description: "Include and extends relationships",
+      title: "Include & Extend",
+      description: "Relationships with stereotypes",
+      code: `@startuml
+actor User
+usecase Login
+usecase Authenticate
+usecase SSO
+User --> Login
+Login ..> Authenticate : <<include>>
+SSO ..> Login : <<extend>>
+@enduml`,
+    },
+    {
+      title: "Online Store",
+      description: "System boundary with multiple actors",
       code: `@startuml
 left to right direction
-skinparam packageStyle rectangle
-actor customer
-actor clerk
-rectangle checkout {
-  customer -- (checkout)
-  (checkout) .> (payment) : include
-  (help) .> (checkout) : extends
-  (checkout) -- clerk
+actor Customer
+actor Admin
+rectangle "Online Store" {
+  usecase "Browse Products" as UC1
+  usecase "Place Order" as UC2
+  usecase "Manage Inventory" as UC3
+  usecase "Process Payment" as UC4
 }
+Customer --> UC1
+Customer --> UC2
+UC2 ..> UC4 : <<include>>
+Admin --> UC3
 @enduml`,
     },
   ],
@@ -490,7 +501,7 @@ rectangle checkout {
 
 const OBJECT_DIAGRAMS: ExampleSection = {
   title: "Object Diagrams",
-  supported: false,
+  supported: true,
   examples: [
     {
       title: "Object with Fields",
@@ -738,10 +749,10 @@ export const ALL_EXAMPLES: ExampleSection[] = [
   CLASS_RELATIONSHIPS,
   CLASS_INTERFACES_ENUMS,
   CLASS_PATTERNS,
+  OBJECT_DIAGRAMS,
+  USE_CASE_DIAGRAMS,
   // Unsupported
   SEQUENCE_DIAGRAMS,
-  USE_CASE_DIAGRAMS,
-  OBJECT_DIAGRAMS,
   ACTIVITY_DIAGRAMS,
   COMPONENT_DIAGRAMS,
   DEPLOYMENT_DIAGRAMS,

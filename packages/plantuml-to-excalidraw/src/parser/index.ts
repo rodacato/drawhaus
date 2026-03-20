@@ -1,6 +1,10 @@
 import { parse as parseClassGrammar } from "./grammar/class.js";
+import { parse as parseObjectGrammar } from "./grammar/object.js";
+import { parse as parseUseCaseGrammar } from "./grammar/usecase.js";
 import type {
   ClassDiagramAST,
+  ObjectDiagramAST,
+  UseCaseDiagramAST,
   DiagramAST,
   DiagramType,
 } from "./types.js";
@@ -17,13 +21,22 @@ export function detectDiagramType(code: string): DiagramType {
   const stripped = stripComments(code);
   const lower = stripped.toLowerCase();
 
-  // Sequence: participant/actor declarations or message syntax (A -> B: msg)
+  // Use Case: unambiguous keyword
+  if (lower.includes("usecase ")) {
+    return "usecase";
+  }
+
+  // Sequence: participant declarations or message syntax (A -> B: msg)
   if (
     lower.includes("participant ") ||
-    lower.includes("actor ") ||
     /^\s*\w+\s*->>?\s*\w+\s*:/m.test(stripped)
   ) {
     return "sequence";
+  }
+
+  // Object: object/map declarations
+  if (lower.includes("object ") || lower.includes("map ")) {
+    return "object";
   }
 
   // Class: class/interface/enum declarations
@@ -33,6 +46,11 @@ export function detectDiagramType(code: string): DiagramType {
     lower.includes("enum ")
   ) {
     return "class";
+  }
+
+  // Actor without sequence arrows → likely use case
+  if (lower.includes("actor ")) {
+    return "usecase";
   }
 
   // Activity: action syntax (:text;), start/stop keywords
@@ -49,13 +67,6 @@ export function detectDiagramType(code: string): DiagramType {
 
 /**
  * Parse PlantUML source code into a structured AST.
- *
- * Currently supports:
- * - Class diagrams (class, interface, enum, abstract class, relations)
- *
- * Future support planned for:
- * - Sequence diagrams
- * - Activity diagrams
  */
 export function parsePlantUML(code: string): DiagramAST {
   const type = detectDiagramType(code);
@@ -72,12 +83,54 @@ export function parsePlantUML(code: string): DiagramAST {
     throw new PlantUMLUnsupportedError("activity");
   }
 
+  if (type === "object") {
+    return parseObjectDiagram(code);
+  }
+
+  if (type === "usecase") {
+    return parseUseCaseDiagram(code);
+  }
+
   return parseClassDiagram(code);
 }
 
 function parseClassDiagram(code: string): ClassDiagramAST {
   try {
     return parseClassGrammar(code) as ClassDiagramAST;
+  } catch (err: unknown) {
+    if (isPeggyError(err)) {
+      throw new PlantUMLParseError(
+        err.message,
+        err.location.start.line,
+        err.location.start.column,
+        err.expected?.map((e: { description: string }) => e.description) ?? [],
+        err.found ?? null,
+      );
+    }
+    throw err;
+  }
+}
+
+function parseObjectDiagram(code: string): ObjectDiagramAST {
+  try {
+    return parseObjectGrammar(code) as ObjectDiagramAST;
+  } catch (err: unknown) {
+    if (isPeggyError(err)) {
+      throw new PlantUMLParseError(
+        err.message,
+        err.location.start.line,
+        err.location.start.column,
+        err.expected?.map((e: { description: string }) => e.description) ?? [],
+        err.found ?? null,
+      );
+    }
+    throw err;
+  }
+}
+
+function parseUseCaseDiagram(code: string): UseCaseDiagramAST {
+  try {
+    return parseUseCaseGrammar(code) as UseCaseDiagramAST;
   } catch (err: unknown) {
     if (isPeggyError(err)) {
       throw new PlantUMLParseError(

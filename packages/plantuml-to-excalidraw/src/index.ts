@@ -7,6 +7,8 @@ import {
 } from "./parser/index.js";
 import type { DiagramType } from "./parser/types.js";
 import { mapClassDiagram } from "./converter/class.js";
+import { mapObjectDiagram } from "./converter/object.js";
+import { mapUseCaseDiagram } from "./converter/usecase.js";
 import { resetIdCounter } from "./elements.js";
 
 // ── Re-exports ─────────────────────────────────────────────────
@@ -24,6 +26,16 @@ export type {
   ClassMember,
   ClassRelation,
   ClassRelationType,
+  ObjectDiagramAST,
+  ObjectEntity,
+  ObjectField,
+  ObjectRelation,
+  UseCaseDiagramAST,
+  UseCaseActor,
+  UseCase,
+  UseCaseBoundary,
+  UseCaseRelation,
+  UseCaseRelationType,
 } from "./parser/types.js";
 
 export type {
@@ -42,6 +54,8 @@ export type {
  *
  * Supported diagram types:
  * - Class diagrams (class, interface, enum, abstract class, relations)
+ * - Object diagrams (object, map, relations)
+ * - Use case diagrams (actors, use cases, boundaries, relations)
  *
  * For unsupported types, throws PlantUMLUnsupportedError.
  * For invalid syntax, throws PlantUMLParseError with line/column info.
@@ -53,6 +67,14 @@ export function parsePlantUMLToExcalidraw(
   const trimmed = definition.trim();
   if (!trimmed) {
     return { elements: [], diagramType: "unknown" };
+  }
+
+  const MAX_INPUT_LENGTH = 16_384;
+  if (trimmed.length > MAX_INPUT_LENGTH) {
+    throw new PlantUMLParseError(
+      `Input too large (${trimmed.length} chars, max ${MAX_INPUT_LENGTH})`,
+      0, 0, [], null,
+    );
   }
 
   const diagramType = detectDiagramType(trimmed);
@@ -68,8 +90,13 @@ export function parsePlantUMLToExcalidraw(
     case "class":
       elements = mapClassDiagram(ast);
       break;
+    case "object":
+      elements = mapObjectDiagram(ast);
+      break;
+    case "usecase":
+      elements = mapUseCaseDiagram(ast);
+      break;
     default:
-      // Sequence and activity will be added in future phases
       throw new PlantUMLUnsupportedError(ast.type);
   }
 

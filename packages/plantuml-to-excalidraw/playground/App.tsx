@@ -48,10 +48,12 @@ export function App() {
         setError(null);
         setWarning(null);
 
-        const rects = result.elements.filter((e) => e.type === "rectangle").length;
         const arrows = result.elements.filter((e) => e.type === "arrow").length;
+        const ellipses = result.elements.filter((e) => e.type === "ellipse").length;
+        const rects = result.elements.filter((e) => e.type === "rectangle").length;
+        const shapes = rects + ellipses;
         setStatus(
-          `${rects} class${rects !== 1 ? "es" : ""}, ${arrows} relation${arrows !== 1 ? "s" : ""}, ${result.elements.length} total elements`,
+          `${result.diagramType} · ${shapes} shape${shapes !== 1 ? "s" : ""}, ${arrows} relation${arrows !== 1 ? "s" : ""}, ${result.elements.length} total elements`,
         );
       } catch (err) {
         if (err instanceof PlantUMLParseError) {

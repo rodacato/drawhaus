@@ -164,3 +164,143 @@ class Foo {
     assert.ok(lines.length >= 1, "should have separator lines between header/attrs/methods");
   });
 });
+
+// ── Object Diagram Converter Tests ──────────────────────────────
+
+describe("parsePlantUMLToExcalidraw - object diagrams", () => {
+  test("converts a simple object to rectangle + text", () => {
+    const code = `@startuml
+object user {
+  name = "Alice"
+  id = 123
+}
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "object");
+    assert.ok(result.elements.length > 0);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 1);
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    assert.ok(texts.length >= 3); // header + 2 fields
+  });
+
+  test("renders object with instanceOf in header", () => {
+    const code = "@startuml\nobject bob : Person\n@enduml";
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    const headerText = texts.find((t) => typeof t.text === "string" && t.text.includes("Person"));
+    assert.ok(headerText, "header should show instanceOf type");
+  });
+
+  test("converts a map with key-value entries", () => {
+    const code = `@startuml
+map CapitalCity {
+  UK => London
+  USA => Washington
+}
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    const mapEntry = texts.find((t) => typeof t.text === "string" && t.text.includes("=>"));
+    assert.ok(mapEntry, "should render map entries with => separator");
+  });
+
+  test("renders relations between objects as arrows", () => {
+    const code = "@startuml\nobject a\nobject b\na --> b : owns\n@enduml";
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.equal(arrows.length, 1);
+  });
+
+  test("multiple objects have unique positions", () => {
+    const code = "@startuml\nobject a\nobject b\nobject c\na --> b\nb --> c\n@enduml";
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 3);
+    const positions = new Set(rects.map((r) => `${r.x},${r.y}`));
+    assert.equal(positions.size, 3);
+  });
+});
+
+// ── Use Case Diagram Converter Tests ────────────────────────────
+
+describe("parsePlantUMLToExcalidraw - use case diagrams", () => {
+  test("converts actor to rectangle with actor stereotype", () => {
+    const code = "@startuml\nactor User\nusecase Login\nUser --> Login\n@enduml";
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "usecase");
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.ok(rects.length >= 1, "actors render as rectangles");
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    const actorLabel = texts.find((t) => typeof t.text === "string" && t.text.includes("actor"));
+    assert.ok(actorLabel, "actor should have «actor» stereotype text");
+  });
+
+  test("converts use case to ellipse", () => {
+    const code = "@startuml\nactor User\nusecase Login\nUser --> Login\n@enduml";
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const ellipses = result.elements.filter((e) => e.type === "ellipse");
+    assert.equal(ellipses.length, 1);
+  });
+
+  test("renders directed relation as arrow", () => {
+    const code = "@startuml\nactor User\nusecase Login\nUser --> Login\n@enduml";
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.equal(arrows.length, 1);
+    assert.equal(arrows[0].endArrowhead, "arrow");
+  });
+
+  test("include relation has dashed style and label", () => {
+    const code = '@startuml\nusecase Login\nusecase Auth\nLogin ..> Auth : <<include>>\n@enduml';
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.equal(arrows.length, 1);
+    assert.equal(arrows[0].strokeStyle, "dashed");
+  });
+
+  test("boundary renders as dashed rectangle", () => {
+    const code = `@startuml
+actor User
+rectangle System {
+  usecase Login
+}
+User --> Login
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const dashedRects = result.elements.filter(
+      (e) => e.type === "rectangle" && e.strokeStyle === "dashed",
+    );
+    assert.ok(dashedRects.length >= 1, "boundary should be a dashed rectangle");
+  });
+
+  test("multiple actors and use cases have unique positions", () => {
+    const code = `@startuml
+actor User
+actor Admin
+usecase Login
+usecase Dashboard
+User --> Login
+Admin --> Dashboard
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    const ellipses = result.elements.filter((e) => e.type === "ellipse");
+    const all = [...rects, ...ellipses];
+    const positions = new Set(all.map((e) => `${e.x},${e.y}`));
+    assert.equal(positions.size, all.length, "all elements should have unique positions");
+  });
+});

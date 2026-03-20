@@ -133,6 +133,30 @@ export function createDiamond(opts: {
   };
 }
 
+export function createEllipse(opts: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label?: string;
+  backgroundColor?: string;
+  strokeStyle?: "solid" | "dashed" | "dotted";
+}): ExcalidrawElementSkeleton {
+  return {
+    type: "ellipse",
+    x: opts.x,
+    y: opts.y,
+    width: opts.width,
+    height: opts.height,
+    id: nextId(),
+    backgroundColor: opts.backgroundColor ?? "transparent",
+    strokeStyle: opts.strokeStyle ?? "solid",
+    ...(opts.label
+      ? { label: { text: opts.label, x: opts.x, y: opts.y } }
+      : {}),
+  };
+}
+
 export function createLine(opts: {
   startX: number;
   startY: number;

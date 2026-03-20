@@ -1,8 +1,8 @@
 // ── AST Types ──────────────────────────────────────────────────
 
-export type DiagramType = "class" | "sequence" | "activity" | "unknown";
+export type DiagramType = "class" | "object" | "usecase" | "sequence" | "activity" | "unknown";
 
-export type DiagramAST = ClassDiagramAST | SequenceDiagramAST | ActivityDiagramAST;
+export type DiagramAST = ClassDiagramAST | ObjectDiagramAST | UseCaseDiagramAST | SequenceDiagramAST | ActivityDiagramAST;
 
 // ── Class Diagram ──────────────────────────────────────────────
 
@@ -69,6 +69,75 @@ export interface ClassRelation {
   label: string | null;
   leftCardinality: string | null;
   rightCardinality: string | null;
+}
+
+// ── Object Diagram ──────────────────────────────────────────────
+
+export interface ObjectDiagramAST {
+  type: "object";
+  entities: ObjectEntity[];
+  relations: ObjectRelation[];
+}
+
+export interface ObjectEntity {
+  kind: "object" | "map";
+  name: string;
+  instanceOf: string | null;
+  fields: ObjectField[];
+}
+
+export interface ObjectField {
+  key: string;
+  value: string;
+  separator: "=" | "=>";
+}
+
+export interface ObjectRelation {
+  left: string;
+  right: string;
+  relationType: ClassRelationType;
+  label: string | null;
+}
+
+// ── Use Case Diagram ────────────────────────────────────────────
+
+export interface UseCaseDiagramAST {
+  type: "usecase";
+  actors: UseCaseActor[];
+  useCases: UseCase[];
+  boundaries: UseCaseBoundary[];
+  relations: UseCaseRelation[];
+  direction: "TB" | "LR";
+}
+
+export interface UseCaseActor {
+  name: string;
+  alias: string | null;
+}
+
+export interface UseCase {
+  name: string;
+  alias: string | null;
+  boundary: string | null;
+}
+
+export interface UseCaseBoundary {
+  name: string;
+}
+
+export type UseCaseRelationType =
+  | "association"
+  | "directed"
+  | "include"
+  | "extend"
+  | "inheritance";
+
+export interface UseCaseRelation {
+  left: string;
+  right: string;
+  relationType: UseCaseRelationType;
+  label: string | null;
+  stereotype: string | null;
 }
 
 // ── Sequence Diagram (future) ──────────────────────────────────
