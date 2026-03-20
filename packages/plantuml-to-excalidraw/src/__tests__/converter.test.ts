@@ -544,3 +544,121 @@ cloud "AWS" {
     assert.equal(positions.size, 4, "each component should have a unique position");
   });
 });
+
+// ── Deployment Diagram Converter Tests ──────────────────────────
+
+describe("parsePlantUMLToExcalidraw - deployment diagrams", () => {
+  test("converts simple deployment nodes", () => {
+    const code = `@startuml
+artifact app
+artifact db
+app --> db
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "deployment");
+    assert.ok(result.elements.length > 0);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 2, "two node rectangles");
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.equal(arrows.length, 1, "one relation arrow");
+  });
+
+  test("renders stereotype labels for special node kinds", () => {
+    const code = `@startuml
+artifact app
+database db
+app --> db
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    assert.ok(
+      texts.some((t) => typeof t.text === "string" && t.text.includes("«artifact»")),
+      "should have artifact stereotype",
+    );
+    assert.ok(
+      texts.some((t) => typeof t.text === "string" && t.text.includes("«database»")),
+      "should have database stereotype",
+    );
+  });
+
+  test("renders container as background rectangle", () => {
+    const code = `@startuml
+cloud vpc {
+  artifact app
+  artifact api
+}
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.ok(rects.length >= 3, "container rect + 2 node rects");
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    assert.ok(
+      texts.some((t) => typeof t.text === "string" && t.text.includes("cloud")),
+      "should render container kind label",
+    );
+  });
+
+  test("relation labels are rendered", () => {
+    const code = `@startuml
+artifact app
+database db
+app --> db : JDBC
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    const labeled = arrows.find(
+      (a) => a.label && (a.label as any).text === "JDBC",
+    );
+    assert.ok(labeled, "should have arrow with label");
+  });
+
+  test("dependency relation uses dashed style", () => {
+    const code = `@startuml
+artifact app
+artifact config
+app ..> config
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.equal(arrows.length, 1);
+    assert.equal(arrows[0].strokeStyle, "dashed");
+  });
+
+  test("nodes have unique positions", () => {
+    const code = `@startuml
+artifact a
+artifact b
+artifact c
+a --> b
+b --> c
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 3);
+    const positions = new Set(rects.map((r) => `${r.x},${r.y}`));
+    assert.equal(positions.size, 3, "each node should have a unique position");
+  });
+
+  test("uses display label when available", () => {
+    const code = `@startuml
+artifact "Web Application" as webapp
+storage data
+webapp --> data
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    assert.ok(
+      texts.some((t) => t.text === "Web Application"),
+      "should display the label, not the alias",
+    );
+  });
+});

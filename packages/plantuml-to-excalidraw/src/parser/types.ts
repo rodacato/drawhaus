@@ -1,8 +1,8 @@
 // ── AST Types ──────────────────────────────────────────────────
 
-export type DiagramType = "class" | "object" | "usecase" | "state" | "component" | "sequence" | "activity" | "unknown";
+export type DiagramType = "class" | "object" | "usecase" | "state" | "component" | "deployment" | "sequence" | "activity" | "unknown";
 
-export type DiagramAST = ClassDiagramAST | ObjectDiagramAST | UseCaseDiagramAST | StateDiagramAST | ComponentDiagramAST | SequenceDiagramAST | ActivityDiagramAST;
+export type DiagramAST = ClassDiagramAST | ObjectDiagramAST | UseCaseDiagramAST | StateDiagramAST | ComponentDiagramAST | DeploymentDiagramAST | SequenceDiagramAST | ActivityDiagramAST;
 
 // ── Class Diagram ──────────────────────────────────────────────
 
@@ -181,6 +181,33 @@ export interface ComponentRelation {
   left: string;
   right: string;
   relationType: ComponentRelationType;
+  label: string | null;
+}
+
+// ── Deployment Diagram ─────────────────────────────────────────
+
+export interface DeploymentDiagramAST {
+  type: "deployment";
+  nodes: DeploymentNode[];
+  relations: DeploymentRelation[];
+}
+
+export type DeploymentNodeKind =
+  | "node" | "artifact" | "cloud" | "database" | "folder" | "frame"
+  | "queue" | "stack" | "storage" | "card" | "agent" | "actor"
+  | "component" | "package" | "rectangle" | "person";
+
+export interface DeploymentNode {
+  kind: DeploymentNodeKind;
+  name: string;
+  label: string | null;
+  children: DeploymentNode[];
+}
+
+export interface DeploymentRelation {
+  left: string;
+  right: string;
+  relationType: "association" | "directed" | "dependency";
   label: string | null;
 }
 

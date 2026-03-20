@@ -58,6 +58,12 @@ export interface DiagramTheme {
   useCase: ShapeStyle;
   boundary: ShapeStyle;
 
+  // ── Deployment Diagram ─────────────────────────
+  deploymentNode: ShapeStyle;
+  deploymentContainer: ShapeStyle;
+  deploymentArtifact: ShapeStyle;
+  deploymentDatabase: ShapeStyle;
+
   // ── Component Diagram ──────────────────────────
   component: ShapeStyle;
   componentContainer: ShapeStyle;

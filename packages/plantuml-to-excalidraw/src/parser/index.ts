@@ -3,6 +3,7 @@ import { parse as parseObjectGrammar } from "./grammar/object.js";
 import { parse as parseUseCaseGrammar } from "./grammar/usecase.js";
 import { parse as parseStateGrammar } from "./grammar/state.js";
 import { parse as parseComponentGrammar } from "./grammar/component.js";
+import { parse as parseDeploymentGrammar } from "./grammar/deployment.js";
 import type {
   DiagramAST,
   DiagramType,
@@ -30,6 +31,7 @@ const PARSERS = new Map<DiagramType, ParserFn>([
   ["usecase", (code) => parseWithPeggy(parseUseCaseGrammar, code)],
   ["state", (code) => parseWithPeggy(parseStateGrammar, code)],
   ["component", (code) => parseWithPeggy(parseComponentGrammar, code)],
+  ["deployment", (code) => parseWithPeggy(parseDeploymentGrammar, code)],
 ]);
 
 // ── Detection Rules ─────────────────────────────────────────────
@@ -63,6 +65,14 @@ const DETECTION_RULES: DetectionRule[] = [
     fallbacks: ["class"],
   },
 
+  // Deployment: deployment-specific node kinds (artifact, storage, queue, etc.)
+  {
+    type: "deployment",
+    test: (_s, lower) =>
+      /^\s*(artifact|storage|queue|stack|person|agent|card)\s+/m.test(lower),
+    fallbacks: ["component"],
+  },
+
   // Component: bracket component syntax [Name] or component keyword or container keywords
   {
     type: "component",
@@ -71,7 +81,7 @@ const DETECTION_RULES: DetectionRule[] = [
       lower.includes("component ") ||
       (/^\s*(package|cloud|database|folder|frame)\s+/m.test(lower) &&
         stripped.includes("{")),
-    fallbacks: ["class"],
+    fallbacks: ["deployment", "class"],
   },
 
   // Sequence: participant declarations or message syntax (A -> B: msg)

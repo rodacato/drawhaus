@@ -59,6 +59,28 @@ export const DEFAULT_THEME: DiagramTheme = {
     strokeStyle: "dashed",
   },
 
+  // ── Deployment Diagram ─────────────────────────
+  deploymentNode: {
+    fill: "#f0f4f8",         // very light blue-grey
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  deploymentContainer: {
+    fill: "#f8f9fb",         // barely-there grey
+    stroke: "#8e9baa",
+    strokeStyle: "dashed",
+  },
+  deploymentArtifact: {
+    fill: "#f5f3ee",         // warm grey
+    stroke: "#c4a94d",
+    strokeStyle: "solid",
+  },
+  deploymentDatabase: {
+    fill: "#f0f5f0",         // very light sage
+    stroke: "#6da670",
+    strokeStyle: "solid",
+  },
+
   // ── Component Diagram ──────────────────────────
   component: {
     fill: "#f0f4f8",         // very light blue-grey

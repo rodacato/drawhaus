@@ -9,6 +9,7 @@ import { mapObjectDiagram } from "./converter/object.js";
 import { mapUseCaseDiagram } from "./converter/usecase.js";
 import { mapStateDiagram } from "./converter/state.js";
 import { mapComponentDiagram } from "./converter/component.js";
+import { mapDeploymentDiagram } from "./converter/deployment.js";
 import { resetIdCounter } from "./elements.js";
 import { resolveTheme } from "./theme/index.js";
 
@@ -50,6 +51,10 @@ export type {
   ComponentRelation,
   ComponentRelationType,
   ContainerKind,
+  DeploymentDiagramAST,
+  DeploymentNode,
+  DeploymentRelation,
+  DeploymentNodeKind,
 } from "./parser/types.js";
 
 export type {
@@ -82,6 +87,7 @@ export { DEFAULT_THEME, resolveTheme } from "./theme/index.js";
  * - Use case diagrams (actors, use cases, boundaries, relations)
  * - State diagrams (states, transitions, composite states)
  * - Component diagrams (components, containers, interfaces, relations)
+ * - Deployment diagrams (nodes, artifacts, clouds, databases, nested containers)
  *
  * For unsupported types, throws PlantUMLUnsupportedError.
  * For invalid syntax, throws PlantUMLParseError with line/column info.
@@ -130,6 +136,9 @@ export function parsePlantUMLToExcalidraw(
       break;
     case "component":
       elements = mapComponentDiagram(ast, theme);
+      break;
+    case "deployment":
+      elements = mapDeploymentDiagram(ast, theme);
       break;
     default:
       throw new PlantUMLUnsupportedError(ast.type);

@@ -6,7 +6,7 @@ import {
   PlantUMLParseError,
   PlantUMLUnsupportedError,
 } from "../parser/index.js";
-import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST, StateDiagramAST, ComponentDiagramAST } from "../parser/types.js";
+import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST, StateDiagramAST, ComponentDiagramAST, DeploymentDiagramAST } from "../parser/types.js";
 
 function parseClass(code: string): ClassDiagramAST {
   const ast = parsePlantUML(code);
@@ -643,5 +643,124 @@ package "API" {
     assert.ok(ast.components.some(c => c.name === "Handler"));
     assert.ok(ast.components.some(c => c.name === "Logic"));
     assert.equal(ast.containers[0].children.length, 2);
+  });
+});
+
+// ── Deployment Diagram Parser Tests ─────────────────────────────
+
+describe("detectDiagramType - deployment", () => {
+  test("detects deployment diagram with artifact keyword", () => {
+    assert.equal(detectDiagramType("@startuml\nartifact app\n@enduml"), "deployment");
+  });
+
+  test("detects deployment diagram with storage keyword", () => {
+    assert.equal(detectDiagramType("@startuml\nstorage data\n@enduml"), "deployment");
+  });
+
+  test("detects deployment diagram with queue keyword", () => {
+    assert.equal(detectDiagramType("@startuml\nqueue events\n@enduml"), "deployment");
+  });
+
+  test("detects deployment diagram with person keyword", () => {
+    assert.equal(detectDiagramType("@startuml\nperson user\n@enduml"), "deployment");
+  });
+});
+
+describe("parsePlantUML - deployment diagrams", () => {
+  function parseDeployment(code: string): DeploymentDiagramAST {
+    const ast = parsePlantUML(code);
+    assert.equal(ast.type, "deployment");
+    return ast as DeploymentDiagramAST;
+  }
+
+  test("parses simple nodes with relations", () => {
+    const code = `@startuml
+artifact app
+artifact db
+app --> db
+@enduml`;
+    const ast = parseDeployment(code);
+    assert.ok(ast.nodes.length >= 2);
+    assert.equal(ast.relations.length, 1);
+    assert.equal(ast.relations[0].left, "app");
+    assert.equal(ast.relations[0].right, "db");
+  });
+
+  test("parses node with quoted label", () => {
+    const code = `@startuml
+artifact "Web Application" as webapp
+storage data
+webapp --> data
+@enduml`;
+    const ast = parseDeployment(code);
+    const webapp = ast.nodes.find(n => n.name === "webapp");
+    assert.ok(webapp);
+    assert.equal(webapp!.label, "Web Application");
+  });
+
+  test("parses nested containers", () => {
+    const code = `@startuml
+cloud vpc {
+  node ec2 {
+    artifact app
+  }
+}
+@enduml`;
+    const ast = parseDeployment(code);
+    assert.equal(ast.nodes.length, 1); // vpc at top level
+    const vpc = ast.nodes[0];
+    assert.equal(vpc.kind, "cloud");
+    assert.equal(vpc.children.length, 1);
+    assert.equal(vpc.children[0].kind, "node");
+    assert.equal(vpc.children[0].children.length, 1);
+  });
+
+  test("parses relation with label", () => {
+    const code = `@startuml
+artifact app
+database db
+app --> db : JDBC
+@enduml`;
+    const ast = parseDeployment(code);
+    assert.equal(ast.relations[0].label, "JDBC");
+  });
+
+  test("parses dependency relation", () => {
+    const code = `@startuml
+artifact app
+artifact config
+app ..> config
+@enduml`;
+    const ast = parseDeployment(code);
+    assert.equal(ast.relations[0].relationType, "dependency");
+  });
+
+  test("parses various node kinds", () => {
+    const code = `@startuml
+queue events
+stack layers
+card info
+agent worker
+events --> worker
+@enduml`;
+    const ast = parseDeployment(code);
+    const kindSet = new Set(ast.nodes.map(n => n.kind));
+    assert.ok(kindSet.has("queue"));
+    assert.ok(kindSet.has("stack"));
+    assert.ok(kindSet.has("card"));
+    assert.ok(kindSet.has("agent"));
+  });
+
+  test("ignores skinparam directives", () => {
+    const code = `@startuml
+skinparam node {
+  BackgroundColor LightBlue
+}
+artifact app
+artifact db
+app --> db
+@enduml`;
+    const ast = parseDeployment(code);
+    assert.equal(ast.relations.length, 1);
   });
 });

@@ -626,19 +626,17 @@ cloud "AWS" {
 
 const DEPLOYMENT_DIAGRAMS: ExampleSection = {
   title: "Deployment Diagrams",
-  supported: false,
+  supported: true,
   examples: [
     {
       title: "Nodes & Links",
       description: "Deployment nodes with different link styles",
       code: `@startuml
-node node1
-node node2
-node node3
-node node4
-node1 -- node2 : label1
-node1 .. node3 : label2
-node1 ~~ node4 : label3
+artifact app
+artifact api
+storage data
+app --> api : HTTP
+api --> data : persist
 @enduml`,
     },
     {
@@ -647,9 +645,45 @@ node1 ~~ node4 : label3
       code: `@startuml
 cloud vpc {
   node ec2 {
-    stack stack
+    artifact app
   }
 }
+@enduml`,
+    },
+    {
+      title: "Cloud Infrastructure",
+      description: "Typical cloud deployment with databases and queues",
+      code: `@startuml
+cloud "AWS" {
+  node "Web Server" {
+    artifact api
+  }
+  database "RDS" {
+    storage data
+  }
+  queue "SQS" as sqs
+}
+api --> sqs : publish
+sqs --> data : consume
+@enduml`,
+    },
+    {
+      title: "Microservices",
+      description: "Service-oriented deployment topology",
+      code: `@startuml
+node "API Gateway" as gw
+node "Auth Service" as auth
+node "Order Service" as orders
+node "Payment Service" as pay
+database "PostgreSQL" as db
+queue "Kafka" as kafka
+
+gw --> auth
+gw --> orders
+orders --> kafka
+kafka --> pay
+orders --> db
+pay --> db
 @enduml`,
     },
   ],
@@ -769,10 +803,10 @@ export const ALL_EXAMPLES: ExampleSection[] = [
   USE_CASE_DIAGRAMS,
   STATE_DIAGRAMS,
   COMPONENT_DIAGRAMS,
+  DEPLOYMENT_DIAGRAMS,
   // Unsupported
   SEQUENCE_DIAGRAMS,
   ACTIVITY_DIAGRAMS,
-  DEPLOYMENT_DIAGRAMS,
   TIMING_DIAGRAMS,
 ];
 
