@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { commentsApi } from "@/api/comments";
+import { countElementComments } from "@/lib/comments";
 import type { CommentThread, CommentReply } from "@/lib/types";
 
 export type UseCommentsOptions = {
@@ -163,15 +164,7 @@ export function useComments({ diagramId, sceneId, socketRef }: UseCommentsOption
   }, []);
 
   // Derive elements with comments count
-  const elementsWithComments = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const t of threads) {
-      if (!t.resolved) {
-        map.set(t.elementId, (map.get(t.elementId) ?? 0) + 1);
-      }
-    }
-    return map;
-  }, [threads]);
+  const elementsWithComments = useMemo(() => countElementComments(threads), [threads]);
 
   return {
     threads,

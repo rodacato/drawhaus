@@ -6,6 +6,7 @@ import { shareApi } from "@/api/share";
 import { tagsApi, type Tag } from "@/api/tags";
 import { workspacesApi, type Workspace } from "@/api/workspaces";
 import { templatesApi } from "@/api/templates";
+import { sortByUpdated, filterStarred, isValidExcalidrawFile } from "@/lib/diagram-filters";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -121,14 +122,8 @@ export function Dashboard() {
 
   // ── Derived data ──
   const displayDiagrams = (() => {
-    if (isRecent) {
-      return [...diagrams].sort((a, b) => {
-        const da = new Date(a.updatedAt ?? a.updated_at ?? 0).getTime();
-        const db = new Date(b.updatedAt ?? b.updated_at ?? 0).getTime();
-        return db - da;
-      }).slice(0, 10);
-    }
-    if (isStarred) return diagrams.filter((d) => d.starred);
+    if (isRecent) return sortByUpdated(diagrams).slice(0, 10);
+    if (isStarred) return filterStarred(diagrams);
     return diagrams;
   })();
 
@@ -222,7 +217,7 @@ export function Dashboard() {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      if (data.type !== "excalidraw" || !Array.isArray(data.elements)) {
+      if (!isValidExcalidrawFile(data)) {
         toast("Invalid .excalidraw file.", "error");
         setActionPending(false);
         return;

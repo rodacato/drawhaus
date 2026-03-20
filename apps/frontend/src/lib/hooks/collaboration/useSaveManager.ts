@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { jsonSafe, getAdaptiveThrottleMs, VIEWPORT_THROTTLE_MS, SAVE_DEBOUNCE_MS } from "@/lib/collaboration";
 import type { SaveState, ExcalidrawApi } from "@/lib/types";
+import { deriveSaveLabel, deriveSaveColor } from "@/lib/save-state";
 import { diagramsApi } from "@/api/diagrams";
 
 export interface UseSaveManagerParams {
@@ -175,8 +176,8 @@ export function useSaveManager({
   }, [persistScene, saveState]);
 
   /* ─── derived values ─── */
-  const saveLabel = { idle: "Ready", pending: "Unsaved", saving: "Saving...", saved: lastSavedAt.current ? `Saved ${lastSavedAt.current}` : "Saved", error: "Error" }[saveState];
-  const saveColor = { idle: "bg-white/80 text-black/50", pending: "bg-amber-100 text-amber-700", saving: "bg-blue-100 text-blue-700", saved: "bg-emerald-100 text-emerald-700", error: "bg-red-100 text-red-700" }[saveState];
+  const saveLabel = deriveSaveLabel(saveState, lastSavedAt.current);
+  const saveColor = deriveSaveColor(saveState);
 
   return { saveState, saveLabel, saveColor, lastSavedAt: lastSavedAt.current, onChange, flushSave, cancelPendingTimers };
 }

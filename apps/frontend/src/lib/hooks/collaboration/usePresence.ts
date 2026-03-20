@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { CURSOR_THROTTLE_MS } from "@/lib/collaboration";
+import { isCursorStale } from "@/lib/save-state";
 import type { PresenceUser, CursorInfo, ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 
 export interface UsePresenceParams {
@@ -66,7 +67,7 @@ export function usePresence({
       const now = Date.now();
       let changed = false;
       for (const [k, v] of Object.entries(cursorsRef.current)) {
-        if (now - v.lastSeen >= 5000) {
+        if (isCursorStale(v.lastSeen, now)) {
           delete cursorsRef.current[k];
           changed = true;
         }

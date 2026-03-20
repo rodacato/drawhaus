@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { driveApi, type DriveFileItem } from "@/api/drive";
+import { formatSize, formatDate } from "@/lib/format-utils";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -87,18 +88,6 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
   }
 
   if (!open) return null;
-
-  function formatSize(size?: string) {
-    if (!size) return "";
-    const bytes = Number.parseInt(size, 10);
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-
-  function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-  }
 
   const excalidrawFiles = files.filter((f) => !f.isFolder && f.name.endsWith(".excalidraw"));
   const folders = files.filter((f) => f.isFolder);

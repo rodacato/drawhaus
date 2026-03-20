@@ -7,11 +7,12 @@ import {
   plantumlToElements,
 } from "@/lib/diagram-code/convert-to-excalidraw";
 import {
+  PlantUMLParseError,
   PlantUMLUnsupportedError,
-} from "@/lib/diagram-code/plantuml-to-excalidraw";
-import { PlantUMLParseError } from "@/lib/diagram-code/plantuml-parser";
+} from "@drawhaus/plantuml-to-excalidraw";
+import { detectDiagramFormat, type DiagramFormat } from "@/lib/format-utils";
 
-type Format = "mermaid" | "plantuml";
+type Format = DiagramFormat;
 
 type Props = {
   excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
@@ -43,17 +44,6 @@ class Order {
 User --> Order : places
 @enduml`;
 
-function detectFormat(code: string): Format {
-  const trimmed = code.trimStart();
-  if (
-    trimmed.startsWith("@startuml") ||
-    trimmed.startsWith("@startactivity")
-  ) {
-    return "plantuml";
-  }
-  return "mermaid";
-}
-
 export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
   const [code, setCode] = useState("");
   const [format, setFormat] = useState<Format>("mermaid");
@@ -70,7 +60,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
   // Auto-detect format on code change (unless user manually overrode)
   useEffect(() => {
     if (!userOverrodeFormat.current && code.trim()) {
-      const detected = detectFormat(code);
+      const detected = detectDiagramFormat(code);
       setFormat(detected);
       setAutoDetected(true);
     } else {

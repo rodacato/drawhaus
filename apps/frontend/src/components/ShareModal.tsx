@@ -13,6 +13,7 @@ import {
   IconTrash,
   IconLink,
 } from "@/components/Icons";
+import { isExpired, formatRelativeDate } from "@/lib/format-utils";
 
 type ShareLink = {
   token: string;
@@ -26,25 +27,6 @@ interface ShareModalProps {
   open: boolean;
   onClose: () => void;
   diagramId: string;
-}
-
-/* ── Helpers ──────────────────────────────────────────────── */
-
-function isExpired(expiresAt?: string | null): boolean {
-  if (!expiresAt) return false;
-  return new Date(expiresAt) < new Date();
-}
-
-function formatRelativeDate(dateStr: string): string {
-  const now = new Date();
-  const then = new Date(dateStr);
-  const diffMs = now.getTime() - then.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 60) return `Created ${diffMins}m ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `Created ${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `Created ${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
 }
 
 /* ── Component ───────────────────────────────────────────── */
