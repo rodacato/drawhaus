@@ -16,17 +16,9 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const [darkMode, setDarkMode] = useState(() =>
-    window.matchMedia("(prefers-color-scheme: dark)").matches,
-  );
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const deferredElements = useDeferredValue(elements);
-
-  // Apply dark mode class
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
 
   // Parse on code change (debounced)
   useEffect(() => {
@@ -64,7 +56,7 @@ export function App() {
           setElements([]);
           setError(null);
           setWarning(
-            `${err.diagramType} diagrams are not yet supported. Currently supported: class diagrams.`,
+            `${err.diagramType} diagrams are not yet supported. Currently supported: class, object, use case.`,
           );
           setStatus(null);
         } else {
@@ -95,13 +87,6 @@ export function App() {
           <h1>
             PlantUML to Excalidraw <span>Playground</span>
           </h1>
-          <button
-            className="theme-toggle"
-            onClick={() => setDarkMode((d) => !d)}
-            title="Toggle dark mode"
-          >
-            {darkMode ? "\u2600\uFE0F" : "\uD83C\uDF19"}
-          </button>
         </div>
         <Editor
           code={code}
@@ -113,7 +98,7 @@ export function App() {
         <Examples activeCode={code} onSelect={handleExampleSelect} />
       </div>
       <div className="right-panel">
-        <ExcalidrawCanvas elements={deferredElements} darkMode={darkMode} />
+        <ExcalidrawCanvas elements={deferredElements} />
       </div>
     </div>
   );

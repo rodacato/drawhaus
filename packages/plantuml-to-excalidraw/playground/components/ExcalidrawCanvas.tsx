@@ -7,10 +7,9 @@ let ExcalidrawModule: typeof import("@excalidraw/excalidraw") | null = null;
 
 interface ExcalidrawCanvasProps {
   elements: ExcalidrawElementSkeleton[];
-  darkMode: boolean;
 }
 
-export function ExcalidrawCanvas({ elements, darkMode }: ExcalidrawCanvasProps) {
+export function ExcalidrawCanvas({ elements }: ExcalidrawCanvasProps) {
   const apiRef = useRef<any>(null);
   const [Excalidraw, setExcalidraw] = useState<any>(null);
   const [convertFn, setConvertFn] = useState<any>(null);
@@ -78,7 +77,7 @@ export function ExcalidrawCanvas({ elements, darkMode }: ExcalidrawCanvasProps) 
     <div style={{ width: "100%", height: "100%" }}>
       <Excalidraw
         excalidrawAPI={handleApi}
-        theme={darkMode ? "dark" : "light"}
+        theme="light"
         viewModeEnabled={false}
         UIOptions={{
           canvasActions: {
@@ -89,7 +88,7 @@ export function ExcalidrawCanvas({ elements, darkMode }: ExcalidrawCanvasProps) 
         }}
         initialData={{
           appState: {
-            viewBackgroundColor: darkMode ? "#0f172a" : "#ffffff",
+            viewBackgroundColor: "#ffffff",
           },
         }}
       />
