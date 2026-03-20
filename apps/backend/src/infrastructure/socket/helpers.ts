@@ -1,10 +1,12 @@
 import type { Server } from "socket.io";
+import type { EditLockStore } from "./edit-lock-store";
 
 export type SocketData = {
   userId: string;
   userName: string;
   userEmail: string;
   isGuest: boolean;
+  activeSceneId?: string;
   roomRoles: Record<string, "owner" | "editor" | "viewer">;
 };
 
@@ -53,6 +55,14 @@ export async function findNextEditor(io: Server, roomId: string, excludeSocketId
     }
   }
   return null;
+}
+
+export function emitLockStatus(io: Server, roomId: string, lockStore: EditLockStore): void {
+  const holder = lockStore.getLock(roomId);
+  io.to(roomId).emit("edit-lock-status", {
+    roomId,
+    holder: holder ? { userId: holder.userId, userName: holder.userName } : null,
+  });
 }
 
 export async function getRoomPresenceUsers(io: Server, roomId: string): Promise<PresenceUser[]> {

@@ -26,7 +26,7 @@ export function registerSceneHandlers(
       if (!lockChecker.hasLock(roomId, userId)) return;
       lockChecker.touchLock(roomId, userId);
 
-      const targetSceneId = sceneId ?? (socket.data.activeSceneId as string | undefined);
+      const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
       const broadcastRoom = targetSceneId ? `${roomId}:${targetSceneId}` : roomId;
 
       socket.to(broadcastRoom).emit("scene-updated", {
@@ -60,13 +60,13 @@ export function registerSceneHandlers(
         if (!lockChecker.hasLock(roomId, saveUserId)) return;
         lockChecker.touchLock(roomId, saveUserId);
 
-        const targetSceneId = sceneId ?? (socket.data.activeSceneId as string | undefined);
+        const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
         if (!targetSceneId) return;
 
         await useCases.saveScene.execute(targetSceneId, elements, appState);
         socket.emit("scene-saved", { roomId, sceneId: targetSceneId });
 
-        // Fire-and-forget: interval snapshot every 5 minutes
+        // Fire-and-forget: interval snapshot every 10 minutes
         const now = Date.now();
         const lastTs = lastIntervalSnapshot.get(roomId) ?? 0;
         if (now - lastTs >= SNAPSHOT_INTERVAL_MS) {

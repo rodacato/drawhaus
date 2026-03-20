@@ -1,15 +1,7 @@
 import type { Server, Socket } from "socket.io";
 import type { EditLockStore } from "../edit-lock-store";
-import { type SocketData, canEdit } from "../helpers";
+import { type SocketData, canEdit, emitLockStatus } from "../helpers";
 import { logger } from "../../logger";
-
-function emitLockStatus(io: Server, roomId: string, lockStore: EditLockStore) {
-  const holder = lockStore.getLock(roomId);
-  io.to(roomId).emit("edit-lock-status", {
-    roomId,
-    holder: holder ? { userId: holder.userId, userName: holder.userName } : null,
-  });
-}
 
 export function registerLockHandlers(
   io: Server,

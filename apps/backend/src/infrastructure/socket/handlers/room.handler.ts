@@ -4,20 +4,12 @@ import type { JoinRoomUseCase } from "../../../application/use-cases/realtime/jo
 import type { JoinRoomGuestUseCase } from "../../../application/use-cases/realtime/join-room-guest";
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
 import type { EditLockStore } from "../edit-lock-store";
-import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers, findNextEditor } from "../helpers";
+import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers, findNextEditor, emitLockStatus } from "../helpers";
 import { config } from "../../config";
 import { logger } from "../../logger";
 
 function formatScene(s: { id: string; name: string; sortOrder: number }) {
   return { id: s.id, name: s.name, sortOrder: s.sortOrder };
-}
-
-function emitLockStatus(io: Server, roomId: string, lockStore: EditLockStore) {
-  const holder = lockStore.getLock(roomId);
-  io.to(roomId).emit("edit-lock-status", {
-    roomId,
-    holder: holder ? { userId: holder.userId, userName: holder.userName } : null,
-  });
 }
 
 export function registerRoomHandlers(
