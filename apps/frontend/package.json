@@ -8,11 +8,12 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --import ./src/__tests__/peggy-loader.mjs --test 'src/__tests__/**/*.test.ts'",
-    "test:coverage": "tsx --import ./src/__tests__/peggy-loader.mjs --test --experimental-test-coverage 'src/__tests__/**/*.test.ts'"
+    "test": "tsx --test 'src/__tests__/**/*.test.ts'",
+    "test:coverage": "tsx --test --experimental-test-coverage 'src/__tests__/**/*.test.ts'"
   },
   "dependencies": {
     "@drawhaus/helpers": "*",
+    "@drawhaus/plantuml-to-excalidraw": "*",
     "@excalidraw/excalidraw": "^0.18.0",
     "axios": "^1.13.6",
     "dagre": "^0.8.5",
@@ -35,7 +36,6 @@
     "@typescript-eslint/parser": "^7",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^8",
-    "peggy": "^5.1.0",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
     "typescript": "^5",
