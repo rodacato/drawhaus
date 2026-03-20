@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo, useDeferredValue } from "react";
-import { parseMermaidToExcalidraw } from "@excalidraw/mermaid-to-excalidraw";
+import { parseMermaidToExcalidraw, detectDiagramType } from "../src/index";
 import { DEFAULT_CODE, FLAT_SUPPORTED_EXAMPLES } from "./examples/mermaid";
 import { Editor } from "./components/Editor";
 import { ExcalidrawCanvas } from "./components/ExcalidrawCanvas";
@@ -7,33 +7,13 @@ import { Examples } from "./components/Examples";
 import { ExampleNav } from "./components/ExampleNav";
 import { MermaidPreview } from "./components/MermaidPreview";
 
-// Known unsupported diagram types (we detect these to show a friendly warning)
-const UNSUPPORTED_PREFIXES = [
-  "erDiagram",
-  "stateDiagram",
-  "gantt",
-  "pie",
-  "mindmap",
-  "timeline",
-  "gitGraph",
-  "quadrantChart",
-  "journey",
-  "requirementDiagram",
-  "C4Context",
-  "sankey",
-  "xychart",
-  "block",
-];
-
-function detectUnsupportedType(code: string): string | null {
-  const firstLine = code.trim().split("\n")[0].trim();
-  for (const prefix of UNSUPPORTED_PREFIXES) {
-    if (firstLine.startsWith(prefix)) {
-      return prefix;
-    }
-  }
-  return null;
-}
+// Diagram types that @excalidraw/mermaid-to-excalidraw can handle
+// (either natively or via graphImage fallback)
+const CONVERTIBLE_TYPES = new Set([
+  "flowchart",
+  "classDiagram",
+  "sequence",
+]);
 
 export function App() {
   const [code, setCode] = useState(DEFAULT_CODE);
@@ -90,20 +70,21 @@ export function App() {
     }
 
     debounceRef.current = setTimeout(() => {
-      // Check for unsupported diagram types first
-      const unsupported = detectUnsupportedType(trimmed);
-      if (unsupported) {
+      const diagramType = detectDiagramType(trimmed);
+
+      // Show warning for types we can't convert to Excalidraw elements
+      if (diagramType !== "unknown" && !CONVERTIBLE_TYPES.has(diagramType)) {
         setElements([]);
         setFiles(undefined);
         setError(null);
         setWarning(
-          `${unsupported} diagrams are not yet supported by the Excalidraw converter. Currently supported: flowchart, class, sequence.`,
+          `${diagramType} diagrams are not yet supported by the Excalidraw converter. Currently supported: flowchart, class, sequence.`,
         );
         setStatus(null);
         return;
       }
 
-      // Parse async
+      // Parse via our proxy (delegates to excalidraw or custom converter)
       parseMermaidToExcalidraw(trimmed)
         .then((result) => {
           setElements(result.elements);
@@ -115,8 +96,9 @@ export function App() {
           const shapes = result.elements.filter(
             (e: any) => e.type !== "arrow" && e.type !== "text",
           ).length;
+          const source = result.diagramType || "unknown";
           setStatus(
-            `${shapes} shape${shapes !== 1 ? "s" : ""}, ${arrows} relation${arrows !== 1 ? "s" : ""}, ${result.elements.length} total elements`,
+            `${source} · ${shapes} shape${shapes !== 1 ? "s" : ""}, ${arrows} relation${arrows !== 1 ? "s" : ""}, ${result.elements.length} total elements`,
           );
         })
         .catch((err) => {
