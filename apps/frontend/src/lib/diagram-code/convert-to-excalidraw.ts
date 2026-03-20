@@ -1,4 +1,4 @@
-import { parseMermaidToExcalidraw } from "@excalidraw/mermaid-to-excalidraw";
+import { parseMermaidToExcalidraw } from "@drawhaus/mermaid-to-excalidraw";
 import { convertToExcalidrawElements } from "@excalidraw/excalidraw";
 import { parsePlantUMLToExcalidraw } from "@drawhaus/plantuml-to-excalidraw";
 
