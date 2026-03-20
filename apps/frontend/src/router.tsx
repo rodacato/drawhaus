@@ -11,6 +11,7 @@ import { Setup } from "@/pages/Setup";
 import { Share } from "@/pages/Share";
 import { Embed } from "@/pages/Embed";
 import { LandingPage } from "@/pages/LandingPage";
+import { SelfHostPage } from "@/pages/SelfHostPage";
 import { ForgotPassword } from "@/pages/ForgotPassword";
 import { ResetPassword } from "@/pages/ResetPassword";
 import { Privacy } from "@/pages/Privacy";
@@ -37,8 +38,9 @@ export function AppRouter() {
       {/* Invite link redirect */}
       <Route path="/invite/:token" element={<InviteRedirect />} />
 
-      {/* Public landing page — redirects to dashboard if authenticated */}
+      {/* Public marketing pages */}
       <Route path="/" element={<LandingPage />} />
+      <Route path="/self-host" element={<SelfHostPage />} />
 
       {/* Protected routes - redirect to login if not authenticated */}
       <Route element={<ProtectedLayout />}>
