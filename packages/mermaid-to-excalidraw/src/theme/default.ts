@@ -54,6 +54,45 @@ export const DEFAULT_THEME: MermaidTheme = {
     strokeStyle: "dashed",
   },
 
+  // ── Sequence Diagram ─────────────────────────────
+  seqParticipant: {
+    fill: "#f0f4f8",         // light blue-grey (matches class/flowNode)
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  seqActor: {
+    fill: "#f4f0f7",         // light lavender
+    stroke: "#9678b6",
+    strokeStyle: "solid",
+  },
+  seqActivation: {
+    fill: "#e8eef6",         // slightly darker blue-grey
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  seqNote: {
+    fill: "#fef9e7",         // light yellow
+    stroke: "#d4a843",
+    strokeStyle: "solid",
+  },
+  seqLoop: {
+    fill: "transparent",
+    stroke: "#8e9baa",       // muted blue-grey (matches subgraph)
+    strokeStyle: "dashed",
+  },
+  seqMessage: {
+    stroke: "#555555",
+    strokeWidth: 1,
+  },
+  seqDashedMessage: {
+    stroke: "#888888",
+    strokeWidth: 1,
+  },
+  seqLifeline: {
+    stroke: "#cccccc",
+    strokeWidth: 1,
+  },
+
   // ── Relations ──────────────────────────────────
   arrow: {
     stroke: "#555555",

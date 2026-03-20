@@ -279,9 +279,16 @@ body {
   border: 1px solid var(--warning-border);
 }
 
-/* ── Unsupported sections ──────────────────────── */
+.badge-fallback {
+  background: #f0f4ff;
+  color: #6366f1;
+  border: 1px solid #c7d2fe;
+}
 
-.unsupported-group-summary {
+/* ── Group summaries ─────────────────────────────── */
+
+.unsupported-group-summary,
+.fallback-group-summary {
   display: flex;
   align-items: center;
 }
@@ -306,10 +313,23 @@ body {
   background: var(--warning-bg);
 }
 
-.example-card.unsupported .example-card-title {
+.example-card.unsupported .example-card-title,
+.example-card.fallback .example-card-title {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.example-card.fallback {
+  opacity: 0.85;
+  border-style: dashed;
+  border-color: #c7d2fe;
+}
+
+.example-card.fallback:hover {
+  opacity: 1;
+  border-color: #6366f1;
+  background: #f0f4ff;
 }
 
 /* ── Example navigation ────────────────────────── */

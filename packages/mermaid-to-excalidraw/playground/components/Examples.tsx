@@ -1,17 +1,24 @@
-import { ALL_EXAMPLES, type Example, type ExampleSection } from "../examples/mermaid";
+import { ALL_EXAMPLES, type Example, type ExampleSection, type SupportLevel } from "../examples/mermaid";
 
 interface ExamplesProps {
   activeCode: string;
   onSelect: (code: string) => void;
 }
 
+const LEVEL_LABELS: Record<SupportLevel, { label: string; badge: string }> = {
+  native: { label: "Native Converters", badge: "native" },
+  fallback: { label: "Fallback (excalidraw)", badge: "fallback" },
+  unsupported: { label: "Unsupported", badge: "unsupported" },
+};
+
 export function Examples({ activeCode, onSelect }: ExamplesProps) {
-  const supported = ALL_EXAMPLES.filter((s) => s.supported);
-  const unsupported = ALL_EXAMPLES.filter((s) => !s.supported);
+  const native = ALL_EXAMPLES.filter((s) => s.supportLevel === "native");
+  const fallback = ALL_EXAMPLES.filter((s) => s.supportLevel === "fallback");
+  const unsupported = ALL_EXAMPLES.filter((s) => s.supportLevel === "unsupported");
 
   return (
     <div className="examples-panel">
-      {supported.map((section) => (
+      {native.map((section) => (
         <SectionDetails
           key={section.title}
           section={section}
@@ -19,6 +26,23 @@ export function Examples({ activeCode, onSelect }: ExamplesProps) {
           onSelect={onSelect}
         />
       ))}
+      {fallback.length > 0 && (
+        <details>
+          <summary className="fallback-group-summary">
+            Fallback — via @excalidraw/mermaid-to-excalidraw
+            <span className="badge badge-fallback">{fallback.length} types</span>
+          </summary>
+          {fallback.map((section) => (
+            <SectionDetails
+              key={section.title}
+              section={section}
+              activeCode={activeCode}
+              onSelect={onSelect}
+              nested
+            />
+          ))}
+        </details>
+      )}
       {unsupported.length > 0 && (
         <details>
           <summary className="unsupported-group-summary">
@@ -55,7 +79,10 @@ function SectionDetails({
     <details className={nested ? "nested-section" : undefined}>
       <summary>
         {section.title}
-        {!section.supported && !nested && (
+        {section.supportLevel === "fallback" && !nested && (
+          <span className="badge badge-fallback">fallback</span>
+        )}
+        {section.supportLevel === "unsupported" && !nested && (
           <span className="badge badge-unsupported">unsupported</span>
         )}
       </summary>
@@ -64,7 +91,7 @@ function SectionDetails({
           <ExampleCard
             key={example.title}
             example={example}
-            supported={section.supported}
+            supportLevel={section.supportLevel}
             active={activeCode === example.code}
             onClick={() => onSelect(example.code)}
           />
@@ -76,23 +103,25 @@ function SectionDetails({
 
 function ExampleCard({
   example,
-  supported,
+  supportLevel,
   active,
   onClick,
 }: {
   example: Example;
-  supported: boolean;
+  supportLevel: SupportLevel;
   active: boolean;
   onClick: () => void;
 }) {
+  const extraClass = supportLevel === "unsupported" ? " unsupported" : supportLevel === "fallback" ? " fallback" : "";
   return (
     <div
-      className={`example-card${active ? " active" : ""}${!supported ? " unsupported" : ""}`}
+      className={`example-card${active ? " active" : ""}${extraClass}`}
       onClick={onClick}
     >
       <div className="example-card-title">
         {example.title}
-        {!supported && <span className="badge badge-unsupported">soon</span>}
+        {supportLevel === "unsupported" && <span className="badge badge-unsupported">soon</span>}
+        {supportLevel === "fallback" && <span className="badge badge-fallback">fallback</span>}
       </div>
       <div className="example-card-meta">
         {example.description}

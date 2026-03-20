@@ -34,6 +34,16 @@ export interface MermaidTheme {
   flowCircle: ShapeStyle;
   flowSubgraph: ShapeStyle;
 
+  // ── Sequence Diagram ─────────────────────────────
+  seqParticipant: ShapeStyle;
+  seqActor: ShapeStyle;
+  seqActivation: ShapeStyle;
+  seqNote: ShapeStyle;
+  seqLoop: ShapeStyle;
+  seqMessage: ArrowStyle;
+  seqDashedMessage: ArrowStyle;
+  seqLifeline: ArrowStyle;
+
   // ── Relations ──────────────────────────────────
   arrow: ArrowStyle;
   dependencyArrow: ArrowStyle;

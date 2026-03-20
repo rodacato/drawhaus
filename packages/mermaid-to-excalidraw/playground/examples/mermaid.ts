@@ -4,9 +4,12 @@ export interface Example {
   code: string;
 }
 
+export type SupportLevel = "native" | "fallback" | "unsupported";
+
 export interface ExampleSection {
   title: string;
   supported: boolean;
+  supportLevel: SupportLevel;
   examples: Example[];
 }
 
@@ -15,6 +18,7 @@ export interface ExampleSection {
 const FLOWCHART_BASICS: ExampleSection = {
   title: "Flowchart — Basics",
   supported: true,
+  supportLevel: "native",
   examples: [
     {
       title: "Simple Flow",
@@ -62,6 +66,7 @@ const FLOWCHART_BASICS: ExampleSection = {
 const FLOWCHART_SUBGRAPHS: ExampleSection = {
   title: "Flowchart — Subgraphs",
   supported: true,
+  supportLevel: "native",
   examples: [
     {
       title: "Basic Subgraph",
@@ -117,6 +122,7 @@ const FLOWCHART_SUBGRAPHS: ExampleSection = {
 const FLOWCHART_PATTERNS: ExampleSection = {
   title: "Flowchart — Real-World Patterns",
   supported: true,
+  supportLevel: "native",
   examples: [
     {
       title: "Auth Flow",
@@ -170,6 +176,7 @@ const FLOWCHART_PATTERNS: ExampleSection = {
 const CLASS_BASICS: ExampleSection = {
   title: "Class Diagrams — Basics",
   supported: true,
+  supportLevel: "native",
   examples: [
     {
       title: "Simple Class",
@@ -245,6 +252,7 @@ const CLASS_BASICS: ExampleSection = {
 const CLASS_PATTERNS: ExampleSection = {
   title: "Class Diagrams — Patterns",
   supported: true,
+  supportLevel: "native",
   examples: [
     {
       title: "Interface & Abstract",
@@ -329,6 +337,7 @@ const CLASS_PATTERNS: ExampleSection = {
 const SEQUENCE_BASICS: ExampleSection = {
   title: "Sequence Diagrams — Basics",
   supported: true,
+  supportLevel: "native",
   examples: [
     {
       title: "Simple Messages",
@@ -379,6 +388,7 @@ const SEQUENCE_BASICS: ExampleSection = {
 const SEQUENCE_PATTERNS: ExampleSection = {
   title: "Sequence Diagrams — Real-World",
   supported: true,
+  supportLevel: "native",
   examples: [
     {
       title: "OAuth2 Flow",
@@ -437,7 +447,8 @@ const SEQUENCE_PATTERNS: ExampleSection = {
 
 const ENTITY_RELATIONSHIP: ExampleSection = {
   title: "Entity Relationship Diagrams",
-  supported: false,
+  supported: true,
+  supportLevel: "fallback",
   examples: [
     {
       title: "Basic ER",
@@ -494,7 +505,8 @@ const ENTITY_RELATIONSHIP: ExampleSection = {
 
 const STATE_DIAGRAMS: ExampleSection = {
   title: "State Diagrams",
-  supported: false,
+  supported: true,
+  supportLevel: "fallback",
   examples: [
     {
       title: "Simple State Machine",
@@ -525,7 +537,8 @@ const STATE_DIAGRAMS: ExampleSection = {
 
 const GANTT_DIAGRAMS: ExampleSection = {
   title: "Gantt Diagrams",
-  supported: false,
+  supported: true,
+  supportLevel: "fallback",
   examples: [
     {
       title: "Project Timeline",
@@ -563,7 +576,8 @@ const GANTT_DIAGRAMS: ExampleSection = {
 
 const PIE_DIAGRAMS: ExampleSection = {
   title: "Pie Charts",
-  supported: false,
+  supported: true,
+  supportLevel: "fallback",
   examples: [
     {
       title: "Browser Share",
@@ -580,7 +594,8 @@ const PIE_DIAGRAMS: ExampleSection = {
 
 const MINDMAP_DIAGRAMS: ExampleSection = {
   title: "Mindmaps",
-  supported: false,
+  supported: true,
+  supportLevel: "fallback",
   examples: [
     {
       title: "Project Brainstorm",
@@ -605,7 +620,8 @@ const MINDMAP_DIAGRAMS: ExampleSection = {
 
 const TIMELINE_DIAGRAMS: ExampleSection = {
   title: "Timeline",
-  supported: false,
+  supported: true,
+  supportLevel: "fallback",
   examples: [
     {
       title: "Company History",
@@ -626,7 +642,8 @@ const TIMELINE_DIAGRAMS: ExampleSection = {
 
 const GITGRAPH_DIAGRAMS: ExampleSection = {
   title: "Git Graph",
-  supported: false,
+  supported: true,
+  supportLevel: "fallback",
   examples: [
     {
       title: "Feature Branch",
@@ -647,7 +664,8 @@ const GITGRAPH_DIAGRAMS: ExampleSection = {
 
 const QUADRANT_DIAGRAMS: ExampleSection = {
   title: "Quadrant Chart",
-  supported: false,
+  supported: true,
+  supportLevel: "fallback",
   examples: [
     {
       title: "Priority Matrix",
@@ -671,7 +689,7 @@ const QUADRANT_DIAGRAMS: ExampleSection = {
 // ─── Exports ────────────────────────────────────────────────────────────────
 
 export const ALL_EXAMPLES: ExampleSection[] = [
-  // Supported (by @excalidraw/mermaid-to-excalidraw)
+  // Native: custom @drawhaus converters (editable elements with theme)
   FLOWCHART_BASICS,
   FLOWCHART_SUBGRAPHS,
   FLOWCHART_PATTERNS,
@@ -679,7 +697,7 @@ export const ALL_EXAMPLES: ExampleSection[] = [
   CLASS_PATTERNS,
   SEQUENCE_BASICS,
   SEQUENCE_PATTERNS,
-  // Unsupported
+  // Fallback: @excalidraw/mermaid-to-excalidraw (SVG image, not editable)
   ENTITY_RELATIONSHIP,
   STATE_DIAGRAMS,
   GANTT_DIAGRAMS,
