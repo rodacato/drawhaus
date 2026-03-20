@@ -26,11 +26,10 @@ const VALID_TYPES = [
 
 const DANGEROUS_KEYS = ["__proto__", "constructor", "prototype"];
 
-const MAX_ELEMENTS = 500;
+const MAX_ELEMENTS = 5000;
 const MAX_TEXT_LENGTH = 2000;
 const COORD_MIN = -50000;
 const COORD_MAX = 50000;
-const DIM_MIN = 1;
 const DIM_MAX = 10000;
 const FONT_SIZE_MIN = 8;
 const FONT_SIZE_MAX = 100;
@@ -41,8 +40,8 @@ const pointSchema = z.tuple([z.number(), z.number()]);
 
 const baseElementSchema = z.object({
   type: z.enum(VALID_TYPES),
-  x: z.number().min(COORD_MIN).max(COORD_MAX),
-  y: z.number().min(COORD_MIN).max(COORD_MAX),
+  x: z.number(),
+  y: z.number(),
 }).passthrough();
 
 function hasDangerousKeys(obj: Record<string, unknown>): string | null {
@@ -89,6 +88,11 @@ export function validateElements(elements: unknown[]): ValidationResult {
     const record = el as Record<string, unknown>;
     const elId = typeof record.id === "string" ? record.id : undefined;
 
+    // Skip soft-deleted elements — Excalidraw keeps them in the array
+    if (record.isDeleted === true) {
+      continue;
+    }
+
     // Check dangerous keys
     const dangerousKey = hasDangerousKeys(record);
     if (dangerousKey) {
@@ -101,7 +105,7 @@ export function validateElements(elements: unknown[]): ValidationResult {
       continue;
     }
 
-    // Validate base structure
+    // Validate base structure (type + x/y must exist and be correct type)
     const baseResult = baseElementSchema.safeParse(record);
     if (!baseResult.success) {
       for (const issue of baseResult.error.issues) {
@@ -116,17 +120,38 @@ export function validateElements(elements: unknown[]): ValidationResult {
     }
 
     const type = record.type as string;
+    const x = record.x as number;
+    const y = record.y as number;
+
+    // Coordinates out of range → warning
+    if (x < COORD_MIN || x > COORD_MAX) {
+      warnings.push({
+        elementIndex: i,
+        elementId: elId,
+        field: "x",
+        message: `x is out of typical range (${COORD_MIN} to ${COORD_MAX}), got ${x}`,
+      });
+    }
+    if (y < COORD_MIN || y > COORD_MAX) {
+      warnings.push({
+        elementIndex: i,
+        elementId: elId,
+        field: "y",
+        message: `y is out of typical range (${COORD_MIN} to ${COORD_MAX}), got ${y}`,
+      });
+    }
 
     // Type-specific validation
-    if (type === "rectangle" || type === "diamond" || type === "ellipse") {
+    if (type === "rectangle" || type === "diamond" || type === "ellipse" || type === "image") {
       validateShapeElement(record, i, elId, errors, warnings);
     } else if (type === "text") {
       validateTextElement(record, i, elId, errors, warnings);
     } else if (type === "arrow" || type === "line") {
       validateLinearElement(record, i, elId, errors, warnings);
     }
+    // freedraw: no specific validation needed
 
-    // Common optional field validation
+    // Common optional field warnings
     if (record.fontSize !== undefined) {
       const fs = record.fontSize as number;
       if (typeof fs !== "number" || fs < FONT_SIZE_MIN || fs > FONT_SIZE_MAX) {
@@ -155,23 +180,114 @@ export function validateElements(elements: unknown[]): ValidationResult {
   return { valid: errors.length === 0, errors, warnings };
 }
 
+/**
+ * Normalize elements: remove deleted, strip dangerous keys,
+ * deduplicate consecutive arrow/line points, and clean text whitespace.
+ * Call explicitly when you want a clean array — validateElements never mutates.
+ */
+export function normalizeElements(elements: unknown[]): Record<string, unknown>[] {
+  if (!Array.isArray(elements)) return [];
+
+  const result: Record<string, unknown>[] = [];
+
+  for (const el of elements) {
+    if (typeof el !== "object" || el === null || Array.isArray(el)) continue;
+
+    const record = el as Record<string, unknown>;
+
+    // Remove deleted elements
+    if (record.isDeleted === true) continue;
+
+    // Strip dangerous keys
+    const cleaned = { ...record };
+    for (const key of DANGEROUS_KEYS) {
+      delete cleaned[key];
+    }
+
+    // Normalize text whitespace
+    if (typeof cleaned.text === "string") {
+      cleaned.text = normalizeText(cleaned.text);
+    }
+
+    // Deduplicate consecutive points on arrows/lines
+    if (Array.isArray(cleaned.points) && cleaned.points.length > 2) {
+      cleaned.points = dedupeConsecutivePoints(cleaned.points);
+    }
+
+    result.push(cleaned);
+  }
+
+  return result;
+}
+
+/** Trim, collapse internal whitespace runs (preserving newlines). */
+function normalizeText(text: string): string {
+  return text
+    .split("\n")
+    .map((line) => line.trim().replace(/\s{2,}/g, " "))
+    .join("\n")
+    .replace(/^\n+|\n+$/g, "");
+}
+
+/** Remove consecutive points closer than threshold (euclidean). */
+const DEDUP_THRESHOLD = 0.5;
+
+function dedupeConsecutivePoints(points: unknown[]): unknown[] {
+  const result: unknown[] = [points[0]];
+
+  for (let i = 1; i < points.length; i++) {
+    const prev = result[result.length - 1];
+    const curr = points[i];
+
+    if (!isPoint(prev) || !isPoint(curr)) {
+      result.push(curr);
+      continue;
+    }
+
+    const dx = curr[0] - prev[0];
+    const dy = curr[1] - prev[1];
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    // Always keep the last point, skip intermediate duplicates
+    if (dist > DEDUP_THRESHOLD || i === points.length - 1) {
+      result.push(curr);
+    }
+  }
+
+  return result;
+}
+
+function isPoint(p: unknown): p is [number, number] {
+  return Array.isArray(p) && p.length === 2 && typeof p[0] === "number" && typeof p[1] === "number";
+}
+
 function validateShapeElement(
   record: Record<string, unknown>,
   index: number,
   elId: string | undefined,
   errors: ValidationError[],
-  _warnings: ValidationError[],
+  warnings: ValidationError[],
 ): void {
   if (typeof record.width !== "number") {
     errors.push({ elementIndex: index, elementId: elId, field: "width", message: "width is required for shape elements" });
-  } else if (record.width < DIM_MIN || record.width > DIM_MAX) {
-    errors.push({ elementIndex: index, elementId: elId, field: "width", message: `width must be between ${DIM_MIN} and ${DIM_MAX}, got ${record.width}` });
+  } else {
+    if (record.width <= 0) {
+      warnings.push({ elementIndex: index, elementId: elId, field: "width", message: `width should be positive, got ${record.width}` });
+    }
+    if (record.width > DIM_MAX) {
+      warnings.push({ elementIndex: index, elementId: elId, field: "width", message: `width exceeds typical maximum (${DIM_MAX}), got ${record.width}` });
+    }
   }
 
   if (typeof record.height !== "number") {
     errors.push({ elementIndex: index, elementId: elId, field: "height", message: "height is required for shape elements" });
-  } else if (record.height < DIM_MIN || record.height > DIM_MAX) {
-    errors.push({ elementIndex: index, elementId: elId, field: "height", message: `height must be between ${DIM_MIN} and ${DIM_MAX}, got ${record.height}` });
+  } else {
+    if (record.height <= 0) {
+      warnings.push({ elementIndex: index, elementId: elId, field: "height", message: `height should be positive, got ${record.height}` });
+    }
+    if (record.height > DIM_MAX) {
+      warnings.push({ elementIndex: index, elementId: elId, field: "height", message: `height exceeds typical maximum (${DIM_MAX}), got ${record.height}` });
+    }
   }
 }
 

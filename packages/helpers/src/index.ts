@@ -28,6 +28,7 @@ export { DIAGRAM_STYLES, type DiagramType } from "./defaults.js";
 // Validator
 export {
   validateElements,
+  normalizeElements,
   type ValidationError,
   type ValidationResult,
 } from "./validator.js";
