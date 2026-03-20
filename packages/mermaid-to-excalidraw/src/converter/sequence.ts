@@ -87,12 +87,50 @@ export function mapSequenceDiagram(
     participantWidths.set(p.id, width);
   }
 
+  // ── Phase 1.5: Calculate dynamic spacing based on message text ──
+  // Build participant index map
+  const pIndexMap = new Map<string, number>();
+  ast.participants.forEach((p, i) => pIndexMap.set(p.id, i));
+
+  // For each adjacent pair, find the max text width of messages between them
+  const pairMaxWidth = new Array(ast.participants.length).fill(0);
+
+  function scanMessageWidths(items: SequenceItem[]): void {
+    for (const item of items) {
+      if (item.kind === "message" && item.from !== item.to) {
+        const fromIdx = pIndexMap.get(item.from) ?? -1;
+        const toIdx = pIndexMap.get(item.to) ?? -1;
+        if (fromIdx < 0 || toIdx < 0) continue;
+        const lo = Math.min(fromIdx, toIdx);
+        const hi = Math.max(fromIdx, toIdx);
+        const gaps = hi - lo;
+        const textWidth = item.text.length * CHAR_WIDTH + 80;
+        const perGap = textWidth / gaps;
+        for (let g = lo; g < hi; g++) {
+          pairMaxWidth[g] = Math.max(pairMaxWidth[g], perGap);
+        }
+      } else if (item.kind === "block") {
+        for (const section of item.sections) {
+          scanMessageWidths(section.items);
+        }
+      }
+    }
+  }
+  scanMessageWidths(ast.items);
+
   // ── Phase 2: Calculate participant X positions ──────────────
   const participantX = new Map<string, number>();
   let currentX = 0;
-  for (const p of ast.participants) {
+  for (let pi = 0; pi < ast.participants.length; pi++) {
+    const p = ast.participants[pi];
     participantX.set(p.id, currentX);
-    currentX += participantWidths.get(p.id)! + PARTICIPANT_SPACING;
+    const w = participantWidths.get(p.id)!;
+    // Spacing = max(default, required for message text)
+    const requiredSpacing = Math.max(
+      PARTICIPANT_SPACING,
+      pairMaxWidth[pi] - w / 2 - (participantWidths.get(ast.participants[pi + 1]?.id) ?? 0) / 2,
+    );
+    currentX += w + Math.max(PARTICIPANT_SPACING, requiredSpacing);
   }
 
   // Helper: get center X of a participant
