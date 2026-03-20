@@ -813,4 +813,14 @@ export const ALL_EXAMPLES: ExampleSection[] = [
 /** @deprecated Use ALL_EXAMPLES instead */
 export const CLASS_EXAMPLES = ALL_EXAMPLES;
 
+/** Flat list of all supported examples with their section title. */
+export interface FlatExample {
+  sectionTitle: string;
+  example: Example;
+}
+
+export const FLAT_SUPPORTED_EXAMPLES: FlatExample[] = ALL_EXAMPLES
+  .filter((s) => s.supported)
+  .flatMap((s) => s.examples.map((e) => ({ sectionTitle: s.title, example: e })));
+
 export const DEFAULT_CODE = CLASS_BASICS.examples[0].code;

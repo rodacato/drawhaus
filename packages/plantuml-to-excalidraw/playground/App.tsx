@@ -1,14 +1,15 @@
-import { useState, useCallback, useEffect, useRef, useDeferredValue } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo, useDeferredValue } from "react";
 import {
   parsePlantUMLToExcalidraw,
   PlantUMLParseError,
   PlantUMLUnsupportedError,
 } from "../src/index";
 import type { ExcalidrawElementSkeleton } from "../src/types";
-import { DEFAULT_CODE } from "./examples/class";
+import { DEFAULT_CODE, FLAT_SUPPORTED_EXAMPLES } from "./examples/class";
 import { Editor } from "./components/Editor";
 import { ExcalidrawCanvas } from "./components/ExcalidrawCanvas";
 import { Examples } from "./components/Examples";
+import { ExampleNav } from "./components/ExampleNav";
 
 export function App() {
   const [code, setCode] = useState(DEFAULT_CODE);
@@ -19,6 +20,35 @@ export function App() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const deferredElements = useDeferredValue(elements);
+
+  // Track current example index
+  const currentIndex = useMemo(
+    () => FLAT_SUPPORTED_EXAMPLES.findIndex((f) => f.example.code === code),
+    [code],
+  );
+
+  const goToExample = useCallback((index: number) => {
+    const clamped = Math.max(0, Math.min(index, FLAT_SUPPORTED_EXAMPLES.length - 1));
+    setCode(FLAT_SUPPORTED_EXAMPLES[clamped].example.code);
+  }, []);
+
+  // Arrow key navigation (only when editor textarea is not focused)
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === "TEXTAREA" || tag === "INPUT") return;
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        goToExample(currentIndex <= 0 ? FLAT_SUPPORTED_EXAMPLES.length - 1 : currentIndex - 1);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        goToExample(currentIndex < 0 ? 0 : (currentIndex + 1) % FLAT_SUPPORTED_EXAMPLES.length);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentIndex, goToExample]);
 
   // Parse on code change (debounced)
   useEffect(() => {
@@ -98,6 +128,13 @@ export function App() {
         <Examples activeCode={code} onSelect={handleExampleSelect} />
       </div>
       <div className="right-panel">
+        <ExampleNav
+          currentIndex={currentIndex}
+          total={FLAT_SUPPORTED_EXAMPLES.length}
+          currentExample={currentIndex >= 0 ? FLAT_SUPPORTED_EXAMPLES[currentIndex] : null}
+          onPrev={() => goToExample(currentIndex <= 0 ? FLAT_SUPPORTED_EXAMPLES.length - 1 : currentIndex - 1)}
+          onNext={() => goToExample(currentIndex < 0 ? 0 : (currentIndex + 1) % FLAT_SUPPORTED_EXAMPLES.length)}
+        />
         <ExcalidrawCanvas elements={deferredElements} />
       </div>
     </div>
