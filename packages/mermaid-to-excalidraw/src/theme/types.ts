@@ -44,6 +44,12 @@ export interface MermaidTheme {
   seqDashedMessage: ArrowStyle;
   seqLifeline: ArrowStyle;
 
+  // ── Mindmap ────────────────────────────────────
+  mindmapRoot: ShapeStyle;
+  mindmapNode: ShapeStyle;
+  mindmapLeaf: ShapeStyle;
+  mindmapBranch: ArrowStyle;
+
   // ── State Diagram ──────────────────────────────
   stateNode: ShapeStyle;
   stateStart: ShapeStyle;

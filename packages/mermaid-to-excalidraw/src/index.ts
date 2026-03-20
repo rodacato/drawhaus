@@ -30,11 +30,13 @@ import { convertFlowchart } from "./converter/flowchart.js";
 import { convertSequenceDiagram } from "./converter/sequence.js";
 import { convertERDiagram } from "./converter/er.js";
 import { convertStateDiagram } from "./converter/state.js";
+import { convertMindmap } from "./converter/mindmap.js";
 registerConverter("classDiagram", convertClassDiagram);
 registerConverter("flowchart", convertFlowchart);
 registerConverter("sequenceDiagram", convertSequenceDiagram);
 registerConverter("erDiagram", convertERDiagram);
 registerConverter("stateDiagram", convertStateDiagram);
+registerConverter("mindmap", convertMindmap);
 
 /**
  * Parse a Mermaid diagram definition and convert it to Excalidraw elements.

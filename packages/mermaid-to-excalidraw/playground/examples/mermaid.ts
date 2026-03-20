@@ -595,7 +595,7 @@ const PIE_DIAGRAMS: ExampleSection = {
 const MINDMAP_DIAGRAMS: ExampleSection = {
   title: "Mindmaps",
   supported: true,
-  supportLevel: "fallback",
+  supportLevel: "native",
   examples: [
     {
       title: "Project Brainstorm",

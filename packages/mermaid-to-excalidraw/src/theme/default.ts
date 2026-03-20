@@ -93,6 +93,27 @@ export const DEFAULT_THEME: MermaidTheme = {
     strokeWidth: 1,
   },
 
+  // ── Mindmap ────────────────────────────────────
+  mindmapRoot: {
+    fill: "#e8eef6",         // slightly darker blue-grey for emphasis
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  mindmapNode: {
+    fill: "#f0f4f8",         // light blue-grey
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  mindmapLeaf: {
+    fill: "#f0f5f0",         // light sage
+    stroke: "#6da670",
+    strokeStyle: "solid",
+  },
+  mindmapBranch: {
+    stroke: "#8e9baa",
+    strokeWidth: 1,
+  },
+
   // ── State Diagram ──────────────────────────────
   stateNode: {
     fill: "#f0f4f8",         // light blue-grey
