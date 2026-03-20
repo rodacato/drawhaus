@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ["@excalidraw/mermaid-to-excalidraw", "mermaid"],
+  external: ["@drawhaus/helpers", "@excalidraw/mermaid-to-excalidraw", "mermaid"],
 });

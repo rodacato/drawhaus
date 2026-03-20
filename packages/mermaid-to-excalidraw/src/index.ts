@@ -21,8 +21,12 @@ export type {
 
 import type { MermaidConfig, MermaidToExcalidrawResult } from "./types.js";
 import { detectDiagramType } from "./detect.js";
-import { getConverter } from "./converter/registry.js";
+import { getConverter, registerConverter } from "./converter/registry.js";
 import { fallbackParse } from "./fallback.js";
+
+// ── Register built-in custom converters ─────────────────────────
+import { convertClassDiagram } from "./converter/class.js";
+registerConverter("classDiagram", convertClassDiagram);
 
 /**
  * Parse a Mermaid diagram definition and convert it to Excalidraw elements.

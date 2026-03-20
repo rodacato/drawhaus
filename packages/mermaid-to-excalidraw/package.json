@@ -25,6 +25,7 @@
     "playground:build": "vite build --config playground/vite.config.ts"
   },
   "dependencies": {
+    "@drawhaus/helpers": "*",
     "@excalidraw/mermaid-to-excalidraw": "^1.1.2",
     "mermaid": "^10.9.3"
   },
