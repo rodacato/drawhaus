@@ -152,6 +152,8 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `npm run docs:lint` | Lint OpenAPI spec with Redocly |
 | `npm run docs:build` | Build static API docs to `docs/api/` |
 | `npm run docs:preview` | Preview API docs locally |
+| `npm run build --workspace=packages/mcp` | Build MCP server package |
+| `npm test --workspace=packages/mcp` | Run MCP server tests |
 
 ---
 
@@ -178,8 +180,9 @@ drawhaus/
 │           ├── repositories/ # PostgreSQL data access
 │           ├── services/   # External services (email, backup, encryption)
 │           └── socket/     # Socket.IO event handlers
+├── packages/mcp/      # @drawhaus/mcp — MCP server for AI tools
 ├── config/            # Kamal deployment configs
-├── docs/              # Branding assets and design mockups
+├── docs/              # Branding assets, API spec, design mockups
 └── docker-compose.yml # Local dev orchestration
 ```
 
@@ -495,6 +498,28 @@ All `/v1/` endpoints (except health) require `Authorization: Bearer dhk_...` and
 | `GET` | `/v1/diagrams/:id` | API Key | Get diagram with scene data |
 | `PATCH` | `/v1/diagrams/:id` | API Key | Update diagram |
 | `DELETE` | `/v1/diagrams/:id` | API Key | Delete diagram |
+
+### MCP Server
+
+The `@drawhaus/mcp` package lets AI tools (Claude Code, Cursor, VS Code) create and manage diagrams via the Model Context Protocol.
+
+```bash
+# Add to your Claude Code config (~/.claude/mcp.json):
+{
+  "mcpServers": {
+    "drawhaus": {
+      "command": "npx",
+      "args": ["@drawhaus/mcp"],
+      "env": {
+        "DRAWHAUS_URL": "http://localhost:4000",
+        "DRAWHAUS_API_KEY": "dhk_your_api_key"
+      }
+    }
+  }
+}
+```
+
+See [packages/mcp/README.md](packages/mcp/README.md) for full setup instructions.
 
 ---
 

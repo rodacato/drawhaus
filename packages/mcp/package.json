@@ -1,0 +1,38 @@
+{
+  "name": "@drawhaus/mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Drawhaus — create and manage diagrams from AI tools",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "drawhaus-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/index.ts",
+    "test": "tsx --test 'src/__tests__/*.test.ts'",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint 'src/**/*.ts'"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "drawhaus",
+    "excalidraw",
+    "diagram",
+    "ai"
+  ],
+  "license": "MIT"
+}

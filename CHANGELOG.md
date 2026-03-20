@@ -4,6 +4,19 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
+## v0.12.0 — MCP Server (2026-03)
+
+### Added
+- **MCP server package** — `@drawhaus/mcp` enables AI tools (Claude Code, Cursor, VS Code) to create and manage diagrams via Model Context Protocol
+- **5 MCP tools** — `create_diagram`, `list_diagrams`, `get_diagram`, `update_diagram`, `delete_diagram`
+- **2 MCP resources** — `drawhaus://diagrams` (list) and `drawhaus://diagrams/{id}` (detail)
+- **4 MCP prompts** — `db_schema_diagram`, `class_diagram`, `sequence_diagram`, `architecture_diagram` with Excalidraw generation instructions
+- **Drawhaus HTTP client** — lightweight fetch-based client with automatic auth headers and human-readable error messages
+- **Zod input validation** — all MCP tool inputs validated before API calls
+- **Health check on startup** — MCP server verifies Drawhaus connectivity before exposing tools
+
+---
+
 ## v0.11.0 — Public API & API Keys (2026-03)
 
 ### Added

@@ -5,7 +5,8 @@
   "workspaces": [
     "frontend",
     "backend",
-    "e2e"
+    "e2e",
+    "packages/mcp"
   ],
   "scripts": {
     "dev": "concurrently -n fe,be -c blue,green \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",

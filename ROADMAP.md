@@ -30,6 +30,7 @@ Shipped and working in production. See [CHANGELOG.md](CHANGELOG.md) for full ver
 | **DevOps** | Docker + Kamal deploy (backend + frontend), automated DB backups (7-day retention), health endpoint, `/api/version`, Redis adapter for horizontal scaling, nginx frontend with immutable asset caching, node-pg-migrate versioned migrations | v0.1 |
 | **Testing** | 5-phase Playwright E2E suite (permissions, CRUD, sharing, auth, visual regression), backend unit tests, marketing screenshot automation | v0.8 |
 | **Public API** | API key management (create/revoke), `/v1/` REST endpoints for diagrams (CRUD), workspace-scoped auth, rate limiting, request logging, OpenAPI 3.1 spec + Redocly docs | v0.11 |
+| **MCP Server** | `@drawhaus/mcp` npm package — 5 tools (CRUD), 2 resources, 4 prompts for diagram generation, stdio transport, health check on startup | v0.12 |
 | **Architecture** | Clean Architecture (application/domain/infrastructure), Vite + React Router + Axios, composition root, `validate()` middleware, `withTransaction`, response interceptor | v0.5 |
 
 ---
@@ -54,7 +55,7 @@ Move items through these statuses:
 | 2 | API Keys | API key infrastructure for `/v1/` public API auth, management UI | High | M | done | [spec](docs/specs/api-keys.md) |
 | 3 | Public API /v1/ | RESTful CRUD endpoints for diagrams at `/v1/`, authenticated with API keys | High | M | done | [spec](docs/specs/public-api-v1.md) |
 | 4 | OpenAPI + Redocly | Machine-readable spec and interactive docs for `/v1/` | High | S | done | [spec](docs/specs/openapi-redocly.md) |
-| 5 | MCP Server | AI agents create/read/update diagrams via MCP protocol | High | M | backlog | [spec](docs/specs/mcp-server.md) |
+| 5 | MCP Server | AI agents create/read/update diagrams via MCP protocol | High | M | done | [spec](docs/specs/mcp-server.md) |
 | 6 | PlantUML Import | Custom PlantUML → editable Excalidraw elements (class, sequence, activity) | Medium | M | backlog | [spec](docs/specs/plantuml-import.md) |
 
 ---
