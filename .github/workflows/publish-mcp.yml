@@ -1,0 +1,47 @@
+name: Publish MCP Package
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Publish @drawhaus/mcp
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: "@drawhaus"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build helpers (dependency)
+        run: npm run build --workspace=@drawhaus/helpers
+
+      - name: Build MCP package
+        run: npm run build --workspace=@drawhaus/mcp
+
+      - name: Set version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          cd packages/mcp
+          npm version "$VERSION" --no-git-tag-version
+
+      - name: Publish to GitHub Packages
+        run: npm publish --workspace=packages/mcp
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

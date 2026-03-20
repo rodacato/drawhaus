@@ -35,5 +35,13 @@
     "diagram",
     "ai"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rodacato/drawhaus.git",
+    "directory": "packages/mcp"
+  }
 }

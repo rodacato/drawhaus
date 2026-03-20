@@ -61,29 +61,45 @@ info:
 
     ## MCP Setup
 
-    Add to your MCP client configuration:
+    The `@drawhaus/mcp` package is published to GitHub Packages. Configure the registry once:
 
-    **Claude Code (`~/.claude/mcp.json`)**
-    ```json
-    {
-      "drawhaus": {
-        "url": "${baseUrl}/v1",
-        "apiKey": "dhk_your_key"
-      }
-    }
+    ```bash
+    echo "@drawhaus:registry=https://npm.pkg.github.com" >> ~/.npmrc
     ```
 
-    **VS Code (`.vscode/settings.json`)**
+    **Claude Code (`.mcp.json` or `~/.claude.json`)**
     ```json
     {
-      "mcp.servers": {
+      "mcpServers": {
         "drawhaus": {
-          "url": "${baseUrl}/v1",
-          "apiKey": "dhk_your_key"
+          "command": "npx",
+          "args": ["@drawhaus/mcp"],
+          "env": {
+            "DRAWHAUS_URL": "${baseUrl}",
+            "DRAWHAUS_API_KEY": "dhk_your_key"
+          }
         }
       }
     }
     ```
+
+    **VS Code (`.vscode/mcp.json`)**
+    ```json
+    {
+      "servers": {
+        "drawhaus": {
+          "command": "npx",
+          "args": ["@drawhaus/mcp"],
+          "env": {
+            "DRAWHAUS_URL": "${baseUrl}",
+            "DRAWHAUS_API_KEY": "dhk_your_key"
+          }
+        }
+      }
+    }
+    ```
+
+    See [MCP Setup Guide](../../guides/mcp-setup.md) for full instructions.
 
 servers:
   - url: "{baseUrl}/v1"

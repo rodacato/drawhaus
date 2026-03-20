@@ -12,7 +12,22 @@ MCP (Model Context Protocol) server for [Drawhaus](https://github.com/drawhaus/d
 
 ### Claude Code
 
-Add to `~/.claude/mcp.json`:
+First, configure npm to use the GitHub Packages registry for `@drawhaus` packages:
+
+```bash
+echo "@drawhaus:registry=https://npm.pkg.github.com" >> ~/.npmrc
+```
+
+**Via CLI (recommended):**
+
+```bash
+claude mcp add drawhaus \
+  -e DRAWHAUS_URL=http://localhost:4000 \
+  -e DRAWHAUS_API_KEY=dhk_your_api_key \
+  -- npx @drawhaus/mcp
+```
+
+**Or manually** — add to `.mcp.json` (project root) or `~/.claude.json` (user-wide):
 
 ```json
 {

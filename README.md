@@ -511,7 +511,16 @@ All `/v1/` endpoints (except health) require `Authorization: Bearer dhk_...` and
 The `@drawhaus/mcp` package lets AI tools (Claude Code, Cursor, VS Code) create and manage diagrams via the Model Context Protocol.
 
 ```bash
-# Add to your Claude Code config (~/.claude/mcp.json):
+# One-time: configure GitHub Packages registry
+echo "@drawhaus:registry=https://npm.pkg.github.com" >> ~/.npmrc
+
+# Via Claude Code CLI:
+claude mcp add drawhaus \
+  -e DRAWHAUS_URL=http://localhost:4000 \
+  -e DRAWHAUS_API_KEY=dhk_your_api_key \
+  -- npx @drawhaus/mcp
+
+# Or add to .mcp.json (project root) / ~/.claude.json (user-wide):
 {
   "mcpServers": {
     "drawhaus": {
