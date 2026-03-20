@@ -6,6 +6,7 @@ services:
     volumes:
       - ..:/workspaces/drawhaus:cached
     command: sleep infinity
+    mem_limit: 8g
 
   db:
     image: postgres:16-alpine
