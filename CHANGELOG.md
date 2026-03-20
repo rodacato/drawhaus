@@ -35,6 +35,12 @@ All notable changes to Drawhaus are documented here.
 - **MCP prompt improvements** — prompts now include full curated spec with field docs, examples, and recommended styles
 - **Defense in depth** — element validation in MCP (client-side) and backend `/v1/` routes (server-side)
 
+- **"Created via" badge** — diagrams created via API or MCP show a subtle badge in the dashboard card and board editor title bar
+- **MCP origin tracking** — diagrams created via MCP server are now tracked as `created_via: "mcp"` (distinct from generic API)
+- **API metrics in admin dashboard** — new cards showing diagrams created via API/MCP and API request count (last 24h)
+- **MCP setup guide** — comprehensive user guide at `docs/guides/mcp-setup.md` covering all supported AI tools, example workflows, and troubleshooting
+- **Custom Mermaid converter in frontend** — frontend now uses `@drawhaus/mermaid-to-excalidraw` with custom converters for flowchart, sequence, class, state, ER, and mindmap diagrams
+
 ### Changed
 - **Frontend PlantUML converter** — layout engine and arrow routing now imported from `@drawhaus/helpers` shared package
 - **MCP `create_diagram` / `update_diagram`** — validate elements before sending to API, return descriptive errors

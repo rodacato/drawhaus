@@ -14,7 +14,7 @@ Shipped and working in production. See [CHANGELOG.md](../CHANGELOG.md) for full 
 |------|-------------|-------|
 | **Editor** | Excalidraw engine, auto-save, thumbnails, object snapping, canvas settings (grid, background) | v0.1 |
 | **Templates** | 7 built-in templates, custom templates with workspace sharing, template picker, My Templates view, category filtering, usage tracking | v0.9 |
-| **Diagram as Code** | Mermaid live import → editable Excalidraw elements, live SVG preview, replace/append toggle | v0.9 |
+| **Diagram as Code** | Mermaid + PlantUML live import → editable Excalidraw elements, live SVG preview, replace/append toggle, custom converters for 14+ diagram types | v0.9 |
 | **Collaboration** | Real-time cursors + presence, viewport follow, editor lock (single-writer), threaded comments with resolve workflow, comment reactions | v0.1 |
 | **Snapshots** | Persistent snapshot system with auto-triggers, snapshot panel UI, preview modal, restore/rename, offline recovery, real-time sync, dashboard badges | v0.10 |
 | **Workspaces** | Multi-tenant spaces (admin/editor/viewer roles), member invites, workspace-scoped folders + diagrams, ownership transfer with bulk resource transfer | v0.7 |
@@ -58,7 +58,8 @@ Move items through these statuses:
 | 4 | OpenAPI + Redocly | Machine-readable spec and interactive docs for `/v1/` | High | S | done | [spec](specs/openapi-redocly.md) |
 | 5 | MCP Server | AI agents create/read/update diagrams via MCP protocol | High | M | done | [spec](specs/mcp-server.md) |
 | 6 | Drawhaus Helpers | Shared element builders, layout engine, validator, curated spec | High | M | done | [spec](specs/excalidraw-helpers-and-layout.md) |
-| 7 | PlantUML Import | Custom PlantUML → editable Excalidraw elements (class, sequence, activity) | Medium | M | backlog | [spec](specs/plantuml-import.md) |
+| 7 | PlantUML Import | Custom PlantUML → editable Excalidraw elements (class, sequence, activity, mindmap) | Medium | M | done | [spec](specs/plantuml-import.md) |
+| 8 | Phase 4: Polish & Distribution | Created-via badges, API metrics in admin, MCP setup guide, custom Mermaid in frontend | Medium | S | done | — |
 
 ---
 
@@ -221,4 +222,4 @@ Shipped as the **Snapshot System** — persistent snapshots with auto-triggers, 
 
 ---
 
-*Last updated: 2026-03-19*
+*Last updated: 2026-03-20*
