@@ -9,7 +9,7 @@ export function registerCursorHandlers(socket: Socket, io: Server) {
       if (!checkRateLimit(socket, "cursor", RATE_LIMIT_MAX_CURSOR)) return;
 
       const data = socket.data as SocketData;
-      socket.to(roomId).emit("cursor-moved", {
+      socket.volatile.to(roomId).emit("cursor-moved", {
         userId: data.userId,
         name: data.userName,
         x,
@@ -35,7 +35,7 @@ export function registerCursorHandlers(socket: Socket, io: Server) {
       if (!checkRateLimit(socket, "viewport", RATE_LIMIT_MAX_CURSOR)) return;
 
       const data = socket.data as SocketData;
-      socket.to(roomId).emit("viewport-updated", {
+      socket.volatile.to(roomId).emit("viewport-updated", {
         userId: data.userId,
         scrollX,
         scrollY,
