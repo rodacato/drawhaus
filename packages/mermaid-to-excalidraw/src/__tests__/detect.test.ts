@@ -16,7 +16,7 @@ describe("detectDiagramType", () => {
   });
 
   it("detects sequenceDiagram", () => {
-    assert.equal(detectDiagramType("sequenceDiagram\n  Alice->>Bob: Hi"), "sequence");
+    assert.equal(detectDiagramType("sequenceDiagram\n  Alice->>Bob: Hi"), "sequenceDiagram");
   });
 
   it("detects classDiagram", () => {

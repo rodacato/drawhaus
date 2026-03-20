@@ -12,7 +12,7 @@ export function detectDiagramType(definition: string): string {
 
     // Match known diagram prefixes (order matters: longer prefixes first)
     if (/^flowchart\b/i.test(line) || /^graph\b/i.test(line)) return "flowchart";
-    if (/^sequenceDiagram\b/.test(line)) return "sequence";
+    if (/^sequenceDiagram\b/.test(line)) return "sequenceDiagram";
     if (/^classDiagram\b/.test(line)) return "classDiagram";
     if (/^stateDiagram/.test(line)) return "stateDiagram";
     if (/^erDiagram\b/.test(line)) return "erDiagram";
