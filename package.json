@@ -20,7 +20,10 @@
     "db:reset": "npm run db:reset --workspace=backend",
     "docs:lint": "redocly lint docs/api/v1/openapi.yaml --config docs/redocly.yaml",
     "docs:build": "redocly build-docs docs/api/v1/openapi.yaml --config docs/redocly.yaml -o docs/api/index.html",
-    "docs:preview": "redocly preview docs/api/v1/openapi.yaml --config docs/redocly.yaml"
+    "docs:preview": "redocly preview docs/api/v1/openapi.yaml --config docs/redocly.yaml",
+    "playground": "concurrently -n plantuml,mermaid -c magenta,cyan \"npm run playground --workspace=@drawhaus/plantuml-to-excalidraw\" \"npm run playground --workspace=@drawhaus/mermaid-to-excalidraw\"",
+    "playground:plantuml": "npm run playground --workspace=@drawhaus/plantuml-to-excalidraw",
+    "playground:mermaid": "npm run playground --workspace=@drawhaus/mermaid-to-excalidraw"
   },
   "devDependencies": {
     "@redocly/cli": "^1.34.0",
