@@ -20,7 +20,8 @@ const PADDING_X = 20;
 const PADDING_Y = 12;
 const MIN_WIDTH = 120;
 const MIN_HEIGHT = 36;
-const CONTAINER_PADDING = 30;
+const STEREOTYPE_HEIGHT = 52;
+const CONTAINER_PADDING = 40;
 const CONTAINER_HEADER_HEIGHT = 28;
 
 // ── Public API ──────────────────────────────────────────────────
@@ -63,11 +64,13 @@ export function mapDeploymentDiagram(
   const nodeDimensions = new Map<string, { width: number; height: number }>();
   for (const [name, node] of leafNodes) {
     const displayName = node.label ?? name;
+    const hasStereotype = getKindLabel(node.kind) !== null;
     const width = Math.max(
       displayName.length * CHAR_WIDTH + PADDING_X * 2,
       MIN_WIDTH,
     );
-    nodeDimensions.set(name, { width, height: MIN_HEIGHT });
+    const height = hasStereotype ? STEREOTYPE_HEIGHT : MIN_HEIGHT;
+    nodeDimensions.set(name, { width, height });
   }
 
   // Build layout
@@ -120,7 +123,7 @@ export function mapDeploymentDiagram(
       skeletons.push(
         createText({
           x: pos.x + dim.width / 2,
-          y: pos.y + 4,
+          y: pos.y + 8,
           text: `«${kindLabel}»`,
           fontSize: theme.stereotypeText.fontSize,
           color: theme.stereotypeText.color,
@@ -130,7 +133,7 @@ export function mapDeploymentDiagram(
       skeletons.push(
         createText({
           x: pos.x + dim.width / 2,
-          y: pos.y + PADDING_Y + 8,
+          y: pos.y + 28,
           text: displayName,
           fontSize: theme.headerText.fontSize,
           color: theme.headerText.color,
@@ -229,11 +232,16 @@ function renderContainer(
 
   if (minX === Infinity) return skeletons;
 
-  const x = minX - CONTAINER_PADDING;
-  const y = minY - CONTAINER_PADDING - CONTAINER_HEADER_HEIGHT;
-  const width = maxX - minX + CONTAINER_PADDING * 2;
+  // Extra padding for parent containers that nest other containers
+  const nestingDepth = getNodeDepth(container);
+  const extraPadding = nestingDepth > 1 ? (nestingDepth - 1) * CONTAINER_PADDING : 0;
+  const pad = CONTAINER_PADDING + extraPadding;
+
+  const x = minX - pad;
+  const y = minY - pad - CONTAINER_HEADER_HEIGHT;
+  const width = maxX - minX + pad * 2;
   const height =
-    maxY - minY + CONTAINER_PADDING * 2 + CONTAINER_HEADER_HEIGHT;
+    maxY - minY + pad * 2 + CONTAINER_HEADER_HEIGHT;
 
   skeletons.push(
     createRect({
@@ -263,6 +271,12 @@ function renderContainer(
   );
 
   return skeletons;
+}
+
+function getNodeDepth(node: DeploymentNode): number {
+  const containerChildren = node.children.filter(c => c.children.length > 0);
+  if (containerChildren.length === 0) return 1;
+  return 1 + Math.max(...containerChildren.map(getNodeDepth));
 }
 
 function collectLeafNames(node: DeploymentNode, names: string[]): void {

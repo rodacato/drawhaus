@@ -21,7 +21,7 @@ const PADDING_X = 20;
 const PADDING_Y = 12;
 const MIN_WIDTH = 130;
 const MIN_HEIGHT = 36;
-const CONTAINER_PADDING = 30;
+const CONTAINER_PADDING = 40;
 const CONTAINER_HEADER_HEIGHT = 28;
 const INTERFACE_SIZE = 20;
 
@@ -227,10 +227,15 @@ function renderContainer(
 
   if (minX === Infinity) return skeletons;
 
-  const x = minX - CONTAINER_PADDING;
-  const y = minY - CONTAINER_PADDING - CONTAINER_HEADER_HEIGHT;
-  const width = maxX - minX + CONTAINER_PADDING * 2;
-  const height = maxY - minY + CONTAINER_PADDING * 2 + CONTAINER_HEADER_HEIGHT;
+  // Extra padding for parent containers that nest other containers
+  const nestingDepth = getContainerDepth(container);
+  const extraPadding = nestingDepth > 1 ? (nestingDepth - 1) * CONTAINER_PADDING : 0;
+  const pad = CONTAINER_PADDING + extraPadding;
+
+  const x = minX - pad;
+  const y = minY - pad - CONTAINER_HEADER_HEIGHT;
+  const width = maxX - minX + pad * 2;
+  const height = maxY - minY + pad * 2 + CONTAINER_HEADER_HEIGHT;
 
   // Container rectangle
   skeletons.push(
@@ -281,6 +286,11 @@ function mapComponentsToContainer(
   for (const child of container.childContainers) {
     mapComponentsToContainer(child, child.name, map);
   }
+}
+
+function getContainerDepth(container: ComponentContainer): number {
+  if (container.childContainers.length === 0) return 1;
+  return 1 + Math.max(...container.childContainers.map(getContainerDepth));
 }
 
 function collectChildNames(
