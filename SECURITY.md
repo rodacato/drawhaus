@@ -2,10 +2,7 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.8.x   | :white_check_mark: |
-| < 0.8   | :x:                |
+Only the latest released version receives security patches. See [CHANGELOG.md](CHANGELOG.md) for the current version.
 
 ## Reporting a Vulnerability
 

@@ -8,7 +8,8 @@ When making changes that affect any of the following, update the corresponding d
 - **New/changed env vars** → Update `README.md` env vars table and `.env.example`
 - **New/changed CLI commands** → Update the Commands table in `README.md`
 - **New features shipped** → Add entry to `CHANGELOG.md` under the current version
-- **Completed roadmap items** → Mark as done in `ROADMAP.md`
+- **Completed roadmap items** → Mark as done in `docs/ROADMAP.md`
+- **Architectural decisions** → Add ADR in `docs/adr/` and update Decision Log in `docs/ROADMAP.md`
 - **New frontend routes** → Update the Routes table in `README.md`
 
 ## Project Conventions

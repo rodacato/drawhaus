@@ -22,7 +22,7 @@ Drawhaus follows [Semantic Versioning](https://semver.org/):
 | `apps/backend/package.json` | `"version": "X.Y.Z"` |
 | `apps/frontend/package.json` | `"version": "X.Y.Z"` |
 | `CHANGELOG.md` | New version section with Added/Improved/Fixed/Removed |
-| `ROADMAP.md` | Mark completed items as done (if applicable) |
+| `docs/ROADMAP.md` | Mark completed items as done (if applicable) |
 
 ---
 
@@ -76,7 +76,7 @@ If any roadmap items were completed in this release, mark them as done.
 Use the `release:` prefix for the commit message:
 
 ```bash
-git add package.json apps/backend/package.json apps/frontend/package.json CHANGELOG.md ROADMAP.md
+git add package.json apps/backend/package.json apps/frontend/package.json CHANGELOG.md docs/ROADMAP.md
 git commit -m "release: vX.Y.Z"
 ```
 

@@ -4,9 +4,26 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
-## v0.13.0 — Drawhaus Helpers (2026-03)
+## v0.11.0 — Public API, MCP Server & Helpers (unreleased)
 
 ### Added
+- **API key management** — create, list, and revoke workspace-scoped API keys (`dhk_` prefix) from Settings → API Keys
+- **Public API `/v1/`** — REST endpoints for diagrams (create, list, get, update, delete) authenticated via API keys
+- **`/v1/health`** — unauthenticated health check endpoint for connectivity verification
+- **Element sanitization** — HTML tag stripping on text fields to prevent stored XSS via API
+- **`created_via` tracking** — diagrams record whether they were created via UI or API
+- **SDK header requirement** — `X-Drawhaus-Client` header required for API requests (client identification)
+- **API rate limiting** — 60 requests/minute per API key
+- **Request logging** — API requests logged with method, path, status, and response time
+- **OpenAPI 3.1 spec** — machine-readable API documentation at `docs/openapi.yaml`
+- **Redocly integration** — `npm run docs:lint`, `docs:build`, `docs:preview` for API documentation
+- **MCP server package** — `@drawhaus/mcp` enables AI tools (Claude Code, Cursor, VS Code) to create and manage diagrams via Model Context Protocol
+- **5 MCP tools** — `create_diagram`, `list_diagrams`, `get_diagram`, `update_diagram`, `delete_diagram`
+- **2 MCP resources** — `drawhaus://diagrams` (list) and `drawhaus://diagrams/{id}` (detail)
+- **4 MCP prompts** — `db_schema_diagram`, `class_diagram`, `sequence_diagram`, `architecture_diagram` with Excalidraw generation instructions
+- **Drawhaus HTTP client** — lightweight fetch-based client with automatic auth headers and human-readable error messages
+- **Zod input validation** — all MCP tool inputs validated before API calls
+- **Health check on startup** — MCP server verifies Drawhaus connectivity before exposing tools
 - **`@drawhaus/helpers` package** — shared element builders, layout engine, validator, and curated spec for Excalidraw diagram generation
 - **Element builders** — `createRect()`, `createText()`, `createArrow()`, `createLine()`, `createDiamond()`, `createEllipse()` with sensible defaults
 - **Layout engine** — dagre-based automatic graph layout with configurable direction (TB/LR) and spacing
@@ -21,35 +38,6 @@ All notable changes to Drawhaus are documented here.
 ### Changed
 - **Frontend PlantUML converter** — layout engine and arrow routing now imported from `@drawhaus/helpers` shared package
 - **MCP `create_diagram` / `update_diagram`** — validate elements before sending to API, return descriptive errors
-
----
-
-## v0.12.0 — MCP Server (2026-03)
-
-### Added
-- **MCP server package** — `@drawhaus/mcp` enables AI tools (Claude Code, Cursor, VS Code) to create and manage diagrams via Model Context Protocol
-- **5 MCP tools** — `create_diagram`, `list_diagrams`, `get_diagram`, `update_diagram`, `delete_diagram`
-- **2 MCP resources** — `drawhaus://diagrams` (list) and `drawhaus://diagrams/{id}` (detail)
-- **4 MCP prompts** — `db_schema_diagram`, `class_diagram`, `sequence_diagram`, `architecture_diagram` with Excalidraw generation instructions
-- **Drawhaus HTTP client** — lightweight fetch-based client with automatic auth headers and human-readable error messages
-- **Zod input validation** — all MCP tool inputs validated before API calls
-- **Health check on startup** — MCP server verifies Drawhaus connectivity before exposing tools
-
----
-
-## v0.11.0 — Public API & API Keys (2026-03)
-
-### Added
-- **API key management** — create, list, and revoke workspace-scoped API keys (`dhk_` prefix) from Settings → API Keys
-- **Public API `/v1/`** — REST endpoints for diagrams (create, list, get, update, delete) authenticated via API keys
-- **`/v1/health`** — unauthenticated health check endpoint for connectivity verification
-- **Element sanitization** — HTML tag stripping on text fields to prevent stored XSS via API
-- **`created_via` tracking** — diagrams record whether they were created via UI or API
-- **SDK header requirement** — `X-Drawhaus-Client` header required for API requests (client identification)
-- **API rate limiting** — 60 requests/minute per API key
-- **Request logging** — API requests logged with method, path, status, and response time
-- **OpenAPI 3.1 spec** — machine-readable API documentation at `docs/openapi.yaml`
-- **Redocly integration** — `npm run docs:lint`, `docs:build`, `docs:preview` for API documentation
 
 ---
 

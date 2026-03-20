@@ -184,11 +184,12 @@ drawhaus/
 │               ├── services/   # External services (email, backup, encryption)
 │               └── socket/     # Socket.IO event handlers
 ├── packages/
-│   ├── helpers/           # @drawhaus/helpers — element builders, layout, validator, spec
-│   └── mcp/               # @drawhaus/mcp — MCP server for AI tools
+│   ├── helpers/                 # @drawhaus/helpers — element builders, layout, validator, spec
+│   ├── mcp/                     # @drawhaus/mcp — MCP server for AI tools
+│   └── plantuml-to-excalidraw/  # PlantUML parser and converter
 ├── e2e/               # Playwright end-to-end tests
 ├── config/            # Kamal deployment configs
-├── docs/              # Branding assets, API spec, design mockups
+├── docs/              # Vision, roadmap, specs, ADRs, branding, guides
 └── docker-compose.yml # Local dev orchestration
 ```
 
@@ -591,17 +592,18 @@ CI runs automatically on every PR (lint, typecheck, backend tests, build).
 
 ---
 
-## Changelog
+## Documentation
 
-See [CHANGELOG.md](CHANGELOG.md) for the full version history.
-
-## Roadmap
-
-See [ROADMAP.md](ROADMAP.md) for the feature plan.
-
-## Branding
-
-See [docs/branding/BRANDING.md](docs/branding/BRANDING.md) for the brand guide, assets, and design tokens.
+| Document | Description |
+|----------|-------------|
+| [CHANGELOG.md](CHANGELOG.md) | Full version history |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Feature plan and backlog |
+| [docs/VISION.md](docs/VISION.md) | Product vision and architecture principles |
+| [docs/WORKFLOW.md](docs/WORKFLOW.md) | AI-assisted build cycle and conventions |
+| [docs/BRANDING.md](docs/BRANDING.md) | Brand guide, assets, and design tokens |
+| [docs/adr/](docs/adr/) | Architecture Decision Records |
+| [docs/specs/](docs/specs/) | Feature implementation specs |
+| [docs/guides/](docs/guides/) | Deploy and release guides |
 
 ---
 

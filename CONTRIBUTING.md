@@ -21,11 +21,14 @@ Thanks for your interest in contributing to Drawhaus! This guide will help you g
 ```
 drawhaus/
 ├── apps/
-│   ├── frontend/    # React + Vite + Excalidraw
-│   └── backend/     # Express + TypeScript (Clean Architecture)
+│   ├── frontend/                # React + Vite + Excalidraw
+│   └── backend/                 # Express + TypeScript (Clean Architecture)
 ├── packages/
-│   └── mcp/         # @drawhaus/mcp — MCP server for AI tools
-└── e2e/             # Playwright end-to-end tests
+│   ├── helpers/                 # @drawhaus/helpers — element builders, layout, validator
+│   ├── mcp/                     # @drawhaus/mcp — MCP server for AI tools
+│   └── plantuml-to-excalidraw/  # PlantUML parser and converter
+├── e2e/                         # Playwright end-to-end tests
+└── docs/                        # Vision, roadmap, specs, ADRs, branding, guides
 ```
 
 ## Development Workflow
@@ -46,10 +49,12 @@ drawhaus/
    ```
 5. (Optional) Run the E2E test suite (requires running backend + frontend + PostgreSQL):
    ```bash
-   npm run test:e2e
+   cd e2e && npm test
    ```
-6. Commit your changes with a clear, descriptive message.
+6. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`).
 7. Open a Pull Request against `master`.
+
+See [docs/WORKFLOW.md](docs/WORKFLOW.md) for the full build cycle and documentation conventions.
 
 ## Code Style
 

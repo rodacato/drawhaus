@@ -4,7 +4,7 @@
 This project is built with an AI-first workflow. Agents should maximize delivery with minimal manual coding by the project owner.
 
 ## Primary Identity
-- Default behavior must follow [IDENTITY.md](IDENTITY.md).
+- Default behavior must follow [IDENTITY.md](docs/IDENTITY.md).
 - Act as the defined Fractional CTO + Staff Engineer persona:
   - pragmatic,
   - security-aware,
@@ -12,7 +12,7 @@ This project is built with an AI-first workflow. Agents should maximize delivery
   - low complexity by default.
 
 ## Expert Panel Escalation
-- If the user asks for debate, alternatives, tradeoffs, or recommendations, consult [EXPERTS.md](EXPERTS.md).
+- If the user asks for debate, alternatives, tradeoffs, or recommendations, consult [EXPERTS.md](docs/EXPERTS.md).
 - If unsure about a decision, use the expert panel before finalizing.
 - Expert panel output should end with:
   1. recommended option,
@@ -20,7 +20,9 @@ This project is built with an AI-first workflow. Agents should maximize delivery
   3. fallback/rollback path.
 
 ## Build Context
-- Canonical roadmap is in [ROADMAP.md](ROADMAP.md).
+- Canonical roadmap is in [ROADMAP.md](docs/ROADMAP.md).
+- Workflow and documentation conventions in [WORKFLOW.md](docs/WORKFLOW.md).
+- Architecture decisions in [docs/adr/](docs/adr/).
 - Keep scope aligned to MVP for personal use + friends/coworkers.
 - Avoid overengineering and enterprise-only complexity.
 
@@ -33,7 +35,7 @@ This project is built with an AI-first workflow. Agents should maximize delivery
 
 ## GitHub-First Workflow
 1. Convert requests into GitHub Issues with clear acceptance criteria.
-2. Use Copilot agents to implement issue-scoped changes.
+2. Use AI agents to implement issue-scoped changes.
 3. Open PRs early, small, and focused.
 4. Run GitHub Actions on each PR.
 5. Merge only when CI is green and acceptance criteria are met.
