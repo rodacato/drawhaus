@@ -1,0 +1,49 @@
+{
+  "name": "@drawhaus/plantuml-to-excalidraw",
+  "version": "0.1.0",
+  "description": "Convert PlantUML diagrams to Excalidraw elements",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "peggy --format es -o src/parser/grammar/class.js src/parser/grammar/class.peggy",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "pretest": "npm run prebuild",
+    "test": "tsx --test 'src/__tests__/*.test.ts'",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'no lint configured'",
+    "playground": "vite serve playground --config playground/vite.config.ts",
+    "playground:build": "vite build --config playground/vite.config.ts"
+  },
+  "dependencies": {
+    "@drawhaus/helpers": "*"
+  },
+  "devDependencies": {
+    "@excalidraw/excalidraw": "^0.18.0",
+    "@types/node": "^20.11.0",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^5.1.4",
+    "peggy": "^5.1.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.7.3",
+    "vite": "^7.3.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
