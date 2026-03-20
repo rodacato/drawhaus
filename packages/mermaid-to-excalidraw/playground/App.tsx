@@ -1,19 +1,11 @@
 import { useState, useCallback, useEffect, useRef, useMemo, useDeferredValue } from "react";
-import { parseMermaidToExcalidraw, detectDiagramType } from "../src/index";
+import { parseMermaidToExcalidraw, detectDiagramType, hasConverter } from "../src/index";
 import { DEFAULT_CODE, FLAT_SUPPORTED_EXAMPLES } from "./examples/mermaid";
 import { Editor } from "./components/Editor";
 import { ExcalidrawCanvas } from "./components/ExcalidrawCanvas";
 import { Examples } from "./components/Examples";
 import { ExampleNav } from "./components/ExampleNav";
 import { MermaidPreview } from "./components/MermaidPreview";
-
-// Diagram types that @excalidraw/mermaid-to-excalidraw can handle
-// (either natively or via graphImage fallback)
-const CONVERTIBLE_TYPES = new Set([
-  "flowchart",
-  "classDiagram",
-  "sequence",
-]);
 
 export function App() {
   const [code, setCode] = useState(DEFAULT_CODE);
@@ -22,6 +14,14 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 4000);
+  }, []);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const deferredElements = useDeferredValue(elements);
@@ -66,25 +66,15 @@ export function App() {
       setError(null);
       setWarning(null);
       setStatus(null);
+      setToast(null);
       return;
     }
 
     debounceRef.current = setTimeout(() => {
       const diagramType = detectDiagramType(trimmed);
+      const isNative = hasConverter(diagramType);
 
-      // Show warning for types we can't convert to Excalidraw elements
-      if (diagramType !== "unknown" && !CONVERTIBLE_TYPES.has(diagramType)) {
-        setElements([]);
-        setFiles(undefined);
-        setError(null);
-        setWarning(
-          `${diagramType} diagrams are not yet supported by the Excalidraw converter. Currently supported: flowchart, class, sequence.`,
-        );
-        setStatus(null);
-        return;
-      }
-
-      // Parse via our proxy (delegates to excalidraw or custom converter)
+      // Parse via our proxy (delegates to native or excalidraw fallback)
       parseMermaidToExcalidraw(trimmed)
         .then((result) => {
           setElements(result.elements);
@@ -92,13 +82,18 @@ export function App() {
           setError(null);
           setWarning(null);
 
+          if (!isNative && diagramType !== "unknown") {
+            showToast(`Fallback: ${diagramType} usó @excalidraw/mermaid-to-excalidraw`);
+          }
+
           const arrows = result.elements.filter((e: any) => e.type === "arrow").length;
           const shapes = result.elements.filter(
             (e: any) => e.type !== "arrow" && e.type !== "text",
           ).length;
-          const source = result.diagramType || "unknown";
+          const source = result.diagramType || diagramType;
+          const label = isNative ? source : `${source} (fallback)`;
           setStatus(
-            `${source} · ${shapes} shape${shapes !== 1 ? "s" : ""}, ${arrows} relation${arrows !== 1 ? "s" : ""}, ${result.elements.length} total elements`,
+            `${label} · ${shapes} shape${shapes !== 1 ? "s" : ""}, ${arrows} relation${arrows !== 1 ? "s" : ""}, ${result.elements.length} total elements`,
           );
         })
         .catch((err) => {
@@ -142,6 +137,11 @@ export function App() {
         <Examples activeCode={code} onSelect={handleExampleSelect} />
       </div>
       <div className="right-panel">
+        {toast && (
+          <div className="toast-fallback" onClick={() => setToast(null)}>
+            {toast}
+          </div>
+        )}
         <ExampleNav
           currentIndex={currentIndex}
           total={FLAT_SUPPORTED_EXAMPLES.length}
