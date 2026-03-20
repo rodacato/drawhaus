@@ -93,6 +93,47 @@ export const DEFAULT_THEME: MermaidTheme = {
     strokeWidth: 1,
   },
 
+  // ── State Diagram ──────────────────────────────
+  stateNode: {
+    fill: "#f0f4f8",         // light blue-grey
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  stateStart: {
+    fill: "#333333",         // dark filled circle
+    stroke: "#333333",
+    strokeStyle: "solid",
+  },
+  stateEnd: {
+    fill: "#333333",
+    stroke: "#333333",
+    strokeStyle: "solid",
+  },
+  stateChoice: {
+    fill: "#f5f3ee",         // warm grey (matches flowDecision)
+    stroke: "#c4a94d",
+    strokeStyle: "solid",
+  },
+  stateForkJoin: {
+    fill: "#333333",         // solid bar
+    stroke: "#333333",
+    strokeStyle: "solid",
+  },
+  stateComposite: {
+    fill: "transparent",
+    stroke: "#8e9baa",       // muted blue-grey (matches subgraph)
+    strokeStyle: "dashed",
+  },
+  stateNote: {
+    fill: "#fef9e7",         // light yellow (matches seqNote)
+    stroke: "#d4a843",
+    strokeStyle: "solid",
+  },
+  stateTransition: {
+    stroke: "#555555",
+    strokeWidth: 1,
+  },
+
   // ── ER Diagram ──────────────────────────────────
   erEntity: {
     fill: "#f0f4f8",         // light blue-grey (matches class)

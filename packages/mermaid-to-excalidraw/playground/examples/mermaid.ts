@@ -506,7 +506,7 @@ const ENTITY_RELATIONSHIP: ExampleSection = {
 const STATE_DIAGRAMS: ExampleSection = {
   title: "State Diagrams",
   supported: true,
-  supportLevel: "fallback",
+  supportLevel: "native",
   examples: [
     {
       title: "Simple State Machine",
