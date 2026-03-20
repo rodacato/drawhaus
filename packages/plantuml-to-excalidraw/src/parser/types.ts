@@ -1,8 +1,8 @@
 // ── AST Types ──────────────────────────────────────────────────
 
-export type DiagramType = "class" | "object" | "usecase" | "sequence" | "activity" | "unknown";
+export type DiagramType = "class" | "object" | "usecase" | "state" | "sequence" | "activity" | "unknown";
 
-export type DiagramAST = ClassDiagramAST | ObjectDiagramAST | UseCaseDiagramAST | SequenceDiagramAST | ActivityDiagramAST;
+export type DiagramAST = ClassDiagramAST | ObjectDiagramAST | UseCaseDiagramAST | StateDiagramAST | SequenceDiagramAST | ActivityDiagramAST;
 
 // ── Class Diagram ──────────────────────────────────────────────
 
@@ -138,6 +138,45 @@ export interface UseCaseRelation {
   relationType: UseCaseRelationType;
   label: string | null;
   stereotype: string | null;
+}
+
+// ── State Diagram ──────────────────────────────────────────────
+
+export interface StateDiagramAST {
+  type: "state";
+  states: StateNode[];
+  transitions: StateTransition[];
+}
+
+export type StateNode = SimpleState | CompositeState | PseudoState;
+
+export interface SimpleState {
+  kind: "simple";
+  name: string;
+  label: string | null;
+  description: string | null;
+}
+
+export interface CompositeState {
+  kind: "composite";
+  name: string;
+  label: string | null;
+  children: StateNode[];
+  transitions: StateTransition[];
+}
+
+export type PseudoStateKind = "start_end" | "fork" | "join" | "choice" | "history" | "deep_history";
+
+export interface PseudoState {
+  kind: "pseudo";
+  pseudoKind: PseudoStateKind;
+  name: string;
+}
+
+export interface StateTransition {
+  from: string;
+  to: string;
+  label: string | null;
 }
 
 // ── Sequence Diagram (future) ──────────────────────────────────

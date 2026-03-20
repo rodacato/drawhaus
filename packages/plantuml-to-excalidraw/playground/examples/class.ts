@@ -644,55 +644,58 @@ cloud vpc {
 
 const STATE_DIAGRAMS: ExampleSection = {
   title: "State Diagrams",
-  supported: false,
+  supported: true,
   examples: [
     {
       title: "Basic States",
-      description: "States and transitions with labels",
+      description: "Simple state machine with transitions",
       code: `@startuml
-[*] --> State1
-State1 --> [*]
-State1 : this is a string
-State1 : this is another string
-
-State1 -> State2
-State2 --> [*]
+[*] --> Idle
+Idle --> Processing : start
+Processing --> Done : complete
+Done --> [*]
+@enduml`,
+    },
+    {
+      title: "Labeled States",
+      description: "States with display labels",
+      code: `@startuml
+state "Not Yet Started" as NotStarted
+state "In Progress" as InProgress
+state "Under Review" as Review
+[*] --> NotStarted
+NotStarted --> InProgress : begin
+InProgress --> Review : submit
+Review --> InProgress : revise
+Review --> [*] : approve
 @enduml`,
     },
     {
       title: "Composite States",
       description: "Nested state machines",
       code: `@startuml
-[*] --> NotShooting
-
-state NotShooting {
-  [*] --> Idle
-  Idle --> Configuring : EvConfig
-  Configuring --> Idle : EvConfig
+[*] --> Active
+state Active {
+  [*] --> Running
+  Running --> Paused : pause
+  Paused --> Running : resume
+  Running --> [*]
 }
-
-state Configuring {
-  [*] --> NewValueSelection
-  NewValueSelection --> NewValuePreview : EvNewValue
-  NewValuePreview --> NewValueSelection : EvNewValueRejected
-  NewValuePreview --> NewValueSelection : EvNewValueSaved
-}
+Active --> [*] : shutdown
 @enduml`,
     },
     {
-      title: "Fork & Join",
-      description: "Parallel state transitions",
+      title: "Order Lifecycle",
+      description: "E-commerce order flow",
       code: `@startuml
-state fork_state <<fork>>
-[*] --> fork_state
-fork_state --> State2
-fork_state --> State3
-
-state join_state <<join>>
-State2 --> join_state
-State3 --> join_state
-join_state --> State4
-State4 --> [*]
+[*] --> Pending
+Pending --> Confirmed : payment received
+Confirmed --> Shipped : dispatch
+Shipped --> Delivered : arrive
+Delivered --> [*]
+Pending --> Cancelled : timeout
+Confirmed --> Cancelled : refund
+Cancelled --> [*]
 @enduml`,
     },
   ],
@@ -751,12 +754,12 @@ export const ALL_EXAMPLES: ExampleSection[] = [
   CLASS_PATTERNS,
   OBJECT_DIAGRAMS,
   USE_CASE_DIAGRAMS,
+  STATE_DIAGRAMS,
   // Unsupported
   SEQUENCE_DIAGRAMS,
   ACTIVITY_DIAGRAMS,
   COMPONENT_DIAGRAMS,
   DEPLOYMENT_DIAGRAMS,
-  STATE_DIAGRAMS,
   TIMING_DIAGRAMS,
 ];
 

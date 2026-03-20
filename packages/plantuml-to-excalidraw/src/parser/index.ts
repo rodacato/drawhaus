@@ -1,6 +1,7 @@
 import { parse as parseClassGrammar } from "./grammar/class.js";
 import { parse as parseObjectGrammar } from "./grammar/object.js";
 import { parse as parseUseCaseGrammar } from "./grammar/usecase.js";
+import { parse as parseStateGrammar } from "./grammar/state.js";
 import type {
   DiagramAST,
   DiagramType,
@@ -26,6 +27,7 @@ const PARSERS = new Map<DiagramType, ParserFn>([
   ["class", (code) => parseWithPeggy(parseClassGrammar, code)],
   ["object", (code) => parseWithPeggy(parseObjectGrammar, code)],
   ["usecase", (code) => parseWithPeggy(parseUseCaseGrammar, code)],
+  ["state", (code) => parseWithPeggy(parseStateGrammar, code)],
 ]);
 
 // ── Detection Rules ─────────────────────────────────────────────
@@ -47,6 +49,15 @@ const DETECTION_RULES: DetectionRule[] = [
   {
     type: "usecase",
     test: (_s, lower) => lower.includes("usecase "),
+    fallbacks: ["class"],
+  },
+
+  // State: explicit state keyword or [*] pseudo-state
+  {
+    type: "state",
+    test: (stripped, lower) =>
+      /^\s*state\s+/m.test(lower) ||
+      stripped.includes("[*]"),
     fallbacks: ["class"],
   },
 

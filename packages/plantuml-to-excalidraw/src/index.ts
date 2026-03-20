@@ -7,6 +7,7 @@ import {
 import { mapClassDiagram } from "./converter/class.js";
 import { mapObjectDiagram } from "./converter/object.js";
 import { mapUseCaseDiagram } from "./converter/usecase.js";
+import { mapStateDiagram } from "./converter/state.js";
 import { resetIdCounter } from "./elements.js";
 import { resolveTheme } from "./theme/index.js";
 
@@ -35,6 +36,12 @@ export type {
   UseCaseBoundary,
   UseCaseRelation,
   UseCaseRelationType,
+  StateDiagramAST,
+  StateNode,
+  SimpleState,
+  CompositeState,
+  PseudoState,
+  StateTransition,
 } from "./parser/types.js";
 
 export type {
@@ -65,6 +72,7 @@ export { DEFAULT_THEME, resolveTheme } from "./theme/index.js";
  * - Class diagrams (class, interface, enum, abstract class, relations)
  * - Object diagrams (object, map, relations)
  * - Use case diagrams (actors, use cases, boundaries, relations)
+ * - State diagrams (states, transitions, composite states)
  *
  * For unsupported types, throws PlantUMLUnsupportedError.
  * For invalid syntax, throws PlantUMLParseError with line/column info.
@@ -107,6 +115,9 @@ export function parsePlantUMLToExcalidraw(
       break;
     case "usecase":
       elements = mapUseCaseDiagram(ast, theme);
+      break;
+    case "state":
+      elements = mapStateDiagram(ast, theme);
       break;
     default:
       throw new PlantUMLUnsupportedError(ast.type);

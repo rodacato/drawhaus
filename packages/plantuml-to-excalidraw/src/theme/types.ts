@@ -58,6 +58,13 @@ export interface DiagramTheme {
   useCase: ShapeStyle;
   boundary: ShapeStyle;
 
+  // ── State Diagram ───────────────────────────────
+  state: ShapeStyle;
+  compositeState: ShapeStyle;
+  startEnd: ShapeStyle;
+  choiceState: ShapeStyle;
+  forkJoin: ShapeStyle;
+
   // ── Relations ──────────────────────────────────
   arrow: ArrowStyle;
   dependencyArrow: ArrowStyle;

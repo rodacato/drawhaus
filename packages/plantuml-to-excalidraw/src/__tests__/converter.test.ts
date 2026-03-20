@@ -304,3 +304,127 @@ Admin --> Dashboard
     assert.equal(positions.size, all.length, "all elements should have unique positions");
   });
 });
+
+// ── State Diagram Converter Tests ───────────────────────────────
+
+describe("parsePlantUMLToExcalidraw - state diagrams", () => {
+  test("converts simple state machine", () => {
+    const code = `@startuml
+[*] --> Idle
+Idle --> Processing : start
+Processing --> [*]
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "state");
+    assert.ok(result.elements.length > 0);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 2, "Idle and Processing as rounded rectangles");
+
+    const ellipses = result.elements.filter((e) => e.type === "ellipse");
+    assert.equal(ellipses.length, 2, "two [*] pseudo-states as ellipses");
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.equal(arrows.length, 3, "three transitions");
+  });
+
+  test("states have rounded corners", () => {
+    const code = "@startuml\n[*] --> Active\nActive --> [*]\n@enduml";
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.ok(rects.length >= 1);
+    assert.ok(rects[0].roundness !== null, "state should have roundness");
+  });
+
+  test("pseudo-states render as filled ellipses", () => {
+    const code = "@startuml\n[*] --> Active\nActive --> [*]\n@enduml";
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const ellipses = result.elements.filter((e) => e.type === "ellipse");
+    assert.ok(ellipses.length >= 1);
+    assert.ok(ellipses[0].backgroundColor !== "transparent", "pseudo-state should be filled");
+  });
+
+  test("transition labels are rendered", () => {
+    const code = `@startuml
+[*] --> Idle
+Idle --> Processing : begin work
+Processing --> [*]
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    const labeled = arrows.find((a) => a.label && (a.label as any).text === "begin work");
+    assert.ok(labeled, "should have arrow with transition label");
+  });
+
+  test("states with labels use display name", () => {
+    const code = `@startuml
+state "Not Started" as NS
+[*] --> NS
+NS --> [*]
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    const label = texts.find((t) => t.text === "Not Started");
+    assert.ok(label, "should display the label text, not the alias");
+  });
+
+  test("composite state renders container + inner elements", () => {
+    const code = `@startuml
+[*] --> Active
+state Active {
+  [*] --> Running
+  Running --> Paused : pause
+  Paused --> Running : resume
+  Running --> [*]
+}
+Active --> [*]
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    // Outer container + inner states
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.ok(rects.length >= 3, "container rect + Running + Paused");
+
+    // The first rect should be the composite (largest)
+    const largest = rects.reduce((a, b) =>
+      ((a.width as number) * (a.height as number)) > ((b.width as number) * (b.height as number)) ? a : b
+    );
+    assert.ok((largest.width as number) > 200, "composite state should be large");
+
+    // Inner pseudo-states
+    const ellipses = result.elements.filter((e) => e.type === "ellipse");
+    assert.ok(ellipses.length >= 2, "should have pseudo-states for inner [*]");
+  });
+
+  test("multiple states have unique positions", () => {
+    const code = `@startuml
+[*] --> A
+A --> B
+B --> C
+C --> [*]
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 3);
+    const positions = new Set(rects.map((r) => `${r.x},${r.y}`));
+    assert.equal(positions.size, 3, "each state should have a unique position");
+  });
+
+  test("state description is rendered", () => {
+    const code = `@startuml
+state Idle : waiting for input
+[*] --> Idle
+Idle --> [*]
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    const desc = texts.find((t) => t.text === "waiting for input");
+    assert.ok(desc, "should render state description");
+  });
+});

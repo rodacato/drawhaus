@@ -6,7 +6,7 @@ import {
   PlantUMLParseError,
   PlantUMLUnsupportedError,
 } from "../parser/index.js";
-import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST } from "../parser/types.js";
+import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST, StateDiagramAST } from "../parser/types.js";
 
 function parseClass(code: string): ClassDiagramAST {
   const ast = parsePlantUML(code);
@@ -387,5 +387,149 @@ describe("parsePlantUML - fallback mechanism", () => {
     const code = "@startuml\nobject foo {\n  bar = 1\n}\n@enduml";
     const ast = parsePlantUML(code);
     assert.equal(ast.type, "object");
+  });
+
+  test("valid state diagram parses on first try", () => {
+    const code = "@startuml\n[*] --> Idle\nIdle --> [*]\n@enduml";
+    const ast = parsePlantUML(code);
+    assert.equal(ast.type, "state");
+  });
+});
+
+// ── State Diagram Parser Tests ──────────────────────────────────
+
+describe("detectDiagramType - state", () => {
+  test("detects state diagram with state keyword", () => {
+    assert.equal(detectDiagramType("@startuml\nstate Idle\n@enduml"), "state");
+  });
+
+  test("detects state diagram with [*] pseudo-state", () => {
+    assert.equal(detectDiagramType("@startuml\n[*] --> Idle\n@enduml"), "state");
+  });
+});
+
+describe("parsePlantUML - state diagrams", () => {
+  function parseState(code: string): StateDiagramAST {
+    const ast = parsePlantUML(code);
+    assert.equal(ast.type, "state");
+    return ast as StateDiagramAST;
+  }
+
+  test("parses simple state transitions", () => {
+    const code = `@startuml
+[*] --> Idle
+Idle --> Processing : start
+Processing --> [*]
+@enduml`;
+    const ast = parseState(code);
+    assert.equal(ast.states.length, 2); // Idle, Processing (implicit)
+    assert.equal(ast.transitions.length, 3);
+    assert.equal(ast.transitions[0].from, "[*]");
+    assert.equal(ast.transitions[0].to, "Idle");
+    assert.equal(ast.transitions[1].label, "start");
+  });
+
+  test("parses state with label", () => {
+    const code = `@startuml
+state "Not Started" as NS
+[*] --> NS
+@enduml`;
+    const ast = parseState(code);
+    const ns = ast.states.find(s => s.name === "NS");
+    assert.ok(ns);
+    assert.equal(ns!.kind, "simple");
+    if (ns!.kind === "simple") {
+      assert.equal(ns!.label, "Not Started");
+    }
+  });
+
+  test("parses state with description", () => {
+    const code = `@startuml
+state Idle : waiting for input
+[*] --> Idle
+@enduml`;
+    const ast = parseState(code);
+    const idle = ast.states.find(s => s.name === "Idle");
+    assert.ok(idle);
+    if (idle!.kind === "simple") {
+      assert.equal(idle!.description, "waiting for input");
+    }
+  });
+
+  test("parses composite state", () => {
+    const code = `@startuml
+[*] --> Active
+state Active {
+  [*] --> Running
+  Running --> Paused : pause
+  Paused --> Running : resume
+  Running --> [*]
+}
+Active --> [*]
+@enduml`;
+    const ast = parseState(code);
+
+    const active = ast.states.find(s => s.name === "Active");
+    assert.ok(active);
+    assert.equal(active!.kind, "composite");
+    if (active!.kind === "composite") {
+      assert.equal(active!.children.length, 2); // Running, Paused
+      assert.equal(active!.transitions.length, 4);
+    }
+
+    // Top-level transitions
+    assert.equal(ast.transitions.length, 2);
+  });
+
+  test("parses composite state with label", () => {
+    const code = `@startuml
+state "Processing Phase" as Proc {
+  [*] --> Step1
+  Step1 --> [*]
+}
+@enduml`;
+    const ast = parseState(code);
+    const proc = ast.states.find(s => s.name === "Proc");
+    assert.ok(proc);
+    assert.equal(proc!.kind, "composite");
+    if (proc!.kind === "composite") {
+      assert.equal(proc!.label, "Processing Phase");
+      assert.equal(proc!.transitions.length, 2);
+    }
+  });
+
+  test("creates implicit states from transitions", () => {
+    const code = `@startuml
+[*] --> A
+A --> B : go
+B --> C
+@enduml`;
+    const ast = parseState(code);
+    assert.equal(ast.states.length, 3); // A, B, C
+    assert.equal(ast.transitions.length, 3);
+  });
+
+  test("ignores comments", () => {
+    const code = `@startuml
+' This is a comment
+[*] --> Idle
+/' block comment '/
+Idle --> [*]
+@enduml`;
+    const ast = parseState(code);
+    assert.equal(ast.transitions.length, 2);
+  });
+
+  test("ignores hide and skinparam directives", () => {
+    const code = `@startuml
+hide empty description
+skinparam state {
+  BackgroundColor LightBlue
+}
+[*] --> Active
+Active --> [*]
+@enduml`;
+    const ast = parseState(code);
+    assert.equal(ast.transitions.length, 2);
   });
 });

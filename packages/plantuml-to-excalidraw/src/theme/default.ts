@@ -59,6 +59,33 @@ export const DEFAULT_THEME: DiagramTheme = {
     strokeStyle: "dashed",
   },
 
+  // ── State Diagram ───────────────────────────────
+  state: {
+    fill: "#f0f4f8",         // very light blue-grey (same as class)
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  compositeState: {
+    fill: "#f8f9fb",         // barely-there grey
+    stroke: "#8e9baa",
+    strokeStyle: "solid",
+  },
+  startEnd: {
+    fill: "#333333",         // filled dark circle
+    stroke: "#333333",
+    strokeStyle: "solid",
+  },
+  choiceState: {
+    fill: "#f5f3ee",         // warm grey (same as enum)
+    stroke: "#c4a94d",
+    strokeStyle: "solid",
+  },
+  forkJoin: {
+    fill: "#333333",         // filled dark bar
+    stroke: "#333333",
+    strokeStyle: "solid",
+  },
+
   // ── Relations ──────────────────────────────────
   arrow: {
     stroke: "#555555",
