@@ -256,6 +256,59 @@ body {
   color: var(--text-muted);
 }
 
+/* ── Badges ────────────────────────────────────── */
+
+.badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.badge-unsupported {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
+}
+
+/* ── Unsupported sections ──────────────────────── */
+
+.unsupported-group-summary {
+  display: flex;
+  align-items: center;
+}
+
+.nested-section summary {
+  padding-left: 28px;
+  font-size: 11px;
+}
+
+.nested-section .examples-grid {
+  padding-left: 28px;
+}
+
+.example-card.unsupported {
+  opacity: 0.7;
+  border-style: dashed;
+}
+
+.example-card.unsupported:hover {
+  opacity: 1;
+  border-color: var(--warning-text);
+  background: var(--warning-bg);
+}
+
+.example-card.unsupported .example-card-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* ── Excalidraw overrides ───────────────────────── */
 
 .right-panel .excalidraw-wrapper,

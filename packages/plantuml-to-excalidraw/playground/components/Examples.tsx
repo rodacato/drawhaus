@@ -1,4 +1,4 @@
-import { CLASS_EXAMPLES, type Example } from "../examples/class";
+import { ALL_EXAMPLES, type Example, type ExampleSection } from "../examples/class";
 
 interface ExamplesProps {
   activeCode: string;
@@ -6,47 +6,96 @@ interface ExamplesProps {
 }
 
 export function Examples({ activeCode, onSelect }: ExamplesProps) {
+  const supported = ALL_EXAMPLES.filter((s) => s.supported);
+  const unsupported = ALL_EXAMPLES.filter((s) => !s.supported);
+
   return (
     <div className="examples-panel">
-      {CLASS_EXAMPLES.map((section) => (
-        <details key={section.title}>
-          <summary>{section.title}</summary>
-          <div className="examples-grid">
-            {section.examples.map((example) => (
-              <ExampleCard
-                key={example.title}
-                example={example}
-                active={activeCode === example.code}
-                onClick={() => onSelect(example.code)}
-              />
-            ))}
-          </div>
-        </details>
+      {supported.map((section) => (
+        <SectionDetails
+          key={section.title}
+          section={section}
+          activeCode={activeCode}
+          onSelect={onSelect}
+        />
       ))}
+      {unsupported.length > 0 && (
+        <details>
+          <summary className="unsupported-group-summary">
+            Unsupported Diagram Types
+            <span className="badge badge-unsupported">{unsupported.length} types</span>
+          </summary>
+          {unsupported.map((section) => (
+            <SectionDetails
+              key={section.title}
+              section={section}
+              activeCode={activeCode}
+              onSelect={onSelect}
+              nested
+            />
+          ))}
+        </details>
+      )}
     </div>
+  );
+}
+
+function SectionDetails({
+  section,
+  activeCode,
+  onSelect,
+  nested,
+}: {
+  section: ExampleSection;
+  activeCode: string;
+  onSelect: (code: string) => void;
+  nested?: boolean;
+}) {
+  return (
+    <details className={nested ? "nested-section" : undefined}>
+      <summary>
+        {section.title}
+        {!section.supported && !nested && (
+          <span className="badge badge-unsupported">unsupported</span>
+        )}
+      </summary>
+      <div className="examples-grid">
+        {section.examples.map((example) => (
+          <ExampleCard
+            key={example.title}
+            example={example}
+            supported={section.supported}
+            active={activeCode === example.code}
+            onClick={() => onSelect(example.code)}
+          />
+        ))}
+      </div>
+    </details>
   );
 }
 
 function ExampleCard({
   example,
+  supported,
   active,
   onClick,
 }: {
   example: Example;
+  supported: boolean;
   active: boolean;
   onClick: () => void;
 }) {
-  const classCount = (example.code.match(/\b(class|interface|enum|abstract class)\b/g) || []).length;
-  const relationCount = (example.code.match(/(--|\.\.)[>|*o]/g) || []).length;
-
   return (
     <div
-      className={`example-card${active ? " active" : ""}`}
+      className={`example-card${active ? " active" : ""}${!supported ? " unsupported" : ""}`}
       onClick={onClick}
     >
-      <div className="example-card-title">{example.title}</div>
+      <div className="example-card-title">
+        {example.title}
+        {!supported && <span className="badge badge-unsupported">soon</span>}
+      </div>
       <div className="example-card-meta">
-        {example.description} &middot; {classCount} classes{relationCount > 0 ? `, ${relationCount} relations` : ""}
+        {example.description}
       </div>
     </div>
   );
