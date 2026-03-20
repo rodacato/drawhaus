@@ -8,6 +8,7 @@ import { mapClassDiagram } from "./converter/class.js";
 import { mapObjectDiagram } from "./converter/object.js";
 import { mapUseCaseDiagram } from "./converter/usecase.js";
 import { mapStateDiagram } from "./converter/state.js";
+import { mapComponentDiagram } from "./converter/component.js";
 import { resetIdCounter } from "./elements.js";
 import { resolveTheme } from "./theme/index.js";
 
@@ -42,6 +43,13 @@ export type {
   CompositeState,
   PseudoState,
   StateTransition,
+  ComponentDiagramAST,
+  ComponentNode,
+  ComponentContainer,
+  ComponentInterface,
+  ComponentRelation,
+  ComponentRelationType,
+  ContainerKind,
 } from "./parser/types.js";
 
 export type {
@@ -73,6 +81,7 @@ export { DEFAULT_THEME, resolveTheme } from "./theme/index.js";
  * - Object diagrams (object, map, relations)
  * - Use case diagrams (actors, use cases, boundaries, relations)
  * - State diagrams (states, transitions, composite states)
+ * - Component diagrams (components, containers, interfaces, relations)
  *
  * For unsupported types, throws PlantUMLUnsupportedError.
  * For invalid syntax, throws PlantUMLParseError with line/column info.
@@ -118,6 +127,9 @@ export function parsePlantUMLToExcalidraw(
       break;
     case "state":
       elements = mapStateDiagram(ast, theme);
+      break;
+    case "component":
+      elements = mapComponentDiagram(ast, theme);
       break;
     default:
       throw new PlantUMLUnsupportedError(ast.type);

@@ -6,7 +6,7 @@ import {
   PlantUMLParseError,
   PlantUMLUnsupportedError,
 } from "../parser/index.js";
-import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST, StateDiagramAST } from "../parser/types.js";
+import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST, StateDiagramAST, ComponentDiagramAST } from "../parser/types.js";
 
 function parseClass(code: string): ClassDiagramAST {
   const ast = parsePlantUML(code);
@@ -531,5 +531,117 @@ Active --> [*]
 @enduml`;
     const ast = parseState(code);
     assert.equal(ast.transitions.length, 2);
+  });
+});
+
+// ── Component Diagram Parser Tests ──────────────────────────────
+
+describe("detectDiagramType - component", () => {
+  test("detects component diagram with bracket syntax", () => {
+    assert.equal(detectDiagramType("@startuml\n[Web App] --> [API]\n@enduml"), "component");
+  });
+
+  test("detects component diagram with component keyword", () => {
+    assert.equal(detectDiagramType("@startuml\ncomponent Foo\n@enduml"), "component");
+  });
+
+  test("detects component diagram with package container", () => {
+    assert.equal(detectDiagramType("@startuml\npackage Backend {\n}\n@enduml"), "component");
+  });
+});
+
+describe("parsePlantUML - component diagrams", () => {
+  function parseComponent(code: string): ComponentDiagramAST {
+    const ast = parsePlantUML(code);
+    assert.equal(ast.type, "component");
+    return ast as ComponentDiagramAST;
+  }
+
+  test("parses bracket component syntax", () => {
+    const code = `@startuml
+[Web App] --> [API]
+@enduml`;
+    const ast = parseComponent(code);
+    assert.equal(ast.components.length, 2);
+    assert.equal(ast.relations.length, 1);
+    assert.equal(ast.relations[0].left, "Web App");
+    assert.equal(ast.relations[0].right, "API");
+  });
+
+  test("parses component keyword", () => {
+    const code = `@startuml
+component MyService
+[Client] --> MyService
+@enduml`;
+    const ast = parseComponent(code);
+    assert.ok(ast.components.some(c => c.name === "MyService"));
+  });
+
+  test("parses package container with children", () => {
+    const code = `@startuml
+package "Backend" {
+  [Controller] --> [Service]
+}
+@enduml`;
+    const ast = parseComponent(code);
+    assert.equal(ast.containers.length, 1);
+    assert.equal(ast.containers[0].kind, "package");
+    assert.equal(ast.containers[0].name, "Backend");
+    assert.equal(ast.containers[0].children.length, 2);
+  });
+
+  test("parses database container", () => {
+    const code = `@startuml
+database "MySQL" {
+  [Users]
+}
+@enduml`;
+    const ast = parseComponent(code);
+    assert.equal(ast.containers[0].kind, "database");
+    assert.equal(ast.containers[0].children.length, 1);
+  });
+
+  test("parses nested containers", () => {
+    const code = `@startuml
+cloud "AWS" {
+  node "EC2" {
+    [App]
+  }
+}
+@enduml`;
+    const ast = parseComponent(code);
+    assert.equal(ast.containers.length, 1);
+    assert.equal(ast.containers[0].kind, "cloud");
+    assert.equal(ast.containers[0].childContainers.length, 1);
+    assert.equal(ast.containers[0].childContainers[0].kind, "node");
+  });
+
+  test("parses relation with label", () => {
+    const code = `@startuml
+[App] --> [DB] : JDBC
+@enduml`;
+    const ast = parseComponent(code);
+    assert.equal(ast.relations[0].label, "JDBC");
+  });
+
+  test("parses dependency relation", () => {
+    const code = `@startuml
+[App] ..> [Config] : uses
+@enduml`;
+    const ast = parseComponent(code);
+    assert.equal(ast.relations[0].relationType, "dependency");
+  });
+
+  test("components from relations inside containers are registered", () => {
+    const code = `@startuml
+package "API" {
+  [Handler] --> [Logic]
+}
+@enduml`;
+    const ast = parseComponent(code);
+    // Handler and Logic should appear as both container children and global components
+    assert.ok(ast.components.some(c => c.name === "Handler"));
+    assert.ok(ast.components.some(c => c.name === "Logic"));
+    assert.equal(ast.containers[0].children.length, 2);
   });
 });

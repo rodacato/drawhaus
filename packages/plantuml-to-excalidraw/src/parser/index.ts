@@ -2,6 +2,7 @@ import { parse as parseClassGrammar } from "./grammar/class.js";
 import { parse as parseObjectGrammar } from "./grammar/object.js";
 import { parse as parseUseCaseGrammar } from "./grammar/usecase.js";
 import { parse as parseStateGrammar } from "./grammar/state.js";
+import { parse as parseComponentGrammar } from "./grammar/component.js";
 import type {
   DiagramAST,
   DiagramType,
@@ -28,6 +29,7 @@ const PARSERS = new Map<DiagramType, ParserFn>([
   ["object", (code) => parseWithPeggy(parseObjectGrammar, code)],
   ["usecase", (code) => parseWithPeggy(parseUseCaseGrammar, code)],
   ["state", (code) => parseWithPeggy(parseStateGrammar, code)],
+  ["component", (code) => parseWithPeggy(parseComponentGrammar, code)],
 ]);
 
 // ── Detection Rules ─────────────────────────────────────────────
@@ -58,6 +60,17 @@ const DETECTION_RULES: DetectionRule[] = [
     test: (stripped, lower) =>
       /^\s*state\s+/m.test(lower) ||
       stripped.includes("[*]"),
+    fallbacks: ["class"],
+  },
+
+  // Component: bracket component syntax [Name] or component keyword or container keywords
+  {
+    type: "component",
+    test: (stripped, lower) =>
+      /\[[\w\s]+\]/.test(stripped) ||
+      lower.includes("component ") ||
+      (/^\s*(package|cloud|database|folder|frame)\s+/m.test(lower) &&
+        stripped.includes("{")),
     fallbacks: ["class"],
   },
 

@@ -59,6 +59,23 @@ export const DEFAULT_THEME: DiagramTheme = {
     strokeStyle: "dashed",
   },
 
+  // ── Component Diagram ──────────────────────────
+  component: {
+    fill: "#f0f4f8",         // very light blue-grey
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  componentContainer: {
+    fill: "#f8f9fb",         // barely-there grey
+    stroke: "#8e9baa",
+    strokeStyle: "dashed",
+  },
+  componentInterface: {
+    fill: "#f0f5f0",         // very light sage
+    stroke: "#6da670",
+    strokeStyle: "solid",
+  },
+
   // ── State Diagram ───────────────────────────────
   state: {
     fill: "#f0f4f8",         // very light blue-grey (same as class)

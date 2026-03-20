@@ -1,8 +1,8 @@
 // ── AST Types ──────────────────────────────────────────────────
 
-export type DiagramType = "class" | "object" | "usecase" | "state" | "sequence" | "activity" | "unknown";
+export type DiagramType = "class" | "object" | "usecase" | "state" | "component" | "sequence" | "activity" | "unknown";
 
-export type DiagramAST = ClassDiagramAST | ObjectDiagramAST | UseCaseDiagramAST | StateDiagramAST | SequenceDiagramAST | ActivityDiagramAST;
+export type DiagramAST = ClassDiagramAST | ObjectDiagramAST | UseCaseDiagramAST | StateDiagramAST | ComponentDiagramAST | SequenceDiagramAST | ActivityDiagramAST;
 
 // ── Class Diagram ──────────────────────────────────────────────
 
@@ -138,6 +138,50 @@ export interface UseCaseRelation {
   relationType: UseCaseRelationType;
   label: string | null;
   stereotype: string | null;
+}
+
+// ── Component Diagram ──────────────────────────────────────────
+
+export interface ComponentDiagramAST {
+  type: "component";
+  components: ComponentNode[];
+  containers: ComponentContainer[];
+  interfaces: ComponentInterface[];
+  relations: ComponentRelation[];
+}
+
+export interface ComponentNode {
+  name: string;
+  alias: string | null;
+  container: string | null;
+}
+
+export type ContainerKind = "package" | "node" | "cloud" | "database" | "folder" | "frame" | "rectangle";
+
+export interface ComponentContainer {
+  kind: ContainerKind;
+  name: string;
+  children: ComponentNode[];
+  childContainers: ComponentContainer[];
+}
+
+export interface ComponentInterface {
+  name: string;
+  alias: string | null;
+}
+
+export type ComponentRelationType =
+  | "association"
+  | "directed"
+  | "dependency"
+  | "provided"
+  | "required";
+
+export interface ComponentRelation {
+  left: string;
+  right: string;
+  relationType: ComponentRelationType;
+  label: string | null;
 }
 
 // ── State Diagram ──────────────────────────────────────────────

@@ -58,6 +58,11 @@ export interface DiagramTheme {
   useCase: ShapeStyle;
   boundary: ShapeStyle;
 
+  // ── Component Diagram ──────────────────────────
+  component: ShapeStyle;
+  componentContainer: ShapeStyle;
+  componentInterface: ShapeStyle;
+
   // ── State Diagram ───────────────────────────────
   state: ShapeStyle;
   compositeState: ShapeStyle;

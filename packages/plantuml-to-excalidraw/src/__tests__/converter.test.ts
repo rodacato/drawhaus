@@ -428,3 +428,119 @@ Idle --> [*]
     assert.ok(desc, "should render state description");
   });
 });
+
+// ── Component Diagram Converter Tests ───────────────────────────
+
+describe("parsePlantUMLToExcalidraw - component diagrams", () => {
+  test("converts basic components with relations", () => {
+    const code = `@startuml
+[Web App] --> [API]
+[API] --> [Database]
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "component");
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 3, "three component rectangles");
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.equal(arrows.length, 2, "two relation arrows");
+  });
+
+  test("renders container as background rectangle", () => {
+    const code = `@startuml
+package "Backend" {
+  [Controller] --> [Service]
+}
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    // 1 container + 2 component rects
+    assert.ok(rects.length >= 3, "should have container + component rectangles");
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    const containerLabel = texts.find(
+      (t) => typeof t.text === "string" && t.text.includes("Backend"),
+    );
+    assert.ok(containerLabel, "should render container label");
+  });
+
+  test("container rectangle is larger than children", () => {
+    const code = `@startuml
+package "API" {
+  [Handler]
+  [Service]
+}
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    const largest = rects.reduce((a, b) =>
+      (a.width as number) * (a.height as number) >
+      (b.width as number) * (b.height as number)
+        ? a
+        : b,
+    );
+    assert.ok(
+      (largest.width as number) > 150,
+      "container should be larger than individual components",
+    );
+  });
+
+  test("dependency relation uses dashed style", () => {
+    const code = `@startuml
+[App] ..> [Config] : uses
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    assert.equal(arrows.length, 1);
+    assert.equal(arrows[0].strokeStyle, "dashed");
+  });
+
+  test("relation labels are rendered", () => {
+    const code = `@startuml
+[App] --> [DB] : JDBC
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const arrows = result.elements.filter((e) => e.type === "arrow");
+    const labeled = arrows.find(
+      (a) => a.label && (a.label as any).text === "JDBC",
+    );
+    assert.ok(labeled, "should have arrow with label");
+  });
+
+  test("nested containers render correctly", () => {
+    const code = `@startuml
+cloud "AWS" {
+  node "EC2" {
+    [App Server]
+  }
+}
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.ok(rects.length >= 3, "outer cloud + inner node + component");
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    assert.ok(texts.some((t) => typeof t.text === "string" && t.text.includes("cloud")));
+    assert.ok(texts.some((t) => typeof t.text === "string" && t.text.includes("node")));
+  });
+
+  test("components have unique positions", () => {
+    const code = `@startuml
+[A] --> [B]
+[B] --> [C]
+[C] --> [D]
+@enduml`;
+    const result = parsePlantUMLToExcalidraw(code);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 4);
+    const positions = new Set(rects.map((r) => `${r.x},${r.y}`));
+    assert.equal(positions.size, 4, "each component should have a unique position");
+  });
+});

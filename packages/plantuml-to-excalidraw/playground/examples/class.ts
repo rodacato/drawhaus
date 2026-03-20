@@ -574,38 +574,51 @@ stop
 
 const COMPONENT_DIAGRAMS: ExampleSection = {
   title: "Component Diagrams",
-  supported: false,
+  supported: true,
   examples: [
     {
-      title: "Packages & Nodes",
-      description: "Components in packages, nodes, clouds, databases",
+      title: "Basic Components",
+      description: "Components with relations",
       code: `@startuml
-package "Some Group" {
-  HTTP - [First Component]
-  [Another Component]
+[Web App] --> [API Gateway]
+[API Gateway] --> [Auth Service]
+[API Gateway] --> [Order Service]
+[Order Service] --> [Database]
+@enduml`,
+    },
+    {
+      title: "Packages & Containers",
+      description: "Components grouped in containers",
+      code: `@startuml
+package "Frontend" {
+  [React App] --> [Router]
 }
-
-node "Other Groups" {
-  FTP - [Second Component]
-  [First Component] --> FTP
+package "Backend" {
+  [Controller] --> [Service]
+  [Service] --> [Repository]
 }
-
-cloud {
-  [Example 1]
+database "PostgreSQL" {
+  [Users Table]
+  [Orders Table]
 }
-
-database "MySql" {
-  folder "This is my folder" {
-    [Folder 3]
+[Router] --> [Controller]
+[Repository] --> [Users Table]
+[Repository] --> [Orders Table]
+@enduml`,
+    },
+    {
+      title: "Nested Containers",
+      description: "Containers within containers",
+      code: `@startuml
+cloud "AWS" {
+  node "EC2" {
+    [App Server]
   }
-  frame "Foo" {
-    [Frame 4]
+  database "RDS" {
+    [MySQL]
   }
 }
-
-[Another Component] --> [Example 1]
-[Example 1] --> [Folder 3]
-[Folder 3] --> [Frame 4]
+[App Server] --> [MySQL] : JDBC
 @enduml`,
     },
   ],
@@ -755,10 +768,10 @@ export const ALL_EXAMPLES: ExampleSection[] = [
   OBJECT_DIAGRAMS,
   USE_CASE_DIAGRAMS,
   STATE_DIAGRAMS,
+  COMPONENT_DIAGRAMS,
   // Unsupported
   SEQUENCE_DIAGRAMS,
   ACTIVITY_DIAGRAMS,
-  COMPONENT_DIAGRAMS,
   DEPLOYMENT_DIAGRAMS,
   TIMING_DIAGRAMS,
 ];
