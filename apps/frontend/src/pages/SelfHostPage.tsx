@@ -1,8 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
-import { ThemeToggle } from "@/components/ThemeToggle";
+
+const AnimatedBackground = lazy(() =>
+  import("@/components/AnimatedBackground").then((m) => ({ default: m.AnimatedBackground }))
+);
 
 const GITHUB_URL = "https://github.com/rodacato/drawhaus";
+const EXCALIDRAW_URL = "https://excalidraw.com";
+const EXCALIDRAW_GITHUB = "https://github.com/excalidraw/excalidraw";
 
 function CodeBlock({ children, title }: { children: string; title?: string }) {
   return (
@@ -18,7 +23,7 @@ function CodeBlock({ children, title }: { children: string; title?: string }) {
 }
 
 export function SelfHostPage() {
-  // Force light theme on marketing pages
+  // Force light theme on marketing pages — no dark mode at all
   useEffect(() => {
     const html = document.documentElement;
     const previousTheme = html.classList.contains("dark") ? "dark" : "light";
@@ -31,8 +36,13 @@ export function SelfHostPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-surface text-text-primary">
-      {/* Nav */}
+    <div className="relative min-h-screen bg-surface text-text-primary">
+      {/* Three.js animated background */}
+      <Suspense fallback={null}>
+        <AnimatedBackground />
+      </Suspense>
+
+      {/* Nav — matches landing page for consistency */}
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-surface/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-3">
@@ -42,11 +52,12 @@ export function SelfHostPage() {
 
           <div className="hidden items-center gap-6 text-sm text-text-secondary sm:flex">
             <Link to="/" className="transition hover:text-text-primary">Home</Link>
+            <Link to="/#features" className="transition hover:text-text-primary">Features</Link>
+            <Link to="/#faq" className="transition hover:text-text-primary">FAQ</Link>
             <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-text-primary">GitHub</a>
           </div>
 
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Link to="/login" className="rounded-lg px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-raised hover:text-text-primary">
               Sign In
             </Link>
@@ -55,7 +66,8 @@ export function SelfHostPage() {
       </nav>
 
       {/* Hero */}
-      <section className="mx-auto max-w-3xl px-6 pb-16 pt-20 text-center">
+      <section className="relative mx-auto max-w-3xl px-6 pb-16 pt-20 text-center">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-primary/8 blur-3xl" />
         <h1 className="font-sora text-4xl font-bold tracking-tight sm:text-5xl">
           Self-Host Drawhaus
         </h1>
@@ -235,7 +247,30 @@ git push origin master:production`}</CodeBlock>
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Excalidraw attribution — moved from landing page */}
+      <section className="mx-auto max-w-6xl px-6 py-12">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-surface-raised px-6 py-8 text-center">
+          <p className="text-sm text-text-muted">Powered by open source</p>
+          <p className="max-w-md text-text-secondary">
+            Drawhaus is built on top of{" "}
+            <a href={EXCALIDRAW_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
+              Excalidraw
+            </a>
+            , the incredible open-source whiteboard. Huge thanks to the Excalidraw team and community.
+          </p>
+          <a
+            href={EXCALIDRAW_GITHUB}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition hover:text-text-primary"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
+            excalidraw/excalidraw
+          </a>
+        </div>
+      </section>
+
+      {/* Footer — matches landing page */}
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 py-10 sm:flex-row">
           <Link to="/" className="flex items-center gap-2">
@@ -245,6 +280,7 @@ git push origin master:production`}</CodeBlock>
 
           <div className="flex flex-wrap items-center gap-6 text-sm text-text-secondary">
             <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-text-primary">GitHub</a>
+            <Link to="/" className="transition hover:text-text-primary">Home</Link>
             <Link to="/privacy" className="transition hover:text-text-primary">Privacy</Link>
             <Link to="/terms" className="transition hover:text-text-primary">Terms</Link>
           </div>
