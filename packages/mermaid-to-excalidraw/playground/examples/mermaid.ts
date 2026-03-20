@@ -448,7 +448,7 @@ const SEQUENCE_PATTERNS: ExampleSection = {
 const ENTITY_RELATIONSHIP: ExampleSection = {
   title: "Entity Relationship Diagrams",
   supported: true,
-  supportLevel: "fallback",
+  supportLevel: "native",
   examples: [
     {
       title: "Basic ER",

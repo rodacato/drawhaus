@@ -93,6 +93,21 @@ export const DEFAULT_THEME: MermaidTheme = {
     strokeWidth: 1,
   },
 
+  // ── ER Diagram ──────────────────────────────────
+  erEntity: {
+    fill: "#f0f4f8",         // light blue-grey (matches class)
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  erRelation: {
+    stroke: "#555555",
+    strokeWidth: 1,
+  },
+  erDashedRelation: {
+    stroke: "#888888",
+    strokeWidth: 1,
+  },
+
   // ── Relations ──────────────────────────────────
   arrow: {
     stroke: "#555555",

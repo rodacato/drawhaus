@@ -44,6 +44,11 @@ export interface MermaidTheme {
   seqDashedMessage: ArrowStyle;
   seqLifeline: ArrowStyle;
 
+  // ── ER Diagram ──────────────────────────────────
+  erEntity: ShapeStyle;
+  erRelation: ArrowStyle;
+  erDashedRelation: ArrowStyle;
+
   // ── Relations ──────────────────────────────────
   arrow: ArrowStyle;
   dependencyArrow: ArrowStyle;
