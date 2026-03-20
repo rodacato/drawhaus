@@ -12,6 +12,8 @@ export type ExcalidrawElementSkeleton = {
   text?: string;
   points?: number[][];
   strokeStyle?: string;
+  strokeColor?: string;
+  strokeWidth?: number;
   backgroundColor?: string;
   fontSize?: number;
   textAlign?: string;
@@ -26,9 +28,13 @@ export type ExcalidrawElementSkeleton = {
 
 // ── Config ─────────────────────────────────────────────────────
 
+import type { DiagramTheme } from "./theme/types.js";
+
 export interface PlantUMLConfig {
   /** Base font size for elements. Default: 16 */
   fontSize?: number;
+  /** Partial theme overrides. Merged with DEFAULT_THEME. */
+  theme?: Partial<DiagramTheme>;
 }
 
 // ── Result ─────────────────────────────────────────────────────

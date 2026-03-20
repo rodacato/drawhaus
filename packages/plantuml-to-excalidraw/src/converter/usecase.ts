@@ -1,9 +1,9 @@
 import type { ExcalidrawElementSkeleton } from "../types.js";
 import type {
   UseCaseDiagramAST,
-  UseCaseRelation,
   UseCaseRelationType,
 } from "../parser/types.js";
+import type { DiagramTheme } from "../theme/types.js";
 import { createRect, createText, createArrow, createEllipse } from "../elements.js";
 import {
   layoutGraph,
@@ -15,18 +15,19 @@ import {
 
 // ── Layout constants ────────────────────────────────────────────
 
-const CHAR_WIDTH = 8.4;
-const PADDING = 16;
-const ACTOR_MIN_WIDTH = 80;
-const ACTOR_HEIGHT = 40;
-const USECASE_MIN_WIDTH = 140;
-const USECASE_HEIGHT = 50;
+const CHAR_WIDTH = 9.5;
+const PADDING = 20;
+const ACTOR_MIN_WIDTH = 100;
+const ACTOR_HEIGHT = 46;
+const USECASE_MIN_WIDTH = 160;
+const USECASE_HEIGHT = 54;
 const BOUNDARY_PADDING = 30;
 
 // ── Public API ──────────────────────────────────────────────────
 
 export function mapUseCaseDiagram(
   ast: UseCaseDiagramAST,
+  theme: DiagramTheme,
 ): ExcalidrawElementSkeleton[] {
   const skeletons: ExcalidrawElementSkeleton[] = [];
 
@@ -39,17 +40,15 @@ export function mapUseCaseDiagram(
     if (uc.alias) aliasMap.set(uc.alias, uc.name);
   }
 
-  // Resolve alias to name
   const resolve = (id: string) => aliasMap.get(id) ?? id;
 
-  // Collect all node names (actors + use cases, including implicit from relations)
+  // Collect all node names
   const actorNames = new Set(ast.actors.map((a) => a.name));
   const useCaseNames = new Set(ast.useCases.map((uc) => uc.name));
 
   for (const rel of ast.relations) {
     const left = resolve(rel.left);
     const right = resolve(rel.right);
-    // If not declared, guess: parenthesized names are use cases, others are actors
     if (!actorNames.has(left) && !useCaseNames.has(left)) {
       actorNames.add(left);
     }
@@ -67,7 +66,6 @@ export function mapUseCaseDiagram(
   }
 
   for (const name of useCaseNames) {
-    // Ellipses need ~1.3x width for the same text
     const w = Math.max(name.length * CHAR_WIDTH * 1.3 + PADDING * 2, USECASE_MIN_WIDTH);
     nodeDimensions.set(name, { width: w, height: USECASE_HEIGHT });
   }
@@ -87,7 +85,6 @@ export function mapUseCaseDiagram(
   const direction = ast.direction === "LR" ? "LR" : "TB";
   const layout = layoutGraph(layoutNodes, layoutEdges, direction, 80, 100);
 
-  // Track element IDs for arrow binding
   const nodeIds = new Map<string, string>();
 
   // Render boundaries first (behind everything)
@@ -105,20 +102,22 @@ export function mapUseCaseDiagram(
       skeletons.push(
         createRect({
           x: bounds.x - BOUNDARY_PADDING,
-          y: bounds.y - BOUNDARY_PADDING - 20, // extra for title
+          y: bounds.y - BOUNDARY_PADDING - 24,
           width: bounds.width + BOUNDARY_PADDING * 2,
-          height: bounds.height + BOUNDARY_PADDING * 2 + 20,
-          strokeStyle: "dashed",
-          backgroundColor: "transparent",
+          height: bounds.height + BOUNDARY_PADDING * 2 + 24,
+          strokeStyle: theme.boundary.strokeStyle,
+          strokeColor: theme.boundary.stroke,
+          backgroundColor: theme.boundary.fill,
         }),
       );
       skeletons.push(
         createText({
           x: bounds.x - BOUNDARY_PADDING + PADDING,
-          y: bounds.y - BOUNDARY_PADDING - 16,
+          y: bounds.y - BOUNDARY_PADDING - 20,
           text: boundary.name,
-          fontSize: 14,
-          textAlign: "center",
+          fontSize: theme.memberText.fontSize,
+          color: theme.memberText.color,
+          textAlign: "left",
         }),
       );
     }
@@ -129,12 +128,16 @@ export function mapUseCaseDiagram(
     const pos = layout.nodes.get(name);
     if (!pos) continue;
 
+    const centerX = pos.x + pos.width / 2;
+
     const rect = createRect({
       x: pos.x,
       y: pos.y,
       width: pos.width,
       height: pos.height,
-      backgroundColor: "#e8eaf6",
+      backgroundColor: theme.actor.fill,
+      strokeColor: theme.actor.stroke,
+      strokeStyle: theme.actor.strokeStyle,
       roundness: 4,
     });
     if (rect.id) nodeIds.set(name, rect.id);
@@ -142,19 +145,21 @@ export function mapUseCaseDiagram(
 
     skeletons.push(
       createText({
-        x: pos.x + PADDING,
-        y: pos.y + 4,
+        x: centerX,
+        y: pos.y + 5,
         text: "«actor»",
-        fontSize: 10,
+        fontSize: theme.stereotypeText.fontSize - 2,
+        color: theme.stereotypeText.color,
         textAlign: "center",
       }),
     );
     skeletons.push(
       createText({
-        x: pos.x + PADDING,
-        y: pos.y + 18,
+        x: centerX,
+        y: pos.y + 22,
         text: name,
-        fontSize: 14,
+        fontSize: theme.memberText.fontSize,
+        color: theme.headerText.color,
         textAlign: "center",
       }),
     );
@@ -171,7 +176,9 @@ export function mapUseCaseDiagram(
       width: pos.width,
       height: pos.height,
       label: name,
-      backgroundColor: "#f3e5f5",
+      backgroundColor: theme.useCase.fill,
+      strokeColor: theme.useCase.stroke,
+      strokeStyle: theme.useCase.strokeStyle,
     });
     if (ellipse.id) nodeIds.set(name, ellipse.id);
     skeletons.push(ellipse);
@@ -187,9 +194,11 @@ export function mapUseCaseDiagram(
     if (!sourcePos || !targetPos) continue;
 
     const edgePoints = layout.edges.get(`rel_${i}`);
-    const { startArrowhead, endArrowhead, strokeStyle } = getArrowStyle(rel.relationType);
+    const { startArrowhead, endArrowhead, strokeStyle, isDependency } =
+      getArrowStyle(rel.relationType);
 
-    // For include/extend, add stereotype label if not already labeled
+    const arrowTheme = isDependency ? theme.dependencyArrow : theme.arrow;
+
     let label = rel.label ?? undefined;
     if (!label && rel.relationType === "include") label = "«include»";
     if (!label && rel.relationType === "extend") label = "«extend»";
@@ -203,6 +212,8 @@ export function mapUseCaseDiagram(
         startArrowhead,
         endArrowhead,
         strokeStyle,
+        strokeColor: arrowTheme.stroke,
+        strokeWidth: arrowTheme.strokeWidth,
         startId: nodeIds.get(leftName),
         endId: nodeIds.get(rightName),
       }),
@@ -218,19 +229,20 @@ function getArrowStyle(relationType: UseCaseRelationType): {
   startArrowhead: "arrow" | "triangle" | null;
   endArrowhead: "arrow" | "triangle" | null;
   strokeStyle: "solid" | "dashed";
+  isDependency: boolean;
 } {
   switch (relationType) {
     case "directed":
-      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "solid" };
+      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "solid", isDependency: false };
     case "include":
-      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "dashed" };
+      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "dashed", isDependency: true };
     case "extend":
-      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "dashed" };
+      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "dashed", isDependency: true };
     case "inheritance":
-      return { startArrowhead: null, endArrowhead: "triangle", strokeStyle: "solid" };
+      return { startArrowhead: null, endArrowhead: "triangle", strokeStyle: "solid", isDependency: false };
     case "association":
     default:
-      return { startArrowhead: null, endArrowhead: null, strokeStyle: "solid" };
+      return { startArrowhead: null, endArrowhead: null, strokeStyle: "solid", isDependency: false };
   }
 }
 

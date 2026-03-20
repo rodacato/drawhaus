@@ -1,15 +1,14 @@
 import type { ExcalidrawElementSkeleton, PlantUMLConfig, PlantUMLToExcalidrawResult } from "./types.js";
 import {
   parsePlantUML,
-  detectDiagramType,
   PlantUMLParseError,
   PlantUMLUnsupportedError,
 } from "./parser/index.js";
-import type { DiagramType } from "./parser/types.js";
 import { mapClassDiagram } from "./converter/class.js";
 import { mapObjectDiagram } from "./converter/object.js";
 import { mapUseCaseDiagram } from "./converter/usecase.js";
 import { resetIdCounter } from "./elements.js";
+import { resolveTheme } from "./theme/index.js";
 
 // ── Re-exports ─────────────────────────────────────────────────
 
@@ -44,6 +43,16 @@ export type {
   PlantUMLToExcalidrawResult,
 } from "./types.js";
 
+export type {
+  DiagramTheme,
+  ShapeStyle,
+  TextStyle,
+  ArrowStyle,
+  StrokeStyle,
+} from "./theme/types.js";
+
+export { DEFAULT_THEME, resolveTheme } from "./theme/index.js";
+
 // ── Public API ─────────────────────────────────────────────────
 
 /**
@@ -62,7 +71,7 @@ export type {
  */
 export function parsePlantUMLToExcalidraw(
   definition: string,
-  _config?: PlantUMLConfig,
+  config?: PlantUMLConfig,
 ): PlantUMLToExcalidrawResult {
   const trimmed = definition.trim();
   if (!trimmed) {
@@ -77,24 +86,27 @@ export function parsePlantUMLToExcalidraw(
     );
   }
 
-  const diagramType = detectDiagramType(trimmed);
+  // Resolve theme: merge user overrides with defaults
+  const theme = resolveTheme(config?.theme);
 
   // Reset element ID counter for deterministic output
   resetIdCounter();
 
+  // parsePlantUML uses detection + fallback: if the primary parser
+  // fails, it tries alternative parsers automatically.
   const ast = parsePlantUML(trimmed);
 
   let elements: ExcalidrawElementSkeleton[] = [];
 
   switch (ast.type) {
     case "class":
-      elements = mapClassDiagram(ast);
+      elements = mapClassDiagram(ast, theme);
       break;
     case "object":
-      elements = mapObjectDiagram(ast);
+      elements = mapObjectDiagram(ast, theme);
       break;
     case "usecase":
-      elements = mapUseCaseDiagram(ast);
+      elements = mapUseCaseDiagram(ast, theme);
       break;
     default:
       throw new PlantUMLUnsupportedError(ast.type);
@@ -102,6 +114,8 @@ export function parsePlantUMLToExcalidraw(
 
   return {
     elements,
-    diagramType,
+    // Use AST type as source of truth — may differ from heuristic
+    // detection if fallback kicked in.
+    diagramType: ast.type,
   };
 }

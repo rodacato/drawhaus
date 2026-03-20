@@ -5,10 +5,10 @@ import type {
   ClassMember,
   ClassRelationType,
 } from "../parser/types.js";
+import type { DiagramTheme, ShapeStyle } from "../theme/types.js";
 import { createRect, createText, createArrow, createLine } from "../elements.js";
 import {
   layoutGraph,
-  clampToBoxBorder,
   buildArrowPoints,
   type LayoutNode,
   type LayoutEdge,
@@ -17,40 +17,25 @@ import {
 
 // ── Layout constants ────────────────────────────────────────────
 
-const CHAR_WIDTH = 8.4;
-const LINE_HEIGHT = 20;
-const PADDING_X = 16;
-const PADDING_Y = 10;
+const CHAR_WIDTH = 9.5;
+const LINE_HEIGHT = 22;
+const PADDING_X = 20;
+const PADDING_Y = 12;
 const SECTION_SEPARATOR_HEIGHT = 8;
-const MIN_WIDTH = 140;
-const HEADER_FONT_SIZE = 16;
-const MEMBER_FONT_SIZE = 14;
-
-// ── Entity styles by kind ───────────────────────────────────────
-
-type EntityStyle = {
-  backgroundColor: string;
-  strokeStyle: "solid" | "dashed" | "dotted";
-};
-
-const ENTITY_STYLES: Record<ClassEntity["kind"], EntityStyle> = {
-  class:          { backgroundColor: "#e3f2fd", strokeStyle: "solid" },   // blue
-  abstract_class: { backgroundColor: "#f3e5f5", strokeStyle: "solid" },   // purple
-  interface:      { backgroundColor: "#e8f5e9", strokeStyle: "dashed" },  // green, dashed border
-  enum:           { backgroundColor: "#fff8e1", strokeStyle: "solid" },   // amber/yellow
-};
+const MIN_WIDTH = 160;
 
 // ── Public API ──────────────────────────────────────────────────
 
 export function mapClassDiagram(
   ast: ClassDiagramAST,
+  theme: DiagramTheme,
 ): ExcalidrawElementSkeleton[] {
   const skeletons: ExcalidrawElementSkeleton[] = [];
 
   // Calculate dimensions for each entity
   const entityDimensions = new Map<string, { width: number; height: number }>();
   for (const entity of ast.entities) {
-    const dim = measureEntity(entity);
+    const dim = measureEntity(entity, theme);
     entityDimensions.set(entity.name, dim);
   }
 
@@ -75,15 +60,14 @@ export function mapClassDiagram(
     const pos = layout.nodes.get(entity.name);
     if (!pos) continue;
 
-    const entitySkeletons = renderEntity(entity, pos.x, pos.y);
-    // Store the main rect id for arrow binding
+    const entitySkeletons = renderEntity(entity, pos.x, pos.y, theme);
     if (entitySkeletons.length > 0 && entitySkeletons[0].id) {
       entityIds.set(entity.name, entitySkeletons[0].id);
     }
     skeletons.push(...entitySkeletons);
   }
 
-  // Render relations as arrows using dagre edge points for routing
+  // Render relations as arrows
   for (let i = 0; i < ast.relations.length; i++) {
     const rel = ast.relations[i];
     const sourcePos = layout.nodes.get(rel.left);
@@ -97,6 +81,7 @@ export function mapClassDiagram(
       rel.label,
       sourcePos,
       targetPos,
+      theme,
       entityIds.get(rel.left),
       entityIds.get(rel.right),
       edgePoints?.points,
@@ -109,12 +94,21 @@ export function mapClassDiagram(
 
 // ── Entity rendering ────────────────────────────────────────────
 
+function getEntityStyle(kind: ClassEntity["kind"], theme: DiagramTheme): ShapeStyle {
+  switch (kind) {
+    case "class": return theme.class;
+    case "abstract_class": return theme.abstractClass;
+    case "interface": return theme.interface;
+    case "enum": return theme.enum;
+  }
+}
+
 interface EntityDimensions {
   width: number;
   height: number;
 }
 
-function measureEntity(entity: ClassEntity): EntityDimensions {
+function measureEntity(entity: ClassEntity, theme: DiagramTheme): EntityDimensions {
   const headerLines = getHeaderLines(entity);
   const { attributes, methods } = splitMembers(entity.members);
 
@@ -129,24 +123,26 @@ function measureEntity(entity: ClassEntity): EntityDimensions {
     MIN_WIDTH,
   );
 
-  let height = PADDING_Y; // top padding
-  // Header: stereotype lines are shorter (16px), class name is full LINE_HEIGHT
+  const stereotypeFontSize = theme.stereotypeText.fontSize;
+  const stereotypeLineHeight = stereotypeFontSize + 6;
+
+  let height = PADDING_Y;
   for (let i = 0; i < headerLines.length; i++) {
-    height += i < headerLines.length - 1 ? 16 : LINE_HEIGHT;
+    height += i < headerLines.length - 1 ? stereotypeLineHeight : LINE_HEIGHT;
   }
   if (attributes.length > 0 || methods.length > 0) {
-    height += SECTION_SEPARATOR_HEIGHT; // separator after header
+    height += SECTION_SEPARATOR_HEIGHT;
   }
   if (attributes.length > 0) {
     height += attributes.length * LINE_HEIGHT;
     if (methods.length > 0) {
-      height += SECTION_SEPARATOR_HEIGHT; // separator between attrs and methods
+      height += SECTION_SEPARATOR_HEIGHT;
     }
   }
   if (methods.length > 0) {
     height += methods.length * LINE_HEIGHT;
   }
-  height += PADDING_Y; // bottom padding
+  height += PADDING_Y;
 
   return { width: maxLineWidth, height };
 }
@@ -155,14 +151,19 @@ function renderEntity(
   entity: ClassEntity,
   x: number,
   y: number,
+  theme: DiagramTheme,
 ): ExcalidrawElementSkeleton[] {
   const skeletons: ExcalidrawElementSkeleton[] = [];
-  const dim = measureEntity(entity);
+  const dim = measureEntity(entity, theme);
   const headerLines = getHeaderLines(entity);
   const { attributes, methods } = splitMembers(entity.members);
 
-  // Style based on entity kind
-  const style = ENTITY_STYLES[entity.kind];
+  const style = getEntityStyle(entity.kind, theme);
+  const stereotypeFontSize = theme.stereotypeText.fontSize;
+  const stereotypeLineHeight = stereotypeFontSize + 6;
+
+  // Center x for centered text
+  const centerX = x + dim.width / 2;
 
   // Main bounding rectangle
   const mainRect = createRect({
@@ -170,26 +171,28 @@ function renderEntity(
     y,
     width: dim.width,
     height: dim.height,
-    backgroundColor: style.backgroundColor,
+    backgroundColor: style.fill,
+    strokeColor: style.stroke,
     strokeStyle: style.strokeStyle,
   });
   skeletons.push(mainRect);
 
   let currentY = y + PADDING_Y;
 
-  // Header: stereotype line (smaller, muted) + class name (bold)
+  // Header: stereotype (centered, smaller) + class name (centered, bold)
   for (let i = 0; i < headerLines.length; i++) {
-    const isStereotype = i < headerLines.length - 1; // all lines except last are stereotype/kind
+    const isStereotype = i < headerLines.length - 1;
     skeletons.push(
       createText({
-        x: x + PADDING_X,
+        x: centerX,
         y: currentY,
         text: headerLines[i],
-        fontSize: isStereotype ? 12 : HEADER_FONT_SIZE,
+        fontSize: isStereotype ? stereotypeFontSize : theme.headerText.fontSize,
+        color: isStereotype ? theme.stereotypeText.color : theme.headerText.color,
         textAlign: "center",
       }),
     );
-    currentY += isStereotype ? 16 : LINE_HEIGHT;
+    currentY += isStereotype ? stereotypeLineHeight : LINE_HEIGHT;
   }
 
   // Separator line after header
@@ -201,19 +204,23 @@ function renderEntity(
         startY: currentY,
         endX: x + dim.width,
         endY: currentY,
+        strokeColor: theme.separator.stroke,
+        strokeWidth: theme.separator.strokeWidth,
       }),
     );
     currentY += SECTION_SEPARATOR_HEIGHT / 2;
   }
 
-  // Attributes section
+  // Attributes section (left-aligned)
   for (const attr of attributes) {
     skeletons.push(
       createText({
         x: x + PADDING_X,
         y: currentY,
         text: formatMember(attr),
-        fontSize: MEMBER_FONT_SIZE,
+        fontSize: theme.memberText.fontSize,
+        color: theme.memberText.color,
+        textAlign: "left",
       }),
     );
     currentY += LINE_HEIGHT;
@@ -228,19 +235,23 @@ function renderEntity(
         startY: currentY,
         endX: x + dim.width,
         endY: currentY,
+        strokeColor: theme.separator.stroke,
+        strokeWidth: theme.separator.strokeWidth,
       }),
     );
     currentY += SECTION_SEPARATOR_HEIGHT / 2;
   }
 
-  // Methods section
+  // Methods section (left-aligned)
   for (const method of methods) {
     skeletons.push(
       createText({
         x: x + PADDING_X,
         y: currentY,
         text: formatMember(method),
-        fontSize: MEMBER_FONT_SIZE,
+        fontSize: theme.memberText.fontSize,
+        color: theme.memberText.color,
+        textAlign: "left",
       }),
     );
     currentY += LINE_HEIGHT;
@@ -256,14 +267,15 @@ function renderRelation(
   label: string | null,
   source: Box,
   target: Box,
+  theme: DiagramTheme,
   sourceId?: string,
   targetId?: string,
   dagrePoints?: Array<{ x: number; y: number }>,
 ): ExcalidrawElementSkeleton {
-  const { startArrowhead, endArrowhead, strokeStyle } =
+  const { startArrowhead, endArrowhead, strokeStyle, isDependency } =
     getArrowStyle(relationType);
 
-  // Use dagre waypoints if available, clamped to box borders
+  const arrowTheme = isDependency ? theme.dependencyArrow : theme.arrow;
   const points = buildArrowPoints(source, target, dagrePoints);
 
   return createArrow({
@@ -272,6 +284,8 @@ function renderRelation(
     startArrowhead,
     endArrowhead,
     strokeStyle,
+    strokeColor: arrowTheme.stroke,
+    strokeWidth: arrowTheme.strokeWidth,
     startId: sourceId,
     endId: targetId,
   });
@@ -281,81 +295,34 @@ function getArrowStyle(relationType: ClassRelationType): {
   startArrowhead: "arrow" | "triangle" | "diamond" | null;
   endArrowhead: "arrow" | "triangle" | "diamond" | null;
   strokeStyle: "solid" | "dashed";
+  isDependency: boolean;
 } {
   switch (relationType) {
     case "inheritance":
-      return {
-        startArrowhead: null,
-        endArrowhead: "triangle",
-        strokeStyle: "solid",
-      };
+      return { startArrowhead: null, endArrowhead: "triangle", strokeStyle: "solid", isDependency: false };
     case "inheritance_reverse":
-      return {
-        startArrowhead: "triangle",
-        endArrowhead: null,
-        strokeStyle: "solid",
-      };
+      return { startArrowhead: "triangle", endArrowhead: null, strokeStyle: "solid", isDependency: false };
     case "implementation":
-      return {
-        startArrowhead: null,
-        endArrowhead: "triangle",
-        strokeStyle: "dashed",
-      };
+      return { startArrowhead: null, endArrowhead: "triangle", strokeStyle: "dashed", isDependency: true };
     case "implementation_reverse":
-      return {
-        startArrowhead: "triangle",
-        endArrowhead: null,
-        strokeStyle: "dashed",
-      };
+      return { startArrowhead: "triangle", endArrowhead: null, strokeStyle: "dashed", isDependency: true };
     case "composition":
-      return {
-        startArrowhead: null,
-        endArrowhead: "diamond",
-        strokeStyle: "solid",
-      };
+      return { startArrowhead: null, endArrowhead: "diamond", strokeStyle: "solid", isDependency: false };
     case "composition_reverse":
-      return {
-        startArrowhead: "diamond",
-        endArrowhead: null,
-        strokeStyle: "solid",
-      };
+      return { startArrowhead: "diamond", endArrowhead: null, strokeStyle: "solid", isDependency: false };
     case "aggregation":
-      return {
-        startArrowhead: null,
-        endArrowhead: "diamond",
-        strokeStyle: "solid",
-      };
+      return { startArrowhead: null, endArrowhead: "diamond", strokeStyle: "solid", isDependency: false };
     case "aggregation_reverse":
-      return {
-        startArrowhead: "diamond",
-        endArrowhead: null,
-        strokeStyle: "solid",
-      };
+      return { startArrowhead: "diamond", endArrowhead: null, strokeStyle: "solid", isDependency: false };
     case "directed_association":
-      return {
-        startArrowhead: null,
-        endArrowhead: "arrow",
-        strokeStyle: "solid",
-      };
+      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "solid", isDependency: false };
     case "directed_association_reverse":
-      return {
-        startArrowhead: "arrow",
-        endArrowhead: null,
-        strokeStyle: "solid",
-      };
+      return { startArrowhead: "arrow", endArrowhead: null, strokeStyle: "solid", isDependency: false };
     case "dependency":
-      return {
-        startArrowhead: null,
-        endArrowhead: "arrow",
-        strokeStyle: "dashed",
-      };
+      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "dashed", isDependency: true };
     case "association":
     default:
-      return {
-        startArrowhead: null,
-        endArrowhead: null,
-        strokeStyle: "solid",
-      };
+      return { startArrowhead: null, endArrowhead: null, strokeStyle: "solid", isDependency: false };
   }
 }
 
@@ -411,7 +378,6 @@ function formatMember(member: ClassMember): string {
     return member.name;
   }
 
-  // attribute
   const type = member.type ? `: ${member.type}` : "";
   return `${staticPrefix}${abstractPrefix}${vis}${member.name}${type}`;
 }

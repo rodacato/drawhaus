@@ -17,7 +17,9 @@ export function createRect(opts: {
   label?: string;
   roundness?: number;
   backgroundColor?: string;
+  strokeColor?: string;
   strokeStyle?: "solid" | "dashed" | "dotted";
+  strokeWidth?: number;
 }): ExcalidrawElementSkeleton {
   const skeleton: ExcalidrawElementSkeleton = {
     type: "rectangle",
@@ -27,6 +29,8 @@ export function createRect(opts: {
     height: opts.height,
     id: nextId(),
     strokeStyle: opts.strokeStyle,
+    strokeColor: opts.strokeColor,
+    strokeWidth: opts.strokeWidth,
     backgroundColor: opts.backgroundColor ?? "transparent",
     roundness: opts.roundness ? { type: 3, value: opts.roundness } : null,
     ...(opts.label
@@ -48,6 +52,7 @@ export function createText(opts: {
   text: string;
   fontSize?: number;
   textAlign?: "left" | "center" | "right";
+  color?: string;
 }): ExcalidrawElementSkeleton {
   return {
     type: "text",
@@ -57,6 +62,7 @@ export function createText(opts: {
     id: nextId(),
     fontSize: opts.fontSize ?? 16,
     textAlign: opts.textAlign ?? "left",
+    ...(opts.color ? { strokeColor: opts.color } : {}),
   };
 }
 
@@ -66,6 +72,8 @@ export function createArrow(opts: {
   startArrowhead?: "arrow" | "bar" | "dot" | "triangle" | "diamond" | null;
   endArrowhead?: "arrow" | "bar" | "dot" | "triangle" | "diamond" | null;
   strokeStyle?: "solid" | "dashed" | "dotted";
+  strokeColor?: string;
+  strokeWidth?: number;
   startId?: string;
   endId?: string;
 }): ExcalidrawElementSkeleton {
@@ -92,6 +100,8 @@ export function createArrow(opts: {
     startArrowhead: opts.startArrowhead ?? null,
     endArrowhead: opts.endArrowhead ?? "arrow",
     strokeStyle: opts.strokeStyle ?? "solid",
+    strokeColor: opts.strokeColor,
+    strokeWidth: opts.strokeWidth,
     ...(opts.label
       ? {
           label: {
@@ -140,6 +150,7 @@ export function createEllipse(opts: {
   height: number;
   label?: string;
   backgroundColor?: string;
+  strokeColor?: string;
   strokeStyle?: "solid" | "dashed" | "dotted";
 }): ExcalidrawElementSkeleton {
   return {
@@ -150,6 +161,7 @@ export function createEllipse(opts: {
     height: opts.height,
     id: nextId(),
     backgroundColor: opts.backgroundColor ?? "transparent",
+    strokeColor: opts.strokeColor,
     strokeStyle: opts.strokeStyle ?? "solid",
     ...(opts.label
       ? { label: { text: opts.label, x: opts.x, y: opts.y } }
@@ -163,6 +175,8 @@ export function createLine(opts: {
   endX: number;
   endY: number;
   strokeStyle?: "solid" | "dashed" | "dotted";
+  strokeColor?: string;
+  strokeWidth?: number;
 }): ExcalidrawElementSkeleton {
   return {
     type: "line",
@@ -176,5 +190,7 @@ export function createLine(opts: {
       [opts.endX - opts.startX, opts.endY - opts.startY],
     ],
     strokeStyle: opts.strokeStyle ?? "solid",
+    strokeColor: opts.strokeColor,
+    strokeWidth: opts.strokeWidth,
   };
 }
