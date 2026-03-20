@@ -615,6 +615,58 @@ const MINDMAP_DIAGRAMS: ExampleSection = {
       CI/CD
       Monitoring`,
     },
+    {
+      title: "Node Shapes",
+      description: "All supported mindmap shapes",
+      code: `mindmap
+  root((Central Idea))
+    [Square Node]
+    (Rounded Node)
+    ))Bang Node((
+    {{Hexagon Node}}`,
+    },
+    {
+      title: "Study Plan",
+      description: "Deep nesting with categories",
+      code: `mindmap
+  root((Computer Science))
+    Algorithms
+      Sorting
+        QuickSort
+        MergeSort
+      Graphs
+        BFS
+        DFS
+        Dijkstra
+    Systems
+      Operating Systems
+        Processes
+        Memory
+      Networking
+        TCP/IP
+        HTTP
+    Languages
+      TypeScript
+      Rust
+      Go`,
+    },
+    {
+      title: "Sprint Retrospective",
+      description: "Simple team retrospective",
+      code: `mindmap
+  Retrospective
+    Went Well
+      Faster deploys
+      Good collaboration
+      Clean PRs
+    Improve
+      Test coverage
+      Documentation
+      Code reviews
+    Actions
+      Setup CI checks
+      Weekly syncs`,
+    },
   ],
 };
 

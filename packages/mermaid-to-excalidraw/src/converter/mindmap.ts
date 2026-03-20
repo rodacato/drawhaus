@@ -1,14 +1,9 @@
 /**
  * Mermaid Mindmap → Excalidraw elements converter.
  *
- * Uses a custom tree layout (not dagre) since mindmaps have a
- * radial/hierarchical structure determined by indentation.
- *
- * 1. Parse → MindmapAST
- * 2. Measure nodes
- * 3. Layout tree (recursive subtree positioning)
- * 4. Render nodes (shape-specific)
- * 5. Render branches (lines from parent to child)
+ * Uses a horizontal tree layout (root left, children right).
+ * Each node's absolute position is computed in a single recursive pass,
+ * then a second pass renders shapes and branch lines.
  */
 
 import type {
@@ -26,7 +21,6 @@ import { DEFAULT_THEME } from "../theme/default.js";
 import { parseMermaidMindmap } from "../parser/mindmap.js";
 import {
   createRect,
-  createText,
   createLine,
   createEllipse,
   createDiamond,
@@ -40,18 +34,18 @@ const NODE_PADDING_X = 20;
 const NODE_PADDING_Y = 10;
 const MIN_NODE_WIDTH = 80;
 const MIN_NODE_HEIGHT = 36;
-const SIBLING_GAP = 20;
-const LEVEL_GAP = 80;
+const SIBLING_GAP = 16;
+const LEVEL_GAP = 60;
 
-// ── Positioned node (after layout) ──────────────────────────────
+// ── Laid-out node (absolute positions) ──────────────────────────
 
-interface PositionedNode {
+interface LaidOutNode {
   node: MindmapNode;
   x: number;
   y: number;
   width: number;
   height: number;
-  children: PositionedNode[];
+  children: LaidOutNode[];
 }
 
 // ── Public API ──────────────────────────────────────────────────
@@ -77,103 +71,106 @@ export function mapMindmap(
 ): ExcalidrawElementSkeleton[] {
   if (!ast.root) return [];
 
+  // Phase 1: Measure all nodes
+  const sizes = new Map<string, { width: number; height: number }>();
+  measureAll(ast.root, sizes);
+
+  // Phase 2: Compute subtree heights (bottom-up)
+  const subtreeHeights = new Map<string, number>();
+  computeSubtreeHeight(ast.root, sizes, subtreeHeights);
+
+  // Phase 3: Layout with absolute coordinates
+  const root = layoutAbsolute(ast.root, 0, 0, 0, sizes, subtreeHeights);
+
+  // Phase 4: Render
   const skeletons: ExcalidrawElementSkeleton[] = [];
-
-  // Phase 1+2: Measure and layout
-  const positioned = layoutTree(ast.root, 0);
-
-  // Phase 3: Render
-  renderTree(positioned, null, skeletons, theme, 0);
+  renderNode(root, null, skeletons, theme);
 
   return skeletons;
 }
 
-// ── Tree layout ─────────────────────────────────────────────────
+// ── Measurement ─────────────────────────────────────────────────
 
-function measureNode(node: MindmapNode): { width: number; height: number } {
+function measureAll(
+  node: MindmapNode,
+  sizes: Map<string, { width: number; height: number }>,
+): void {
   const textWidth = node.label.length * CHAR_WIDTH;
   let width = Math.max(textWidth + NODE_PADDING_X * 2, MIN_NODE_WIDTH);
   let height = MIN_NODE_HEIGHT;
 
-  // Circle should be square-ish
   if (node.shape === "circle") {
-    const size = Math.max(width, height);
+    const size = Math.max(width * 1.3, height * 1.3);
     width = size;
     height = size;
+  } else if (node.shape === "hexagon" || node.shape === "bang") {
+    width = Math.max(width * 1.4, MIN_NODE_WIDTH);
+    height = Math.max(height * 1.2, MIN_NODE_HEIGHT);
   }
 
-  // Hexagon/diamond need more space
-  if (node.shape === "hexagon" || node.shape === "bang") {
-    width = Math.max(width * 1.3, MIN_NODE_WIDTH);
-  }
+  sizes.set(node.id, { width, height });
 
-  return { width, height };
+  for (const child of node.children) {
+    measureAll(child, sizes);
+  }
 }
 
-function layoutTree(node: MindmapNode, depth: number): PositionedNode {
-  const { width, height } = measureNode(node);
-  node.level = depth;
+// ── Subtree height computation ──────────────────────────────────
+
+function computeSubtreeHeight(
+  node: MindmapNode,
+  sizes: Map<string, { width: number; height: number }>,
+  result: Map<string, number>,
+): number {
+  const { height } = sizes.get(node.id)!;
 
   if (node.children.length === 0) {
-    return { node, x: 0, y: 0, width, height, children: [] };
+    result.set(node.id, height);
+    return height;
   }
 
-  // Layout children recursively
-  const childPositions: PositionedNode[] = [];
+  let childrenTotal = 0;
+  for (let i = 0; i < node.children.length; i++) {
+    if (i > 0) childrenTotal += SIBLING_GAP;
+    childrenTotal += computeSubtreeHeight(node.children[i], sizes, result);
+  }
+
+  const subtreeH = Math.max(height, childrenTotal);
+  result.set(node.id, subtreeH);
+  return subtreeH;
+}
+
+// ── Absolute layout ─────────────────────────────────────────────
+
+function layoutAbsolute(
+  node: MindmapNode,
+  x: number,
+  yTop: number,
+  depth: number,
+  sizes: Map<string, { width: number; height: number }>,
+  subtreeHeights: Map<string, number>,
+): LaidOutNode {
+  const { width, height } = sizes.get(node.id)!;
+  const subtreeH = subtreeHeights.get(node.id)!;
+  node.level = depth;
+
+  // Center this node vertically within its subtree band
+  const y = yTop + (subtreeH - height) / 2;
+
+  const children: LaidOutNode[] = [];
+  const childX = x + width + LEVEL_GAP;
+
+  // Stack children vertically within the subtree band
+  let childYTop = yTop;
   for (const child of node.children) {
-    childPositions.push(layoutTree(child, depth + 1));
+    const childSubH = subtreeHeights.get(child.id)!;
+    children.push(
+      layoutAbsolute(child, childX, childYTop, depth + 1, sizes, subtreeHeights),
+    );
+    childYTop += childSubH + SIBLING_GAP;
   }
 
-  // Position children vertically, stacked below/right of parent
-  // Using a horizontal tree layout (parent left, children right)
-  let childY = 0;
-  for (const cp of childPositions) {
-    const subtreeHeight = getSubtreeHeight(cp);
-    cp.x = width + LEVEL_GAP;
-    cp.y = childY;
-    childY += subtreeHeight + SIBLING_GAP;
-  }
-
-  // Center parent vertically relative to children
-  const totalChildHeight = childY - SIBLING_GAP;
-  const parentY = Math.max(0, (totalChildHeight - height) / 2);
-
-  // Adjust children if parent is taller
-  if (parentY === 0 && totalChildHeight < height) {
-    const offset = (height - totalChildHeight) / 2;
-    for (const cp of childPositions) {
-      offsetTree(cp, 0, offset);
-    }
-  }
-
-  return {
-    node,
-    x: 0,
-    y: parentY,
-    width,
-    height,
-    children: childPositions,
-  };
-}
-
-function getSubtreeHeight(pos: PositionedNode): number {
-  if (pos.children.length === 0) return pos.height;
-
-  let maxBottom = pos.y + pos.height;
-  for (const child of pos.children) {
-    const childBottom = child.y + getSubtreeHeight(child);
-    maxBottom = Math.max(maxBottom, childBottom);
-  }
-
-  return maxBottom - pos.y;
-}
-
-function offsetTree(pos: PositionedNode, dx: number, dy: number): void {
-  pos.x += dx;
-  pos.y += dy;
-  for (const child of pos.children) {
-    offsetTree(child, dx, dy);
-  }
+  return { node, x, y, width, height, children };
 }
 
 // ── Rendering ───────────────────────────────────────────────────
@@ -188,39 +185,35 @@ function getNodeStyle(
   return theme.mindmapNode;
 }
 
-function renderTree(
-  pos: PositionedNode,
-  parentPos: PositionedNode | null,
+function renderNode(
+  laid: LaidOutNode,
+  parent: LaidOutNode | null,
   skeletons: ExcalidrawElementSkeleton[],
   theme: MermaidTheme,
-  baseX: number,
 ): void {
-  const absX = baseX + pos.x;
-  const absY = pos.y;
-  const style = getNodeStyle(pos.node, pos.node.level, theme);
+  const style = getNodeStyle(laid.node, laid.node.level, theme);
 
-  // Render branch line from parent to this node
-  if (parentPos) {
-    const parentAbsX = baseX - pos.x + parentPos.x;
+  // Branch line from parent's right edge to this node's left edge
+  if (parent) {
     skeletons.push(createLine({
-      startX: parentAbsX + parentPos.width,
-      startY: parentPos.y + parentPos.height / 2,
-      endX: absX,
-      endY: absY + pos.height / 2,
+      startX: parent.x + parent.width,
+      startY: parent.y + parent.height / 2,
+      endX: laid.x,
+      endY: laid.y + laid.height / 2,
       strokeColor: theme.mindmapBranch.stroke,
       strokeWidth: theme.mindmapBranch.strokeWidth,
     }));
   }
 
-  // Render node shape
-  switch (pos.node.shape) {
+  // Node shape
+  switch (laid.node.shape) {
     case "circle":
       skeletons.push(createEllipse({
-        x: absX,
-        y: absY,
-        width: pos.width,
-        height: pos.height,
-        label: pos.node.label,
+        x: laid.x,
+        y: laid.y,
+        width: laid.width,
+        height: laid.height,
+        label: laid.node.label,
         backgroundColor: style.fill,
         strokeColor: style.stroke,
         strokeStyle: style.strokeStyle,
@@ -229,11 +222,11 @@ function renderTree(
 
     case "hexagon":
       skeletons.push(createDiamond({
-        x: absX,
-        y: absY,
-        width: pos.width,
-        height: pos.height,
-        label: pos.node.label,
+        x: laid.x,
+        y: laid.y,
+        width: laid.width,
+        height: laid.height,
+        label: laid.node.label,
         backgroundColor: style.fill,
         strokeColor: style.stroke,
         strokeStyle: style.strokeStyle,
@@ -243,11 +236,11 @@ function renderTree(
     case "rounded":
     case "cloud":
       skeletons.push(createRect({
-        x: absX,
-        y: absY,
-        width: pos.width,
-        height: pos.height,
-        label: pos.node.label,
+        x: laid.x,
+        y: laid.y,
+        width: laid.width,
+        height: laid.height,
+        label: laid.node.label,
         roundness: 16,
         backgroundColor: style.fill,
         strokeColor: style.stroke,
@@ -257,11 +250,11 @@ function renderTree(
 
     case "bang":
       skeletons.push(createRect({
-        x: absX,
-        y: absY,
-        width: pos.width,
-        height: pos.height,
-        label: pos.node.label,
+        x: laid.x,
+        y: laid.y,
+        width: laid.width,
+        height: laid.height,
+        label: laid.node.label,
         backgroundColor: style.fill,
         strokeColor: style.stroke,
         strokeStyle: style.strokeStyle,
@@ -271,11 +264,11 @@ function renderTree(
 
     case "square":
       skeletons.push(createRect({
-        x: absX,
-        y: absY,
-        width: pos.width,
-        height: pos.height,
-        label: pos.node.label,
+        x: laid.x,
+        y: laid.y,
+        width: laid.width,
+        height: laid.height,
+        label: laid.node.label,
         backgroundColor: style.fill,
         strokeColor: style.stroke,
         strokeStyle: style.strokeStyle,
@@ -283,13 +276,12 @@ function renderTree(
       break;
 
     default:
-      // Default organic shape → rounded rect
       skeletons.push(createRect({
-        x: absX,
-        y: absY,
-        width: pos.width,
-        height: pos.height,
-        label: pos.node.label,
+        x: laid.x,
+        y: laid.y,
+        width: laid.width,
+        height: laid.height,
+        label: laid.node.label,
         roundness: 20,
         backgroundColor: style.fill,
         strokeColor: style.stroke,
@@ -299,7 +291,7 @@ function renderTree(
   }
 
   // Render children
-  for (const child of pos.children) {
-    renderTree(child, pos, skeletons, theme, absX);
+  for (const child of laid.children) {
+    renderNode(child, laid, skeletons, theme);
   }
 }
