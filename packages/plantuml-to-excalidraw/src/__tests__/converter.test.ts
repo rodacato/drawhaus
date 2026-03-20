@@ -765,3 +765,66 @@ User -> DB: query
     assert.equal(rects.length, 4, "2 participants x 2 (top + bottom)");
   });
 });
+
+// ── Mindmap Diagram Converter ────────────────────────────────
+
+describe("mindmap diagram converter", () => {
+  test("converts basic mindmap to elements", () => {
+    const code = `@startmindmap
+* Root
+** Child 1
+** Child 2
+@endmindmap`;
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "mindmap");
+    assert.ok(result.elements.length > 0);
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 3, "root + 2 children");
+
+    const texts = result.elements.filter((e) => e.type === "text");
+    assert.equal(texts.length, 3, "text for each node");
+
+    const lines = result.elements.filter((e) => e.type === "line");
+    assert.equal(lines.length, 2, "branch line per child");
+  });
+
+  test("converts mindmap with left and right sides", () => {
+    const code = `@startmindmap
+* Center
+** Right
+-- Left
+@endmindmap`;
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "mindmap");
+
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 3);
+
+    const lines = result.elements.filter((e) => e.type === "line");
+    assert.equal(lines.length, 2);
+  });
+
+  test("returns empty elements for empty mindmap", () => {
+    const code = `@startmindmap
+@endmindmap`;
+    const result = parsePlantUMLToExcalidraw(code);
+    assert.equal(result.diagramType, "mindmap");
+    assert.equal(result.elements.length, 0);
+  });
+
+  test("converts nested mindmap levels", () => {
+    const code = `@startmindmap
+* Root
+** A
+*** A1
+** B
+@endmindmap`;
+    const result = parsePlantUMLToExcalidraw(code);
+    const rects = result.elements.filter((e) => e.type === "rectangle");
+    assert.equal(rects.length, 4, "root + A + A1 + B");
+
+    const lines = result.elements.filter((e) => e.type === "line");
+    assert.equal(lines.length, 3, "root->A, A->A1, root->B");
+  });
+});

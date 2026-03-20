@@ -140,6 +140,22 @@ export const DEFAULT_THEME: DiagramTheme = {
     strokeWidth: 1,
   },
 
+  // ── Mindmap Diagram ──────────────────────────
+  mindmapRoot: {
+    fill: "#e8eaf6",           // light indigo
+    stroke: "#5c6bc0",
+    strokeStyle: "solid",
+  },
+  mindmapNode: {
+    fill: "#f0f4f8",           // very light blue-grey
+    stroke: "#5b8fc9",
+    strokeStyle: "solid",
+  },
+  mindmapBranch: {
+    stroke: "#888888",
+    strokeWidth: 2,
+  },
+
   // ── Relations ──────────────────────────────────
   arrow: {
     stroke: "#555555",

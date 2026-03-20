@@ -6,7 +6,7 @@ import {
   PlantUMLParseError,
   PlantUMLUnsupportedError,
 } from "../parser/index.js";
-import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST, StateDiagramAST, ComponentDiagramAST, DeploymentDiagramAST, SequenceDiagramAST } from "../parser/types.js";
+import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST, StateDiagramAST, ComponentDiagramAST, DeploymentDiagramAST, SequenceDiagramAST, MindmapDiagramAST } from "../parser/types.js";
 
 function parseClass(code: string): ClassDiagramAST {
   const ast = parsePlantUML(code);
@@ -923,5 +923,99 @@ Alice -> Bob: hello
     assert.equal(ast.participants[0].name, "Charlie");
     assert.equal(ast.participants[1].name, "Alice");
     assert.equal(ast.participants[2].name, "Bob");
+  });
+});
+
+// ── detectDiagramType — mindmap ─────────────────────────────
+
+describe("detectDiagramType - mindmap", () => {
+  test("detects mindmap diagram with @startmindmap", () => {
+    assert.equal(detectDiagramType("@startmindmap\n* root\n@endmindmap"), "mindmap");
+  });
+});
+
+// ── parsePlantUML — mindmap diagrams ────────────────────────
+
+function parseMindmap(code: string): MindmapDiagramAST {
+  const ast = parsePlantUML(code);
+  assert.equal(ast.type, "mindmap");
+  return ast as MindmapDiagramAST;
+}
+
+describe("parsePlantUML - mindmap diagrams", () => {
+  test("parses simple mindmap with root and children", () => {
+    const code = `@startmindmap
+* Root
+** Child 1
+** Child 2
+@endmindmap`;
+    const ast = parseMindmap(code);
+    assert.ok(ast.root);
+    assert.equal(ast.root.label, "Root");
+    assert.equal(ast.root.children.length, 2);
+    assert.equal(ast.root.children[0].label, "Child 1");
+    assert.equal(ast.root.children[1].label, "Child 2");
+  });
+
+  test("parses nested mindmap levels", () => {
+    const code = `@startmindmap
+* Root
+** A
+*** A1
+*** A2
+** B
+@endmindmap`;
+    const ast = parseMindmap(code);
+    assert.ok(ast.root);
+    assert.equal(ast.root.children.length, 2);
+    assert.equal(ast.root.children[0].label, "A");
+    assert.equal(ast.root.children[0].children.length, 2);
+    assert.equal(ast.root.children[0].children[0].label, "A1");
+    assert.equal(ast.root.children[1].label, "B");
+    assert.equal(ast.root.children[1].children.length, 0);
+  });
+
+  test("parses left-side nodes with dashes", () => {
+    const code = `@startmindmap
+* Root
+** Right Child
+-- Left Child
+@endmindmap`;
+    const ast = parseMindmap(code);
+    assert.ok(ast.root);
+    assert.equal(ast.root.children.length, 2);
+    assert.equal(ast.root.children[0].side, "right");
+    assert.equal(ast.root.children[1].side, "left");
+    assert.equal(ast.root.children[1].label, "Left Child");
+  });
+
+  test("ignores comments and skinparam", () => {
+    const code = `@startmindmap
+' this is a comment
+skinparam backgroundColor white
+* Root
+** Child
+@endmindmap`;
+    const ast = parseMindmap(code);
+    assert.ok(ast.root);
+    assert.equal(ast.root.label, "Root");
+    assert.equal(ast.root.children.length, 1);
+  });
+
+  test("parses bracket-style labels", () => {
+    const code = `@startmindmap
+* [Root Node]
+** [Child]
+@endmindmap`;
+    const ast = parseMindmap(code);
+    assert.ok(ast.root);
+    assert.equal(ast.root.label, "Root Node");
+  });
+
+  test("returns null root for empty mindmap", () => {
+    const code = `@startmindmap
+@endmindmap`;
+    const ast = parseMindmap(code);
+    assert.equal(ast.root, null);
   });
 });

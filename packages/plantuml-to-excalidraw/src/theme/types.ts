@@ -81,6 +81,11 @@ export interface DiagramTheme {
   sequenceLifeline: ArrowStyle;
   sequenceMessage: ArrowStyle;
 
+  // ── Mindmap Diagram ──────────────────────────
+  mindmapRoot: ShapeStyle;
+  mindmapNode: ShapeStyle;
+  mindmapBranch: ArrowStyle;
+
   // ── Relations ──────────────────────────────────
   arrow: ArrowStyle;
   dependencyArrow: ArrowStyle;

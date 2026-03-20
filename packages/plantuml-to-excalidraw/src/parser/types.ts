@@ -1,8 +1,8 @@
 // ── AST Types ──────────────────────────────────────────────────
 
-export type DiagramType = "class" | "object" | "usecase" | "state" | "component" | "deployment" | "sequence" | "activity" | "unknown";
+export type DiagramType = "class" | "object" | "usecase" | "state" | "component" | "deployment" | "sequence" | "mindmap" | "activity" | "unknown";
 
-export type DiagramAST = ClassDiagramAST | ObjectDiagramAST | UseCaseDiagramAST | StateDiagramAST | ComponentDiagramAST | DeploymentDiagramAST | SequenceDiagramAST | ActivityDiagramAST;
+export type DiagramAST = ClassDiagramAST | ObjectDiagramAST | UseCaseDiagramAST | StateDiagramAST | ComponentDiagramAST | DeploymentDiagramAST | SequenceDiagramAST | MindmapDiagramAST | ActivityDiagramAST;
 
 // ── Class Diagram ──────────────────────────────────────────────
 
@@ -277,6 +277,21 @@ export interface SequenceNote {
   text: string;
   position: "left" | "right" | "over";
   participant: string;
+}
+
+// ── Mindmap Diagram ──────────────────────────────────────────
+
+export interface MindmapDiagramAST {
+  type: "mindmap";
+  root: MindmapNode | null;
+}
+
+export interface MindmapNode {
+  level: number;
+  label: string;
+  side: "right" | "left";
+  shape: "default";
+  children: MindmapNode[];
 }
 
 // ── Activity Diagram (future) ──────────────────────────────────

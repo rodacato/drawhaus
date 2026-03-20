@@ -16,7 +16,7 @@
     "dist"
   ],
   "scripts": {
-    "prebuild": "peggy --format es -o src/parser/grammar/class.js src/parser/grammar/class.peggy && peggy --format es -o src/parser/grammar/object.js src/parser/grammar/object.peggy && peggy --format es -o src/parser/grammar/usecase.js src/parser/grammar/usecase.peggy && peggy --format es -o src/parser/grammar/state.js src/parser/grammar/state.peggy && peggy --format es -o src/parser/grammar/component.js src/parser/grammar/component.peggy && peggy --format es -o src/parser/grammar/deployment.js src/parser/grammar/deployment.peggy && peggy --format es -o src/parser/grammar/sequence.js src/parser/grammar/sequence.peggy",
+    "prebuild": "peggy --format es -o src/parser/grammar/class.js src/parser/grammar/class.peggy && peggy --format es -o src/parser/grammar/object.js src/parser/grammar/object.peggy && peggy --format es -o src/parser/grammar/usecase.js src/parser/grammar/usecase.peggy && peggy --format es -o src/parser/grammar/state.js src/parser/grammar/state.peggy && peggy --format es -o src/parser/grammar/component.js src/parser/grammar/component.peggy && peggy --format es -o src/parser/grammar/deployment.js src/parser/grammar/deployment.peggy && peggy --format es -o src/parser/grammar/sequence.js src/parser/grammar/sequence.peggy && peggy --format es -o src/parser/grammar/mindmap.js src/parser/grammar/mindmap.peggy",
     "build": "tsup",
     "dev": "tsup --watch",
     "pretest": "npm run prebuild",

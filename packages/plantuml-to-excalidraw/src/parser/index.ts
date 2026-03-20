@@ -5,6 +5,7 @@ import { parse as parseStateGrammar } from "./grammar/state.js";
 import { parse as parseComponentGrammar } from "./grammar/component.js";
 import { parse as parseDeploymentGrammar } from "./grammar/deployment.js";
 import { parse as parseSequenceGrammar } from "./grammar/sequence.js";
+import { parse as parseMindmapGrammar } from "./grammar/mindmap.js";
 import type {
   DiagramAST,
   DiagramType,
@@ -34,6 +35,7 @@ const PARSERS = new Map<DiagramType, ParserFn>([
   ["component", (code) => parseWithPeggy(parseComponentGrammar, code)],
   ["deployment", (code) => parseWithPeggy(parseDeploymentGrammar, code)],
   ["sequence", (code) => parseWithPeggy(parseSequenceGrammar, code)],
+  ["mindmap", (code) => parseWithPeggy(parseMindmapGrammar, code)],
 ]);
 
 // ── Detection Rules ─────────────────────────────────────────────
@@ -51,6 +53,14 @@ interface DetectionRule {
 }
 
 const DETECTION_RULES: DetectionRule[] = [
+  // Mindmap: @startmindmap is 100% unambiguous — must be first
+  {
+    type: "mindmap",
+    test: (_s, lower) =>
+      lower.includes("@startmindmap"),
+    fallbacks: [],
+  },
+
   // Use Case: unambiguous keyword
   {
     type: "usecase",

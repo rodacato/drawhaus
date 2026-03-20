@@ -555,6 +555,65 @@ map CapitalCity {
   ],
 };
 
+const MINDMAP_DIAGRAMS: ExampleSection = {
+  title: "Mindmap Diagrams",
+  supported: true,
+  examples: [
+    {
+      title: "Basic Mindmap",
+      description: "Simple mindmap with nested topics",
+      code: `@startmindmap
+* Project Planning
+** Requirements
+*** Functional
+*** Non-Functional
+** Design
+*** Architecture
+*** UI/UX
+** Implementation
+** Testing
+@endmindmap`,
+    },
+    {
+      title: "Two-Sided Mindmap",
+      description: "Mindmap with left and right branches",
+      code: `@startmindmap
+* Business Strategy
+** Revenue Streams
+*** Subscriptions
+*** Licensing
+** Market Growth
+*** New Regions
+*** Partnerships
+-- Cost Reduction
+--- Automation
+--- Outsourcing
+-- Risk Management
+--- Compliance
+--- Security
+@endmindmap`,
+    },
+    {
+      title: "Tech Stack",
+      description: "Technology decision map",
+      code: `@startmindmap
+* Web Application
+** Frontend
+*** React
+*** TypeScript
+*** TailwindCSS
+** Backend
+*** Node.js
+*** Express
+*** PostgreSQL
+** DevOps
+*** Docker
+*** GitHub Actions
+@endmindmap`,
+    },
+  ],
+};
+
 const ACTIVITY_DIAGRAMS: ExampleSection = {
   title: "Activity Diagrams",
   supported: false,
@@ -833,6 +892,7 @@ export const ALL_EXAMPLES: ExampleSection[] = [
   COMPONENT_DIAGRAMS,
   DEPLOYMENT_DIAGRAMS,
   SEQUENCE_DIAGRAMS,
+  MINDMAP_DIAGRAMS,
   // Unsupported
   ACTIVITY_DIAGRAMS,
   TIMING_DIAGRAMS,
