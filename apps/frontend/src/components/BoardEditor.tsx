@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
 import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
-import { DriveSyncBadge, type DriveSyncState } from "@/components/DriveSyncBadge";
+import { DriveSyncBadge } from "@/components/DriveSyncBadge";
 import { FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "@/components/BoardSidebar";
 import { useToast } from "@/components/Toast";
@@ -17,6 +17,8 @@ import type { OfflineSnapshot } from "@/lib/offline-storage";
 import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import { useComments } from "@/lib/hooks/useComments";
+import { useDriveSyncStatus } from "@/lib/hooks/useDriveSyncStatus";
+import { useBoardShortcuts } from "@/lib/hooks/useBoardShortcuts";
 import { shareApi } from "@/api/share";
 import { diagramsApi } from "@/api/diagrams";
 import type { ExcalidrawElement } from "@/lib/types";
@@ -75,29 +77,7 @@ export default function BoardEditor({
   const comments = useComments({ diagramId, sceneId: collab.activeSceneId, socketRef: collab.socketRef });
 
   // Drive sync status from socket
-  const [driveSyncState, setDriveSyncState] = useState<DriveSyncState>("idle");
-  const [driveSyncError, setDriveSyncError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const socket = collab.socketRef.current;
-    if (!socket) return;
-    const handler = ({ synced, error }: { synced: boolean; error?: string }) => {
-      if (synced) {
-        setDriveSyncState("synced");
-        setDriveSyncError(null);
-        const timer = setTimeout(() => setDriveSyncState("idle"), 5000);
-        return () => clearTimeout(timer);
-      }
-      if (error) {
-        setDriveSyncState("error");
-        setDriveSyncError(error);
-        const timer = setTimeout(() => setDriveSyncState("idle"), 8000);
-        return () => clearTimeout(timer);
-      }
-    };
-    socket.on("drive-sync-status", handler);
-    return () => { socket.off("drive-sync-status", handler); };
-  }, [collab.socketRef]);
+  const { driveSyncState, driveSyncError } = useDriveSyncStatus(collab.socketRef);
 
   const canEdit = collab.userRole === "owner" || collab.userRole === "editor";
 
@@ -155,22 +135,12 @@ export default function BoardEditor({
   }, [collab.socketRef, collab.selfUserId, toast]);
 
   // Keyboard shortcuts
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
-        e.preventDefault();
-        setCommentsPanelOpen((prev) => !prev);
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-        e.preventDefault();
-        if (collab.hasEditLock) {
-          collab.flushSave().then(() => toast("Diagrama guardado", "success"));
-        }
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [collab.hasEditLock, collab.flushSave, toast]);
+  useBoardShortcuts({
+    hasEditLock: collab.hasEditLock,
+    flushSave: collab.flushSave,
+    onToggleComments: () => setCommentsPanelOpen((prev) => !prev),
+    toast,
+  });
 
   // Track lock holder changes for the editing bubble
   const [bubbleHolder, setBubbleHolder] = useState<{ name: string; isSelf: boolean } | null>(null);

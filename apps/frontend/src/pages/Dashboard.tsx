@@ -1,12 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { diagramsApi } from "@/api/diagrams";
-import { foldersApi } from "@/api/folders";
-import { shareApi } from "@/api/share";
-import { tagsApi, type Tag } from "@/api/tags";
-import { workspacesApi, type Workspace } from "@/api/workspaces";
-import { templatesApi } from "@/api/templates";
-import { sortByUpdated, filterStarred, isValidExcalidrawFile } from "@/lib/diagram-filters";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -17,36 +10,24 @@ import { TemplatePicker } from "@/components/TemplatePicker";
 import { Drawer } from "@/components/Drawer";
 import { WorkspaceSettingsContent } from "@/components/WorkspaceSettingsContent";
 import { DashboardSidebar, WorkspaceToolbar, WorkspaceView, GeneralView, TemplatesView } from "@/components/dashboard";
-
-type Diagram = { id: string; title: string; folderId: string | null; thumbnail: string | null; starred?: boolean; tags?: Tag[]; updatedAt?: string; updated_at?: string };
-type Folder = { id: string; name: string };
-type SidebarView = "all" | "recent" | "starred" | "unfiled" | "folder" | "templates";
+import { workspacesApi } from "@/api/workspaces";
+import { useDashboardData, type SidebarView } from "@/lib/hooks/useDashboardData";
+import { useDiagramActions } from "@/lib/hooks/useDiagramActions";
+import { useTagActions } from "@/lib/hooks/useTagActions";
 
 export function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [diagrams, setDiagrams] = useState<Diagram[]>([]);
-  const [folders, setFolders] = useState<Folder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const confirm = useConfirm();
-  const [actionPending, setActionPending] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [viewMode, setViewMode] = useState<"grid" | "list">(() => (localStorage.getItem("drawhaus_view") as "grid" | "list") ?? "grid");
   const [sidebarView, setSidebarView] = useState<SidebarView>("recent");
   const [shareModalDiagramId, setShareModalDiagramId] = useState<string | null>(null);
-  const [allTags, setAllTags] = useState<Tag[]>([]);
   const [driveImportOpen, setDriveImportOpen] = useState(false);
-  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
-  const [templatePickerFolderId, setTemplatePickerFolderId] = useState<string | undefined>(undefined);
   const [settingsWorkspaceId, setSettingsWorkspaceId] = useState<string | null>(null);
-
-  // Workspaces
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(() => localStorage.getItem("drawhaus_workspace"));
-
-  // Folder creation state
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [sidebarSearch, setSidebarSearch] = useState(searchParams.get("q") ?? "");
@@ -54,61 +35,20 @@ export function Dashboard() {
   const folderIdParam = searchParams.get("folderId");
   const searchQuery = searchParams.get("q") ?? "";
   const folderId = folderIdParam === null ? undefined : folderIdParam === "null" ? null : folderIdParam;
-  const isRecent = sidebarView === "recent";
-  const isStarred = sidebarView === "starred";
-  const isTemplates = sidebarView === "templates";
-  const isWorkspaceView = sidebarView === "all";
 
-  // ── Load workspaces on mount ──
-  useEffect(() => {
-    workspacesApi.list().then((res) => {
-      const ws = res.workspaces ?? [];
-      setWorkspaces(ws);
-      const saved = localStorage.getItem("drawhaus_workspace");
-      if (saved && ws.some((w) => w.id === saved)) {
-        setActiveWorkspaceId(saved);
-      } else {
-        const personal = ws.find((w) => w.isPersonal);
-        if (personal) {
-          setActiveWorkspaceId(personal.id);
-          localStorage.setItem("drawhaus_workspace", personal.id);
-        }
-      }
-    }).catch(() => {});
-  }, []);
+  // ── Data ──
+  const data = useDashboardData({ sidebarView, folderId, searchQuery });
 
-  useEffect(() => {
-    if (activeWorkspaceId) localStorage.setItem("drawhaus_workspace", activeWorkspaceId);
-  }, [activeWorkspaceId]);
+  // ── Actions ──
+  const actions = useDiagramActions({
+    navigate, toast, confirm, loadData: data.loadData,
+    setDiagrams: data.setDiagrams, diagrams: data.diagrams,
+    folderId, activeWorkspaceId: data.activeWorkspaceId,
+  });
 
-  // ── Load data ──
-  const isGlobalView = sidebarView === "recent" || sidebarView === "starred" || sidebarView === "templates";
+  const tags = useTagActions({ setDiagrams: data.setDiagrams, setAllTags: data.setAllTags });
 
-  const loadData = useCallback(async () => {
-    if (!activeWorkspaceId && !isGlobalView) return;
-    try {
-      // Recent/Starred fetch diagrams across ALL workspaces (no workspaceId filter)
-      const params: { folderId?: string; workspaceId?: string } = {};
-      if (!isGlobalView) {
-        params.workspaceId = activeWorkspaceId!;
-        if (folderId !== undefined) params.folderId = folderId === null ? "null" : folderId;
-      }
-
-      const [foldersRes, diagramsRes, tagsRes] = await Promise.all([
-        activeWorkspaceId ? foldersApi.list(activeWorkspaceId) : Promise.resolve({ folders: [] }),
-        searchQuery ? diagramsApi.search(searchQuery) : diagramsApi.list(params),
-        tagsApi.list(),
-      ]);
-      setFolders(foldersRes.folders ?? []);
-      setDiagrams(diagramsRes.diagrams ?? (Array.isArray(diagramsRes) ? diagramsRes : []));
-      setAllTags(tagsRes.tags ?? []);
-    } catch { /* silent */ }
-    setLoading(false);
-  }, [folderId, searchQuery, activeWorkspaceId, isGlobalView]);
-
-  useEffect(() => { loadData(); }, [loadData]);
-
-  // Derive sidebar view from search params
+  // ── Sync sidebar view from search params ──
   useEffect(() => {
     if (searchQuery) return;
     if (folderIdParam === null) {
@@ -119,31 +59,6 @@ export function Dashboard() {
   }, [folderIdParam, searchQuery]);
 
   useEffect(() => { localStorage.setItem("drawhaus_view", viewMode); }, [viewMode]);
-
-  // ── Derived data ──
-  const displayDiagrams = (() => {
-    if (isRecent) return sortByUpdated(diagrams).slice(0, 10);
-    if (isStarred) return filterStarred(diagrams);
-    return diagrams;
-  })();
-
-  const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
-  const heading = searchQuery
-    ? `Search: "${searchQuery}"`
-    : isRecent ? "Recent"
-    : isStarred ? "Starred"
-    : isTemplates ? "My Templates"
-    : activeWorkspace ? (activeWorkspace.isPersonal ? "Personal" : activeWorkspace.name)
-    : "Diagrams";
-
-  const subtitle = searchQuery
-    ? `${displayDiagrams.length} result${displayDiagrams.length !== 1 ? "s" : ""}`
-    : isRecent ? "Recently edited diagrams"
-    : isStarred ? "Your starred diagrams"
-    : isTemplates ? "Your saved templates — double-click to rename"
-    : isWorkspaceView && activeWorkspace
-      ? (activeWorkspace.isPersonal ? "Personal workspace" : `${activeWorkspace.name} workspace`)
-      : "Manage and organize your visual workflows";
 
   // ── Navigation helpers ──
   function navTo(fId?: string | null) {
@@ -158,262 +73,41 @@ export function Dashboard() {
     else setSearchParams({});
   }
 
-  // ── CRUD actions ──
-  function openTemplatePicker(targetFolderId?: string) {
-    setTemplatePickerFolderId(targetFolderId);
-    setTemplatePickerOpen(true);
-  }
-
-  async function createBlankDiagram() {
-    setTemplatePickerOpen(false);
-    setActionPending(true);
-    try {
-      const payload = await diagramsApi.create({ title: "Untitled", folderId: templatePickerFolderId ?? folderId ?? undefined, workspaceId: activeWorkspaceId ?? undefined });
-      const id = payload.diagram?.id;
-      if (id) navigate(`/board/${id}`);
-      else { toast("Diagram created, but missing id.", "info"); loadData(); }
-    } catch { toast("Could not create diagram.", "error"); }
-    finally { setActionPending(false); }
-  }
-
-  async function createFromBuiltIn(template: { name: string; elements: unknown[]; appState: Record<string, unknown> }) {
-    setTemplatePickerOpen(false);
-    setActionPending(true);
-    try {
-      const payload = await diagramsApi.create({
-        title: template.name,
-        folderId: templatePickerFolderId ?? folderId ?? undefined,
-        workspaceId: activeWorkspaceId ?? undefined,
-        elements: template.elements,
-      });
-      const id = payload.diagram?.id;
-      if (id) navigate(`/board/${id}`);
-      else { toast("Diagram created, but missing id.", "info"); loadData(); }
-    } catch { toast("Could not create diagram.", "error"); }
-    finally { setActionPending(false); }
-  }
-
-  async function createFromTemplate(templateId: string, title: string) {
-    setTemplatePickerOpen(false);
-    setActionPending(true);
-    try {
-      const payload = await templatesApi.use(templateId, {
-        title,
-        folderId: templatePickerFolderId ?? folderId ?? undefined,
-        workspaceId: activeWorkspaceId ?? undefined,
-      });
-      const id = payload.diagram?.id;
-      if (id) navigate(`/board/${id}`);
-      else { toast("Diagram created, but missing id.", "info"); loadData(); }
-    } catch { toast("Could not create diagram.", "error"); }
-    finally { setActionPending(false); }
-  }
-
-  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    setActionPending(true);
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      if (!isValidExcalidrawFile(data)) {
-        toast("Invalid .excalidraw file.", "error");
-        setActionPending(false);
-        return;
-      }
-      const title = file.name.replace(/\.(excalidraw|json)$/i, "") || "Imported";
-      const payload = await diagramsApi.create({ title, folderId: folderId ?? undefined, workspaceId: activeWorkspaceId ?? undefined, elements: data.elements });
-      const id = payload.diagram?.id;
-      if (id) navigate(`/board/${id}`);
-      else { toast("Imported, but missing id.", "info"); loadData(); }
-    } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      if (status === 413) toast("File is too large to import. Try a smaller diagram.", "error");
-      else toast("Could not read file.", "error");
-    }
-    finally { setActionPending(false); }
-  }
-
-  async function createFolder() {
-    if (!newFolderName.trim()) return;
-    try {
-      await foldersApi.create(newFolderName.trim(), activeWorkspaceId ?? undefined);
-      setNewFolderName("");
-      setCreatingFolder(false);
-      loadData();
-    } catch { /* silent */ }
-  }
-
-  async function deleteFolder(id: string) {
-    const hasDiagrams = diagrams.some((d) => d.folderId === id);
-    if (hasDiagrams) {
-      toast("Cannot delete this folder because it still contains diagrams. Move or delete them first.", "error");
-      return;
-    }
-    const ok = await confirm({
-      title: "Delete Folder",
-      message: "This folder will be permanently deleted. This cannot be undone.",
-      confirmLabel: "Delete",
-      variant: "danger",
-    });
-    if (!ok) return;
-    try {
-      await foldersApi.delete(id);
-      if (folderId === id) setSearchParams({});
-      toast("Folder deleted");
-      loadData();
-    } catch { toast("Failed to delete folder.", "error"); }
-  }
-
-  async function moveDiagram(diagramId: string, targetFolderId: string | null, workspaceId?: string) {
-    try { await diagramsApi.move(diagramId, targetFolderId, workspaceId); loadData(); } catch { /* silent */ }
-  }
-
-  async function deleteDiagram(diagramId: string, title: string) {
-    const ok = await confirm({
-      title: "Delete Diagram",
-      message: `"${title || "Untitled"}" will be permanently deleted. This cannot be undone.`,
-      confirmLabel: "Delete",
-      variant: "danger",
-    });
-    if (!ok) return;
-    try {
-      await diagramsApi.delete(diagramId);
-      toast("Diagram deleted");
-      loadData();
-    } catch { toast("Failed to delete diagram.", "error"); }
-  }
-
-  async function duplicateDiagram(diagramId: string) {
-    try {
-      const payload = await diagramsApi.duplicate(diagramId);
-      const id = payload.diagram?.id;
-      if (id) navigate(`/board/${id}`);
-      else loadData();
-    } catch { /* silent */ }
-  }
-
-  async function toggleStar(diagramId: string, starred: boolean) {
-    try {
-      await diagramsApi.toggleStar(diagramId, starred);
-      setDiagrams((prev) => prev.map((d) => d.id === diagramId ? { ...d, starred } : d));
-    } catch { /* silent */ }
-  }
-
-  async function embedDiagram(diagramId: string) {
-    try {
-      const cacheKey = `drawhaus_share_${diagramId}_viewer`;
-      let url = localStorage.getItem(cacheKey);
-      if (!url) {
-        const payload = await shareApi.create(diagramId, "viewer");
-        const token = payload.shareLink?.token;
-        if (!token) return;
-        url = `${window.location.origin}/share/${token}`;
-        try { localStorage.setItem(cacheKey, url); } catch { /* quota */ }
-      }
-      const embedUrl = url.replace("/share/", "/embed/");
-      const snippet = `<iframe src="${embedUrl}" width="100%" height="400" style="border:none;border-radius:8px;" loading="lazy"></iframe>`;
-      await navigator.clipboard.writeText(snippet);
-      toast("Embed code copied!");
-    } catch { /* silent */ }
-  }
-
-  async function renameDiagram(diagramId: string, newTitle: string) {
-    const title = newTitle.trim();
-    if (!title) return;
-    try {
-      await diagramsApi.update(diagramId, { title });
-      setDiagrams((prev) => prev.map((d) => d.id === diagramId ? { ...d, title } : d));
-    } catch { /* silent */ }
-  }
-
-  async function toggleTag(diagramId: string, tag: Tag) {
-    const diagram = diagrams.find((d) => d.id === diagramId);
-    const hasTag = diagram?.tags?.some((t) => t.id === tag.id);
-    try {
-      if (hasTag) {
-        await tagsApi.unassign(tag.id, diagramId);
-        setDiagrams((prev) => prev.map((d) => d.id === diagramId ? { ...d, tags: (d.tags ?? []).filter((t) => t.id !== tag.id) } : d));
-      } else {
-        await tagsApi.assign(tag.id, diagramId);
-        setDiagrams((prev) => prev.map((d) => d.id === diagramId ? { ...d, tags: [...(d.tags ?? []), tag] } : d));
-      }
-    } catch { /* silent */ }
-  }
-
-  async function createTag(name: string, color: string) {
-    try {
-      const res = await tagsApi.create(name, color);
-      setAllTags((prev) => [...prev, res.tag]);
-      return res.tag;
-    } catch { return null; }
-  }
-
-  async function deleteTag(tagId: string) {
-    try {
-      await tagsApi.delete(tagId);
-      setAllTags((prev) => prev.filter((t) => t.id !== tagId));
-      setDiagrams((prev) => prev.map((d) => ({ ...d, tags: (d.tags ?? []).filter((t) => t.id !== tagId) })));
-    } catch { /* silent */ }
-  }
-
-  async function saveAsTemplate(diagramId: string, title: string) {
-    try {
-      const data = await diagramsApi.get(diagramId);
-      const d = data.diagram ?? data;
-      await templatesApi.create({
-        title: `${title} Template`,
-        elements: d.elements ?? [],
-        appState: d.appState ?? d.app_state ?? {},
-        workspaceId: activeWorkspaceId,
-        thumbnail: d.thumbnail ?? null,
-      });
-      toast("Template saved!");
-    } catch { toast("Could not save template.", "error"); }
-  }
-
-  // Shared diagram action props
+  // ── Combined diagram action props ──
   const diagramActions = {
-    onMove: moveDiagram,
-    onDelete: deleteDiagram,
-    onDuplicate: duplicateDiagram,
-    onToggleStar: toggleStar,
+    ...actions.diagramActions,
     onShare: (id: string) => setShareModalDiagramId(id),
-    onEmbed: embedDiagram,
-    onRename: renameDiagram,
-    onToggleTag: toggleTag,
-    onCreateTag: createTag,
-    onDeleteTag: deleteTag,
-    onSaveAsTemplate: saveAsTemplate,
+    onToggleTag: tags.toggleTag,
+    onCreateTag: tags.createTag,
+    onDeleteTag: tags.deleteTag,
   };
 
-  if (loading) {
+  if (data.loading) {
     return <div className="flex h-screen items-center justify-center bg-surface text-sm text-text-muted">Loading...</div>;
   }
 
   const emptyMessage = searchQuery
     ? "No diagrams match your search."
-    : isStarred ? "No starred diagrams yet. Star a diagram to see it here."
-    : isRecent ? "No recent diagrams."
+    : data.isStarred ? "No starred diagrams yet. Star a diagram to see it here."
+    : data.isRecent ? "No recent diagrams."
     : "No diagrams here yet. Create your first one.";
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface">
       <DashboardSidebar
         user={user}
-        workspaces={workspaces}
-        activeWorkspaceId={activeWorkspaceId}
-        isRecent={isRecent}
-        isStarred={isStarred}
-        isTemplates={isTemplates}
+        workspaces={data.workspaces}
+        activeWorkspaceId={data.activeWorkspaceId}
+        isRecent={data.isRecent}
+        isStarred={data.isStarred}
+        isTemplates={data.isTemplates}
         onNavRecent={() => { setSearchParams({}); setSidebarView("recent"); }}
         onNavStarred={() => { setSearchParams({}); setSidebarView("starred"); }}
         onNavTemplates={() => { setSearchParams({}); setSidebarView("templates"); }}
-        onSelectWorkspace={(id) => { setActiveWorkspaceId(id); navTo(undefined); }}
+        onSelectWorkspace={(id) => { data.setActiveWorkspaceId(id); navTo(undefined); }}
         onWorkspaceCreated={(ws) => {
-          setWorkspaces((prev) => [...prev, ws]);
-          setActiveWorkspaceId(ws.id);
+          data.setWorkspaces((prev) => [...prev, ws]);
+          data.setActiveWorkspaceId(ws.id);
           navTo(undefined);
         }}
         onStatusMessage={(msg) => toast(msg)}
@@ -441,59 +135,59 @@ export function Dashboard() {
           <div className="ml-8 flex items-center gap-3">
             <ThemeToggle />
           </div>
-          <input ref={fileInputRef} type="file" accept=".excalidraw,.json" onChange={handleImport} className="hidden" />
+          <input ref={fileInputRef} type="file" accept=".excalidraw,.json" onChange={actions.handleImport} className="hidden" />
         </header>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-8">
           <div className="mb-6">
-            <h2 className="font-[family-name:var(--font-family-heading)] text-3xl font-bold tracking-tight text-text-primary">{heading}</h2>
-            <p className="mt-1 text-text-secondary">{subtitle}</p>
+            <h2 className="font-[family-name:var(--font-family-heading)] text-3xl font-bold tracking-tight text-text-primary">{data.heading}</h2>
+            <p className="mt-1 text-text-secondary">{data.subtitle}</p>
           </div>
 
-          {isTemplates ? (
+          {data.isTemplates ? (
             <TemplatesView onStatusMessage={(msg) => toast(msg)} />
           ) : (
             <>
-              {isWorkspaceView && (
+              {data.isWorkspaceView && (
                 <WorkspaceToolbar
                   viewMode={viewMode}
-                  actionPending={actionPending}
+                  actionPending={actions.actionPending}
                   creatingFolder={creatingFolder}
                   newFolderName={newFolderName}
-                  onCreateDiagram={() => openTemplatePicker()}
+                  onCreateDiagram={() => actions.openTemplatePicker()}
                   onStartCreatingFolder={() => setCreatingFolder(true)}
                   onCancelCreatingFolder={() => setCreatingFolder(false)}
                   onNewFolderNameChange={setNewFolderName}
-                  onCreateFolder={createFolder}
+                  onCreateFolder={() => { actions.createFolder(newFolderName); setNewFolderName(""); setCreatingFolder(false); }}
                   onImport={() => fileInputRef.current?.click()}
                   onDriveImport={() => setDriveImportOpen(true)}
                   onViewModeChange={setViewMode}
                 />
               )}
 
-              {isWorkspaceView && folders.length > 0 ? (
+              {data.isWorkspaceView && data.folders.length > 0 ? (
                 <WorkspaceView
-                  diagrams={displayDiagrams}
-                  folders={folders}
-                  allTags={allTags}
+                  diagrams={data.displayDiagrams}
+                  folders={data.folders}
+                  allTags={data.allTags}
                   viewMode={viewMode}
-                  actionPending={actionPending}
-                  onCreateDiagram={openTemplatePicker}
-                  onDeleteFolder={deleteFolder}
-                  workspaces={workspaces}
-                  activeWorkspaceId={activeWorkspaceId}
+                  actionPending={actions.actionPending}
+                  onCreateDiagram={actions.openTemplatePicker}
+                  onDeleteFolder={(id) => actions.deleteFolder(id, setSearchParams)}
+                  workspaces={data.workspaces}
+                  activeWorkspaceId={data.activeWorkspaceId}
                   {...diagramActions}
                 />
               ) : (
                 <GeneralView
-                  diagrams={displayDiagrams}
-                  folders={folders}
-                  allTags={allTags}
+                  diagrams={data.displayDiagrams}
+                  folders={data.folders}
+                  allTags={data.allTags}
                   viewMode={viewMode}
                   emptyMessage={emptyMessage}
-                  workspaces={workspaces}
-                  activeWorkspaceId={activeWorkspaceId}
+                  workspaces={data.workspaces}
+                  activeWorkspaceId={data.activeWorkspaceId}
                   {...diagramActions}
                 />
               )}
@@ -507,29 +201,29 @@ export function Dashboard() {
       )}
       <DriveImportModal open={driveImportOpen} onClose={() => setDriveImportOpen(false)} onImported={(id) => navigate(`/board/${id}`)} />
       <TemplatePicker
-        open={templatePickerOpen}
-        workspaceId={activeWorkspaceId}
-        onClose={() => setTemplatePickerOpen(false)}
-        onBlank={createBlankDiagram}
-        onUseBuiltIn={createFromBuiltIn}
-        onUseTemplate={createFromTemplate}
+        open={actions.templatePickerOpen}
+        workspaceId={data.activeWorkspaceId}
+        onClose={() => actions.setTemplatePickerOpen(false)}
+        onBlank={actions.createBlankDiagram}
+        onUseBuiltIn={actions.createFromBuiltIn}
+        onUseTemplate={actions.createFromTemplate}
       />
 
       <Drawer
         open={!!settingsWorkspaceId}
         onClose={() => setSettingsWorkspaceId(null)}
         title="Workspace Settings"
-        subtitle={workspaces.find((w) => w.id === settingsWorkspaceId)?.name}
+        subtitle={data.workspaces.find((w) => w.id === settingsWorkspaceId)?.name}
         icon={
           settingsWorkspaceId ? (
             <div
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg"
               style={{
-                backgroundColor: (workspaces.find((w) => w.id === settingsWorkspaceId)?.color ?? "#6366f1") + "20",
-                color: workspaces.find((w) => w.id === settingsWorkspaceId)?.color ?? "#6366f1",
+                backgroundColor: (data.workspaces.find((w) => w.id === settingsWorkspaceId)?.color ?? "#6366f1") + "20",
+                color: data.workspaces.find((w) => w.id === settingsWorkspaceId)?.color ?? "#6366f1",
               }}
             >
-              {workspaces.find((w) => w.id === settingsWorkspaceId)?.icon || workspaces.find((w) => w.id === settingsWorkspaceId)?.name.charAt(0).toUpperCase()}
+              {data.workspaces.find((w) => w.id === settingsWorkspaceId)?.icon || data.workspaces.find((w) => w.id === settingsWorkspaceId)?.name.charAt(0).toUpperCase()}
             </div>
           ) : undefined
         }
@@ -542,11 +236,10 @@ export function Dashboard() {
             onWorkspaceUpdated={() => {
               workspacesApi.list().then((res) => {
                 const ws = res.workspaces ?? [];
-                setWorkspaces(ws);
-                // If the active workspace was deleted, fall back to personal
-                if (!ws.some((w) => w.id === activeWorkspaceId)) {
+                data.setWorkspaces(ws);
+                if (!ws.some((w) => w.id === data.activeWorkspaceId)) {
                   const personal = ws.find((w) => w.isPersonal);
-                  if (personal) setActiveWorkspaceId(personal.id);
+                  if (personal) data.setActiveWorkspaceId(personal.id);
                 }
               }).catch(() => {});
             }}

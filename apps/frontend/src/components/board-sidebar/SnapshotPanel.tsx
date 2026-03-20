@@ -3,9 +3,11 @@ import { createPortal } from "react-dom";
 import type { Socket } from "socket.io-client";
 import { ui } from "@/lib/ui";
 import { useSnapshots } from "@/lib/hooks/useSnapshots";
-import { diagramsApi } from "@/api/diagrams";
 import type { SnapshotMeta, SnapshotFull } from "@/api/snapshots";
 import type { ExcalidrawApi } from "@/lib/types";
+import { timeAgo } from "./snapshot-helpers";
+import { SnapshotPreview } from "./SnapshotPreview";
+import { SnapshotItem } from "./SnapshotItem";
 
 type SnapshotPanelProps = {
   diagramId: string;
@@ -15,320 +17,6 @@ type SnapshotPanelProps = {
   socketRef?: React.RefObject<Socket | null>;
 };
 
-const TRIGGER_LABELS: Record<string, string> = {
-  open: "Auto-save",
-  close: "Auto-save",
-  interval: "Auto-save",
-  manual: "Manual",
-};
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-function SessionBadge({ activeUsers }: { activeUsers: number }) {
-  if (activeUsers <= 1) return null;
-  return (
-    <span className="inline-flex items-center gap-0.5 text-text-muted" title={`${activeUsers} users in session`}>
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
-        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-      </svg>
-      {activeUsers}
-    </span>
-  );
-}
-
-/* ─── Preview modal with actions ─── */
-function SnapshotPreview({
-  snapshot,
-  canEdit,
-  onClose,
-  onRestore,
-  onRename,
-}: {
-  snapshot: SnapshotFull;
-  canEdit: boolean;
-  onClose: () => void;
-  onRestore: () => void;
-  onRename: (name: string) => void;
-}) {
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const [naming, setNaming] = useState(false);
-  const [nameValue, setNameValue] = useState(snapshot.name ?? "");
-  const [restoring, setRestoring] = useState(false);
-  const [creatingDiagram, setCreatingDiagram] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function render() {
-      const container = canvasRef.current;
-      if (!container || !snapshot.elements.length) return;
-      try {
-        const { exportToCanvas } = await import("@excalidraw/excalidraw");
-        const canvas = await exportToCanvas({
-          elements: snapshot.elements as Parameters<typeof exportToCanvas>[0]["elements"],
-          appState: { ...snapshot.appState, exportWithDarkMode: false } as Parameters<typeof exportToCanvas>[0]["appState"],
-          files: null,
-          maxWidthOrHeight: 600,
-        });
-        if (cancelled) return;
-        container.innerHTML = "";
-        canvas.style.maxWidth = "100%";
-        canvas.style.height = "auto";
-        canvas.style.borderRadius = "8px";
-        container.appendChild(canvas);
-      } catch { /* preview is best-effort */ }
-    }
-    render();
-    return () => { cancelled = true; };
-  }, [snapshot]);
-
-  function handleNameSubmit() {
-    const trimmed = nameValue.trim();
-    if (trimmed) onRename(trimmed);
-    setNaming(false);
-  }
-
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className={`${ui.card} relative z-10 w-full max-w-xl space-y-3 shadow-2xl`}>
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h2 className={ui.h2}>
-            {snapshot.name ?? `${TRIGGER_LABELS[snapshot.trigger] ?? snapshot.trigger} — ${timeAgo(snapshot.createdAt)}`}
-          </h2>
-          <button type="button" onClick={onClose} className="rounded p-1 text-text-muted hover:bg-surface hover:text-text-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Meta */}
-        <div className="flex items-center gap-2 text-xs text-text-muted">
-          <span>{snapshot.createdByName ?? "System"}</span>
-          <span>·</span>
-          <span>{new Date(snapshot.createdAt).toLocaleString()}</span>
-          {snapshot.activeUsers > 1 && (
-            <>
-              <span>·</span>
-              <SessionBadge activeUsers={snapshot.activeUsers} />
-            </>
-          )}
-        </div>
-
-        {/* Canvas preview */}
-        <div ref={canvasRef} className="flex min-h-[200px] items-center justify-center rounded-lg bg-white">
-          <span className="text-xs text-text-muted">Rendering preview...</span>
-        </div>
-
-        {/* Actions */}
-        {canEdit && (
-          <div className="flex items-center gap-2 pt-1">
-            <button
-              type="button"
-              className={`${ui.btn} ${ui.btnPrimary} flex-1`}
-              disabled={restoring}
-              onClick={() => { setRestoring(true); onRestore(); }}
-            >
-              {restoring ? "Restoring..." : "Restore this version"}
-            </button>
-            {naming ? (
-              <div className="flex flex-1 items-center gap-1">
-                <input
-                  className="w-full rounded border border-border bg-surface-raised px-2 py-1.5 text-sm outline-none focus:border-primary"
-                  value={nameValue}
-                  onChange={(e) => setNameValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleNameSubmit();
-                    if (e.key === "Escape") setNaming(false);
-                  }}
-                  autoFocus
-                  placeholder="Version name..."
-                />
-                <button
-                  type="button"
-                  className={`${ui.btn} ${ui.btnSecondary} shrink-0`}
-                  onClick={handleNameSubmit}
-                >
-                  Save
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className={`${ui.btn} ${ui.btnSecondary} flex-1`}
-                onClick={() => { setNameValue(snapshot.name ?? ""); setNaming(true); }}
-              >
-                {snapshot.name ? "Rename" : "Name this version"}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Open as new diagram */}
-        <button
-          type="button"
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border px-3 py-2 text-sm text-text-secondary transition hover:border-primary hover:text-primary"
-          disabled={creatingDiagram}
-          onClick={async () => {
-            setCreatingDiagram(true);
-            try {
-              const title = snapshot.name
-                ? `${snapshot.name} (copy)`
-                : `Snapshot ${new Date(snapshot.createdAt).toLocaleDateString()} (copy)`;
-              const res = await diagramsApi.create({ title, elements: snapshot.elements }) as { id: string };
-              window.open(`/board/${res.id}`, "_blank");
-            } catch { /* ignore */ }
-            setCreatingDiagram(false);
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-            <polyline points="15 3 21 3 21 9" />
-            <line x1="10" y1="14" x2="21" y2="3" />
-          </svg>
-          {creatingDiagram ? "Creating..." : "Open as new diagram"}
-        </button>
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
-/* ─── Single snapshot item ─── */
-function SnapshotItem({
-  snapshot,
-  canEdit,
-  onPreview,
-  onRestore,
-  onRename,
-  onDelete,
-}: {
-  snapshot: SnapshotMeta;
-  canEdit: boolean;
-  onPreview: () => void;
-  onRestore: () => void;
-  onRename: (name: string | null) => void;
-  onDelete: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [nameValue, setNameValue] = useState(snapshot.name ?? "");
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  function handleRenameSubmit() {
-    const trimmed = nameValue.trim();
-    onRename(trimmed || null);
-    setEditing(false);
-  }
-
-  const authorLabel = snapshot.createdByName ?? "System";
-
-  return (
-    <div className="group flex items-start gap-2 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm">
-      <div className="min-w-0 flex-1">
-        {editing ? (
-          <input
-            className="w-full rounded border border-border bg-surface-raised px-1.5 py-0.5 text-sm outline-none focus:border-primary"
-            value={nameValue}
-            onChange={(e) => setNameValue(e.target.value)}
-            onBlur={handleRenameSubmit}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleRenameSubmit();
-              if (e.key === "Escape") setEditing(false);
-            }}
-            autoFocus
-            placeholder="Version name..."
-          />
-        ) : (
-          <button
-            type="button"
-            className="w-full text-left font-medium text-text-primary truncate hover:text-primary transition-colors"
-            onClick={onPreview}
-            title="Click to preview"
-          >
-            {snapshot.name ? (
-              <span className="flex items-center gap-1.5">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="shrink-0 text-primary">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-                {snapshot.name}
-              </span>
-            ) : (
-              <span className="text-text-secondary">{TRIGGER_LABELS[snapshot.trigger] ?? snapshot.trigger}</span>
-            )}
-          </button>
-        )}
-        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-text-muted">
-          <span>{authorLabel}</span>
-          <span>·</span>
-          <span>{timeAgo(snapshot.createdAt)}</span>
-          <SessionBadge activeUsers={snapshot.activeUsers} />
-        </div>
-      </div>
-      {canEdit && !editing && (
-        <div className="relative shrink-0">
-          <button
-            type="button"
-            className="rounded p-1 text-text-muted opacity-0 transition hover:bg-surface-raised hover:text-text-primary group-hover:opacity-100"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="12" cy="5" r="2" />
-              <circle cx="12" cy="12" r="2" />
-              <circle cx="12" cy="19" r="2" />
-            </svg>
-          </button>
-          {menuOpen && (
-            <>
-              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              <div className="absolute right-0 top-full z-20 mt-1 w-36 rounded-lg border border-border bg-surface-raised py-1 shadow-lg">
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-surface"
-                  onClick={() => { setMenuOpen(false); onPreview(); }}
-                >
-                  Preview
-                </button>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-surface"
-                  onClick={() => { setMenuOpen(false); onRestore(); }}
-                >
-                  Restore
-                </button>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-surface"
-                  onClick={() => { setMenuOpen(false); setEditing(true); setNameValue(snapshot.name ?? ""); }}
-                >
-                  {snapshot.name ? "Rename" : "Name this version"}
-                </button>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-danger hover:bg-surface"
-                  onClick={() => { setMenuOpen(false); onDelete(); }}
-                >
-                  Delete
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ─── Main panel ─── */
 export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored, socketRef }: SnapshotPanelProps) {
   const { named, auto, loading, getSnapshot, createSnapshot, restoreSnapshot, renameSnapshot, deleteSnapshot, refresh } = useSnapshots(diagramId);
 
@@ -348,6 +36,7 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
       clearTimeout(debounceTimer);
     };
   }, [socketRef, diagramId, refresh]);
+
   const [creating, setCreating] = useState(false);
   const [confirmRestore, setConfirmRestore] = useState<SnapshotMeta | null>(null);
   const [restoring, setRestoring] = useState(false);
@@ -356,9 +45,7 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
 
   async function handleCreate() {
     setCreating(true);
-    try {
-      await createSnapshot();
-    } catch { /* ignore */ }
+    try { await createSnapshot(); } catch { /* ignore */ }
     setCreating(false);
   }
 
@@ -480,7 +167,7 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
       {renderList(named, "Named Versions")}
       {renderList(auto, "Automatic Snapshots")}
 
-      {/* Preview modal — closes independently, drawer stays open */}
+      {/* Preview modal */}
       {previewSnapshot && (
         <SnapshotPreview
           snapshot={previewSnapshot}
@@ -491,7 +178,7 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
         />
       )}
 
-      {/* Restore confirmation modal (from list context menu) */}
+      {/* Restore confirmation modal */}
       {confirmRestore && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !restoring && setConfirmRestore(null)} />
