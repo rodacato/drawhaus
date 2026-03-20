@@ -5,6 +5,7 @@ import { registerListDiagrams } from "./list-diagrams.js";
 import { registerGetDiagram } from "./get-diagram.js";
 import { registerUpdateDiagram } from "./update-diagram.js";
 import { registerDeleteDiagram } from "./delete-diagram.js";
+import { registerValidateElements } from "./validate-elements.js";
 
 export function registerAllTools(server: McpServer, client: DrawhausClient) {
   registerCreateDiagram(server, client);
@@ -12,4 +13,5 @@ export function registerAllTools(server: McpServer, client: DrawhausClient) {
   registerGetDiagram(server, client);
   registerUpdateDiagram(server, client);
   registerDeleteDiagram(server, client);
+  registerValidateElements(server);
 }

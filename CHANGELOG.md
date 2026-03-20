@@ -4,6 +4,26 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
+## v0.13.0 — Drawhaus Helpers (2026-03)
+
+### Added
+- **`@drawhaus/helpers` package** — shared element builders, layout engine, validator, and curated spec for Excalidraw diagram generation
+- **Element builders** — `createRect()`, `createText()`, `createArrow()`, `createLine()`, `createDiamond()`, `createEllipse()` with sensible defaults
+- **Layout engine** — dagre-based automatic graph layout with configurable direction (TB/LR) and spacing
+- **Arrow routing** — `clampToBoxBorder()` and `buildArrowPoints()` for intelligent edge routing
+- **Element validator** — `validateElements()` with limits on coordinates, dimensions, element count, text length, and dangerous key rejection
+- **Curated spec** — `getSpecForPrompt()` generates LLM-friendly Excalidraw element documentation with per-diagram-type recommended styles
+- **Diagram styles** — predefined color palettes for DB schema, class, sequence, and architecture diagrams
+- **MCP `validate_elements` tool** — pre-validate elements before creating diagrams, with actionable error messages
+- **MCP prompt improvements** — prompts now include full curated spec with field docs, examples, and recommended styles
+- **Defense in depth** — element validation in MCP (client-side) and backend `/v1/` routes (server-side)
+
+### Changed
+- **Frontend PlantUML converter** — layout engine and arrow routing now imported from `@drawhaus/helpers` shared package
+- **MCP `create_diagram` / `update_diagram`** — validate elements before sending to API, return descriptive errors
+
+---
+
 ## v0.12.0 — MCP Server (2026-03)
 
 ### Added

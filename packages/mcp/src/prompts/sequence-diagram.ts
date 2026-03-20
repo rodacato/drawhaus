@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { getSpecForPrompt } from "@drawhaus/helpers";
 
 export function registerSequenceDiagramPrompt(server: McpServer) {
   server.prompt(
@@ -14,22 +15,19 @@ export function registerSequenceDiagramPrompt(server: McpServer) {
             type: "text" as const,
             text: `Generate an Excalidraw sequence diagram for: ${flow}
 
-Instructions for generating elements:
-- Create a rectangle at the top for each participant/actor (width: 120, height: 40)
-- Draw a vertical dashed line below each participant (use a line element with strokeStyle "dashed")
-- Use horizontal arrow elements for messages between participants (left-to-right for calls, right-to-left for responses)
-- Add text labels on each arrow describing the message/method call
-- Use small rectangles on lifelines for activation bars (width: 16, filled)
+Instructions:
+- Create a rectangle at the top for each participant (width: 120, height: 40)
+- Draw a vertical dashed line below each participant (line element with strokeStyle "dashed")
+- Use horizontal arrows for messages: solid for calls, dashed for responses
+- Add text labels on each arrow describing the message
+- Use small rectangles on lifelines for activation bars (width: 16)
 - Space participants horizontally (x increments of 200)
 - Space messages vertically (y increments of 60)
+- Use descriptive IDs like "participant-client", "msg-auth-request"
+- Use validate_elements to check your output before creating the diagram
+- After validation passes, use create_diagram to save with a descriptive title
 
-Element defaults:
-- Participant rectangles: strokeColor "#1e1e1e", backgroundColor "#d0bfff", fillStyle "solid", roughness 1
-- Lifelines: strokeColor "#868e96", strokeStyle "dashed"
-- Arrows: strokeColor "#1e1e1e" for calls, "#868e96" for responses (dashed)
-- Text: fontSize 14, fontFamily 1
-
-After generating the elements, use the create_diagram tool to save with a descriptive title.`,
+${getSpecForPrompt("sequence")}`,
           },
         },
       ],

@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { getSpecForPrompt } from "@drawhaus/helpers";
 
 export function registerClassDiagramPrompt(server: McpServer) {
   server.prompt(
@@ -14,22 +15,21 @@ export function registerClassDiagramPrompt(server: McpServer) {
             type: "text" as const,
             text: `Generate an Excalidraw class diagram for: ${classes}
 
-Instructions for generating elements:
-- Create a rectangle for each class (width: 220, height varies: ~40px header + 25px per attribute + 25px per method + 20px padding)
-- Divide each class rectangle visually into 3 sections: name (bold, centered), attributes, methods
-- Use text elements for class name, attributes (with types), and methods (with return types)
-- Use arrow elements for relationships:
-  - Solid arrow (inheritance/extends)
-  - Diamond-ended arrow (composition)
-  - Dashed arrow (implements/interface)
-- Space classes in a grid layout (x increments of 320, y increments of 350)
+Instructions:
+- Create a rectangle for each class (width: 220, height: ~40px header + 25px per member + 20px padding)
+- Divide visually with line elements into 3 sections: name, attributes, methods
+- Use text elements for class name (fontSize 16), attributes and methods (fontSize 14, fontFamily 3)
+- Use arrows for relationships:
+  - Inheritance: endArrowhead "triangle", strokeStyle "solid"
+  - Composition: endArrowhead "diamond", strokeStyle "solid"
+  - Implementation: endArrowhead "triangle", strokeStyle "dashed"
+  - Association: endArrowhead "arrow", strokeStyle "solid"
+- Use strokeStyle "dashed" on interface rectangles
+- Use descriptive IDs like "class-User", "arrow-inheritance-admin-user"
+- Use validate_elements to check your output before creating the diagram
+- After validation passes, use create_diagram to save with a descriptive title
 
-Element defaults:
-- Rectangles: strokeColor "#1e1e1e", backgroundColor "#e7f5ff", fillStyle "solid", roughness 1
-- Text: fontSize 14, fontFamily 3 (monospace for attributes/methods), fontFamily 1 for class names
-- Use strokeStyle "dashed" for interface rectangles
-
-After generating the elements, use the create_diagram tool to save with a descriptive title.`,
+${getSpecForPrompt("classDiagram")}`,
           },
         },
       ],

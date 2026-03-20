@@ -12,6 +12,7 @@
     "test:coverage": "tsx --import ./src/__tests__/peggy-loader.mjs --test --experimental-test-coverage 'src/__tests__/**/*.test.ts'"
   },
   "dependencies": {
+    "@drawhaus/helpers": "*",
     "@excalidraw/excalidraw": "^0.18.0",
     "axios": "^1.13.6",
     "dagre": "^0.8.5",

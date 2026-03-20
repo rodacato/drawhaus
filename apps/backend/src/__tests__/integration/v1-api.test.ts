@@ -227,11 +227,11 @@ describe("/v1/diagrams CRUD", () => {
     const app = createApp();
     const res = await api(app).post("/v1/diagrams").send({
       title: "With Scene",
-      elements: [{ id: "el-1", type: "rectangle", text: "Hello" }],
+      elements: [{ id: "el-1", type: "rectangle", x: 0, y: 0, width: 100, height: 50, text: "Hello" }],
       appState: { viewBackgroundColor: "#fff" },
     });
     assert.equal(res.status, 201);
-    assert.deepEqual(res.body.data.elements, [{ id: "el-1", type: "rectangle", text: "Hello" }]);
+    assert.deepEqual(res.body.data.elements, [{ id: "el-1", type: "rectangle", x: 0, y: 0, width: 100, height: 50, text: "Hello" }]);
     assert.deepEqual(res.body.data.appState, { viewBackgroundColor: "#fff" });
   });
 
@@ -325,8 +325,8 @@ describe("/v1/diagrams sanitization", () => {
     const res = await api(app).post("/v1/diagrams").send({
       title: "XSS Test",
       elements: [
-        { id: "el-1", type: "text", text: "<script>alert('xss')</script>Hello" },
-        { id: "el-2", type: "rectangle" },
+        { id: "el-1", type: "text", x: 0, y: 0, text: "<script>alert('xss')</script>Hello" },
+        { id: "el-2", type: "rectangle", x: 0, y: 0, width: 100, height: 50 },
       ],
     });
 
@@ -341,7 +341,7 @@ describe("/v1/diagrams sanitization", () => {
     const id = createRes.body.data.id;
 
     const res = await api(app).patch(`/v1/diagrams/${id}`).send({
-      elements: [{ id: "el-1", type: "text", text: "<b>bold</b> text" }],
+      elements: [{ id: "el-1", type: "text", x: 0, y: 0, text: "<b>bold</b> text" }],
     });
 
     assert.equal(res.status, 200);

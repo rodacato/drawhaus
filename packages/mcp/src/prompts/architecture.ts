@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { getSpecForPrompt } from "@drawhaus/helpers";
 
 export function registerArchitecturePrompt(server: McpServer) {
   server.prompt(
@@ -14,25 +15,18 @@ export function registerArchitecturePrompt(server: McpServer) {
             type: "text" as const,
             text: `Generate an Excalidraw architecture diagram for: ${system}
 
-Instructions for generating elements:
+Instructions:
 - Create large rectangles for major services/components (width: 180–240, height: 80–120)
-- Group related components visually (e.g., frontend layer at top, backend in middle, data layer at bottom)
-- Use arrow elements to show communication between components (API calls, events, data flow)
-- Add text labels inside rectangles for component names and brief descriptions
-- Use different background colors for different layers:
-  - Frontend/client: backgroundColor "#d3f9d8" (green)
-  - Backend/API: backgroundColor "#a5d8ff" (blue)
-  - Database/storage: backgroundColor "#ffec99" (yellow)
-  - External services: backgroundColor "#ffd8a8" (orange)
-  - Message queues/cache: backgroundColor "#eebefa" (purple)
+- Group related components visually (frontend at top, backend in middle, data layer at bottom)
+- Use arrows to show communication between components (API calls, events, data flow)
+- Add text labels inside rectangles for component names
+- Use the recommended color scheme for different layers (see styles below)
 - Space components with 80px gaps between them
+- Use descriptive IDs like "svc-api-gateway", "db-postgres", "queue-redis"
+- Use validate_elements to check your output before creating the diagram
+- After validation passes, use create_diagram to save with a descriptive title
 
-Element defaults:
-- Rectangles: strokeColor "#1e1e1e", fillStyle "solid", roughness 1, roundness { type: 3 }
-- Text: fontSize 16 for component names, fontSize 12 for descriptions, fontFamily 1
-- Arrows: strokeColor "#495057", roughness 1
-
-After generating the elements, use the create_diagram tool to save with a descriptive title.`,
+${getSpecForPrompt("architecture")}`,
           },
         },
       ],

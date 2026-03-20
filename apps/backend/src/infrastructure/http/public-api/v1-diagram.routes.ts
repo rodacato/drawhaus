@@ -11,6 +11,7 @@ import { validate, validateParams, validateQuery } from "../middleware/validate"
 import { sanitizeElements } from "./sanitize-elements";
 import type { ApiKeyAuthedRequest } from "./middleware/require-api-key";
 import { ForbiddenError } from "../../../domain/errors";
+import { validateElements } from "@drawhaus/helpers";
 
 const uuidParams = z.object({ id: z.string().uuid() });
 
@@ -77,6 +78,13 @@ export function createV1DiagramRoutes(
     const { authUser, apiKeyWorkspaceId } = req as ApiKeyAuthedRequest;
     const elements = req.body.elements ? sanitizeElements(req.body.elements) : undefined;
 
+    if (elements) {
+      const validation = validateElements(elements);
+      if (!validation.valid) {
+        return res.status(400).json({ error: "Invalid elements", details: validation.errors });
+      }
+    }
+
     const diagram = await useCases.create.execute({
       ownerId: authUser.id,
       title: req.body.title,
@@ -129,6 +137,13 @@ export function createV1DiagramRoutes(
     if (req.body.title !== undefined) updateData.title = req.body.title;
     if (req.body.elements !== undefined) updateData.elements = sanitizeElements(req.body.elements);
     if (req.body.appState !== undefined) updateData.appState = req.body.appState;
+
+    if (updateData.elements) {
+      const validation = validateElements(updateData.elements);
+      if (!validation.valid) {
+        return res.status(400).json({ error: "Invalid elements", details: validation.errors });
+      }
+    }
 
     const diagram = await useCases.update.execute(String(req.params.id), authUser.id, updateData);
     return res.json({ data: formatDiagram(diagram, frontendUrl, true) });
