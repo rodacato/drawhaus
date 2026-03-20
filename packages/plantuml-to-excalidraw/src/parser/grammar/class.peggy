@@ -2,11 +2,32 @@
 
 Diagram
   = _ startuml? _ elements:ElementList _ enduml? _ {
+      // Merge inline members into their entity declarations
+      const entityMap = new Map();
       const entities = [];
       const relations = [];
       for (const el of elements) {
         if (!el) continue;
-        if (el.type === 'entity') entities.push(el.value);
+        if (el.type === 'entity') {
+          if (entityMap.has(el.value.name)) {
+            // Merge members into existing entity
+            const existing = entityMap.get(el.value.name);
+            existing.members.push(...el.value.members);
+          } else {
+            entityMap.set(el.value.name, el.value);
+            entities.push(el.value);
+          }
+        }
+        else if (el.type === 'inline_member') {
+          // ClassName : member syntax
+          if (entityMap.has(el.value.name)) {
+            entityMap.get(el.value.name).members.push(el.value.member);
+          } else {
+            const entity = { kind: "class", name: el.value.name, stereotype: null, members: [el.value.member] };
+            entityMap.set(el.value.name, entity);
+            entities.push(entity);
+          }
+        }
         else if (el.type === 'relation') relations.push(el.value);
       }
       return { type: "class", entities, relations };
@@ -22,6 +43,7 @@ ElementList
 
 Element
   = Comment { return null; }
+  / InlineMember
   / Relation
   / Entity
 
@@ -46,6 +68,7 @@ Entity
 
 EntityKind
   = "abstract" __ "class" { return "abstract_class"; }
+  / "abstract"             { return "abstract_class"; }
   / "class"                { return "class"; }
   / "interface"            { return "interface"; }
   / "enum"                 { return "enum"; }
@@ -67,6 +90,49 @@ MemberLine
   / EnumValue
   / Member
 
+// --- Inline member: ClassName : memberText ---
+// Matches "Foo : bar()" or "Foo : baz" outside of a body block.
+InlineMember
+  = name:Identifier __ ":" __ text:$([^\n\r{}<>]+) {
+      const trimmed = text.trim();
+      const isMethod = /\w+\s*\(/.test(trimmed);
+      // Extract the member name (first word or before parentheses)
+      const nameMatch = trimmed.match(/^([A-Za-z_][\w\[\]]*)/);
+      const memberName = nameMatch ? nameMatch[1] : trimmed;
+      if (isMethod) {
+        const paramsMatch = trimmed.match(/\(([^)]*)\)/);
+        return {
+          type: 'inline_member',
+          value: {
+            name,
+            member: {
+              kind: "method",
+              name: memberName,
+              visibility: null,
+              type: null,
+              isStatic: false,
+              isAbstract: false,
+              parameters: paramsMatch ? paramsMatch[1] : ""
+            }
+          }
+        };
+      }
+      return {
+        type: 'inline_member',
+        value: {
+          name,
+          member: {
+            kind: "attribute",
+            name: memberName,
+            visibility: null,
+            type: null,
+            isStatic: false,
+            isAbstract: false
+          }
+        }
+      };
+    }
+
 // --- Separator lines (--  ..  ==  __) ---
 Separator
   = $("-" "-" "-"* / "." "." "."* / "=" "=" "="* / "_" "_" "_"*) _
@@ -78,16 +144,18 @@ EnumValue
     }
 
 // --- Members (attributes and methods) ---
+// Supports both: {abstract} +name  AND  +{abstract} name
 Member
-  = modifiers:Modifiers? visibility:Visibility? memberName:MemberName params:Parameters? returnType:ReturnType? {
+  = modifiers:Modifiers? visibility:Visibility? modifiers2:Modifiers? _ memberName:MemberName params:Parameters? returnType:ReturnType? {
+      const allMods = (modifiers || []).concat(modifiers2 || []);
       const isMethod = params !== null;
       return {
         kind: isMethod ? "method" : "attribute",
         name: memberName,
         visibility: visibility || null,
         type: returnType || null,
-        isStatic: modifiers ? modifiers.includes("static") : false,
-        isAbstract: modifiers ? modifiers.includes("abstract") : false,
+        isStatic: allMods.includes("static"),
+        isAbstract: allMods.includes("abstract"),
         parameters: isMethod ? params : undefined
       };
     }
@@ -103,7 +171,7 @@ Visibility
   = v:[+\-#~] { return v; }
 
 MemberName
-  = name:$([A-Za-z_][A-Za-z0-9_]*) { return name; }
+  = name:$([A-Za-z_][A-Za-z0-9_\[\]]*) { return name; }
 
 Parameters
   = "(" params:$([^)]*) ")" { return params; }
@@ -131,6 +199,7 @@ Cardinality
   = '"' card:$([^"]*) '"' { return card; }
 
 Arrow
+  // Two-dash variants (must be checked first — longer match)
   = "<|.."  { return "implementation_reverse"; }
   / "..|>"  { return "implementation"; }
   / "<|--"  { return "inheritance_reverse"; }
@@ -143,6 +212,17 @@ Arrow
   / "-->"   { return "directed_association"; }
   / "..>"   { return "dependency"; }
   / "<.."   { return "dependency_reverse"; }
+  // Single-dash variants (PlantUML allows both - and --)
+  / "<|-"   { return "inheritance_reverse"; }
+  / "-|>"   { return "inheritance"; }
+  / "<|."   { return "implementation_reverse"; }
+  / ".|>"   { return "implementation"; }
+  / "*-"    { return "composition_reverse"; }
+  / "-*"    { return "composition"; }
+  / "o-"    { return "aggregation_reverse"; }
+  / "-o"    { return "aggregation"; }
+  / "<-"    { return "directed_association_reverse"; }
+  / "->"    { return "directed_association"; }
   / ".."    { return "dependency_bidirectional"; }
   / "--"    { return "association"; }
 

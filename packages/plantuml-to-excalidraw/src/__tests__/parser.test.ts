@@ -364,3 +364,28 @@ User --> UC1
     assert.equal(ast.relations[0].relationType, "association");
   });
 });
+
+// ── Fallback Parser Tests ──────────────────────────────────────
+
+describe("parsePlantUML - fallback mechanism", () => {
+  test("unsupported type still throws PlantUMLUnsupportedError", () => {
+    const code = "@startuml\nparticipant Alice\n@enduml";
+    assert.throws(() => parsePlantUML(code), PlantUMLUnsupportedError);
+  });
+
+  test("unknown type throws PlantUMLUnsupportedError", () => {
+    assert.throws(() => parsePlantUML("gibberish"), PlantUMLUnsupportedError);
+  });
+
+  test("valid class diagram parses on first try", () => {
+    const code = "@startuml\nclass Foo {\n  +bar: String\n}\n@enduml";
+    const ast = parsePlantUML(code);
+    assert.equal(ast.type, "class");
+  });
+
+  test("valid object diagram parses on first try", () => {
+    const code = "@startuml\nobject foo {\n  bar = 1\n}\n@enduml";
+    const ast = parsePlantUML(code);
+    assert.equal(ast.type, "object");
+  });
+});
