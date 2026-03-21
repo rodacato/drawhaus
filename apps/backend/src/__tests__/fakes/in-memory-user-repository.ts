@@ -17,7 +17,11 @@ export class InMemoryUserRepository implements UserRepository {
     return this.store.find((u) => u.googleId === googleId) ?? null;
   }
 
-  async create(data: { email: string; name: string; passwordHash: string | null; googleId?: string; avatarUrl?: string }): Promise<User> {
+  async findByGitHubId(githubId: string): Promise<User | null> {
+    return this.store.find((u) => u.githubId === githubId) ?? null;
+  }
+
+  async create(data: { email: string; name: string; passwordHash: string | null; googleId?: string; githubId?: string; githubUsername?: string; avatarUrl?: string }): Promise<User> {
     const user: User = {
       id: crypto.randomUUID(),
       email: data.email,
@@ -26,6 +30,8 @@ export class InMemoryUserRepository implements UserRepository {
       role: "user",
       disabled: false,
       googleId: data.googleId ?? null,
+      githubId: data.githubId ?? null,
+      githubUsername: data.githubUsername ?? null,
       avatarUrl: data.avatarUrl ?? null,
       createdAt: new Date(),
     };
@@ -33,13 +39,15 @@ export class InMemoryUserRepository implements UserRepository {
     return user;
   }
 
-  async update(id: string, data: Partial<Pick<User, "email" | "name" | "passwordHash" | "googleId" | "avatarUrl">>): Promise<User | null> {
+  async update(id: string, data: Partial<Pick<User, "email" | "name" | "passwordHash" | "googleId" | "githubId" | "githubUsername" | "avatarUrl">>): Promise<User | null> {
     const user = this.store.find((u) => u.id === id);
     if (!user) return null;
     if (data.email !== undefined) user.email = data.email;
     if (data.name !== undefined) user.name = data.name;
     if (data.passwordHash !== undefined) user.passwordHash = data.passwordHash;
     if (data.googleId !== undefined) user.googleId = data.googleId;
+    if (data.githubId !== undefined) user.githubId = data.githubId;
+    if (data.githubUsername !== undefined) user.githubUsername = data.githubUsername;
     if (data.avatarUrl !== undefined) user.avatarUrl = data.avatarUrl;
     return user;
   }

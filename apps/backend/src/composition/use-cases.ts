@@ -10,6 +10,8 @@ import { ForgotPasswordUseCase } from "../application/use-cases/auth/forgot-pass
 import { ResetPasswordUseCase } from "../application/use-cases/auth/reset-password";
 import { DeleteAccountUseCase } from "../application/use-cases/auth/delete-account";
 import { GoogleAuthUseCase } from "../application/use-cases/auth/google-auth";
+import { GitHubAuthUseCase } from "../application/use-cases/auth/github-auth";
+import { UnlinkOAuthUseCase } from "../application/use-cases/auth/unlink-oauth";
 
 // --- Diagrams ---
 import { CreateDiagramUseCase } from "../application/use-cases/diagrams/create-diagram";
@@ -133,6 +135,8 @@ export function createUseCases(repos: Repositories, services: Services) {
   const resetPassword = new ResetPasswordUseCase(repos.userRepo, repos.sessionRepo, repos.passwordResetRepo, services.hasher);
   const deleteAccount = new DeleteAccountUseCase(repos.userRepo, services.hasher, services.auditLogger, repos.workspaceRepo);
   const googleAuth = new GoogleAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo);
+  const githubAuth = new GitHubAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo);
+  const unlinkOAuth = new UnlinkOAuthUseCase(repos.userRepo, repos.oauthTokenRepo);
 
   // Diagrams
   const createDiagram = new CreateDiagramUseCase(repos.diagramRepo);
@@ -245,7 +249,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   return {
     // auth
     register, login, logout, getCurrentUser, updateProfile, changePassword,
-    acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth,
+    acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth, githubAuth, unlinkOAuth,
     // diagrams
     createDiagram, getDiagram, listDiagrams, searchDiagrams, updateDiagram,
     deleteDiagram, updateThumbnail, toggleStar, duplicateDiagram,

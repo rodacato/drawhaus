@@ -15,6 +15,9 @@ type SessionRow = {
   disabled: boolean;
   avatar_url: string | null;
   password_hash: string | null;
+  google_id: string | null;
+  github_id: string | null;
+  github_username: string | null;
 };
 
 export class PgSessionRepository implements SessionRepository {
@@ -33,7 +36,7 @@ export class PgSessionRepository implements SessionRepository {
 
   async findUserByToken(token: string): Promise<AuthUser | null> {
     const { rows } = await pool.query<SessionRow>(
-      `SELECT s.id, s.user_id, s.expires_at, u.email, u.name, u.role, u.disabled, u.avatar_url, u.password_hash
+      `SELECT s.id, s.user_id, s.expires_at, u.email, u.name, u.role, u.disabled, u.avatar_url, u.password_hash, u.google_id, u.github_id, u.github_username
        FROM sessions s
        JOIN users u ON u.id = s.user_id
        WHERE s.id = $1
@@ -49,6 +52,10 @@ export class PgSessionRepository implements SessionRepository {
       return null;
     }
 
+    const linkedProviders: string[] = [];
+    if (row.google_id) linkedProviders.push("google");
+    if (row.github_id) linkedProviders.push("github");
+
     return {
       id: row.user_id,
       email: row.email,
@@ -57,6 +64,8 @@ export class PgSessionRepository implements SessionRepository {
       disabled: row.disabled,
       avatarUrl: row.avatar_url,
       hasPassword: !!row.password_hash,
+      linkedProviders,
+      githubUsername: row.github_username,
     };
   }
 

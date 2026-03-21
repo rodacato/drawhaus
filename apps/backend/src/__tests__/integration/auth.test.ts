@@ -13,6 +13,8 @@ import { ForgotPasswordUseCase } from "../../application/use-cases/auth/forgot-p
 import { ResetPasswordUseCase } from "../../application/use-cases/auth/reset-password";
 import { DeleteAccountUseCase } from "../../application/use-cases/auth/delete-account";
 import { GoogleAuthUseCase } from "../../application/use-cases/auth/google-auth";
+import { GitHubAuthUseCase } from "../../application/use-cases/auth/github-auth";
+import { UnlinkOAuthUseCase } from "../../application/use-cases/auth/unlink-oauth";
 import { InMemoryWorkspaceRepository } from "../fakes/in-memory-workspace-repository";
 import { createAuthRoutes } from "../../infrastructure/http/routes/auth.routes";
 import { createRequireAuth } from "../../infrastructure/http/middleware/require-auth";
@@ -49,11 +51,13 @@ function createApp() {
   const deleteAccount = new DeleteAccountUseCase(users, hasher, audit, new InMemoryWorkspaceRepository());
   const oauthTokens = new InMemoryOAuthTokenRepository();
   const googleAuth = new GoogleAuthUseCase(users, sessions, oauthTokens);
+  const githubAuth = new GitHubAuthUseCase(users, sessions, oauthTokens);
+  const unlinkOAuth = new UnlinkOAuthUseCase(users, oauthTokens);
   const requireAuth = createRequireAuth(getCurrentUser);
 
   const app = express();
   app.use(express.json());
-  app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth }, requireAuth));
+  app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth, githubAuth, unlinkOAuth }, requireAuth));
   return app;
 }
 

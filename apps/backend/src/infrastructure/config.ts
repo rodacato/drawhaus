@@ -30,6 +30,11 @@ export const config = {
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
   googleRedirectUri: process.env.GOOGLE_REDIRECT_URI ?? "",
+  // GitHub OAuth (optional — feature disabled when not set)
+  // Prefixed with GH_ instead of GITHUB_ because GitHub reserves that prefix
+  githubClientId: process.env.GH_CLIENT_ID ?? "",
+  githubClientSecret: process.env.GH_CLIENT_SECRET ?? "",
+  githubRedirectUri: process.env.GH_REDIRECT_URI ?? "",
   redisUrl: process.env.REDIS_URL as string | undefined,
   encryptionKey: process.env.ENCRYPTION_KEY ?? "",
   backupPath: process.env.BACKUP_PATH ?? "/data/backups",

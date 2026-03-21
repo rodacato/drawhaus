@@ -7,6 +7,9 @@ All notable changes to Drawhaus are documented here.
 ## v0.11.0 — Public API, MCP Server & Helpers (unreleased)
 
 ### Added
+- **GitHub OAuth** — sign up and log in with GitHub. Automatic account linking by email prevents duplicate accounts across Google, GitHub, and email/password
+- **Connected Accounts** — Settings → Security now shows linked OAuth providers with Connect/Disconnect buttons. Cannot disconnect the last sign-in method
+- **OAuth account linking** — `GET /api/auth/link/google`, `GET /api/auth/link/github` to link accounts from settings; `DELETE /api/auth/link/:provider` to unlink
 - **API key management** — create, list, and revoke workspace-scoped API keys (`dhk_` prefix) from Settings → API Keys
 - **Public API `/v1/`** — REST endpoints for diagrams (create, list, get, update, delete) authenticated via API keys
 - **`/v1/health`** — unauthenticated health check endpoint for connectivity verification

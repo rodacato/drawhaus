@@ -35,6 +35,8 @@ import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-res
 import { InMemoryOAuthTokenRepository } from "../fakes/in-memory-oauth-token-repository";
 import { NoopEmailService } from "../fakes/noop-email-service";
 import { GoogleAuthUseCase } from "../../application/use-cases/auth/google-auth";
+import { GitHubAuthUseCase } from "../../application/use-cases/auth/github-auth";
+import { UnlinkOAuthUseCase } from "../../application/use-cases/auth/unlink-oauth";
 import { TransferDiagramOwnershipUseCase } from "../../application/use-cases/diagrams/transfer-ownership";
 import { NoopAuditLogger } from "../fakes/noop-audit-logger";
 import { InMemoryWorkspaceRepository } from "../fakes/in-memory-workspace-repository";
@@ -67,6 +69,8 @@ function createApp() {
     resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
     deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), new InMemoryWorkspaceRepository()),
     googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
+    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
+    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository()),
   }, requireAuth));
   const folders = new InMemoryFolderRepository();
   app.use("/api/diagrams", createDiagramRoutes({

@@ -116,6 +116,9 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `GOOGLE_CLIENT_ID` | — | Google OAuth client ID. Leave blank to disable Google login |
 | `GOOGLE_CLIENT_SECRET` | — | Google OAuth client secret |
 | `GOOGLE_REDIRECT_URI` | — | Google OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/google/callback`) |
+| `GH_CLIENT_ID` | — | GitHub OAuth client ID. Leave blank to disable GitHub login. Uses `GH_` prefix because GitHub reserves `GITHUB_` |
+| `GH_CLIENT_SECRET` | — | GitHub OAuth client secret |
+| `GH_REDIRECT_URI` | — | GitHub OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/github/callback`) |
 | `RESEND_API_KEY` | — | Resend API key for emails. If blank, emails log to console |
 | `FROM_EMAIL` | `noreply@drawhaus.dev` | Sender address for transactional emails |
 | `HONEYBADGER_API_KEY` | — | Error monitoring (optional) |
@@ -311,6 +314,9 @@ Configure these in your GitHub repo under **Settings → Environments → produc
 | `GOOGLE_CLIENT_ID` | (Optional) Google OAuth client ID — leave blank to disable Google login |
 | `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth client secret |
 | `GOOGLE_REDIRECT_URI` | (Optional) Google OAuth redirect URI (e.g. `https://api.yourdomain.com/api/auth/google/callback`) |
+| `GH_CLIENT_ID` | (Optional) GitHub OAuth client ID — leave blank to disable GitHub login |
+| `GH_CLIENT_SECRET` | (Optional) GitHub OAuth client secret |
+| `GH_REDIRECT_URI` | (Optional) GitHub OAuth redirect URI (e.g. `https://api.yourdomain.com/api/auth/github/callback`) |
 | `REDIS_URL` | (Optional) Redis connection string for Socket.IO scaling |
 | `ENCRYPTION_KEY` | (Optional) 32-byte hex key for encrypting integration secrets (`openssl rand -hex 32`) |
 
@@ -362,6 +368,11 @@ kamal rollback -c config/deploy.frontend.yml
 | `DELETE` | `/api/auth/account` | Delete account |
 | `GET` | `/api/auth/google` | Google OAuth login |
 | `GET` | `/api/auth/google/callback` | Google OAuth callback |
+| `GET` | `/api/auth/github` | GitHub OAuth login |
+| `GET` | `/api/auth/github/callback` | GitHub OAuth callback |
+| `GET` | `/api/auth/link/google` | Link Google account (requires auth) |
+| `GET` | `/api/auth/link/github` | Link GitHub account (requires auth) |
+| `DELETE` | `/api/auth/link/:provider` | Unlink OAuth provider (requires auth) |
 
 ### Setup
 | Method | Endpoint | Description |

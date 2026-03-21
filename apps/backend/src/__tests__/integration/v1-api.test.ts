@@ -43,6 +43,8 @@ function createApp() {
     role: "user",
     disabled: false,
     googleId: null,
+    githubId: null,
+    githubUsername: null,
     avatarUrl: null,
     createdAt: new Date(),
   });

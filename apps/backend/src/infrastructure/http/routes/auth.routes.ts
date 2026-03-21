@@ -12,6 +12,8 @@ import type { ForgotPasswordUseCase } from "../../../application/use-cases/auth/
 import type { ResetPasswordUseCase } from "../../../application/use-cases/auth/reset-password";
 import type { DeleteAccountUseCase } from "../../../application/use-cases/auth/delete-account";
 import type { GoogleAuthUseCase } from "../../../application/use-cases/auth/google-auth";
+import type { GitHubAuthUseCase } from "../../../application/use-cases/auth/github-auth";
+import type { UnlinkOAuthUseCase } from "../../../application/use-cases/auth/unlink-oauth";
 import { asyncPublicRoute, asyncRoute } from "../middleware/async-handler";
 import { validate } from "../middleware/validate";
 import { config } from "../../config";
@@ -87,6 +89,8 @@ export function createAuthRoutes(
     resetPassword: ResetPasswordUseCase;
     deleteAccount: DeleteAccountUseCase;
     googleAuth: GoogleAuthUseCase;
+    githubAuth: GitHubAuthUseCase;
+    unlinkOAuth: UnlinkOAuthUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
 ) {
@@ -247,6 +251,15 @@ export function createAuthRoutes(
       }
     }
 
+    if (statePayload.flow === "link" && statePayload.userId) {
+      try {
+        await useCases.googleAuth.handleLinkCallback(code, statePayload.userId);
+        return res.redirect(`${config.frontendUrl}/settings?tab=security&linked=google`);
+      } catch {
+        return res.redirect(`${config.frontendUrl}/settings?tab=security&link_error=google`);
+      }
+    }
+
     // Default: login flow
     try {
       const result = await useCases.googleAuth.handleCallback(code);
@@ -255,6 +268,98 @@ export function createAuthRoutes(
     } catch {
       return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
     }
+  }));
+
+  // --- GitHub OAuth ---
+
+  router.get("/github", (_req, res) => {
+    if (!useCases.githubAuth.isEnabled) {
+      return res.status(404).json({ error: "GitHub OAuth is not configured" });
+    }
+
+    const csrf = useCases.githubAuth.generateStateToken();
+    setOAuthStateCookie(res, JSON.stringify({ csrf, flow: "login", provider: "github" }));
+
+    const authUrl = useCases.githubAuth.getAuthorizationUrl(csrf);
+    return res.redirect(authUrl);
+  });
+
+  router.get("/github/callback", asyncPublicRoute(async (req, res) => {
+    const { code, state } = req.query;
+    const cookieHeader = req.headers.cookie;
+    const rawState = cookieHeader ? (parse(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
+
+    clearOAuthStateCookie(res);
+
+    let statePayload: { csrf: string; flow: string; userId?: string };
+    try {
+      statePayload = JSON.parse(rawState ?? "");
+    } catch {
+      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+    }
+
+    if (!state || state !== statePayload.csrf) {
+      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+    }
+
+    if (!code || typeof code !== "string") {
+      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+    }
+
+    // Link flow (user is already authenticated)
+    if (statePayload.flow === "link" && statePayload.userId) {
+      try {
+        await useCases.githubAuth.handleLinkCallback(code, statePayload.userId);
+        return res.redirect(`${config.frontendUrl}/settings?tab=security&linked=github`);
+      } catch {
+        return res.redirect(`${config.frontendUrl}/settings?tab=security&link_error=github`);
+      }
+    }
+
+    // Default: login flow
+    try {
+      const result = await useCases.githubAuth.handleCallback(code);
+      res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
+      return res.redirect(result.redirectUrl);
+    } catch {
+      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+    }
+  }));
+
+  // --- Link / Unlink OAuth providers ---
+
+  router.get("/link/github", requireAuth, asyncRoute(async (req, res) => {
+    if (!useCases.githubAuth.isEnabled) {
+      return res.status(404).json({ error: "GitHub OAuth is not configured" });
+    }
+
+    const csrf = useCases.githubAuth.generateStateToken();
+    setOAuthStateCookie(res, JSON.stringify({ csrf, flow: "link", provider: "github", userId: req.authUser.id }));
+
+    const authUrl = useCases.githubAuth.getAuthorizationUrl(csrf);
+    return res.redirect(authUrl);
+  }));
+
+  router.get("/link/google", requireAuth, asyncRoute(async (req, res) => {
+    if (!useCases.googleAuth.isEnabled) {
+      return res.status(404).json({ error: "Google OAuth is not configured" });
+    }
+
+    const csrf = useCases.googleAuth.generateStateToken();
+    setOAuthStateCookie(res, JSON.stringify({ csrf, flow: "link", provider: "google", userId: req.authUser.id }));
+
+    const authUrl = useCases.googleAuth.getAuthorizationUrl(csrf);
+    return res.redirect(authUrl);
+  }));
+
+  router.delete("/link/:provider", requireAuth, asyncRoute(async (req, res) => {
+    const provider = req.params.provider as string;
+    if (provider !== "google" && provider !== "github") {
+      return res.status(400).json({ error: "Invalid provider" });
+    }
+
+    await useCases.unlinkOAuth.execute(req.authUser.id, provider);
+    return res.status(200).json({ success: true });
   }));
 
   return router;

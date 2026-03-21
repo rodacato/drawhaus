@@ -37,4 +37,7 @@ export const authApi = {
 
   deleteAccount: (password: string) =>
     api.delete("/api/auth/account", { data: { password } }),
+
+  unlinkProvider: (provider: "google" | "github") =>
+    api.delete(`/api/auth/link/${provider}`),
 };

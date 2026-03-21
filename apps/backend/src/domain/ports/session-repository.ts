@@ -9,6 +9,8 @@ export type AuthUser = {
   disabled: boolean;
   avatarUrl: string | null;
   hasPassword: boolean;
+  linkedProviders: string[];
+  githubUsername: string | null;
 };
 
 export interface SessionRepository {

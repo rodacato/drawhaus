@@ -123,6 +123,32 @@ export class GoogleAuthUseCase {
     };
   }
 
+  async handleLinkCallback(code: string, userId: string): Promise<void> {
+    const tokens = await this.exchangeCode(code);
+    const googleUser = await this.fetchUserInfo(tokens.access_token);
+
+    // Check if this Google account is already linked to another user
+    const existingUser = await this.users.findByGoogleId(googleUser.id);
+    if (existingUser && existingUser.id !== userId) {
+      throw new Error("This Google account is already linked to another user");
+    }
+
+    await this.users.update(userId, {
+      googleId: googleUser.id,
+      avatarUrl: (await this.users.findById(userId))?.avatarUrl ?? googleUser.picture ?? null,
+    });
+
+    const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
+    await this.oauthTokens.upsert({
+      userId,
+      provider: "google",
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      tokenExpiresAt: expiresAt,
+      scopes: tokens.scope,
+    });
+  }
+
   async handleDriveCallback(code: string, userId: string): Promise<void> {
     const tokens = await this.exchangeCode(code);
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);

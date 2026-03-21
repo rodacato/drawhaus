@@ -9,6 +9,8 @@ interface AuthUser {
   role: string;
   avatarUrl: string | null;
   hasPassword: boolean;
+  linkedProviders: string[];
+  githubUsername: string | null;
 }
 
 interface AuthContextValue {

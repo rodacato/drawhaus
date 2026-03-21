@@ -27,7 +27,10 @@ export class InMemorySessionRepository implements SessionRepository {
     if (session.expiresAt.getTime() <= Date.now()) return null;
     const user = this.users().find((u) => u.id === session.userId);
     if (!user) return null;
-    return { id: user.id, email: user.email, name: user.name, role: user.role, disabled: user.disabled, avatarUrl: user.avatarUrl, hasPassword: !!user.passwordHash };
+    const linkedProviders: string[] = [];
+    if (user.googleId) linkedProviders.push("google");
+    if (user.githubId) linkedProviders.push("github");
+    return { id: user.id, email: user.email, name: user.name, role: user.role, disabled: user.disabled, avatarUrl: user.avatarUrl, hasPassword: !!user.passwordHash, linkedProviders, githubUsername: user.githubUsername };
   }
 
   async delete(token: string): Promise<void> {

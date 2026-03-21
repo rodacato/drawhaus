@@ -8,6 +8,8 @@ export type User = {
   role: UserRole;
   disabled: boolean;
   googleId: string | null;
+  githubId: string | null;
+  githubUsername: string | null;
   avatarUrl: string | null;
   createdAt: Date;
 };
