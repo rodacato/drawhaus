@@ -22,7 +22,7 @@ Shipped and working in production. See [CHANGELOG.md](../CHANGELOG.md) for full 
 | **Sharing** | Share links with roles + expiration, guest access via tokens, read-only embeds (`/embed/:token`) | v0.1 |
 | **Export & Import** | PNG/SVG export, `.excalidraw` file import, Google Drive import | v0.3 |
 | **Google Drive** | OAuth login + linking, Drive export, Drive import, auto-backup on save, scope upgrade flow | v0.7 |
-| **Auth** | Register/login/logout, sessions, forgot password with email reset, Google OAuth, account deletion with cascade, delete guard for workspace owners | v0.1 |
+| **Auth** | Register/login/logout, sessions, forgot password with email reset, Google OAuth, GitHub OAuth, identity linking by email, connected accounts management (link/unlink), account deletion with cascade, delete guard for workspace owners | v0.1 |
 | **Admin** | User management, metrics, registration toggle, invite via email (Resend), setup wizard (3-step), integration secrets (AES-256-GCM), maintenance mode | v0.3 |
 | **Security** | Helmet headers, rate limiting, audit logger, RBAC, cookie hardening, encrypted secrets in DB | v0.8 |
 | **UI & Branding** | Dark/light theme, Bauhaus-inspired branding, toast notifications, confirm dialogs, style guide, board sidebar with semantic groups | v0.6 |

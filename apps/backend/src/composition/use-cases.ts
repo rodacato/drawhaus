@@ -136,7 +136,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   const deleteAccount = new DeleteAccountUseCase(repos.userRepo, services.hasher, services.auditLogger, repos.workspaceRepo);
   const googleAuth = new GoogleAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo);
   const githubAuth = new GitHubAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo);
-  const unlinkOAuth = new UnlinkOAuthUseCase(repos.userRepo, repos.oauthTokenRepo);
+  const unlinkOAuth = new UnlinkOAuthUseCase(repos.userRepo, repos.oauthTokenRepo, repos.driveBackupRepo);
 
   // Diagrams
   const createDiagram = new CreateDiagramUseCase(repos.diagramRepo);
