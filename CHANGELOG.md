@@ -4,7 +4,7 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
-## v0.11.0 — Public API, MCP Server & Helpers (unreleased)
+## v0.11.0 — Public API, MCP Server & GitHub OAuth (2026-03)
 
 ### Added
 - **GitHub OAuth** — sign up and log in with GitHub. Automatic account linking by email prevents duplicate accounts across Google, GitHub, and email/password
