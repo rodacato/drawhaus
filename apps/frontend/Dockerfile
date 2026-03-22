@@ -11,7 +11,8 @@ COPY packages/mermaid-to-excalidraw/package.json packages/mermaid-to-excalidraw/
 COPY packages/plantuml-to-excalidraw/package.json packages/plantuml-to-excalidraw/
 COPY e2e/package.json e2e/
 
-RUN npm ci
+# npm ci may miss platform-specific optional deps (rollup musl bindings)
+RUN npm ci && npm i @rollup/rollup-linux-x64-musl 2>/dev/null || npm install
 
 # Copy source for frontend and its workspace dependencies
 COPY packages/helpers/ packages/helpers/
