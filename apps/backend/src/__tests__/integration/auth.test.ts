@@ -127,3 +127,273 @@ test("logout clears session so me becomes unauthorized", async () => {
   const meAfter = await request(app).get("/api/auth/me").set("Cookie", cookie);
   assert.equal(meAfter.status, 401);
 });
+
+// --- New integration tests ---
+
+test("setup-status returns needsSetup true on fresh app, false after register", async () => {
+  const app = createApp();
+
+  const before = await request(app).get("/api/auth/setup-status");
+  assert.equal(before.status, 200);
+  assert.equal(before.body.needsSetup, true);
+
+  await request(app).post("/api/auth/register").send({
+    email: "setup@example.com",
+    name: "Setup User",
+    password: "password123",
+  });
+
+  const after = await request(app).get("/api/auth/setup-status");
+  assert.equal(after.status, 200);
+  assert.equal(after.body.needsSetup, false);
+});
+
+test("login success sets session cookie", async () => {
+  const app = createApp();
+  await request(app).post("/api/auth/register").send({
+    email: "login@example.com",
+    name: "Login User",
+    password: "password123",
+  });
+
+  const res = await request(app).post("/api/auth/login").send({
+    email: "login@example.com",
+    password: "password123",
+  });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.user.email, "login@example.com");
+  assert.ok(res.headers["set-cookie"]);
+  assert.match(res.headers["set-cookie"][0], /drawhaus_session=/);
+});
+
+test("update profile changes name", async () => {
+  const app = createApp();
+  const registerRes = await request(app).post("/api/auth/register").send({
+    email: "profile@example.com",
+    name: "Original",
+    password: "password123",
+  });
+
+  const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
+  const res = await request(app)
+    .patch("/api/auth/me")
+    .set("Cookie", cookie)
+    .send({ name: "Updated" });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.user.name, "Updated");
+});
+
+test("update profile rejects empty body", async () => {
+  const app = createApp();
+  const registerRes = await request(app).post("/api/auth/register").send({
+    email: "empty@example.com",
+    name: "Empty",
+    password: "password123",
+  });
+
+  const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
+  const res = await request(app)
+    .patch("/api/auth/me")
+    .set("Cookie", cookie)
+    .send({});
+
+  assert.equal(res.status, 400);
+});
+
+test("change password succeeds with correct current password", async () => {
+  const app = createApp();
+  const registerRes = await request(app).post("/api/auth/register").send({
+    email: "chpass@example.com",
+    name: "ChPass User",
+    password: "password123",
+  });
+
+  const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
+  const res = await request(app)
+    .post("/api/auth/change-password")
+    .set("Cookie", cookie)
+    .send({ currentPassword: "password123", newPassword: "newpass1234" });
+
+  assert.equal(res.status, 200);
+});
+
+test("forgot password always returns 200 for nonexistent email", async () => {
+  const app = createApp();
+  const res = await request(app)
+    .post("/api/auth/forgot-password")
+    .send({ email: "nonexistent@example.com" });
+
+  assert.equal(res.status, 200);
+});
+
+test("forgot password with existing user returns 200", async () => {
+  const app = createApp();
+  await request(app).post("/api/auth/register").send({
+    email: "forgot@example.com",
+    name: "Forgot User",
+    password: "password123",
+  });
+
+  const res = await request(app)
+    .post("/api/auth/forgot-password")
+    .send({ email: "forgot@example.com" });
+
+  assert.equal(res.status, 200);
+});
+
+test("invite resolve with invalid token returns 404", async () => {
+  const app = createApp();
+  const res = await request(app).get("/api/auth/invite/invalid-token");
+  assert.equal(res.status, 404);
+});
+
+test("accept invite with invalid token returns 404", async () => {
+  const app = createApp();
+  const res = await request(app)
+    .post("/api/auth/accept-invite")
+    .send({ token: "invalid", name: "Test", password: "password123" });
+
+  assert.equal(res.status, 404);
+});
+
+test("delete account with correct password", async () => {
+  const app = createApp();
+  const registerRes = await request(app).post("/api/auth/register").send({
+    email: "delete@example.com",
+    name: "Delete User",
+    password: "password123",
+  });
+
+  const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
+  const deleteRes = await request(app)
+    .delete("/api/auth/account")
+    .set("Cookie", cookie)
+    .send({ password: "password123" });
+
+  assert.equal(deleteRes.status, 200);
+
+  const meRes = await request(app).get("/api/auth/me").set("Cookie", cookie);
+  assert.equal(meRes.status, 401);
+});
+
+test("delete account with wrong password returns 401", async () => {
+  const app = createApp();
+  const registerRes = await request(app).post("/api/auth/register").send({
+    email: "delwrong@example.com",
+    name: "Del Wrong",
+    password: "password123",
+  });
+
+  const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
+  const res = await request(app)
+    .delete("/api/auth/account")
+    .set("Cookie", cookie)
+    .send({ password: "wrong" });
+
+  assert.equal(res.status, 401);
+});
+
+test("Google OAuth returns 404 when not configured", async () => {
+  const app = createApp();
+  const res = await request(app).get("/api/auth/google").redirects(0);
+  assert.equal(res.status, 404);
+  assert.equal(res.body.error, "Google OAuth is not configured");
+});
+
+test("GitHub OAuth returns 404 when not configured", async () => {
+  const app = createApp();
+  const res = await request(app).get("/api/auth/github").redirects(0);
+  assert.equal(res.status, 404);
+  assert.equal(res.body.error, "GitHub OAuth is not configured");
+});
+
+test("Google callback redirects to error on invalid state", async () => {
+  const app = createApp();
+  const res = await request(app)
+    .get("/api/auth/google/callback?code=test&state=bad")
+    .redirects(0);
+
+  assert.equal(res.status, 302);
+  assert.ok(res.headers.location.includes("login?error=oauth_failed"));
+});
+
+test("GitHub callback redirects to error on invalid state", async () => {
+  const app = createApp();
+  const res = await request(app)
+    .get("/api/auth/github/callback?code=test&state=bad")
+    .redirects(0);
+
+  assert.equal(res.status, 302);
+  assert.ok(res.headers.location.includes("login?error=oauth_failed"));
+});
+
+test("link GitHub returns 404 when not configured", async () => {
+  const app = createApp();
+  const registerRes = await request(app).post("/api/auth/register").send({
+    email: "linkgh@example.com",
+    name: "Link GH",
+    password: "password123",
+  });
+
+  const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
+  const res = await request(app)
+    .get("/api/auth/link/github")
+    .set("Cookie", cookie)
+    .redirects(0);
+
+  assert.equal(res.status, 404);
+});
+
+test("link Google returns 404 when not configured", async () => {
+  const app = createApp();
+  const registerRes = await request(app).post("/api/auth/register").send({
+    email: "linkgoog@example.com",
+    name: "Link Google",
+    password: "password123",
+  });
+
+  const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
+  const res = await request(app)
+    .get("/api/auth/link/google")
+    .set("Cookie", cookie)
+    .redirects(0);
+
+  assert.equal(res.status, 404);
+});
+
+test("unlink invalid provider returns 400", async () => {
+  const app = createApp();
+  const registerRes = await request(app).post("/api/auth/register").send({
+    email: "unlink@example.com",
+    name: "Unlink User",
+    password: "password123",
+  });
+
+  const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
+  const res = await request(app)
+    .delete("/api/auth/link/invalid")
+    .set("Cookie", cookie);
+
+  assert.equal(res.status, 400);
+});
+
+test("protected routes reject unauthenticated requests", async () => {
+  const app = createApp();
+
+  const patchMe = await request(app)
+    .patch("/api/auth/me")
+    .send({ name: "Nope" });
+  assert.equal(patchMe.status, 401);
+
+  const changePass = await request(app)
+    .post("/api/auth/change-password")
+    .send({ currentPassword: "x", newPassword: "newpass1234" });
+  assert.equal(changePass.status, 401);
+
+  const deleteAcc = await request(app)
+    .delete("/api/auth/account")
+    .send({ password: "x" });
+  assert.equal(deleteAcc.status, 401);
+});
