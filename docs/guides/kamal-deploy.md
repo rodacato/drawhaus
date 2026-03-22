@@ -93,6 +93,9 @@ Go to **Settings → Secrets and variables → Actions** in your GitHub repo.
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | *(optional, enables Google login)* |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | *(optional)* |
 | `GOOGLE_REDIRECT_URI` | OAuth callback URL | *(optional)* |
+| `GH_CLIENT_ID` | GitHub OAuth client ID | *(optional, enables GitHub login)* |
+| `GH_CLIENT_SECRET` | GitHub OAuth client secret | *(optional)* |
+| `GH_REDIRECT_URI` | GitHub OAuth callback URL | *(optional)* |
 
 > **Note:** `KAMAL_REGISTRY_PASSWORD` uses `GITHUB_TOKEN` automatically — no PAT needed.
 

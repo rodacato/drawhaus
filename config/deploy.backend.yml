@@ -39,21 +39,21 @@ env:
     NODE_ENV: production
     FILES_PATH: /data/files
   secret:
-    - DATABASE_URL
-    - SESSION_SECRET
-    - FRONTEND_URL
     - COOKIE_DOMAIN
-    - HONEYBADGER_API_KEY
-    - RESEND_API_KEY
-    - FROM_EMAIL
-    - GOOGLE_CLIENT_ID
-    - GOOGLE_CLIENT_SECRET
-    - GOOGLE_REDIRECT_URI
-    - REDIS_URL
+    - DATABASE_URL
     - ENCRYPTION_KEY
+    - FROM_EMAIL
+    - FRONTEND_URL
     - GH_CLIENT_ID
     - GH_CLIENT_SECRET
     - GH_REDIRECT_URI
+    - GOOGLE_CLIENT_ID
+    - GOOGLE_CLIENT_SECRET
+    - GOOGLE_REDIRECT_URI
+    - HONEYBADGER_API_KEY
+    - REDIS_URL
+    - RESEND_API_KEY
+    - SESSION_SECRET
 
 volumes:
   - drawhaus-uploads:/data/files

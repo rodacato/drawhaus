@@ -55,24 +55,24 @@ jobs:
     timeout-minutes: 20
 
     env:
-      KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-      HOST_IP: ${{ secrets.HOST_IP }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
       COOKIE_DOMAIN: ${{ secrets.COOKIE_DOMAIN }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
-      REDIS_URL: ${{ secrets.REDIS_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+      FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
       GH_CLIENT_ID: ${{ secrets.GH_CLIENT_ID }}
       GH_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET }}
       GH_REDIRECT_URI: ${{ secrets.GH_REDIRECT_URI }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+      HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
+      HOST_IP: ${{ secrets.HOST_IP }}
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
 
     steps:
       - name: Checkout
