@@ -26,7 +26,7 @@ registry:
     - KAMAL_REGISTRY_PASSWORD
 
 builder:
-  context: apps/backend/
+  context: .
   dockerfile: apps/backend/Dockerfile
   target: production
   arch: amd64
@@ -51,6 +51,9 @@ env:
     - GOOGLE_REDIRECT_URI
     - REDIS_URL
     - ENCRYPTION_KEY
+    - GH_CLIENT_ID
+    - GH_CLIENT_SECRET
+    - GH_REDIRECT_URI
 
 volumes:
   - drawhaus-uploads:/data/files
