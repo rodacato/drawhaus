@@ -16,8 +16,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsc",
+    "dev": "tsc --watch",
     "test": "tsx --test 'src/__tests__/*.test.ts'",
     "typecheck": "tsc --noEmit",
     "lint": "echo 'no lint configured'"
@@ -29,8 +29,7 @@
   "devDependencies": {
     "@types/dagre": "^0.7.52",
     "@types/node": "^20.11.0",
-    "tsup": "^8.4.0",
-    "tsx": "^4.19.4",
+"tsx": "^4.19.4",
     "typescript": "^5.7.3"
   },
   "engines": {

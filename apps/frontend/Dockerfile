@@ -1,4 +1,6 @@
-FROM node:20-alpine AS builder
+# Use slim (glibc) for builder — Alpine/musl breaks npm optional deps
+# for native bindings (rollup, lightningcss) even with npm install
+FROM node:22-slim AS builder
 WORKDIR /app
 
 # Copy all package manifests for workspace resolution
@@ -11,8 +13,9 @@ COPY packages/mermaid-to-excalidraw/package.json packages/mermaid-to-excalidraw/
 COPY packages/plantuml-to-excalidraw/package.json packages/plantuml-to-excalidraw/
 COPY e2e/package.json e2e/
 
-# npm ci may miss platform-specific optional deps (rollup musl bindings)
-RUN npm ci && npm i @rollup/rollup-linux-x64-musl 2>/dev/null || npm install
+# npm ci + lockfile skips platform-specific optional deps (npm/cli#4828)
+# Fresh install without lockfile resolves correct native bindings
+RUN rm package-lock.json && npm install
 
 # Copy source for frontend and its workspace dependencies
 COPY packages/helpers/ packages/helpers/
