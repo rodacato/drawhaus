@@ -36,7 +36,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: ./apps/backend
+          context: .
+          file: apps/backend/Dockerfile
           target: production
           push: true
           tags: |
@@ -69,6 +70,9 @@ jobs:
       GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
       REDIS_URL: ${{ secrets.REDIS_URL }}
       ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+      GH_CLIENT_ID: ${{ secrets.GH_CLIENT_ID }}
+      GH_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET }}
+      GH_REDIRECT_URI: ${{ secrets.GH_REDIRECT_URI }}
 
     steps:
       - name: Checkout

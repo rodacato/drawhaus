@@ -1,6 +1,7 @@
 node_modules
 .git
-e2e
+e2e/*
+!e2e/package.json
 *.md
 !README.md
 .env*

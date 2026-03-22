@@ -27,7 +27,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci || npm install
 
       - name: Lint
         run: npm run lint
@@ -82,7 +82,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci || npm install
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
