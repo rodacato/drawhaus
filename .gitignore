@@ -39,8 +39,7 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 
-docs/designs
-docs/generated_screenscripts/
+docs/wip
 
 # Playwright
 test-results/

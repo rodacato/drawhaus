@@ -45,15 +45,27 @@ Each diagram is a Socket.IO room. Scenes are sub-rooms scoped to `{roomId}:{scen
 
 ### Edit Lock
 
-Single-editor lock per diagram. Only the lock holder can emit `scene-update` / `save-scene`.
+Single-editor lock per diagram with FIFO wait queue. Only the lock holder can emit `scene-update` / `save-scene`. Auto-releases after 2.5s of inactivity; queued users are promoted automatically. 1s grace period for previous holder to re-acquire.
 
 | Direction | Event | Payload | Description |
 |-----------|-------|---------|-------------|
-| C → S | `request-edit-lock` | `{ roomId }` | Request exclusive edit lock |
-| S → C | `edit-lock-acquired` | `{ roomId, holder: { userId, userName } }` | Lock granted |
-| S → C | `edit-lock-denied` | `{ roomId, holderName, holderUserId }` | Lock held by another user |
+| C → S | `request-edit-lock` | `{ roomId }` | Request exclusive edit lock (enqueues if held) |
+| S → C | `edit-lock-acquired` | `{ roomId, holder: { userId, userName } }` | Lock granted (also sent on queue promotion) |
+| S → C | `edit-lock-queued` | `{ roomId, position, holder: { userId, userName } }` | Enqueued in FIFO wait queue |
+| S → C | `edit-lock-denied` | `{ roomId, holderName, holderUserId }` | Lock denied (backwards compat) |
 | C → S | `release-edit-lock` | `{ roomId }` | Voluntarily release lock |
 | S → Room | `edit-lock-status` | `{ roomId, holder: { userId, userName } \| null }` | Current lock state broadcast |
+
+### Raise Hand
+
+Lightweight signaling for requesting attention or indicating a question. Not tied to the edit lock.
+
+| Direction | Event | Payload | Description |
+|-----------|-------|---------|-------------|
+| C → S | `raise-hand` | `{ roomId }` | Signal raised hand to room |
+| S → Room | `hand-raised` | `{ roomId, userId, userName }` | Hand raised broadcast |
+| C → S | `lower-hand` | `{ roomId }` | Lower hand |
+| S → Room | `hand-lowered` | `{ roomId, userId }` | Hand lowered broadcast |
 
 ### Cursors & Viewports (volatile)
 

@@ -47,4 +47,25 @@ export function registerLockHandlers(
       logger.info({ roomId, userId }, "edit lock released");
     }
   });
+
+  socket.on("raise-hand", ({ roomId }: { roomId: string }) => {
+    if (!socket.rooms.has(roomId)) return;
+    const data = socket.data as SocketData;
+    if (!data.userId) return;
+    socket.to(roomId).emit("hand-raised", {
+      roomId,
+      userId: data.userId,
+      userName: data.userName,
+    });
+  });
+
+  socket.on("lower-hand", ({ roomId }: { roomId: string }) => {
+    if (!socket.rooms.has(roomId)) return;
+    const data = socket.data as SocketData;
+    if (!data.userId) return;
+    socket.to(roomId).emit("hand-lowered", {
+      roomId,
+      userId: data.userId,
+    });
+  });
 }

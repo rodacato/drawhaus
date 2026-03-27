@@ -21,6 +21,10 @@ export interface UsePresenceReturn {
   followingUserId: string | null;
   setFollowingUserId: (id: string | null) => void;
   onPointerMove: (e: { clientX: number; clientY: number }) => void;
+  raisedHands: Set<string>;
+  raiseHand: () => void;
+  lowerHand: () => void;
+  isHandRaised: boolean;
 }
 
 export function usePresence({
@@ -36,6 +40,8 @@ export function usePresence({
   const [presenceUsers, setPresenceUsers] = useState<PresenceUser[]>([]);
   const [followingUserId, setFollowingUserId] = useState<string | null>(null);
   const lastCursorEmitTime = useRef(0);
+  const [raisedHands, setRaisedHands] = useState<Set<string>>(new Set());
+  const [isHandRaised, setIsHandRaised] = useState(false);
 
   /* ─── Mejora 3: cursors in ref + periodic sync to state ─── */
   const cursorsRef = useRef<Record<string, CursorInfo>>({});
@@ -133,11 +139,20 @@ export function usePresence({
       });
     };
 
+    const handleHandRaised = ({ userId }: { userId: string }) => {
+      setRaisedHands((prev) => new Set(prev).add(userId));
+    };
+    const handleHandLowered = ({ userId }: { userId: string }) => {
+      setRaisedHands((prev) => { const next = new Set(prev); next.delete(userId); return next; });
+    };
+
     socket.on("room-presence", handlePresence);
     socket.on("cursor-moved", handleCursorMoved);
     socket.on("cursor-left", handleCursorLeft);
     socket.on("viewport-updated", handleViewport);
     socket.on("provide-viewport", handleProvideViewport);
+    socket.on("hand-raised", handleHandRaised);
+    socket.on("hand-lowered", handleHandLowered);
 
     return () => {
       socket.off("room-presence", handlePresence);
@@ -145,6 +160,8 @@ export function usePresence({
       socket.off("cursor-left", handleCursorLeft);
       socket.off("viewport-updated", handleViewport);
       socket.off("provide-viewport", handleProvideViewport);
+      socket.off("hand-raised", handleHandRaised);
+      socket.off("hand-lowered", handleHandLowered);
     };
   }, [socketGeneration, diagramId]);
 
@@ -157,8 +174,34 @@ export function usePresence({
     }
   }, [diagramId]);
 
+  /* ─── raise / lower hand ─── */
+  const raiseHand = useCallback(() => {
+    socketRef.current?.emit("raise-hand", { roomId: diagramId });
+    setIsHandRaised(true);
+    setRaisedHands((prev) => selfUserId ? new Set(prev).add(selfUserId) : prev);
+  }, [diagramId, selfUserId]);
+
+  const lowerHand = useCallback(() => {
+    socketRef.current?.emit("lower-hand", { roomId: diagramId });
+    setIsHandRaised(false);
+    setRaisedHands((prev) => { if (!selfUserId) return prev; const next = new Set(prev); next.delete(selfUserId); return next; });
+  }, [diagramId, selfUserId]);
+
+  /* ─── clear raised hands for users who leave ─── */
+  useEffect(() => {
+    const currentIds = new Set(presenceUsers.map((u) => u.userId));
+    setRaisedHands((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const id of prev) {
+        if (!currentIds.has(id)) { next.delete(id); changed = true; }
+      }
+      return changed ? next : prev;
+    });
+  }, [presenceUsers]);
+
   /* ─── derived: map presence with self ─── */
   const mappedPresenceUsers: PresenceUserWithSelf[] = presenceUsers.map((u) => ({ ...u, isSelf: u.userId === selfUserId }));
 
-  return { presenceUsers: mappedPresenceUsers, cursors, followingUserId, setFollowingUserId, onPointerMove };
+  return { presenceUsers: mappedPresenceUsers, cursors, followingUserId, setFollowingUserId, onPointerMove, raisedHands, raiseHand, lowerHand, isHandRaised };
 }

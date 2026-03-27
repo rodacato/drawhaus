@@ -6,11 +6,13 @@ export function SharePanel({
   followingUserId,
   onFollow,
   onCreateShareLink,
+  raisedHands,
 }: {
   presenceUsers: PresenceUserWithSelf[];
   followingUserId: string | null;
   onFollow: (userId: string | null) => void;
   onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
+  raisedHands?: Set<string>;
 }) {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareLoading, setShareLoading] = useState(false);
@@ -64,7 +66,10 @@ export function SharePanel({
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">
                     {(user.name || "?")[0].toUpperCase()}
                   </span>
-                  <p className="truncate text-sm font-medium text-gray-900">{user.name}</p>
+                  <p className="truncate text-sm font-medium text-gray-900">
+                    {user.name}
+                    {raisedHands?.has(user.userId) && <span className="ml-1" title="Mano levantada">✋</span>}
+                  </p>
                 </div>
                 <button
                   onClick={() => onFollow(isFollowing ? null : user.userId)}

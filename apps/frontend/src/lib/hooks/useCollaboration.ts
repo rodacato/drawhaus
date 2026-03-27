@@ -89,7 +89,7 @@ export function useCollaboration({
   );
 
   /* ─── 4. Presence ─── */
-  const { presenceUsers, cursors, followingUserId, setFollowingUserId, onPointerMove } = usePresence({
+  const { presenceUsers, cursors, followingUserId, setFollowingUserId, onPointerMove, raisedHands, raiseHand, lowerHand, isHandRaised } = usePresence({
     socketRef,
     socketGeneration,
     diagramId,
@@ -151,5 +151,10 @@ export function useCollaboration({
     tryAcquireEditLock: editLock.tryAcquireEditLock,
     queuePosition: editLock.queuePosition,
     lockTimeRemaining: editLock.lockTimeRemaining,
+    // Raise hand
+    raisedHands,
+    raiseHand,
+    lowerHand,
+    isHandRaised,
   };
 }

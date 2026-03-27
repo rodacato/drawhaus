@@ -184,12 +184,22 @@ export default function BoardEditor({
     setCommentsPanelOpen(true);
   }, [handleHighlightElement]);
 
-  // Auto-acquire lock on canvas interaction when nobody has it
+  // Auto-acquire lock on canvas interaction — toast if someone else holds it
+  const lastLockToastRef = useRef(0);
   const handleCanvasPointerDown = useCallback(() => {
-    if (canEdit && !collab.hasEditLock) {
+    if (!canEdit || collab.hasEditLock) return;
+    if (!collab.editLockHolder) {
       collab.tryAcquireEditLock();
+      return;
     }
-  }, [canEdit, collab.hasEditLock, collab.tryAcquireEditLock]);
+    // Someone else has it — request + show toast (throttled to avoid spam)
+    const now = Date.now();
+    if (now - lastLockToastRef.current > 5000) {
+      lastLockToastRef.current = now;
+      collab.tryAcquireEditLock();
+      toast(`${collab.editLockHolder.userName} está editando — te agregamos a la cola`, "info");
+    }
+  }, [canEdit, collab.hasEditLock, collab.editLockHolder, collab.tryAcquireEditLock, toast]);
 
   function startEditingTitle() {
     if (!canEdit) return;
@@ -232,6 +242,7 @@ export default function BoardEditor({
         canvasPrefs={canvasPrefs}
         onCanvasPrefsChange={handleCanvasPrefsChange}
         socketRef={collab.socketRef}
+        raisedHands={collab.raisedHands}
       />
 
       {/* Main content area */}
@@ -287,6 +298,10 @@ export default function BoardEditor({
               lockTimeRemaining={collab.lockTimeRemaining}
               canEdit={canEdit}
               onTryAcquire={collab.tryAcquireEditLock}
+              raisedHands={collab.raisedHands}
+              isHandRaised={collab.isHandRaised}
+              onRaiseHand={collab.raiseHand}
+              onLowerHand={collab.lowerHand}
             />
             <DriveSyncBadge state={driveSyncState} error={driveSyncError} />
           </div>

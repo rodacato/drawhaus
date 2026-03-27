@@ -43,6 +43,7 @@ type BoardSidebarProps = {
   canvasPrefs: CanvasPrefs;
   onCanvasPrefsChange: (patch: Partial<CanvasPrefs>) => void;
   socketRef?: React.RefObject<Socket | null>;
+  raisedHands?: Set<string>;
 };
 
 /* ───────────────────────── main sidebar ───────────────────────── */
@@ -66,6 +67,7 @@ export function BoardSidebar({
   canvasPrefs,
   onCanvasPrefsChange,
   socketRef,
+  raisedHands,
 }: BoardSidebarProps) {
   const navigate = useNavigate();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
@@ -168,6 +170,7 @@ export function BoardSidebar({
             followingUserId={followingUserId}
             onFollow={onFollow}
             onCreateShareLink={onCreateShareLink}
+            raisedHands={raisedHands}
           />
         )}
         {activePanel === "settings" && <SettingsPanel userEmail={userEmail} onDashboardClick={() => setLeaveOpen(true)} canvasPrefs={canvasPrefs} onCanvasPrefsChange={onCanvasPrefsChange} />}

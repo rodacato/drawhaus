@@ -53,6 +53,7 @@ export function BoardToolbarPanel({
   onCreateShareLink,
   showShare = true,
   onClose,
+  raisedHands,
 }: {
   presenceUsers: PresenceUserWithSelf[];
   followingUserId: string | null;
@@ -60,6 +61,7 @@ export function BoardToolbarPanel({
   onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
   showShare?: boolean;
   onClose: () => void;
+  raisedHands?: Set<string>;
 }) {
   const [tab, setTab] = useState<"collab" | "share">("collab");
   const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -175,7 +177,10 @@ export function BoardToolbarPanel({
                     {(user.name || "?")[0].toUpperCase()}
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {user.name}
+                      {raisedHands?.has(user.userId) && <span className="ml-1" title="Mano levantada">✋</span>}
+                    </p>
                     {user.isGuest && (
                       <p className="text-[10px] text-gray-400">Guest</p>
                     )}

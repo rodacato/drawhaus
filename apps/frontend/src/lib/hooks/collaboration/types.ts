@@ -46,4 +46,9 @@ export type CollaborationState = {
   tryAcquireEditLock: () => void;
   queuePosition: number;
   lockTimeRemaining: number | null;
+  // Raise hand
+  raisedHands: Set<string>;
+  raiseHand: () => void;
+  lowerHand: () => void;
+  isHandRaised: boolean;
 };

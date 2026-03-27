@@ -178,7 +178,7 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
           <div className="pointer-events-auto rounded-full bg-purple-100 px-2.5 py-1 text-[10px] font-medium text-purple-700 shadow-sm">{guestName} (guest)</div>
           <div className="pointer-events-auto relative">
             <BoardToolbarTrigger open={collab.toolbarOpen} onToggle={() => collab.setToolbarOpen(!collab.toolbarOpen)} userCount={collab.presenceUsers.length || 1} />
-            {collab.toolbarOpen && <BoardToolbarPanel presenceUsers={collab.presenceUsers} followingUserId={collab.followingUserId} onFollow={collab.setFollowingUserId} onCreateShareLink={async () => null} showShare={false} onClose={() => collab.setToolbarOpen(false)} />}
+            {collab.toolbarOpen && <BoardToolbarPanel presenceUsers={collab.presenceUsers} followingUserId={collab.followingUserId} onFollow={collab.setFollowingUserId} onCreateShareLink={async () => null} showShare={false} onClose={() => collab.setToolbarOpen(false)} raisedHands={collab.raisedHands} />}
           </div>
           <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
         </div>
@@ -191,6 +191,10 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
             lockTimeRemaining={collab.lockTimeRemaining}
             canEdit={canEdit}
             onTryAcquire={collab.tryAcquireEditLock}
+            raisedHands={collab.raisedHands}
+            isHandRaised={collab.isHandRaised}
+            onRaiseHand={collab.raiseHand}
+            onLowerHand={collab.lowerHand}
           />
         </div>
       </div>
