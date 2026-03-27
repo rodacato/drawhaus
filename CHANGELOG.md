@@ -4,6 +4,24 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
+## v0.12.0 — Smart Lock & Redis Shared State (2026-03)
+
+### Added
+- **Smart edit lock with FIFO queue** — users waiting for the lock are automatically enqueued and promoted when the current editor finishes (ADR-020)
+- **Collaboration badge** — persistent UI badge replaces blocking overlay; shows countdown timer when editing, queue position when waiting, and click-to-request when idle
+- **Reduced lock timeout** — inactivity timeout reduced from 5s to 2.5s, grace period from 3s to 1s for faster turn-taking
+- **Free navigation while waiting** — pan, zoom, and select work without holding the lock via `viewModeEnabled`
+- **Redis shared state** — rate limiting, snapshot interval dedup now use Redis when `REDIS_URL` is available (ADR-021)
+- **Shared Redis client** — single `ioredis` instance reused across rate limiters and snapshot dedup to minimize connections
+- **`rate-limit-redis`** — HTTP and API rate limiters automatically upgrade to Redis-backed store for cross-instance consistency
+
+### Changed
+- `EditLockStore` refactored with extracted `EditLockService` interface for future Redis lock implementation
+- `EditLockOverlay` replaced by `CollaborationBadge` component (no more `cursor-not-allowed` overlay)
+- Snapshot interval tracking uses `SET NX EX` in Redis for cross-instance dedup, falls back to in-memory `Map`
+
+---
+
 ## v0.11.0 — Public API, MCP Server & GitHub OAuth (2026-03)
 
 ### Added

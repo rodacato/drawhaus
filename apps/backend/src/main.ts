@@ -153,6 +153,17 @@ if (config.honeybadgerApiKey) {
 
 async function startServer(): Promise<void> {
   await runMigrations();
+
+  // Connect shared Redis client and upgrade rate limiters
+  const { getRedisClient } = await import("./infrastructure/redis-client");
+  const redisClient = await getRedisClient();
+  if (redisClient) {
+    const { upgradeRateLimiters } = await import("./infrastructure/http/middleware/rate-limit");
+    const { upgradeApiRateLimiter } = await import("./infrastructure/http/public-api/middleware/api-rate-limit");
+    upgradeRateLimiters(redisClient);
+    upgradeApiRateLimiter(redisClient);
+  }
+
   const httpServer = createServer(app);
   ioHolder.io = await setupSocketServer(httpServer, { joinRoom: useCases.joinRoom, joinRoomGuest: useCases.joinRoomGuest, saveScene: useCases.saveScene, syncToDrive: useCases.syncToDrive, createComment: useCases.createComment, replyComment: useCases.replyComment, resolveComment: useCases.resolveComment, deleteComment: useCases.deleteComment, createSnapshot: useCases.createSnapshot });
 

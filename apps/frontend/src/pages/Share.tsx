@@ -5,7 +5,7 @@ import { ExcalidrawCanvas } from "@/components/ExcalidrawCanvas";
 import { CursorOverlay } from "@/components/CursorOverlay";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
-import { EditingBubble } from "@/components/EditLockOverlay";
+import { CollaborationBadge } from "@/components/CollaborationBadge";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
 import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import { ui } from "@/lib/ui";
@@ -151,22 +151,6 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
     canvasPrefs,
   });
 
-  // Track lock holder changes for editing bubble
-  const [bubbleHolder, setBubbleHolder] = useState<{ name: string; isSelf: boolean } | null>(null);
-  const prevHolderRef = useRef<string | null>(null);
-  useEffect(() => {
-    const holderId = collab.editLockHolder?.userId ?? null;
-    if (holderId !== prevHolderRef.current && holderId) {
-      setBubbleHolder({
-        name: collab.editLockHolder!.userName,
-        isSelf: collab.hasEditLock,
-      });
-    } else if (!holderId) {
-      setBubbleHolder(null);
-    }
-    prevHolderRef.current = holderId;
-  }, [collab.editLockHolder, collab.hasEditLock]);
-
   // Auto-acquire lock on canvas interaction when nobody has it
   const handleCanvasPointerDown = useCallback(() => {
     if (canEdit && !collab.hasEditLock) {
@@ -200,25 +184,18 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
         </div>
         <div className="pointer-events-auto flex items-center gap-2">
           <div className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${statusBadge.className}`}>{statusBadge.label}</div>
-          {collab.hasEditLock && (
-            <div className="w-fit rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-medium text-emerald-700 shadow-sm">Editando</div>
-          )}
-          {!collab.hasEditLock && collab.editLockHolder && (
-            <div className="w-fit rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-medium text-amber-700 shadow-sm">{collab.editLockHolder.userName} editando</div>
-          )}
+          <CollaborationBadge
+            hasEditLock={collab.hasEditLock}
+            lockHolder={collab.editLockHolder}
+            queuePosition={collab.queuePosition}
+            lockTimeRemaining={collab.lockTimeRemaining}
+            canEdit={canEdit}
+            onTryAcquire={collab.tryAcquireEditLock}
+          />
         </div>
       </div>
 
       {collab.followingUserId && <FollowingBanner presenceUsers={collab.presenceUsers} followingUserId={collab.followingUserId} onStop={() => collab.setFollowingUserId(null)} />}
-
-      {/* Editing bubble — shows briefly when lock holder changes */}
-      {bubbleHolder && (
-        <EditingBubble
-          key={`${bubbleHolder.name}-${bubbleHolder.isSelf}`}
-          holderName={bubbleHolder.name}
-          isSelf={bubbleHolder.isSelf}
-        />
-      )}
 
       <CursorOverlay cursors={collab.cursors} />
       <div className="relative h-full w-full" onPointerDown={handleCanvasPointerDown} onPointerMove={collab.onPointerMove}>

@@ -5,9 +5,11 @@ import type { CreateSnapshotUseCase } from "../../../application/use-cases/snaps
 import type { EditLockService } from "../edit-lock-store";
 import { type SocketData, canEdit, checkRateLimit, RATE_LIMIT_MAX_SCENE } from "../helpers";
 import { logger } from "../../logger";
+import { getRedisClientSync } from "../../redis-client";
 
 const SNAPSHOT_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
-const lastIntervalSnapshot = new Map<string, number>();
+const SNAPSHOT_INTERVAL_SECONDS = 10 * 60;
+const lastIntervalSnapshot = new Map<string, number>(); // in-memory fallback
 
 export function registerSceneHandlers(
   io: Server,
@@ -67,10 +69,24 @@ export function registerSceneHandlers(
         socket.emit("scene-saved", { roomId, sceneId: targetSceneId });
 
         // Fire-and-forget: interval snapshot every 10 minutes
-        const now = Date.now();
-        const lastTs = lastIntervalSnapshot.get(roomId) ?? 0;
-        if (now - lastTs >= SNAPSHOT_INTERVAL_MS) {
-          lastIntervalSnapshot.set(roomId, now);
+        // Uses Redis SET NX EX for dedup across instances, falls back to in-memory Map
+        const snapshotKey = `snap:interval:${roomId}`;
+        let shouldSnapshot = false;
+        const redis = getRedisClientSync();
+        if (redis) {
+          try {
+            const set = await redis.set(snapshotKey, "1", "EX", SNAPSHOT_INTERVAL_SECONDS, "NX");
+            shouldSnapshot = set === "OK";
+          } catch { shouldSnapshot = false; }
+        } else {
+          const now = Date.now();
+          const lastTs = lastIntervalSnapshot.get(roomId) ?? 0;
+          if (now - lastTs >= SNAPSHOT_INTERVAL_MS) {
+            lastIntervalSnapshot.set(roomId, now);
+            shouldSnapshot = true;
+          }
+        }
+        if (shouldSnapshot) {
           const sockets = await io.in(roomId).fetchSockets();
           const uniqueIds = new Set(sockets.map((s) => (s.data as SocketData).userId).filter(Boolean));
           useCases.createSnapshot.execute(roomId, saveUserId, "interval", undefined, uniqueIds.size || 1)

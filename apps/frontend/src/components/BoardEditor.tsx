@@ -6,7 +6,7 @@ import { DriveSyncBadge } from "@/components/DriveSyncBadge";
 import { FollowingBanner } from "@/components/BoardToolbar";
 import { BoardSidebar } from "@/components/BoardSidebar";
 import { useToast } from "@/components/Toast";
-import { EditingBubble } from "@/components/EditLockOverlay";
+import { CollaborationBadge } from "@/components/CollaborationBadge";
 import { OfflineRecoveryDialog } from "@/components/OfflineRecoveryDialog";
 
 import { CommentsPanel } from "@/components/CommentsPanel";
@@ -144,21 +144,6 @@ export default function BoardEditor({
     toast,
   });
 
-  // Track lock holder changes for the editing bubble
-  const [bubbleHolder, setBubbleHolder] = useState<{ name: string; isSelf: boolean } | null>(null);
-  const prevHolderRef = useRef<string | null>(null);
-  useEffect(() => {
-    const holderId = collab.editLockHolder?.userId ?? null;
-    if (holderId !== prevHolderRef.current && holderId) {
-      setBubbleHolder({
-        name: collab.editLockHolder!.userName,
-        isSelf: collab.hasEditLock,
-      });
-    } else if (!holderId) {
-      setBubbleHolder(null);
-    }
-    prevHolderRef.current = holderId;
-  }, [collab.editLockHolder, collab.hasEditLock]);
 
   const handleCreateShareLink = useCallback(async (role: "viewer" | "editor"): Promise<string | null> => {
     const cacheShareKey = `drawhaus_share_${diagramId}_${role}`;
@@ -295,16 +280,14 @@ export default function BoardEditor({
                 {collab.saveLabel}
               </div>
             )}
-            {collab.hasEditLock && (
-              <div className="w-fit rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-medium text-emerald-700 shadow-sm">
-                Editando
-              </div>
-            )}
-            {!collab.hasEditLock && collab.editLockHolder && (
-              <div className="w-fit rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-medium text-amber-700 shadow-sm">
-                {collab.editLockHolder.userName} editando
-              </div>
-            )}
+            <CollaborationBadge
+              hasEditLock={collab.hasEditLock}
+              lockHolder={collab.editLockHolder}
+              queuePosition={collab.queuePosition}
+              lockTimeRemaining={collab.lockTimeRemaining}
+              canEdit={canEdit}
+              onTryAcquire={collab.tryAcquireEditLock}
+            />
             <DriveSyncBadge state={driveSyncState} error={driveSyncError} />
           </div>
         </div>
@@ -314,15 +297,6 @@ export default function BoardEditor({
             presenceUsers={collab.presenceUsers}
             followingUserId={collab.followingUserId}
             onStop={() => collab.setFollowingUserId(null)}
-          />
-        )}
-
-        {/* Editing bubble — shows briefly when lock holder changes */}
-        {bubbleHolder && (
-          <EditingBubble
-            key={`${bubbleHolder.name}-${bubbleHolder.isSelf}`}
-            holderName={bubbleHolder.name}
-            isSelf={bubbleHolder.isSelf}
           />
         )}
 

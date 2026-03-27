@@ -66,7 +66,7 @@ export function useCollaboration({
   hasEditLockRef.current = editLock.hasEditLock;
 
   /* ─── 3. Save manager ─── */
-  const { saveState, saveLabel, saveColor, lastSavedAt, onChange, flushSave } = useSaveManager({
+  const { saveState, saveLabel, saveColor, lastSavedAt, onChange: rawOnChange, flushSave } = useSaveManager({
     socketRef,
     socketGeneration,
     diagramId,
@@ -78,6 +78,15 @@ export function useCollaboration({
     canEdit,
     hasEditLockRef,
   });
+
+  // Wrap onChange to reset lock countdown on each edit
+  const onChange = useCallback(
+    (elements: readonly unknown[], appState: Record<string, unknown>) => {
+      editLock.touchCountdown();
+      rawOnChange(elements, appState);
+    },
+    [rawOnChange, editLock.touchCountdown],
+  );
 
   /* ─── 4. Presence ─── */
   const { presenceUsers, cursors, followingUserId, setFollowingUserId, onPointerMove } = usePresence({
@@ -140,5 +149,7 @@ export function useCollaboration({
     editLockHolder: editLock.editLockHolder,
     hasEditLock: editLock.hasEditLock,
     tryAcquireEditLock: editLock.tryAcquireEditLock,
+    queuePosition: editLock.queuePosition,
+    lockTimeRemaining: editLock.lockTimeRemaining,
   };
 }

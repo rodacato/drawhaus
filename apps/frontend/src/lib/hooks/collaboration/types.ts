@@ -44,4 +44,6 @@ export type CollaborationState = {
   editLockHolder: LockHolderInfo | null;
   hasEditLock: boolean;
   tryAcquireEditLock: () => void;
+  queuePosition: number;
+  lockTimeRemaining: number | null;
 };
