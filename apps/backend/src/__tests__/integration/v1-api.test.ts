@@ -72,8 +72,9 @@ function createApp() {
   const app = express();
   app.use(express.json());
 
-  // Health — no auth
-  app.use("/v1/health", createV1HealthRoutes());
+  // Health — no auth (fake pool so test doesn't need a real DB)
+  const fakePool = { query: async () => ({ rows: [] }) };
+  app.use("/v1/health", createV1HealthRoutes(fakePool));
 
   // Middleware chain for /v1/
   app.use("/v1", requireSdkHeader, requireApiKey, logApiRequest);

@@ -1,14 +1,15 @@
 import { Router } from "express";
-import { pool } from "../../db";
+import { pool as defaultPool } from "../../db";
 import { config } from "../../config";
 
-export function createV1HealthRoutes() {
+export function createV1HealthRoutes(dbPool?: { query: (sql: string) => Promise<unknown> }) {
   const router = Router();
+  const queryPool = dbPool ?? defaultPool;
 
   router.get("/", async (_req, res) => {
     let database = "ok";
     try {
-      await pool.query("SELECT 1");
+      await queryPool.query("SELECT 1");
     } catch {
       database = "error";
     }
