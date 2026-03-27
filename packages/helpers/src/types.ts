@@ -26,8 +26,12 @@ export interface ExcalidrawElement {
   endBinding?: { elementId: string; focus: number; gap: number };
   // Label (for arrows/rectangles)
   label?: { text: string; x: number; y: number };
+  // Versioning
+  version?: number;
   // Grouping
   groupIds?: string[];
+  // Deletion marker (for concurrent editing)
+  isDeleted?: boolean;
   // Allow extra fields
   [key: string]: unknown;
 }
