@@ -10,7 +10,7 @@ export const diagramsApi = {
   get: (id: string) =>
     api.get(`/api/diagrams/${id}`),
 
-  create: (data: { title?: string; elements?: unknown; folderId?: string; workspaceId?: string }) =>
+  create: (data: { title?: string; elements?: unknown; appState?: unknown; folderId?: string; workspaceId?: string }) =>
     api.post("/api/diagrams", data),
 
   update: (id: string, data: { title?: string; elements?: unknown; appState?: unknown }) =>

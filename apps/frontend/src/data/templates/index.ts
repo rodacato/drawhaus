@@ -7,10 +7,37 @@ export type BuiltInTemplate = {
   appState: Record<string, unknown>;
 };
 
+// Deterministic seed from element id — avoids random values while keeping
+// roughjs rendering consistent across loads.
+let _seedCounter = 1000;
+function stableSeed(): number {
+  return _seedCounter++;
+}
+
+// Common Excalidraw element defaults that must be present for updateScene()
+// to render elements correctly (initialData normalizes via restoreElements,
+// but scene-from-db / updateScene does NOT).
+function baseProps() {
+  return {
+    seed: stableSeed(),
+    version: 1,
+    versionNonce: stableSeed(),
+    isDeleted: false,
+    opacity: 100,
+    angle: 0,
+    groupIds: [] as string[],
+    frameId: null,
+    link: null,
+    locked: false,
+    updated: 1,
+  };
+}
+
 // Helper to create a rectangle element
 function rect(id: string, x: number, y: number, w: number, h: number, label: string, color = "#a5d8ff"): unknown[] {
   return [
     {
+      ...baseProps(),
       id,
       type: "rectangle",
       x, y,
@@ -25,6 +52,7 @@ function rect(id: string, x: number, y: number, w: number, h: number, label: str
       boundElements: [{ id: `${id}_text`, type: "text" }],
     },
     {
+      ...baseProps(),
       id: `${id}_text`,
       type: "text",
       x: x + 10,
@@ -50,6 +78,7 @@ function rect(id: string, x: number, y: number, w: number, h: number, label: str
 function arrow(id: string, startX: number, startY: number, endX: number, endY: number, label?: string): unknown[] {
   const elements: unknown[] = [
     {
+      ...baseProps(),
       id,
       type: "arrow",
       x: startX,
@@ -69,6 +98,7 @@ function arrow(id: string, startX: number, startY: number, endX: number, endY: n
   ];
   if (label) {
     elements.push({
+      ...baseProps(),
       id: `${id}_label`,
       type: "text",
       x: startX + (endX - startX) / 2 - 20,

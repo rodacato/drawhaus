@@ -54,6 +54,7 @@ export function useDiagramActions({
         folderId: templatePickerFolderId ?? folderId ?? undefined,
         workspaceId: activeWorkspaceId ?? undefined,
         elements: template.elements,
+        appState: template.appState,
       });
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);

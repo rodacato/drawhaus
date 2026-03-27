@@ -3,6 +3,17 @@ import type { Socket } from "socket.io-client";
 import { mergeElements } from "@/lib/collaboration";
 import type { ExcalidrawApi } from "@/lib/types";
 
+// Lazy-loaded restoreElements to normalise raw DB elements that may be
+// missing Excalidraw-internal fields (seed, version, opacity, …).
+let _restoreElements: ((elements: unknown[], localElements: null) => unknown[]) | null = null;
+const getRestoreElements = async () => {
+  if (!_restoreElements) {
+    const mod = await import("@excalidraw/excalidraw");
+    _restoreElements = (mod as unknown as { restoreElements: typeof _restoreElements }).restoreElements!;
+  }
+  return _restoreElements;
+};
+
 export interface UseSceneManagerParams {
   socketRef: React.MutableRefObject<Socket | null>;
   socketGeneration: number;
@@ -36,10 +47,19 @@ export function useSceneManager({
 
     const handleSceneFromDb = ({ elements, activeSceneId: sceneId }: { elements: unknown[]; activeSceneId?: string | null }) => {
       if (sceneId) setActiveSceneId(sceneId);
-      if (!excalidrawApiRef.current) { pendingSceneRef.current = { elements }; return; }
-      applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current.updateScene({ elements });
-      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+
+      // Normalise elements — DB rows may lack Excalidraw-internal fields
+      // (seed, version, opacity …) which causes updateScene to render blanks.
+      const apply = (els: unknown[]) => {
+        if (!excalidrawApiRef.current) { pendingSceneRef.current = { elements: els }; return; }
+        applyingRemoteCounter.current += 1;
+        excalidrawApiRef.current.updateScene({ elements: els });
+        setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+      };
+
+      getRestoreElements()
+        .then((restore) => apply(restore(elements, null)))
+        .catch(() => apply(elements)); // fallback: apply raw if import fails
     };
 
     const handleSceneUpdated = ({ fromSocketId, elements: remoteElements }: { fromSocketId: string; elements: unknown[] }) => {

@@ -9,6 +9,17 @@ import { timeAgo } from "./snapshot-helpers";
 import { SnapshotPreview } from "./SnapshotPreview";
 import { SnapshotItem } from "./SnapshotItem";
 
+// Lazy normaliser — ensures snapshot elements have all Excalidraw-internal
+// fields so updateScene renders them correctly.
+let _restoreElements: ((elements: unknown[], localElements: null) => unknown[]) | null = null;
+async function normalizeElements(elements: unknown[]): Promise<unknown[]> {
+  if (!_restoreElements) {
+    const mod = await import("@excalidraw/excalidraw");
+    _restoreElements = (mod as unknown as { restoreElements: typeof _restoreElements }).restoreElements!;
+  }
+  return _restoreElements ? _restoreElements(elements, null) : elements;
+}
+
 type SnapshotPanelProps = {
   diagramId: string;
   canEdit: boolean;
@@ -53,7 +64,8 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
     try {
       const snapshot = await restoreSnapshot(snapshotId);
       if (snapshot && excalidrawApiRef.current) {
-        excalidrawApiRef.current.updateScene({ elements: snapshot.elements });
+        const normalized = await normalizeElements(snapshot.elements);
+        excalidrawApiRef.current.updateScene({ elements: normalized });
       }
       setPreviewSnapshot(null);
       onRestored?.();
@@ -89,7 +101,8 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
     try {
       const full = await restoreSnapshotRef.current(snap.id);
       if (full && excalidrawApiRef.current) {
-        excalidrawApiRef.current.updateScene({ elements: full.elements });
+        const normalized = await normalizeElements(full.elements);
+        excalidrawApiRef.current.updateScene({ elements: normalized });
       }
       setPreviewSnapshot(null);
       onRestored?.();
