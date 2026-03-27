@@ -15,7 +15,7 @@ Shipped and working in production. See [CHANGELOG.md](../CHANGELOG.md) for full 
 | **Editor** | Excalidraw engine, auto-save, thumbnails, object snapping, canvas settings (grid, background) | v0.1 |
 | **Templates** | 7 built-in templates, custom templates with workspace sharing, template picker, My Templates view, category filtering, usage tracking | v0.9 |
 | **Diagram as Code** | Mermaid + PlantUML live import → editable Excalidraw elements, live SVG preview, replace/append toggle, custom converters for 14+ diagram types | v0.9 |
-| **Collaboration** | Real-time cursors + presence, viewport follow, editor lock (single-writer), threaded comments with resolve workflow, comment reactions | v0.1 |
+| **Collaboration** | Real-time cursors + presence, viewport follow, smart editor lock with FIFO queue and countdown (single-writer), threaded comments with resolve workflow, comment reactions | v0.1 |
 | **Snapshots** | Persistent snapshot system with auto-triggers, snapshot panel UI, preview modal, restore/rename, offline recovery, real-time sync, dashboard badges | v0.10 |
 | **Workspaces** | Multi-tenant spaces (admin/editor/viewer roles), member invites, workspace-scoped folders + diagrams, ownership transfer with bulk resource transfer | v0.7 |
 | **Dashboard** | Recent/Starred cross-workspace views, folders as content sections, grid/list toggle, starred diagrams, duplicate, inline rename, workspace switcher | v0.4 |
@@ -24,10 +24,10 @@ Shipped and working in production. See [CHANGELOG.md](../CHANGELOG.md) for full 
 | **Google Drive** | OAuth login + linking, Drive export, Drive import, auto-backup on save, scope upgrade flow | v0.7 |
 | **Auth** | Register/login/logout, sessions, forgot password with email reset, Google OAuth, GitHub OAuth, identity linking by email, connected accounts management (link/unlink), account deletion with cascade, delete guard for workspace owners | v0.1 |
 | **Admin** | User management, metrics, registration toggle, invite via email (Resend), setup wizard (3-step), integration secrets (AES-256-GCM), maintenance mode | v0.3 |
-| **Security** | Helmet headers, rate limiting, audit logger, RBAC, cookie hardening, encrypted secrets in DB | v0.8 |
+| **Security** | Helmet headers, rate limiting (Redis-backed when available), audit logger, RBAC, cookie hardening, encrypted secrets in DB | v0.8 |
 | **UI & Branding** | Dark/light theme, Bauhaus-inspired branding, toast notifications, confirm dialogs, style guide, board sidebar with semantic groups | v0.6 |
 | **Landing Page** | Hero with real screenshots, "Why Drawhaus?" value props, "How it works" deploy steps, 12-feature grid, comparison badges, tech stack logos, automated Playwright screenshots | v0.9 |
-| **DevOps** | Docker + Kamal deploy (backend + frontend), automated DB backups (7-day retention), health endpoint, `/api/version`, Redis adapter for horizontal scaling, nginx frontend with immutable asset caching, node-pg-migrate versioned migrations | v0.1 |
+| **DevOps** | Docker + Kamal deploy (backend + frontend), automated DB backups (7-day retention), health endpoint, `/api/version`, Redis adapter for horizontal scaling, shared Redis client for rate limiting + snapshot dedup, nginx frontend with immutable asset caching, node-pg-migrate versioned migrations | v0.1 |
 | **Testing** | 5-phase Playwright E2E suite (permissions, CRUD, sharing, auth, visual regression), backend unit tests, marketing screenshot automation | v0.8 |
 | **Public API** | API key management (create/revoke), `/v1/` REST endpoints for diagrams (CRUD), workspace-scoped auth, rate limiting, request logging, OpenAPI 3.1 spec + Redocly docs | v0.11 |
 | **MCP Server** | `@drawhaus/mcp` npm package — 5 tools (CRUD) + validate_elements, 2 resources, 4 prompts with curated spec, stdio transport, health check on startup | v0.11 |
@@ -209,6 +209,8 @@ Shipped as the **Snapshot System** — persistent snapshots with auto-triggers, 
 | Landing page: badges over comparison table | Friendly "plus" framing | Avoid adversarial positioning against Excalidraw (same engine) |
 | Screenshots: automated Playwright | Regenerable on UI changes | Prevents stale marketing assets; seeded with attractive demo data |
 | Gist auth: per-user PAT, not OAuth | Simpler, no GitHub OAuth app needed | User manages their own token; encrypted with existing ENCRYPTION_KEY infra |
+| Smart lock over concurrent editing ([ADR-020](adr/020-smart-lock-over-concurrent-editing.md)) | Improve lock UX with queue | No successful canvas product uses artisanal merge without CRDTs; adopt Yjs later if needed |
+| Redis as shared state ([ADR-021](adr/021-redis-shared-state.md)) | Redis for lock/rate-limit/snapshot dedup | Already configured; in-memory fallback preserves single-instance simplicity |
 
 ---
 
@@ -222,4 +224,4 @@ Shipped as the **Snapshot System** — persistent snapshots with auto-triggers, 
 
 ---
 
-*Last updated: 2026-03-20*
+*Last updated: 2026-03-27*
