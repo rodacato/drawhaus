@@ -85,7 +85,7 @@ export function useSaveManager({
       if (forSceneId && forSceneId !== activeSceneIdRef.current) return;
       setSaveState("saving");
       try {
-        const { collaborators: _c, viewBackgroundColor: _bg, gridModeEnabled: _gm, gridSize: _gs, objectsSnapModeEnabled: _os, ...restAppState } = appState;
+        const { collaborators: _1, viewBackgroundColor: _2, gridModeEnabled: _3, gridSize: _4, objectsSnapModeEnabled: _5, ...restAppState } = appState; // eslint-disable-line @typescript-eslint/no-unused-vars
         const sanitizedAppState = jsonSafe(restAppState);
         const safeElements = jsonSafe(elements);
         try { localStorage.setItem(cacheKey, JSON.stringify({ elements: safeElements, appState: sanitizedAppState })); } catch { /* quota exceeded */ }

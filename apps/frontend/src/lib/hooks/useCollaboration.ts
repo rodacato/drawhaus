@@ -3,7 +3,7 @@ import type { ExcalidrawApi } from "@/lib/types";
 
 // Re-export types for consumers
 export type { JoinMode, CollaborationOptions, CollaborationState } from "./collaboration/types";
-import type { CollaborationOptions, CollaborationState, ConflictCallback, RemoteDeleteCallback } from "./collaboration/types";
+import type { CollaborationOptions, CollaborationState } from "./collaboration/types";
 
 // Sub-hooks
 import { useSocketConnection } from "./collaboration/useSocketConnection";

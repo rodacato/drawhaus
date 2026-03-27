@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
 
+      - name: Build workspace packages
+        run: npm run build --workspace=@drawhaus/helpers --workspace=@drawhaus/plantuml-to-excalidraw --workspace=@drawhaus/mermaid-to-excalidraw
+
       - name: Lint
         run: npm run lint
 

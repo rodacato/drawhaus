@@ -1,4 +1,4 @@
-import type { SaveState, ConnectionState, PresenceUser, CursorInfo, ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
+import type { SaveState, ConnectionState, CursorInfo, ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 
 export type JoinMode =

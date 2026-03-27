@@ -59,7 +59,7 @@ export function Settings() {
       params.delete("link_error");
       setSearchParams(params);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleUnlinkProvider(provider: "google" | "github") {
     setUnlinkPending(provider);

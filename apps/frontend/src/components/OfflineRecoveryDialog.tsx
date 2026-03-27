@@ -28,7 +28,7 @@ export function OfflineRecoveryDialog({
   onKeepMine,
   onKeepServer,
   onSaveAsSnapshot,
-  onClose,
+  onClose: _onClose,
 }: OfflineRecoveryDialogProps) {
   const [loading, setLoading] = useState(false);
 
