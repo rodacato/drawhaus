@@ -3,6 +3,12 @@ name: Publish MCP Package
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (build only, no publish)"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -27,7 +33,10 @@ jobs:
           scope: "@drawhaus"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci || npm install
+
+      - name: Fix rollup native bindings (npm ci bug with optional deps)
+        run: npm install --no-save @rollup/rollup-linux-x64-gnu || true
 
       - name: Build helpers (dependency)
         run: npm run build --workspace=@drawhaus/helpers
@@ -36,12 +45,14 @@ jobs:
         run: npm run build --workspace=@drawhaus/mcp
 
       - name: Set version from tag
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           cd packages/mcp
           npm version "$VERSION" --no-git-tag-version
 
       - name: Publish to GitHub Packages
+        if: startsWith(github.ref, 'refs/tags/v') && inputs.dry_run != true
         run: npm publish --workspace=packages/mcp
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
