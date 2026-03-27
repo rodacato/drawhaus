@@ -4,50 +4,31 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
-## v0.13.0 — Concurrent Editing (2026-03)
+## v0.12.0 — Concurrent Editing & Redis Shared State (2026-03)
 
 ### Added
-- **Concurrent multi-user editing** — multiple users can edit the same diagram simultaneously, replacing the global edit lock
-- **Delta updates** — `scene-delta` event sends only changed/removed elements instead of full state (~80% payload reduction)
-- **Server-side merge** — `save-scene` now uses `SELECT ... FOR UPDATE` transactions to merge elements by version, preventing data loss on concurrent saves
-- **Conflict toasts** — users are notified when their edits are overwritten by another user's higher-version changes
-- **Remote delete toasts** — users are notified when elements they were editing are deleted by another user
+- **Concurrent multi-user editing** — multiple users can edit the same diagram simultaneously ([ADR-022](docs/adr/022-concurrent-editing-over-lock.md)). Replaces the single-editor global lock
+- **Delta updates** — `scene-delta` socket event sends only changed/removed elements instead of full state (~80% payload reduction)
+- **Server-side merge** — `save-scene` uses `SELECT ... FOR UPDATE` transactions to merge elements by version, preventing data loss on concurrent saves
+- **Conflict toasts** — users are notified when their edits are overwritten or elements they were editing are deleted by another user
 - **Orphan cleanup** — arrow bindings and group memberships are automatically cleaned up when referenced elements are deleted
-- **`mergeElements`** moved to `@drawhaus/helpers` — shared between frontend and backend
-- **`mergeDelta`** and **`diffElements`** — new merge utilities in `@drawhaus/helpers` for incremental updates
+- **Shared merge utilities** — `mergeElements`, `mergeDelta`, `diffElements` in `@drawhaus/helpers`, shared between frontend and backend
+- **Raise hand signaling** — lightweight socket events for requesting attention during collaboration, not tied to editing
+- **Redis shared state** — rate limiting, snapshot interval dedup now use Redis when `REDIS_URL` is available ([ADR-021](docs/adr/021-redis-shared-state.md))
+- **Shared Redis client** — single `ioredis` instance reused across rate limiters and snapshot dedup to minimize connections
+- **`rate-limit-redis`** — HTTP and API rate limiters automatically upgrade to Redis-backed store for cross-instance consistency
 - **Security validation** — server rejects deltas that remove >50% of elements or have version jumps >100k
 
 ### Changed
-- `EditLockStore` removed — global lock replaced by concurrent editing with element-level merge
-- Lock handler events (`request-edit-lock`, `release-edit-lock`) are now no-ops for backwards compatibility
-- `CollaborationBadge` simplified — only shows raise hand signaling (no countdown/queue)
+- `EditLockOverlay` replaced by simplified `CollaborationBadge` (raise hand only)
 - `useSaveManager` emits `scene-delta` instead of `scene-update` for incremental changes
-- `useSceneManager` handles `scene-delta-received` for applying remote deltas with `mergeDelta`
 - `SaveSceneUseCase` uses `updateSceneMerged` (PostgreSQL transaction) instead of direct overwrite
 - View mode no longer depends on edit lock — all editors can edit simultaneously
+- Snapshot interval tracking uses `SET NX EX` in Redis for cross-instance dedup, falls back to in-memory `Map`
 
 ### Removed
-- `EditLockStore` and `EditLockService` interface
-- Lock countdown timer and queue position UI
-- "Pedir turno" CTA and lock-based canvas blocking
-
----
-
-## v0.12.0 — Smart Lock & Redis Shared State (2026-03)
-
-### Added
-- **Smart edit lock with FIFO queue** — users waiting for the lock are automatically enqueued and promoted when the current editor finishes (ADR-020)
-- **Collaboration badge** — persistent UI badge replaces blocking overlay; shows countdown timer when editing, queue position when waiting, and click-to-request when idle
-- **Reduced lock timeout** — inactivity timeout reduced from 5s to 2.5s, grace period from 3s to 1s for faster turn-taking
-- **Free navigation while waiting** — pan, zoom, and select work without holding the lock via `viewModeEnabled`
-- **Redis shared state** — rate limiting, snapshot interval dedup now use Redis when `REDIS_URL` is available (ADR-021)
-- **Shared Redis client** — single `ioredis` instance reused across rate limiters and snapshot dedup to minimize connections
-- **`rate-limit-redis`** — HTTP and API rate limiters automatically upgrade to Redis-backed store for cross-instance consistency
-
-### Changed
-- `EditLockStore` refactored with extracted `EditLockService` interface for future Redis lock implementation
-- `EditLockOverlay` replaced by `CollaborationBadge` component (no more `cursor-not-allowed` overlay)
-- Snapshot interval tracking uses `SET NX EX` in Redis for cross-instance dedup, falls back to in-memory `Map`
+- `EditLockStore` — global lock replaced by concurrent editing with element-level merge
+- Lock countdown timer, queue position UI, and "Pedir turno" CTA
 
 ---
 
