@@ -3,8 +3,7 @@ import { parse } from "cookie";
 import type { JoinRoomUseCase } from "../../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../../application/use-cases/realtime/join-room-guest";
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
-import type { EditLockService } from "../edit-lock-store";
-import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers, emitLockStatus } from "../helpers";
+import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers } from "../helpers";
 import { config } from "../../config";
 import { logger } from "../../logger";
 
@@ -16,7 +15,6 @@ export function registerRoomHandlers(
   io: Server,
   socket: Socket,
   useCases: { joinRoom: JoinRoomUseCase; joinRoomGuest: JoinRoomGuestUseCase; createSnapshot: CreateSnapshotUseCase },
-  lockStore: EditLockService,
 ) {
   socket.on("join-room", async ({ roomId }: { roomId: string }) => {
     try {
@@ -49,14 +47,9 @@ export function registerRoomHandlers(
 
       socket.emit("room-joined", { roomId, role: result.role, userId: result.user.id });
 
-      // Emit current lock status to the joining user
-      emitLockStatus(io, roomId, lockStore);
-
-      // Auto-acquire lock if no one holds it and user can edit
-      if (!lockStore.getLock(roomId) && canEdit(socket, roomId)) {
-        lockStore.acquireLock(roomId, result.user.id, result.user.name, socket.id);
+      // With concurrent editing, everyone who can edit is always "unlocked"
+      if (canEdit(socket, roomId)) {
         socket.emit("edit-lock-acquired", { roomId, holder: { userId: result.user.id, userName: result.user.name } });
-        emitLockStatus(io, roomId, lockStore);
       }
 
       io.to(roomId).emit("room-presence", {
@@ -107,14 +100,9 @@ export function registerRoomHandlers(
 
       socket.emit("room-joined", { roomId, role: result.role, userId: guestId });
 
-      // Emit current lock status to the joining guest
-      emitLockStatus(io, roomId, lockStore);
-
-      // Auto-acquire lock if no one holds it and guest can edit
-      if (!lockStore.getLock(roomId) && canEdit(socket, roomId)) {
-        lockStore.acquireLock(roomId, guestId, name, socket.id);
+      // With concurrent editing, everyone who can edit is always "unlocked"
+      if (canEdit(socket, roomId)) {
         socket.emit("edit-lock-acquired", { roomId, holder: { userId: guestId, userName: name } });
-        emitLockStatus(io, roomId, lockStore);
       }
 
       io.to(roomId).emit("room-presence", {
@@ -129,9 +117,6 @@ export function registerRoomHandlers(
 
   socket.on("disconnecting", async () => {
     const myData = socket.data as SocketData;
-
-    // Release any locks held by this socket
-    const releasedRoomIds = lockStore.releaseBySocketId(socket.id);
 
     for (const roomId of socket.rooms) {
       if (roomId === socket.id) continue;
@@ -165,12 +150,6 @@ export function registerRoomHandlers(
             }
           })
           .catch(() => {});
-      }
-
-      // Emit lock status update if this room had a lock released
-      // (promoteNext in the lock store already auto-assigned via onRelease callback)
-      if (releasedRoomIds.includes(roomId)) {
-        emitLockStatus(io, roomId, lockStore);
       }
 
       socket.to(roomId).emit("room-presence", { roomId, users: futureUsers });

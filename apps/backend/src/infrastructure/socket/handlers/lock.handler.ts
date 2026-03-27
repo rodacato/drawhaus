@@ -1,12 +1,15 @@
 import type { Server, Socket } from "socket.io";
-import type { EditLockService } from "../edit-lock-store";
-import { type SocketData, canEdit, emitLockStatus } from "../helpers";
-import { logger } from "../../logger";
+import { type SocketData, canEdit } from "../helpers";
 
+/**
+ * Lock handlers are now no-ops for backwards compatibility.
+ * Concurrent editing replaced the global edit lock.
+ * `request-edit-lock` always responds with `acquired: true`.
+ * Raise hand signaling is preserved (not tied to locking).
+ */
 export function registerLockHandlers(
   io: Server,
   socket: Socket,
-  lockStore: EditLockService,
 ) {
   socket.on("request-edit-lock", ({ roomId }: { roomId: string }) => {
     if (!socket.rooms.has(roomId)) return;
@@ -15,37 +18,20 @@ export function registerLockHandlers(
     const userId = (socket.data as SocketData).userId;
     const userName = (socket.data as SocketData).userName;
 
-    const result = lockStore.tryAcquire(roomId, userId, userName, socket.id);
-
-    if (result.acquired) {
-      socket.emit("edit-lock-acquired", {
-        roomId,
-        holder: { userId, userName },
-      });
-      emitLockStatus(io, roomId, lockStore);
-    } else if (result.queued) {
-      socket.emit("edit-lock-queued", {
-        roomId,
-        position: result.position,
-        holder: { userId: result.holder.userId, userName: result.holder.userName },
-      });
-    } else {
-      // Backwards compat: emit denied for clients that don't support queue yet
-      socket.emit("edit-lock-denied", {
-        roomId,
-        holderName: result.holder?.userName ?? "someone",
-        holderUserId: result.holder?.userId ?? null,
-      });
-    }
+    // Always grant — concurrent editing handles conflicts via merge
+    socket.emit("edit-lock-acquired", {
+      roomId,
+      holder: { userId, userName },
+    });
+    io.to(roomId).emit("edit-lock-status", {
+      roomId,
+      holder: { userId, userName },
+    });
   });
 
   socket.on("release-edit-lock", ({ roomId }: { roomId: string }) => {
     if (!socket.rooms.has(roomId)) return;
-    const userId = (socket.data as SocketData).userId;
-    if (lockStore.releaseLock(roomId, userId)) {
-      emitLockStatus(io, roomId, lockStore);
-      logger.info({ roomId, userId }, "edit lock released");
-    }
+    io.to(roomId).emit("edit-lock-status", { roomId, holder: null });
   });
 
   socket.on("raise-hand", ({ roomId }: { roomId: string }) => {

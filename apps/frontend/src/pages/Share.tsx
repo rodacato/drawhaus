@@ -151,23 +151,15 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
     canvasPrefs,
   });
 
-  // Auto-acquire lock on canvas interaction when nobody has it
-  const handleCanvasPointerDown = useCallback(() => {
-    if (canEdit && !collab.hasEditLock) {
-      collab.tryAcquireEditLock();
-    }
-  }, [canEdit, collab.hasEditLock, collab.tryAcquireEditLock]);
+  // No lock acquisition needed — concurrent editing
+  const handleCanvasPointerDown = useCallback(() => {}, []);
 
   // Status badge logic
   let statusBadge: { label: string; className: string };
   if (!canEdit) {
     statusBadge = { label: "View only", className: "bg-gray-100 text-gray-600" };
-  } else if (collab.hasEditLock) {
-    statusBadge = { label: collab.saveLabel, className: collab.saveColor };
-  } else if (collab.editLockHolder) {
-    statusBadge = { label: "Observando", className: "bg-amber-100 text-amber-700" };
   } else {
-    statusBadge = { label: "Conectando...", className: "bg-gray-100 text-gray-500" };
+    statusBadge = { label: collab.saveLabel, className: collab.saveColor };
   }
 
   return (
@@ -185,12 +177,7 @@ function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data
         <div className="pointer-events-auto flex items-center gap-2">
           <div className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${statusBadge.className}`}>{statusBadge.label}</div>
           <CollaborationBadge
-            hasEditLock={collab.hasEditLock}
-            lockHolder={collab.editLockHolder}
-            queuePosition={collab.queuePosition}
-            lockTimeRemaining={collab.lockTimeRemaining}
             canEdit={canEdit}
-            onTryAcquire={collab.tryAcquireEditLock}
             raisedHands={collab.raisedHands}
             isHandRaised={collab.isHandRaised}
             onRaiseHand={collab.raiseHand}

@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import type { SceneRepository } from "../../domain/ports/scene-repository";
 import type { Scene } from "../../domain/entities/scene";
+import { mergeElements } from "@drawhaus/helpers";
 
 export class InMemorySceneRepository implements SceneRepository {
   store: Scene[] = [];
@@ -47,6 +48,15 @@ export class InMemorySceneRepository implements SceneRepository {
     const scene = this.store.find((s) => s.id === id);
     if (scene) {
       scene.elements = elements;
+      scene.appState = appState;
+      scene.updatedAt = new Date();
+    }
+  }
+
+  async updateSceneMerged(id: string, incomingElements: unknown[], appState: Record<string, unknown>): Promise<void> {
+    const scene = this.store.find((s) => s.id === id);
+    if (scene) {
+      scene.elements = mergeElements(scene.elements, incomingElements);
       scene.appState = appState;
       scene.updatedAt = new Date();
     }

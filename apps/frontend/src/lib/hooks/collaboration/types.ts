@@ -12,9 +12,14 @@ export type CollaborationOptions = {
   initialElements: unknown[];
   initialAppState: Record<string, unknown>;
   canvasPrefs: CanvasPrefs;
+  onConflict?: ConflictCallback;
+  onRemoteDelete?: RemoteDeleteCallback;
 };
 
 export type LockHolderInfo = { userId: string; userName: string };
+
+export type ConflictCallback = (conflictIds: string[], fromUserId: string) => void;
+export type RemoteDeleteCallback = (deletedIds: string[], fromUserId: string) => void;
 
 export type CollaborationState = {
   saveState: SaveState;

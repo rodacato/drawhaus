@@ -50,6 +50,19 @@ export default function BoardEditor({
 
   const { prefs: canvasPrefs, updatePrefs: updateCanvasPrefs } = useCanvasPrefs();
 
+  const toast = useToast();
+  const presenceRef = useRef<{ presenceUsers: Array<{ userId: string; name: string }> }>({ presenceUsers: [] });
+
+  const handleConflict = useCallback((conflictIds: string[], fromUserId: string) => {
+    const userName = presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ?? "Otro usuario";
+    toast(`${userName} modificó ${conflictIds.length === 1 ? "un elemento" : `${conflictIds.length} elementos`} que editabas`, "info");
+  }, [toast]);
+
+  const handleRemoteDelete = useCallback((deletedIds: string[], fromUserId: string) => {
+    const userName = presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ?? "Otro usuario";
+    toast(`${userName} eliminó ${deletedIds.length === 1 ? "un elemento" : `${deletedIds.length} elementos`} que editabas`, "info");
+  }, [toast]);
+
   const collab = useCollaboration({
     diagramId,
     canEdit: true,
@@ -57,7 +70,10 @@ export default function BoardEditor({
     initialElements,
     initialAppState,
     canvasPrefs,
+    onConflict: handleConflict,
+    onRemoteDelete: handleRemoteDelete,
   });
+  presenceRef.current = collab;
 
   const handleCanvasPrefsChange = useCallback((patch: Partial<CanvasPrefs>) => {
     updateCanvasPrefs(patch);
@@ -121,8 +137,6 @@ export default function BoardEditor({
     [],
   );
 
-  const toast = useToast();
-
   // Notify when another user restores a snapshot
   useEffect(() => {
     const socket = collab.socketRef.current;
@@ -138,7 +152,6 @@ export default function BoardEditor({
 
   // Keyboard shortcuts
   useBoardShortcuts({
-    hasEditLock: collab.hasEditLock,
     flushSave: collab.flushSave,
     onToggleComments: () => setCommentsPanelOpen((prev) => !prev),
     toast,
@@ -184,22 +197,10 @@ export default function BoardEditor({
     setCommentsPanelOpen(true);
   }, [handleHighlightElement]);
 
-  // Auto-acquire lock on canvas interaction — toast if someone else holds it
-  const lastLockToastRef = useRef(0);
+  // No lock acquisition needed — concurrent editing allows everyone to edit
   const handleCanvasPointerDown = useCallback(() => {
-    if (!canEdit || collab.hasEditLock) return;
-    if (!collab.editLockHolder) {
-      collab.tryAcquireEditLock();
-      return;
-    }
-    // Someone else has it — request + show toast (throttled to avoid spam)
-    const now = Date.now();
-    if (now - lastLockToastRef.current > 5000) {
-      lastLockToastRef.current = now;
-      collab.tryAcquireEditLock();
-      toast(`${collab.editLockHolder.userName} está editando — te agregamos a la cola`, "info");
-    }
-  }, [canEdit, collab.hasEditLock, collab.editLockHolder, collab.tryAcquireEditLock, toast]);
+    // Intentionally empty: all editors can edit simultaneously
+  }, []);
 
   function startEditingTitle() {
     if (!canEdit) return;
@@ -292,12 +293,7 @@ export default function BoardEditor({
               </div>
             )}
             <CollaborationBadge
-              hasEditLock={collab.hasEditLock}
-              lockHolder={collab.editLockHolder}
-              queuePosition={collab.queuePosition}
-              lockTimeRemaining={collab.lockTimeRemaining}
               canEdit={canEdit}
-              onTryAcquire={collab.tryAcquireEditLock}
               raisedHands={collab.raisedHands}
               isHandRaised={collab.isHandRaised}
               onRaiseHand={collab.raiseHand}

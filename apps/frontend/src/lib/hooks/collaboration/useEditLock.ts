@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { Socket } from "socket.io-client";
 import type { LockHolderInfo } from "./types";
 
-const LOCK_TIMEOUT_MS = 2_500; // matches backend INACTIVITY_TIMEOUT_MS
-const COUNTDOWN_TICK_MS = 100;
+/**
+ * Stub edit lock hook for concurrent editing.
+ * Always reports that the current user has the edit lock.
+ * Lock events are still consumed for backwards compatibility
+ * but have no functional effect.
+ */
 
 interface UseEditLockParams {
   socketRef: React.MutableRefObject<Socket | null>;
@@ -12,103 +16,46 @@ interface UseEditLockParams {
 }
 
 export function useEditLock({ socketRef, socketGeneration, selfUserId }: UseEditLockParams) {
-  const [lockHolder, setLockHolder] = useState<LockHolderInfo | null>(null);
-  const [queuePosition, setQueuePosition] = useState(0);
-  const [lockTimeRemaining, setLockTimeRemaining] = useState<number | null>(null);
   const roomIdRef = useRef<string | null>(null);
-  const lockAcquiredAtRef = useRef<number | null>(null);
-  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Countdown timer — ticks while self holds the lock
-  useEffect(() => {
-    if (countdownRef.current) {
-      clearInterval(countdownRef.current);
-      countdownRef.current = null;
-    }
-    if (lockAcquiredAtRef.current === null) {
-      setLockTimeRemaining(null);
-      return;
-    }
-    const tick = () => {
-      if (lockAcquiredAtRef.current === null) return;
-      const elapsed = Date.now() - lockAcquiredAtRef.current;
-      const remaining = Math.max(0, LOCK_TIMEOUT_MS - elapsed);
-      setLockTimeRemaining(remaining);
-    };
-    tick();
-    countdownRef.current = setInterval(tick, COUNTDOWN_TICK_MS);
-    return () => {
-      if (countdownRef.current) clearInterval(countdownRef.current);
-    };
-  }, [lockHolder]);
-
-  const hasEditLock = lockHolder?.userId === selfUserId && selfUserId !== null;
-
-  // Reset countdown anchor when lock holder changes
-  useEffect(() => {
-    if (hasEditLock) {
-      lockAcquiredAtRef.current = Date.now();
-    } else {
-      lockAcquiredAtRef.current = null;
-    }
-  }, [hasEditLock]);
-
-  // Touch extends the countdown
-  const touchCountdown = useCallback(() => {
-    lockAcquiredAtRef.current = Date.now();
-  }, []);
 
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket) return;
 
-    function handleLockStatus({ holder }: { roomId: string; holder: LockHolderInfo | null }) {
-      setLockHolder(holder);
-      // If we no longer hold the lock and aren't in queue, clear position
-      if (!holder || holder.userId !== selfUserId) {
-        // Queue position is managed by edit-lock-queued event
-      }
-    }
-
-    function handleLockAcquired({ holder }: { roomId: string; holder: LockHolderInfo }) {
-      setLockHolder(holder);
-      setQueuePosition(0);
-    }
-
-    function handleLockQueued({ position }: { roomId: string; position: number; holder: LockHolderInfo }) {
-      setQueuePosition(position);
-    }
-
     function handleRoomJoined({ roomId }: { roomId: string }) {
       roomIdRef.current = roomId;
     }
 
-    socket.on("edit-lock-status", handleLockStatus);
-    socket.on("edit-lock-acquired", handleLockAcquired);
-    socket.on("edit-lock-queued", handleLockQueued);
     socket.on("room-joined", handleRoomJoined);
 
+    // Consume lock events silently for backwards compat
+    const noop = () => {};
+    socket.on("edit-lock-status", noop);
+    socket.on("edit-lock-acquired", noop);
+    socket.on("edit-lock-queued", noop);
+
     return () => {
-      socket.off("edit-lock-status", handleLockStatus);
-      socket.off("edit-lock-acquired", handleLockAcquired);
-      socket.off("edit-lock-queued", handleLockQueued);
       socket.off("room-joined", handleRoomJoined);
+      socket.off("edit-lock-status", noop);
+      socket.off("edit-lock-acquired", noop);
+      socket.off("edit-lock-queued", noop);
     };
-  }, [socketRef, socketGeneration, selfUserId]);
+  }, [socketRef, socketGeneration]);
 
   const tryAcquireEditLock = useCallback(() => {
-    const socket = socketRef.current;
-    const roomId = roomIdRef.current;
-    if (!socket || !roomId) return;
-    socket.emit("request-edit-lock", { roomId });
-  }, [socketRef]);
+    // No-op: everyone can edit concurrently
+  }, []);
+
+  const touchCountdown = useCallback(() => {
+    // No-op: no countdown in concurrent editing
+  }, []);
 
   return {
-    editLockHolder: lockHolder,
-    hasEditLock,
+    editLockHolder: selfUserId ? { userId: selfUserId, userName: "" } as LockHolderInfo : null,
+    hasEditLock: selfUserId !== null,
     tryAcquireEditLock,
-    queuePosition,
-    lockTimeRemaining,
+    queuePosition: 0,
+    lockTimeRemaining: null as number | null,
     touchCountdown,
   };
 }

@@ -15,7 +15,6 @@ import { registerSceneHandlers } from "./handlers/scene.handler";
 import { registerCursorHandlers } from "./handlers/cursor.handler";
 import { registerCommentHandlers } from "./handlers/comment.handler";
 import { registerLockHandlers } from "./handlers/lock.handler";
-import { EditLockStore } from "./edit-lock-store";
 import { config } from "../config";
 import { attachRedisAdapter } from "./redis-adapter";
 
@@ -47,23 +46,6 @@ export async function setupSocketServer(
 
   await attachRedisAdapter(io);
 
-  const lockStore = new EditLockStore();
-  lockStore.setOnRelease((diagramId, _previousHolder, nextHolder) => {
-    if (nextHolder) {
-      // Notify the promoted user from the queue
-      io.to(nextHolder.socketId).emit("edit-lock-acquired", {
-        roomId: diagramId,
-        holder: { userId: nextHolder.userId, userName: nextHolder.userName },
-      });
-    }
-    // Broadcast lock status to all users in the room
-    const holder = lockStore.getLock(diagramId);
-    io.to(diagramId).emit("edit-lock-status", {
-      roomId: diagramId,
-      holder: holder ? { userId: holder.userId, userName: holder.userName } : null,
-    });
-  });
-
   io.on("connection", (socket) => {
     socket.data.roomRoles = {};
     socket.data.isGuest = false;
@@ -72,13 +54,13 @@ export async function setupSocketServer(
       joinRoom: useCases.joinRoom,
       joinRoomGuest: useCases.joinRoomGuest,
       createSnapshot: useCases.createSnapshot,
-    }, lockStore);
+    });
     registerSceneHandlers(io, socket, {
       saveScene: useCases.saveScene,
       syncToDrive: useCases.syncToDrive,
       createSnapshot: useCases.createSnapshot,
-    }, lockStore);
-    registerLockHandlers(io, socket, lockStore);
+    });
+    registerLockHandlers(io, socket);
     registerCursorHandlers(socket, io);
     registerCommentHandlers(io, socket, {
       createComment: useCases.createComment,

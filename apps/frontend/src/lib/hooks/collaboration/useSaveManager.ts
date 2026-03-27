@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
-import { jsonSafe, getAdaptiveThrottleMs, VIEWPORT_THROTTLE_MS, SAVE_DEBOUNCE_MS } from "@/lib/collaboration";
+import { jsonSafe, getAdaptiveThrottleMs, diffElements, VIEWPORT_THROTTLE_MS, SAVE_DEBOUNCE_MS } from "@/lib/collaboration";
 import type { SaveState, ExcalidrawApi } from "@/lib/types";
 import { deriveSaveLabel, deriveSaveColor } from "@/lib/save-state";
 import { diagramsApi } from "@/api/diagrams";
@@ -15,7 +15,6 @@ export interface UseSaveManagerParams {
   followingUserIdRef: React.MutableRefObject<string | null>;
   followedViewportRef: React.MutableRefObject<{ scrollX: number; scrollY: number; zoom: number } | null>;
   canEdit: boolean;
-  hasEditLockRef: React.MutableRefObject<boolean>;
 }
 
 export interface UseSaveManagerReturn {
@@ -38,7 +37,6 @@ export function useSaveManager({
   followingUserIdRef,
   followedViewportRef,
   canEdit,
-  hasEditLockRef,
 }: UseSaveManagerParams): UseSaveManagerReturn {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -46,6 +44,7 @@ export function useSaveManager({
   const lastEmitTime = useRef(0);
   const lastViewportEmitTime = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
+  const previousElementsRef = useRef<readonly unknown[]>([]);
 
   const cacheKey = `drawhaus_scene_${diagramId}`;
 
@@ -138,18 +137,31 @@ export function useSaveManager({
         return; // Skip editing while following
       }
       if (!canEdit) return;
-      if (!hasEditLockRef.current) return;
       setSaveState("pending");
+
+      const emitDelta = (els: readonly unknown[]) => {
+        const prev = previousElementsRef.current;
+        const delta = diffElements(prev, els);
+        previousElementsRef.current = els;
+        // If delta covers >50% of the scene, send full state as fallback
+        const totalPrev = prev.length || 1;
+        if (delta.removedIds.length > totalPrev * 0.5) {
+          socketRef.current?.emit("scene-update", { roomId: diagramId, sceneId: activeSceneIdRef.current, elements: [...els] });
+        } else if (delta.changed.length > 0 || delta.removedIds.length > 0) {
+          socketRef.current?.emit("scene-delta", { roomId: diagramId, sceneId: activeSceneIdRef.current, changed: delta.changed, removedIds: delta.removedIds });
+        }
+      };
+
       const throttleMs = getAdaptiveThrottleMs(elements.length);
       const elapsed = now - lastEmitTime.current;
       if (elapsed >= throttleMs) {
         lastEmitTime.current = now;
-        socketRef.current?.emit("scene-update", { roomId: diagramId, sceneId: activeSceneIdRef.current, elements: [...elements] });
+        emitDelta(elements);
       } else if (!throttleTimer.current) {
         throttleTimer.current = setTimeout(() => {
           throttleTimer.current = null;
           lastEmitTime.current = Date.now();
-          socketRef.current?.emit("scene-update", { roomId: diagramId, sceneId: activeSceneIdRef.current, elements: [...(excalidrawApiRef.current?.getSceneElements?.() ?? elements)] });
+          emitDelta(excalidrawApiRef.current?.getSceneElements?.() ?? elements);
         }, throttleMs - elapsed);
       }
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -169,7 +181,6 @@ export function useSaveManager({
   const flushSave = useCallback(async () => {
     const a = excalidrawApiRef.current;
     if (!a) return;
-    if (!hasEditLockRef.current) return;
     const elements = a.getSceneElements();
     const appState = a.getAppState();
     await persistScene([...elements], appState as Record<string, unknown>, activeSceneIdRef.current);

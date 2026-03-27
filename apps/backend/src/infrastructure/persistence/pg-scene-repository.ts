@@ -1,6 +1,7 @@
 import type { SceneRepository } from "../../domain/ports/scene-repository";
 import type { Scene } from "../../domain/entities/scene";
 import { pool } from "../db";
+import { mergeElements } from "@drawhaus/helpers";
 
 type SceneRow = {
   id: string;
@@ -73,6 +74,29 @@ export class PgSceneRepository implements SceneRepository {
       "UPDATE scenes SET elements = $1, app_state = $2, updated_at = now() WHERE id = $3",
       [JSON.stringify(elements), JSON.stringify(appState), id],
     );
+  }
+
+  async updateSceneMerged(id: string, incomingElements: unknown[], appState: Record<string, unknown>): Promise<void> {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const { rows } = await client.query<{ elements: unknown[] }>(
+        "SELECT elements FROM scenes WHERE id = $1 FOR UPDATE",
+        [id],
+      );
+      const dbElements = rows[0]?.elements ?? [];
+      const merged = mergeElements(dbElements, incomingElements);
+      await client.query(
+        "UPDATE scenes SET elements = $1, app_state = $2, updated_at = now() WHERE id = $3",
+        [JSON.stringify(merged), JSON.stringify(appState), id],
+      );
+      await client.query("COMMIT");
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
+    } finally {
+      client.release();
+    }
   }
 
   async reorder(id: string, sortOrder: number): Promise<void> {

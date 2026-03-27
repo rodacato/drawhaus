@@ -3,7 +3,7 @@ import type { ExcalidrawApi } from "@/lib/types";
 
 // Re-export types for consumers
 export type { JoinMode, CollaborationOptions, CollaborationState } from "./collaboration/types";
-import type { CollaborationOptions, CollaborationState } from "./collaboration/types";
+import type { CollaborationOptions, CollaborationState, ConflictCallback, RemoteDeleteCallback } from "./collaboration/types";
 
 // Sub-hooks
 import { useSocketConnection } from "./collaboration/useSocketConnection";
@@ -19,6 +19,8 @@ export function useCollaboration({
   initialElements,
   initialAppState,
   canvasPrefs,
+  onConflict,
+  onRemoteDelete,
 }: CollaborationOptions): CollaborationState {
   /* ─── toolbar state (owned by parent, not a sub-hook concern) ─── */
   const [toolbarOpen, setToolbarOpen] = useState(false);
@@ -60,10 +62,8 @@ export function useCollaboration({
     joinMode,
   });
 
-  /* ─── 2. Edit lock ─── */
+  /* ─── 2. Edit lock (stub — concurrent editing) ─── */
   const editLock = useEditLock({ socketRef, socketGeneration, selfUserId });
-  const hasEditLockRef = useRef(false);
-  hasEditLockRef.current = editLock.hasEditLock;
 
   /* ─── 3. Save manager ─── */
   const { saveState, saveLabel, saveColor, lastSavedAt, onChange: rawOnChange, flushSave } = useSaveManager({
@@ -76,7 +76,6 @@ export function useCollaboration({
     followingUserIdRef,
     followedViewportRef,
     canEdit,
-    hasEditLockRef,
   });
 
   // Wrap onChange to reset lock countdown on each edit
@@ -108,17 +107,19 @@ export function useCollaboration({
     applyingRemoteCounter,
     activeSceneIdRef,
     pendingSceneRef,
+    onConflict,
+    onRemoteDelete,
   });
 
-  /* ─── 6. Force viewModeEnabled when user cannot edit (no lock or following) ─── */
+  /* ─── 6. Force viewModeEnabled when user cannot edit or is following ─── */
   useEffect(() => {
     const api = excalidrawApiRef.current;
     if (!api) return;
-    const viewMode = !canEdit || !editLock.hasEditLock || !!followingUserIdRef.current;
+    const viewMode = !canEdit || !!followingUserIdRef.current;
     applyingRemoteCounter.current += 1;
     api.updateScene({ appState: { viewModeEnabled: viewMode } });
     setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
-  }, [editLock.hasEditLock, editLock.editLockHolder, canEdit]);
+  }, [canEdit]);
 
   /* ─── excalidraw API init ─── */
   const onExcalidrawApi = useCallback((excalidrawApi: ExcalidrawApi) => {

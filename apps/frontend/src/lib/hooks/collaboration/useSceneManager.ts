@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Socket } from "socket.io-client";
-import { mergeElements } from "@/lib/collaboration";
+import { mergeElements, mergeDelta } from "@/lib/collaboration";
 import type { ExcalidrawApi } from "@/lib/types";
 
 // Lazy-loaded restoreElements to normalise raw DB elements that may be
@@ -21,6 +21,8 @@ export interface UseSceneManagerParams {
   applyingRemoteCounter: React.MutableRefObject<number>;
   activeSceneIdRef: React.MutableRefObject<string | null>;
   pendingSceneRef: React.MutableRefObject<{ elements: unknown[] } | null>;
+  onConflict?: (conflictIds: string[], fromUserId: string) => void;
+  onRemoteDelete?: (deletedIds: string[], fromUserId: string) => void;
 }
 
 export interface UseSceneManagerReturn {
@@ -34,6 +36,8 @@ export function useSceneManager({
   applyingRemoteCounter,
   activeSceneIdRef,
   pendingSceneRef,
+  onConflict,
+  onRemoteDelete,
 }: UseSceneManagerParams): UseSceneManagerReturn {
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
 
@@ -71,12 +75,25 @@ export function useSceneManager({
       setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
     };
 
+    const handleSceneDeltaReceived = ({ fromSocketId, fromUserId, changed, removedIds }: { fromSocketId: string; fromUserId: string; changed: unknown[]; removedIds: string[] }) => {
+      if (fromSocketId === socket.id) return;
+      const localElements = excalidrawApiRef.current?.getSceneElements?.() ?? [];
+      const { elements: merged, conflictIds, deletedIds } = mergeDelta(localElements, changed, removedIds);
+      applyingRemoteCounter.current += 1;
+      excalidrawApiRef.current?.updateScene({ elements: merged });
+      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+      if (conflictIds.length > 0) onConflict?.(conflictIds, fromUserId);
+      if (deletedIds.length > 0) onRemoteDelete?.(deletedIds, fromUserId);
+    };
+
     socket.on("scene-from-db", handleSceneFromDb);
     socket.on("scene-updated", handleSceneUpdated);
+    socket.on("scene-delta-received", handleSceneDeltaReceived);
 
     return () => {
       socket.off("scene-from-db", handleSceneFromDb);
       socket.off("scene-updated", handleSceneUpdated);
+      socket.off("scene-delta-received", handleSceneDeltaReceived);
     };
   }, [socketGeneration]);
 
