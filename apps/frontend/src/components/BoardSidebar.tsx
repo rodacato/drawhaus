@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { ui } from "@/lib/ui";
 import type { ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 import { SidebarButton } from "./board-sidebar/SidebarButton";
-import { ExportIcon, CommentIcon, ShareIcon, HomeIcon, GearIcon, TemplateIcon, CodeIcon, HistoryIcon } from "./board-sidebar/icons";
+import { ExportIcon, CommentIcon, ShareIcon, GearIcon, TemplateIcon, CodeIcon, HistoryIcon } from "./board-sidebar/icons";
 import { SidebarDrawer } from "./board-sidebar/SidebarDrawer";
 import { ExportPanel } from "./board-sidebar/ExportPanel";
 import { SharePanel } from "./board-sidebar/SharePanel";
@@ -88,10 +88,30 @@ export function BoardSidebar({
 
   const drawerWidth = activePanel ? (PANEL_WIDTH[activePanel] ?? 300) : 300;
 
+  function handleLogoClick() {
+    if (saveState === "pending" || saveState === "saving") {
+      setLeaveOpen(true);
+    } else {
+      handleLeave();
+    }
+  }
+
   return (
     <div id="board-sidebar" className="flex h-full shrink-0">
       {/* Icon bar */}
       <div className="flex h-full w-14 flex-col items-center border-r border-gray-200 bg-white/95 backdrop-blur-sm py-3">
+        {/* Logo — home nav */}
+        <button
+          type="button"
+          onClick={handleLogoClick}
+          title="Ir al Dashboard"
+          className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-gray-100"
+        >
+          <img src="/logo-icon.svg" alt="Drawhaus" className="h-7 w-7" />
+        </button>
+
+        <div className="mx-3 mb-3 h-px w-6 bg-gray-200" />
+
         {/* Create & Import */}
         {canEdit && (
           <div className="flex flex-col items-center gap-1.5">
@@ -135,11 +155,6 @@ export function BoardSidebar({
 
         {/* Bottom */}
         <div className="flex flex-col items-center gap-1.5">
-          <SidebarButton
-            icon={<HomeIcon />}
-            label="Dashboard"
-            onClick={() => setLeaveOpen(true)}
-          />
           <SidebarButton icon={<GearIcon />} label="Settings" active={activePanel === "settings"} onClick={() => togglePanel("settings")} />
         </div>
       </div>
