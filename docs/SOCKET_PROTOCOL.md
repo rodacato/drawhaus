@@ -38,23 +38,23 @@ Each diagram is a Socket.IO room. Scenes are sub-rooms scoped to `{roomId}:{scen
 | Direction | Event | Payload | Description |
 |-----------|-------|---------|-------------|
 | S → C | `scene-from-db` | `{ elements, appState, scenes, activeSceneId }` | Initial scene data on join |
-| C → S | `scene-update` | `{ roomId, sceneId?, elements }` | Broadcast element changes (requires edit lock) |
-| S → Room | `scene-updated` | `{ roomId, sceneId, fromUserId, fromSocketId, elements }` | Relayed element changes |
-| C → S | `save-scene` | `{ roomId, sceneId?, elements, appState }` | Persist scene to database |
+| C → S | `scene-update` | `{ roomId, sceneId?, elements }` | Broadcast full element state (fallback for large changes) |
+| S → Room | `scene-updated` | `{ roomId, sceneId, fromUserId, fromSocketId, elements }` | Relayed full element state |
+| C → S | `scene-delta` | `{ roomId, sceneId?, changed, removedIds }` | Incremental element changes (preferred) |
+| S → Room | `scene-delta-received` | `{ roomId, sceneId, fromUserId, fromSocketId, changed, removedIds }` | Relayed incremental changes |
+| C → S | `save-scene` | `{ roomId, sceneId?, elements, appState }` | Persist scene to database (server-side merge) |
 | S → C | `scene-saved` | `{ roomId, sceneId }` | Confirms save succeeded |
 
-### Edit Lock
+### Edit Lock (deprecated — no-op)
 
-Single-editor lock per diagram with FIFO wait queue. Only the lock holder can emit `scene-update` / `save-scene`. Auto-releases after 2.5s of inactivity; queued users are promoted automatically. 1s grace period for previous holder to re-acquire.
+**Concurrent editing** replaced the global edit lock. Multiple users can edit simultaneously. Conflicts are resolved via element-level merge (higher `version` wins). Events are preserved for backwards compatibility but have no functional effect — `request-edit-lock` always responds with `acquired: true`.
 
 | Direction | Event | Payload | Description |
 |-----------|-------|---------|-------------|
-| C → S | `request-edit-lock` | `{ roomId }` | Request exclusive edit lock (enqueues if held) |
-| S → C | `edit-lock-acquired` | `{ roomId, holder: { userId, userName } }` | Lock granted (also sent on queue promotion) |
-| S → C | `edit-lock-queued` | `{ roomId, position, holder: { userId, userName } }` | Enqueued in FIFO wait queue |
-| S → C | `edit-lock-denied` | `{ roomId, holderName, holderUserId }` | Lock denied (backwards compat) |
-| C → S | `release-edit-lock` | `{ roomId }` | Voluntarily release lock |
-| S → Room | `edit-lock-status` | `{ roomId, holder: { userId, userName } \| null }` | Current lock state broadcast |
+| C → S | `request-edit-lock` | `{ roomId }` | Always responds with acquired (no-op) |
+| S → C | `edit-lock-acquired` | `{ roomId, holder: { userId, userName } }` | Always sent immediately |
+| C → S | `release-edit-lock` | `{ roomId }` | No-op |
+| S → Room | `edit-lock-status` | `{ roomId, holder: { userId, userName } \| null }` | Lock state broadcast (compat) |
 
 ### Raise Hand
 

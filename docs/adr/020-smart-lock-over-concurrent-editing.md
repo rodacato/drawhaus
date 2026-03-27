@@ -1,6 +1,6 @@
 # ADR-020: Smart Lock with Queue over Concurrent Editing
 
-**Status:** accepted
+**Status:** superseded by [ADR-022](022-concurrent-editing-over-lock.md)
 **Date:** 2026-03-27
 **Supersedes:** ADR-006 (Single-Editor Lock over CRDT)
 

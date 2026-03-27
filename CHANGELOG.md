@@ -4,6 +4,35 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
+## v0.13.0 — Concurrent Editing (2026-03)
+
+### Added
+- **Concurrent multi-user editing** — multiple users can edit the same diagram simultaneously, replacing the global edit lock
+- **Delta updates** — `scene-delta` event sends only changed/removed elements instead of full state (~80% payload reduction)
+- **Server-side merge** — `save-scene` now uses `SELECT ... FOR UPDATE` transactions to merge elements by version, preventing data loss on concurrent saves
+- **Conflict toasts** — users are notified when their edits are overwritten by another user's higher-version changes
+- **Remote delete toasts** — users are notified when elements they were editing are deleted by another user
+- **Orphan cleanup** — arrow bindings and group memberships are automatically cleaned up when referenced elements are deleted
+- **`mergeElements`** moved to `@drawhaus/helpers` — shared between frontend and backend
+- **`mergeDelta`** and **`diffElements`** — new merge utilities in `@drawhaus/helpers` for incremental updates
+- **Security validation** — server rejects deltas that remove >50% of elements or have version jumps >100k
+
+### Changed
+- `EditLockStore` removed — global lock replaced by concurrent editing with element-level merge
+- Lock handler events (`request-edit-lock`, `release-edit-lock`) are now no-ops for backwards compatibility
+- `CollaborationBadge` simplified — only shows raise hand signaling (no countdown/queue)
+- `useSaveManager` emits `scene-delta` instead of `scene-update` for incremental changes
+- `useSceneManager` handles `scene-delta-received` for applying remote deltas with `mergeDelta`
+- `SaveSceneUseCase` uses `updateSceneMerged` (PostgreSQL transaction) instead of direct overwrite
+- View mode no longer depends on edit lock — all editors can edit simultaneously
+
+### Removed
+- `EditLockStore` and `EditLockService` interface
+- Lock countdown timer and queue position UI
+- "Pedir turno" CTA and lock-based canvas blocking
+
+---
+
 ## v0.12.0 — Smart Lock & Redis Shared State (2026-03)
 
 ### Added
