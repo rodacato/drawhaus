@@ -1,5 +1,5 @@
 import type { Server } from "socket.io";
-import type { EditLockStore } from "./edit-lock-store";
+import type { EditLockService } from "./edit-lock-store";
 
 export type SocketData = {
   userId: string;
@@ -57,7 +57,7 @@ export async function findNextEditor(io: Server, roomId: string, excludeSocketId
   return null;
 }
 
-export function emitLockStatus(io: Server, roomId: string, lockStore: EditLockStore): void {
+export function emitLockStatus(io: Server, roomId: string, lockStore: EditLockService): void {
   const holder = lockStore.getLock(roomId);
   io.to(roomId).emit("edit-lock-status", {
     roomId,

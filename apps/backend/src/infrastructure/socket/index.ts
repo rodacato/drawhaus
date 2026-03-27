@@ -48,12 +48,19 @@ export async function setupSocketServer(
   await attachRedisAdapter(io);
 
   const lockStore = new EditLockStore();
-  lockStore.setOnRelease((diagramId) => {
-    // On inactivity release, just clear the lock — don't auto-assign
-    // (auto-assign on disconnect only, to avoid acquire/release loops)
+  lockStore.setOnRelease((diagramId, _previousHolder, nextHolder) => {
+    if (nextHolder) {
+      // Notify the promoted user from the queue
+      io.to(nextHolder.socketId).emit("edit-lock-acquired", {
+        roomId: diagramId,
+        holder: { userId: nextHolder.userId, userName: nextHolder.userName },
+      });
+    }
+    // Broadcast lock status to all users in the room
+    const holder = lockStore.getLock(diagramId);
     io.to(diagramId).emit("edit-lock-status", {
       roomId: diagramId,
-      holder: null,
+      holder: holder ? { userId: holder.userId, userName: holder.userName } : null,
     });
   });
 

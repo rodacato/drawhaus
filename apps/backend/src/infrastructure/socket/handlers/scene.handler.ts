@@ -2,7 +2,7 @@ import type { Server, Socket } from "socket.io";
 import type { SaveSceneUseCase } from "../../../application/use-cases/realtime/save-scene";
 import type { SyncToDriveUseCase } from "../../../application/use-cases/drive/sync-to-drive";
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
-import type { EditLockChecker } from "../edit-lock-store";
+import type { EditLockService } from "../edit-lock-store";
 import { type SocketData, canEdit, checkRateLimit, RATE_LIMIT_MAX_SCENE } from "../helpers";
 import { logger } from "../../logger";
 
@@ -13,7 +13,7 @@ export function registerSceneHandlers(
   io: Server,
   socket: Socket,
   useCases: { saveScene: SaveSceneUseCase; syncToDrive?: SyncToDriveUseCase; createSnapshot: CreateSnapshotUseCase },
-  lockChecker: EditLockChecker,
+  lockChecker: EditLockService,
 ) {
   socket.on(
     "scene-update",

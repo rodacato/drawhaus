@@ -1,12 +1,12 @@
 import type { Server, Socket } from "socket.io";
-import type { EditLockStore } from "../edit-lock-store";
+import type { EditLockService } from "../edit-lock-store";
 import { type SocketData, canEdit, emitLockStatus } from "../helpers";
 import { logger } from "../../logger";
 
 export function registerLockHandlers(
   io: Server,
   socket: Socket,
-  lockStore: EditLockStore,
+  lockStore: EditLockService,
 ) {
   socket.on("request-edit-lock", ({ roomId }: { roomId: string }) => {
     if (!socket.rooms.has(roomId)) return;
@@ -23,7 +23,14 @@ export function registerLockHandlers(
         holder: { userId, userName },
       });
       emitLockStatus(io, roomId, lockStore);
+    } else if (result.queued) {
+      socket.emit("edit-lock-queued", {
+        roomId,
+        position: result.position,
+        holder: { userId: result.holder.userId, userName: result.holder.userName },
+      });
     } else {
+      // Backwards compat: emit denied for clients that don't support queue yet
       socket.emit("edit-lock-denied", {
         roomId,
         holderName: result.holder?.userName ?? "someone",

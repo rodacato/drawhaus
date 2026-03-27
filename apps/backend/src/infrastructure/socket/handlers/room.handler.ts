@@ -3,8 +3,8 @@ import { parse } from "cookie";
 import type { JoinRoomUseCase } from "../../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../../application/use-cases/realtime/join-room-guest";
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
-import type { EditLockStore } from "../edit-lock-store";
-import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers, findNextEditor, emitLockStatus } from "../helpers";
+import type { EditLockService } from "../edit-lock-store";
+import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers, emitLockStatus } from "../helpers";
 import { config } from "../../config";
 import { logger } from "../../logger";
 
@@ -16,7 +16,7 @@ export function registerRoomHandlers(
   io: Server,
   socket: Socket,
   useCases: { joinRoom: JoinRoomUseCase; joinRoomGuest: JoinRoomGuestUseCase; createSnapshot: CreateSnapshotUseCase },
-  lockStore: EditLockStore,
+  lockStore: EditLockService,
 ) {
   socket.on("join-room", async ({ roomId }: { roomId: string }) => {
     try {
@@ -167,13 +167,9 @@ export function registerRoomHandlers(
           .catch(() => {});
       }
 
-      // Auto-assign lock to next editor if this room had a lock released
+      // Emit lock status update if this room had a lock released
+      // (promoteNext in the lock store already auto-assigned via onRelease callback)
       if (releasedRoomIds.includes(roomId)) {
-        const next = await findNextEditor(io, roomId, socket.id);
-        if (next) {
-          lockStore.acquireLock(roomId, next.userId, next.userName, next.socketId);
-          io.to(next.socketId).emit("edit-lock-acquired", { roomId, holder: { userId: next.userId, userName: next.userName } });
-        }
         emitLockStatus(io, roomId, lockStore);
       }
 

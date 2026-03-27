@@ -6,16 +6,38 @@ export interface LockHolder {
   lastActivityAt: number;
 }
 
+export interface QueueEntry {
+  userId: string;
+  userName: string;
+  socketId: string;
+}
+
+export type LockResult =
+  | { acquired: true; holder: null }
+  | { acquired: false; queued: true; position: number; holder: LockHolder }
+  | { acquired: false; queued: false; holder: LockHolder };
+
 export interface EditLockChecker {
   hasLock(diagramId: string, userId: string): boolean;
   touchLock(diagramId: string, userId: string): void;
 }
 
-/** Auto-release after 5 seconds of inactivity */
-const INACTIVITY_TIMEOUT_MS = 5_000;
+export interface EditLockService extends EditLockChecker {
+  tryAcquire(diagramId: string, userId: string, userName: string, socketId: string): LockResult;
+  releaseLock(diagramId: string, userId: string): boolean;
+  releaseBySocketId(socketId: string): string[];
+  getLock(diagramId: string): LockHolder | null;
+  getQueuePosition(diagramId: string, userId: string): number;
+  acquireLock(diagramId: string, userId: string, userName: string, socketId: string): boolean;
+  setOnRelease(cb: (diagramId: string, previousHolder: LockHolder, nextHolder: LockHolder | null) => void): void;
+  stopAll(): void;
+}
+
+/** Auto-release after 2.5 seconds of inactivity */
+const INACTIVITY_TIMEOUT_MS = 2_500;
 
 /** Grace period: previous holder gets priority to re-acquire after auto-release */
-const RECONNECT_GRACE_MS = 3_000;
+const RECONNECT_GRACE_MS = 1_000;
 
 interface GraceHolder {
   userId: string;
@@ -23,31 +45,34 @@ interface GraceHolder {
   expiresAt: number;
 }
 
-export class EditLockStore implements EditLockChecker {
+export class EditLockStore implements EditLockService {
   private locks = new Map<string, LockHolder>();
   private timers = new Map<string, ReturnType<typeof setTimeout>>();
   private graceHolders = new Map<string, GraceHolder>();
   private graceTimers = new Map<string, ReturnType<typeof setTimeout>>();
-  private onRelease: ((diagramId: string, previousHolder: LockHolder) => void) | null = null;
+  private queues = new Map<string, QueueEntry[]>();
+  private onReleaseCb: ((diagramId: string, previousHolder: LockHolder, nextHolder: LockHolder | null) => void) | null = null;
 
-  /** Register callback invoked when a lock is auto-released by inactivity */
-  setOnRelease(cb: (diagramId: string, previousHolder: LockHolder) => void): void {
-    this.onRelease = cb;
+  /** Register callback invoked when a lock is released (by timeout, explicit release, or disconnect) */
+  setOnRelease(cb: (diagramId: string, previousHolder: LockHolder, nextHolder: LockHolder | null) => void): void {
+    this.onReleaseCb = cb;
   }
 
-  /** Try to acquire; returns holder info if denied */
+  /** Try to acquire; if denied, enqueue the user */
   tryAcquire(
     diagramId: string,
     userId: string,
     userName: string,
     socketId: string,
-  ): { acquired: boolean; holder: LockHolder | null } {
+  ): LockResult {
     const existing = this.locks.get(diagramId);
     if (!existing) {
       // Grace period: previous holder gets priority to re-acquire
       const grace = this.graceHolders.get(diagramId);
       if (grace && grace.userId !== userId && grace.expiresAt > Date.now()) {
-        return { acquired: false, holder: null };
+        // Enqueue instead of flat deny during grace
+        const position = this.enqueue(diagramId, userId, userName, socketId);
+        return { acquired: false, queued: true, position, holder: { userId: grace.userId, userName: grace.userName, socketId: "", acquiredAt: 0, lastActivityAt: 0 } };
       }
       this.clearGrace(diagramId);
       this.acquireLock(diagramId, userId, userName, socketId);
@@ -57,7 +82,9 @@ export class EditLockStore implements EditLockChecker {
       this.touchLock(diagramId, userId);
       return { acquired: true, holder: null };
     }
-    return { acquired: false, holder: { ...existing } };
+    // Lock is held by someone else — enqueue
+    const position = this.enqueue(diagramId, userId, userName, socketId);
+    return { acquired: false, queued: true, position, holder: { ...existing } };
   }
 
   acquireLock(diagramId: string, userId: string, userName: string, socketId: string): boolean {
@@ -65,6 +92,7 @@ export class EditLockStore implements EditLockChecker {
     if (existing && existing.userId !== userId) return false;
     if (existing && existing.userId === userId) {
       existing.lastActivityAt = Date.now();
+      existing.socketId = socketId;
       this.resetTimer(diagramId);
       return true;
     }
@@ -75,6 +103,8 @@ export class EditLockStore implements EditLockChecker {
       acquiredAt: Date.now(),
       lastActivityAt: Date.now(),
     });
+    // Remove from queue if they were waiting
+    this.removeFromQueueByUser(diagramId, userId);
     this.resetTimer(diagramId);
     return true;
   }
@@ -84,6 +114,7 @@ export class EditLockStore implements EditLockChecker {
     if (!holder || holder.userId !== userId) return false;
     this.locks.delete(diagramId);
     this.clearTimer(diagramId);
+    this.promoteNext(diagramId, holder);
     return true;
   }
 
@@ -111,9 +142,84 @@ export class EditLockStore implements EditLockChecker {
         released.push(diagramId);
         this.locks.delete(diagramId);
         this.clearTimer(diagramId);
+        this.promoteNext(diagramId, holder);
+      }
+    }
+    // Also remove from any queues
+    for (const [diagramId, queue] of this.queues) {
+      const idx = queue.findIndex((e) => e.socketId === socketId);
+      if (idx !== -1) {
+        queue.splice(idx, 1);
+        if (queue.length === 0) this.queues.delete(diagramId);
       }
     }
     return released;
+  }
+
+  /** Get queue position (1-based). Returns 0 if not in queue. */
+  getQueuePosition(diagramId: string, userId: string): number {
+    const queue = this.queues.get(diagramId);
+    if (!queue) return 0;
+    const idx = queue.findIndex((e) => e.userId === userId);
+    return idx === -1 ? 0 : idx + 1;
+  }
+
+  /** Get the full queue for a diagram */
+  getQueue(diagramId: string): QueueEntry[] {
+    return this.queues.get(diagramId) ?? [];
+  }
+
+  private enqueue(diagramId: string, userId: string, userName: string, socketId: string): number {
+    let queue = this.queues.get(diagramId);
+    if (!queue) {
+      queue = [];
+      this.queues.set(diagramId, queue);
+    }
+    // Don't duplicate
+    const existing = queue.findIndex((e) => e.userId === userId);
+    if (existing !== -1) {
+      queue[existing].socketId = socketId; // update socket if reconnected
+      return existing + 1;
+    }
+    queue.push({ userId, userName, socketId });
+    return queue.length;
+  }
+
+  private removeFromQueueByUser(diagramId: string, userId: string): void {
+    const queue = this.queues.get(diagramId);
+    if (!queue) return;
+    const idx = queue.findIndex((e) => e.userId === userId);
+    if (idx !== -1) {
+      queue.splice(idx, 1);
+      if (queue.length === 0) this.queues.delete(diagramId);
+    }
+  }
+
+  /** Promote next user in queue to lock holder after a release */
+  private promoteNext(diagramId: string, previousHolder: LockHolder): void {
+    const queue = this.queues.get(diagramId);
+    const next = queue?.shift() ?? null;
+    if (queue && queue.length === 0) this.queues.delete(diagramId);
+
+    let nextHolder: LockHolder | null = null;
+    if (next) {
+      this.locks.set(diagramId, {
+        userId: next.userId,
+        userName: next.userName,
+        socketId: next.socketId,
+        acquiredAt: Date.now(),
+        lastActivityAt: Date.now(),
+      });
+      this.resetTimer(diagramId);
+      nextHolder = this.locks.get(diagramId)!;
+    }
+
+    // Set grace period for previous holder (only if no one was promoted)
+    if (!nextHolder) {
+      this.setGrace(diagramId, previousHolder.userId, previousHolder.userName);
+    }
+
+    this.onReleaseCb?.(diagramId, previousHolder, nextHolder);
   }
 
   private resetTimer(diagramId: string): void {
@@ -126,9 +232,7 @@ export class EditLockStore implements EditLockChecker {
           const prev = { ...holder };
           this.locks.delete(diagramId);
           this.timers.delete(diagramId);
-          // Set grace period so the same user can re-acquire quickly
-          this.setGrace(diagramId, prev.userId, prev.userName);
-          this.onRelease?.(diagramId, prev);
+          this.promoteNext(diagramId, prev);
         }
       }, INACTIVITY_TIMEOUT_MS),
     );
@@ -174,5 +278,6 @@ export class EditLockStore implements EditLockChecker {
     this.graceTimers.clear();
     this.graceHolders.clear();
     this.locks.clear();
+    this.queues.clear();
   }
 }
