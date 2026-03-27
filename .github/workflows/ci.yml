@@ -35,8 +35,11 @@ jobs:
       - name: Install dependencies
         run: npm ci || npm install
 
-      - name: Build workspace packages
-        run: npm run build --workspace=@drawhaus/helpers --workspace=@drawhaus/plantuml-to-excalidraw --workspace=@drawhaus/mermaid-to-excalidraw
+      - name: Build workspace packages (types only)
+        run: |
+          npm run build --workspace=@drawhaus/helpers
+          npx -w packages/plantuml-to-excalidraw tsc --emitDeclarationOnly
+          npx -w packages/mermaid-to-excalidraw tsc --emitDeclarationOnly
 
       - name: Lint
         run: npm run lint

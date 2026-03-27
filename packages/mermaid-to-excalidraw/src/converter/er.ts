@@ -14,6 +14,7 @@ import type {
   MermaidToExcalidrawResult,
 } from "../types.js";
 import type {
+  ERAttribute,
   ERDiagramAST,
   EREntity,
   ERRelation,
