@@ -1,6 +1,11 @@
 # Drawhaus — Vision
 
-> Your whiteboard, on your server. A personal project built on top of Excalidraw — the best open-source drawing tool out there — to learn full-stack development and scratch itches that the official product doesn't cover yet.
+> Your whiteboard, on your server. A personal project built on top of Excalidraw — the best
+> open-source drawing tool out there — to learn full-stack development and scratch itches
+> that the official product doesn't cover yet.
+>
+> This document is the project's compass. Every feature decision, every scope debate,
+> every "should we build this?" gets filtered through what's written here.
 
 ---
 
@@ -12,23 +17,16 @@ A self-hosted diagramming platform built on Excalidraw's incredible editor. Born
 
 ---
 
-## Why This Exists
+## The Problem
 
 Excalidraw is, hands down, the best diagramming tool I've ever used. The editor is brilliant — intuitive, fast, and beautifully designed. The team behind it deserves enormous credit for open-sourcing it and building something that millions of people love.
 
-Drawhaus exists not to compete with Excalidraw, but for three reasons:
+But I kept hitting the same walls:
 
-### 1. Learning
-
-This is first and foremost a learning project. Building a full-stack collaborative platform from scratch — real-time sync, auth, workspaces, API design, MCP integration — has been the best education I could ask for. Every feature is a lesson in architecture, tradeoffs, and shipping.
-
-### 2. Personal Use
-
-I wanted a self-hosted whiteboard where I control the data, the backups, and the infrastructure. Excalidraw+ is a great product, but I'd rather run it on my own server — not because their service is bad, but because self-hosting is how I prefer to work.
-
-### 3. Exploring Gaps
-
-There are ideas I wanted to explore that Excalidraw doesn't cover yet — and may never need to, because they serve a niche:
+- **I want to own my data.** Excalidraw+ is great, but I'd rather run it on my server. Not because their service is bad — self-hosting is how I prefer to work.
+- **I don't draw diagrams by hand anymore.** I describe them in code (Mermaid, PlantUML) or in natural language to an AI assistant. Most tools render code diagrams as static images. I want **editable elements**.
+- **No programmatic access.** I can't create a diagram from a CI pipeline, a CLI, or an AI agent. The only entry point is a human with a mouse.
+- **No infrastructure layer in the OSS version.** User accounts, workspaces, roles, sharing, version history, templates — these exist in Excalidraw+ as a service, but not self-hosted.
 
 | What I wanted | What exists today |
 |---|---|
@@ -39,11 +37,63 @@ There are ideas I wanted to explore that Excalidraw doesn't cover yet — and ma
 
 **None of this diminishes what Excalidraw is.** They built the engine. Drawhaus is a personal shell around that engine, exploring what's possible when you add infrastructure, programmatic access, and AI on top.
 
+---
+
 ## The Insight
 
 Excalidraw's editor is world-class and open-source — there's no reason to rebuild it. What I found myself wanting was **everything around the editor**: persistence, user management, workspaces, sharing, version history, templates, and API access.
 
-And increasingly, I don't draw diagrams by hand at all. I describe them in code (Mermaid, PlantUML) or in natural language to an AI assistant. The tool I wanted isn't just an editor — it's a **platform where code, AI, and humans all produce and collaborate on visual artifacts**.
+And increasingly, I don't draw diagrams by hand at all. I describe them in code or in natural language to an AI assistant. The tool I wanted isn't just an editor — it's a **platform where code, AI, and humans all produce and collaborate on visual artifacts**.
+
+---
+
+## The Philosophy
+
+Principles that guide every decision. If nobody would disagree, it's not a principle.
+
+**1. Self-host is the product, not a deployment option.**
+Every feature must work with `docker compose up`. Optional integrations (Google Drive, Resend, Honeybadger) are additive — the core works without them. If a feature requires a managed service, it doesn't ship.
+
+**2. Excalidraw is the editor. Period.**
+The editor is world-class — there's nothing to improve, and no reason to try. Drawhaus builds everything *around* it: persistence, auth, collaboration infrastructure, programmatic access. The editor is theirs. The platform is ours.
+
+**3. Three entry points, one diagram.**
+Humans (editor), code (API), and AI (MCP) all produce the same Excalidraw element arrays stored in the same PostgreSQL tables. No format translation, no lossy conversion. A diagram can start in Claude Code and get refined in the editor.
+
+**4. Progressive complexity.**
+A solo developer gets a working whiteboard. A team gets workspaces and sharing. An admin gets backups and user management. An AI workflow gets MCP and API. Each layer is opt-in. Solo users never see team features.
+
+**5. Learning is a first-class goal.**
+This is a personal project built to learn full-stack development. Every feature is a lesson in architecture, tradeoffs, and shipping. "Is this a good learning opportunity?" is a valid reason to build something.
+
+---
+
+## Who It's For
+
+**First user: me.** I use Drawhaus daily for architecture diagrams, system sketches, and AI-generated visuals. If a feature doesn't improve my workflow, it probably doesn't belong here.
+
+**Inner circle: developers who self-host.** The kind of person who runs Plausible instead of Google Analytics, Gitea instead of GitHub, and prefers `docker compose up` over signing up for another SaaS. They want control over their data and infrastructure. They're comfortable with a terminal.
+
+**Broader audience: small teams (2-10) who diagram together.** Freelancers sharing architecture with clients. Small studios collaborating on system design. Teams that want real-time collaboration without paying per-seat for a tool they use weekly.
+
+**Not for:**
+- **Enterprises** needing SSO/SAML, compliance audit trails, or 99.99% SLA. This is a single-VPS tool, not an enterprise platform.
+- **Designers** wanting pixel-perfect UI design. Drawhaus is for diagrams and sketches.
+- **Non-technical users** who can't run Docker. Self-hosted means you're your own ops team.
+
+---
+
+## What Success Looks Like
+
+**Minimum:** I replace my own $6/month whiteboard subscription and use Drawhaus as my daily driver. The project taught me full-stack development deeply enough to have opinions about real-time sync, auth, and deployment.
+
+**Good:** A few hundred developers self-host it. The MCP server becomes part of AI-assisted development workflows. People contribute bug reports, feature ideas, or PRs. The GitHub repo has enough stars that it shows up when someone searches "self-hosted excalidraw."
+
+**Great:** Drawhaus becomes the default answer to "how do I self-host a collaborative whiteboard?" The diagram-as-code and MCP integration become the features people talk about — the things no other tool does. Small teams adopt it as their internal diagramming platform.
+
+**What success is NOT:** Enterprise sales, VC funding, competing with Excalidraw+, or becoming a managed service. If it grows beyond what I can maintain as a solo builder, the answer is better documentation and community — not a company.
+
+---
 
 ## The Vision
 
@@ -132,14 +182,18 @@ Developer: "Draw the architecture for this service"
 
 No copy-paste. No screenshots. No manual conversion.
 
-## What This Is Not
+---
 
-- **Not a competitor to Excalidraw.** Excalidraw is the foundation this project is built on, and I'm grateful it exists. Drawhaus explores a different surface — infrastructure, APIs, AI — not a different editor. If Excalidraw+ covers your needs, use it. It's a great product made by a great team.
+## What This Is NOT
+
+- **Not a competitor to Excalidraw.** Excalidraw is the foundation. Drawhaus explores a different surface — infrastructure, APIs, AI — not a different editor. If Excalidraw+ covers your needs, use it.
 - **Not a production design tool.** Drawhaus is for diagrams, whiteboards, and sketches — not pixel-perfect UI design.
 - **Not a project management tool.** No Kanban boards, no sprint tracking.
 - **Not an enterprise collaboration suite.** No SSO/SAML, no compliance audit trails. This is a personal and small-team tool.
 - **Not a presentation tool.** Export your diagrams and put them in slides.
 - **Not a managed service.** Self-hosted is the entire point.
+
+---
 
 ## Architecture Principles
 
@@ -163,16 +217,19 @@ Backend follows strict layering: `domain/` (entities) → `application/` (use ca
 
 A solo developer gets a working whiteboard. A team gets workspaces and sharing. An admin gets backups and user management. An AI-powered workflow gets MCP and API. Each layer is opt-in.
 
-## Naming
+---
 
-"Drawhaus" works across the full vision. "Draw" is the action. "Haus" evokes structure, craft, and the Bauhaus design tradition — geometric, functional, no ornament. The brand identity (Bauhaus-inspired, indie builder, self-host proud) applies to every feature surface.
+## The Litmus Test
 
-The ecosystem uses a consistent naming pattern:
+Before adding any new feature, ask:
 
-- **Drawhaus** — the platform
-- **@drawhaus/helpers** — element builders and layout engine for programmatic use
-- **@drawhaus/mcp** — MCP server for AI agent integration
-- **@drawhaus/plantuml-to-excalidraw** — PlantUML parser and converter
+1. **Does it help create, share, or manage diagrams?** If no, it's out of scope.
+2. **Does it work self-hosted with `docker compose up`?** If it needs managed services or complex infrastructure, simplify or skip.
+3. **Can it be accessed via editor, API, and MCP?** If a feature only works in one surface, consider how it extends to the others.
+4. **Does it respect progressive complexity?** Solo users shouldn't see team features. Teams shouldn't need admin features. Everything is opt-in.
+5. **Would I use this myself?** Drawhaus is a personal project first. If the feature feels enterprise or I wouldn't use it in my own workflow, it probably doesn't belong here.
+
+---
 
 ## Where Drawhaus Sits
 
@@ -187,6 +244,8 @@ Drawhaus isn't trying to replace anything. It occupies a specific niche: **self-
 | **MCP server** | AI agents can create and manage diagrams |
 | **Diagram-as-code** | PlantUML/Mermaid → editable Excalidraw elements |
 | **Admin panel** | User management, metrics, integrations |
+
+---
 
 ## Execution Strategy
 
@@ -210,19 +269,25 @@ Embed SDK, CLI tool, OpenGraph previews, GitHub integration. Making diagrams fro
 
 The modular architecture supports extension. But we don't build features until there's demand. No speculative roadmap beyond Phase 4.
 
-## The Litmus Test
+---
 
-Before adding any new feature, ask:
+## Naming
 
-1. **Does it help create, share, or manage diagrams?** If no, it's out of scope.
-2. **Does it work self-hosted with `docker compose up`?** If it needs managed services or complex infrastructure, simplify or skip.
-3. **Can it be accessed via editor, API, and MCP?** If a feature only works in one surface, consider how it extends to the others.
-4. **Does it respect the "progressive complexity" principle?** Solo users shouldn't see team features. Teams shouldn't need admin features. Everything is opt-in.
-5. **Would I use this myself?** Drawhaus is a personal project first. If the feature feels enterprise or I wouldn't use it in my own workflow, it probably doesn't belong here.
+"Drawhaus" works across the full vision. "Draw" is the action. "Haus" evokes structure, craft, and the Bauhaus design tradition — geometric, functional, no ornament. The brand identity (Bauhaus-inspired, indie builder, self-host proud) applies to every feature surface.
 
-## Future Ideas Backlog
+The ecosystem uses a consistent naming pattern:
 
-Ideas that passed the litmus test but don't have a timeline:
+- **Drawhaus** — the platform
+- **@drawhaus/helpers** — element builders and layout engine for programmatic use
+- **@drawhaus/mcp** — MCP server for AI agent integration
+- **@drawhaus/plantuml-to-excalidraw** — PlantUML parser and converter
+- **@drawhaus/mermaid-to-excalidraw** — Mermaid parser and converter
+
+---
+
+## Future Ideas
+
+### Ideas that belong here (someday)
 
 | Idea | What it is | Builds on |
 |---|---|---|
@@ -234,7 +299,7 @@ Ideas that passed the litmus test but don't have a timeline:
 | **@mentions in Comments** | Tag team members in diagram threads | Comments system |
 | **Admin Analytics** | Charts for user growth, diagram activity, collaboration patterns | Admin panel |
 
-Ideas that are interesting but belong to a different product:
+### Ideas that belong somewhere else
 
 | Idea | Why not Drawhaus |
 |---|---|

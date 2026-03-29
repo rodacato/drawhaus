@@ -1,10 +1,27 @@
 # Drawhaus Roadmap
 
-> Self-hosted Excalidraw alternative — your whiteboard, on your server.
+> The living map of this project: where it came from, where it is, and where it's going.
+> Ask: "What are we working on?", "What's left?", "Did we ship X?", "What's next after this?"
+
+---
 
 **Intent**: Drawhaus exists to replace paid whiteboard subscriptions for individuals and small teams who want full control over their data. The focus is on a polished single-user and small-team experience with collaborative diagramming, not on competing with enterprise tools. Every feature should earn its place by solving a real problem for this audience.
 
 **Currently working on**: Backup All to Google Drive
+
+**Current phase**: Phase 2 — Programmatic Access (see [Execution Strategy](VISION.md#execution-strategy) for the full arc)
+
+---
+
+## Prioritization Principles
+
+When two features compete, these are the tiebreaker:
+
+1. **Use it before building around it.** No new phase starts until the previous one is in daily use. Features that aren't used don't get expanded.
+2. **Core loop first.** Create → edit → save → share is the heartbeat. Anything that strengthens this loop wins over anything that extends the platform.
+3. **Self-hosted simplicity wins.** If a feature makes `docker compose up` harder or requires a new external service, it needs a very strong case.
+4. **Dogfood over speculation.** Build what I actually need in my workflow. If I wouldn't use it this week, it goes to the backlog.
+5. **One new thing at a time.** Don't adopt a new library, a new pattern, and a new integration in the same feature. Isolate risk.
 
 ---
 
@@ -72,7 +89,7 @@ Ideas evaluated but not yet prioritized. When ready to build, write a spec in `s
 
 ## Not Doing
 
-Evaluated and decided against. Reasoning preserved for future reference.
+Evaluated and decided against. Reasoning preserved for future reference. Never delete from this table — if revisited, update the reasoning.
 
 | Feature | Why not | Revisit if |
 |---------|---------|------------|
@@ -85,6 +102,18 @@ Evaluated and decided against. Reasoning preserved for future reference.
 | **Presentations (Slideshow)** | Niche feature competing with actual presentation tools | Never — use Keynote/Slides |
 | **Reusable Component Libraries** | Excalidraw's built-in library covers basics. Custom libraries need management UI, versioning, sharing | Template system proves insufficient |
 | **Apple Sign-In** | Painful implementation (key rotation, email relay, $99/yr). Google + GitHub + email sufficient | Never |
+
+---
+
+## Specs
+
+Technical specs created for features. Full specs in [`docs/specs/`](specs/).
+
+| Spec | Feature | Status |
+|------|---------|--------|
+| [backup-all-to-drive](specs/backup-all-to-drive.md) | Backup All to Drive | in-progress |
+| [webhooks](specs/webhooks.md) | Webhooks | backlog |
+| [github-gist-export](specs/github-gist-export.md) | GitHub Gist Export | backlog |
 
 ---
 
@@ -140,4 +169,4 @@ Other decisions not warranting a full ADR:
 
 ---
 
-*Last updated: 2026-03-27*
+*Last updated: 2026-03-29*
