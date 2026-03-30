@@ -50,7 +50,7 @@ Shipped and working in production. See [CHANGELOG.md](../CHANGELOG.md) for full 
 | **MCP Server** | `@drawhaus/mcp` npm package — 5 tools (CRUD) + validate_elements, 2 resources, 4 prompts with curated spec, stdio transport, health check on startup | v0.11 |
 | **Helpers** | `@drawhaus/helpers` — shared element builders, dagre layout engine, arrow routing, element validator, merge utilities (mergeElements, mergeDelta, diffElements), curated Excalidraw spec for LLMs | v0.11 |
 | **DevOps** | Docker + Kamal deploy (backend + frontend), Docker Hub auth in CI, automated DB backups (7-day retention), health endpoint, `/api/version`, Redis adapter for horizontal scaling, shared Redis client for rate limiting + snapshot dedup, nginx frontend with immutable asset caching, node-pg-migrate versioned migrations | v0.1 |
-| **Testing** | 5-phase Playwright E2E suite (permissions, CRUD, sharing, auth, visual regression), 139 backend unit tests, 91 helpers tests, marketing screenshot automation | v0.8 |
+| **Testing** | 5-phase Playwright E2E suite (permissions, CRUD, sharing, auth, visual regression), 83 backend unit tests, 90 helpers tests, marketing screenshot automation | v0.8 |
 | **Architecture** | Clean Architecture (application/domain/infrastructure), Vite + React Router + Axios, composition root, `validate()` middleware, `withTransaction`, response interceptor | v0.5 |
 
 ---

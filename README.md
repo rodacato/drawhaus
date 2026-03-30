@@ -156,7 +156,7 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `npm run docs:build` | Build static API docs to `docs/api/` |
 | `npm run docs:preview` | Preview API docs locally |
 | `npm run build --workspace=@drawhaus/helpers` | Build helpers package |
-| `npm test --workspace=@drawhaus/helpers` | Run helpers tests (47 tests) |
+| `npm test --workspace=@drawhaus/helpers` | Run helpers tests (90 tests) |
 | `npm run build --workspace=@drawhaus/mcp` | Build MCP server package |
 | `npm test --workspace=@drawhaus/mcp` | Run MCP server tests |
 
@@ -189,7 +189,8 @@ drawhaus/
 ├── packages/
 │   ├── helpers/                 # @drawhaus/helpers — element builders, layout, validator, spec
 │   ├── mcp/                     # @drawhaus/mcp — MCP server for AI tools
-│   └── plantuml-to-excalidraw/  # PlantUML parser and converter
+│   ├── plantuml-to-excalidraw/  # PlantUML parser and converter
+│   └── mermaid-to-excalidraw/   # Mermaid parser and converter
 ├── e2e/               # Playwright end-to-end tests
 ├── config/            # Kamal deployment configs
 ├── docs/              # Vision, roadmap, specs, ADRs, branding, guides

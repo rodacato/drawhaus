@@ -136,7 +136,7 @@ The project intentionally avoids bounded contexts, domain events, and event sour
 │   │       │   └── public-api/      # /v1/ routes with API key auth
 │   │       ├── composition/         # Dependency wiring (composition root)
 │   │       ├── migrations/          # SQL migration files
-│   │       ├── __tests__/           # Unit + integration tests (139 tests)
+│   │       ├── __tests__/           # Unit + integration tests (83 tests)
 │   │       └── main.ts              # Server bootstrap
 │   └── frontend/
 │       └── src/
@@ -514,12 +514,12 @@ yourdomain.com              api.yourdomain.com
 ---
 
 [ADR-002]: adr/002-clean-architecture.md
-[ADR-006]: adr/006-edit-lock.md
+[ADR-006]: adr/006-single-editor-lock.md
 [ADR-007]: adr/007-socketio-msgpack.md
 [ADR-009]: adr/009-jsonb-snapshots.md
 [ADR-010]: adr/010-workspaces.md
 [ADR-012]: adr/012-hybrid-secrets.md
 [ADR-016]: adr/016-monorepo.md
 [ADR-017]: adr/017-no-csrf-tokens.md
-[ADR-020]: adr/020-edit-lock-v2.md
-[ADR-022]: adr/022-concurrent-editing.md
+[ADR-020]: adr/020-smart-lock-over-concurrent-editing.md
+[ADR-022]: adr/022-concurrent-editing-over-lock.md
