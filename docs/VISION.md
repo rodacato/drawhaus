@@ -52,7 +52,7 @@ And increasingly, I don't draw diagrams by hand at all. I describe them in code 
 Principles that guide every decision. If nobody would disagree, it's not a principle.
 
 **1. Self-host is the product, not a deployment option.**
-Every feature must work with `docker compose up`. Optional integrations (Google Drive, Resend, Honeybadger) are additive — the core works without them. If a feature requires a managed service, it doesn't ship.
+Every feature must work with `docker compose up`. Optional integrations (Google Drive, Resend, Sentry) are additive — the core works without them. If a feature requires a managed service, it doesn't ship.
 
 **2. Excalidraw is the editor. Period.**
 The editor is world-class — there's nothing to improve, and no reason to try. Drawhaus builds everything *around* it: persistence, auth, collaboration infrastructure, programmatic access. The editor is theirs. The platform is ours.
@@ -199,7 +199,7 @@ No copy-paste. No screenshots. No manual conversion.
 
 ### 1. Self-Host First
 
-Every feature must work with `docker compose up`. No external services required. Optional integrations (Google Drive, Resend, Honeybadger) are additive — the core product works without them.
+Every feature must work with `docker compose up`. No external services required. Optional integrations (Google Drive, Resend, Sentry) are additive — the core product works without them.
 
 ### 2. Excalidraw Is The Editor
 

@@ -121,7 +121,9 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `GH_REDIRECT_URI` | — | GitHub OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/github/callback`) |
 | `RESEND_API_KEY` | — | Resend API key for emails. If blank, emails log to console |
 | `FROM_EMAIL` | `noreply@drawhaus.dev` | Sender address for transactional emails |
-| `HONEYBADGER_API_KEY` | — | Error monitoring (optional) |
+| `SENTRY_DSN` | — | Sentry DSN for backend error monitoring (optional) |
+| `SENTRY_ENVIRONMENT` | `NODE_ENV` | Sentry environment label (e.g. `staging`, `production`) |
+| `SENTRY_TRACES_SAMPLE_RATE` | `0` | Performance tracing sample rate (0..1) |
 
 ### Frontend
 
@@ -130,6 +132,8 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `VITE_API_URL` | No | — | Backend URL. Leave empty in dev (Vite proxy handles it) |
 | `VITE_WS_URL` | No | — | WebSocket URL. Leave empty in dev |
 | `VITE_GOOGLE_API_KEY` | No | — | Google Picker API key for Drive file browser. Leave blank to disable |
+| `VITE_SENTRY_DSN` | No | — | Sentry DSN for frontend error monitoring. Leave blank to disable |
+| `VITE_SENTRY_ENVIRONMENT` | No | Vite `MODE` | Sentry environment label baked into the bundle |
 
 > **Local dev:** Copy `.env.example` to `.env` — Docker Compose loads it automatically. For production, configure secrets in GitHub Actions (see [Deployment](#deployment)).
 
@@ -210,7 +214,7 @@ drawhaus/
 | Email | Resend (transactional) |
 | Deployment | Kamal (backend + frontend) |
 | CI | GitHub Actions |
-| Monitoring | Honeybadger |
+| Monitoring | Sentry |
 
 ---
 
@@ -309,7 +313,9 @@ Configure these in your GitHub repo under **Settings → Environments → produc
 | `FRONTEND_URL` | Your frontend URL (e.g. `https://yourdomain.com`) |
 | `COOKIE_DOMAIN` | (Optional) Parent domain for cookies (e.g. `.yourdomain.com`) — only needed for cross-subdomain setups |
 | `POSTGRES_PASSWORD` | PostgreSQL password (`openssl rand -hex 32`) |
-| `HONEYBADGER_API_KEY` | (Optional) Honeybadger error monitoring key |
+| `SENTRY_DSN` | (Optional) Sentry DSN for backend error monitoring |
+| `VITE_SENTRY_DSN` | (Optional) Sentry DSN for frontend error monitoring |
+| `SENTRY_AUTH_TOKEN` | (Optional) Auth token for source-map upload during the frontend build |
 | `RESEND_API_KEY` | (Optional) Resend API key for emails — without it, emails log to console |
 | `FROM_EMAIL` | (Optional) Sender address for transactional emails |
 | `GOOGLE_CLIENT_ID` | (Optional) Google OAuth client ID — leave blank to disable Google login |

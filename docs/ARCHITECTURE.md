@@ -17,7 +17,7 @@ drawhaus.dev              # this repo — monorepo with frontend, backend, and s
   └── packages/mermaid-to-excalidraw   # Mermaid → Excalidraw converter
 ```
 
-External dependencies: Google OAuth, GitHub OAuth, Google Drive API, Resend (email), Honeybadger (error monitoring). All optional — the system runs standalone without any of them.
+External dependencies: Google OAuth, GitHub OAuth, Google Drive API, Resend (email), Sentry (error monitoring). All optional — the system runs standalone without any of them.
 
 ---
 
@@ -86,7 +86,7 @@ Real-time collaboration uses Socket.IO with msgpack encoding (~30% smaller than 
 | Deployment | Kamal + Docker + GHCR | Zero-downtime deploys, self-hosted on any VPS |
 | Monorepo | npm workspaces | No extra tooling (Turborepo, Nx) — keeps it simple |
 | Migrations | node-pg-migrate | SQL-based, explicit, no ORM magic |
-| Error monitoring | Honeybadger | Optional, disabled if API key not set |
+| Error monitoring | Sentry | Optional, disabled if `SENTRY_DSN` not set; covers backend (`@sentry/node`) and frontend (`@sentry/react`) |
 
 ---
 
@@ -283,7 +283,7 @@ HTTP Request
 ┌─────────────────────────────────────┐
 │  Error Handler                       │
 │  • Maps domain errors → HTTP status  │
-│  • Honeybadger reporting (optional)  │
+│  • Sentry reporting (optional)       │
 └─────────────────────────────────────┘
 ```
 
@@ -433,7 +433,7 @@ Both used by the frontend's Live Import feature and available as standalone pack
 | GitHub OAuth | Login | Low | Users use email/password instead |
 | Google Drive | Export/import/auto-backup | Low | Feature disabled gracefully |
 | Resend | Email invites + password reset | Low | Logs to console |
-| Honeybadger | Error monitoring | None | No error reporting |
+| Sentry | Error monitoring (backend + frontend) | None | No error reporting |
 
 ---
 
@@ -508,7 +508,7 @@ yourdomain.com              api.yourdomain.com
 | Secret storage | AES-256-GCM encryption for integration secrets in DB |
 | Rate limiting | Per-bucket limits (auth: 5/15min, API: 100/15min, sockets: 30-60/s) |
 | Headers | Helmet (CSP, HSTS, X-Frame-Options) |
-| Error monitoring | Honeybadger (optional) |
+| Error monitoring | Sentry (optional) |
 | Audit logging | `audit-logger` service for admin-visible events |
 
 ---

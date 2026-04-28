@@ -36,7 +36,7 @@ export function SetupStep3({ onComplete }: { onComplete: () => void }) {
         </div>
         <div className="rounded-lg border border-border bg-surface p-4">
           <p className="text-sm font-medium text-text-primary">Error Monitoring</p>
-          <p className="text-xs text-text-muted">Honeybadger error tracking</p>
+          <p className="text-xs text-text-muted">Sentry error tracking</p>
         </div>
       </div>
 

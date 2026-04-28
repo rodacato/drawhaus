@@ -25,5 +25,5 @@ API keys specifically: stored as SHA-256 hashes in the database. The raw key is 
 
 - Setup wizard configures feature secrets without server access.
 - `ENCRYPTION_KEY` (32-byte hex) is the single env var needed for secret encryption.
-- Integration secrets (Google, Resend, Honeybadger) editable from admin UI.
+- Integration secrets (Google, Resend) editable from admin UI.
 - API keys use SHA-256 hashing (not encryption) — lookup by hash, not reversible.

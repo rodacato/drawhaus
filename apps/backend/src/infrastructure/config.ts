@@ -23,7 +23,10 @@ export const config = {
   sessionTtlDays: 30,
   cookieName: "drawhaus_session",
   cookieDomain: process.env.COOKIE_DOMAIN as string | undefined,
-  honeybadgerApiKey: process.env.HONEYBADGER_API_KEY as string | undefined,
+  sentryDsn: process.env.SENTRY_DSN ?? "",
+  sentryEnvironment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV ?? "production",
+  sentryTracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0),
+  sentryRelease: process.env.SENTRY_RELEASE ?? process.env.GIT_COMMIT ?? undefined,
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   fromEmail: process.env.FROM_EMAIL ?? "noreply@drawhaus.app",
   // Google OAuth (optional — feature disabled when not set)

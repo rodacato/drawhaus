@@ -1,4 +1,4 @@
-import Honeybadger from "@honeybadger-io/js";
+import * as Sentry from "@sentry/node";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -12,11 +12,21 @@ import { logger } from "./infrastructure/logger";
 import { requestId } from "./infrastructure/http/middleware/request-id";
 import { requestLogger } from "./infrastructure/http/middleware/request-logger";
 
-// --- Honeybadger (must be configured before other imports) ---
-if (config.honeybadgerApiKey) {
-  Honeybadger.configure({
-    apiKey: config.honeybadgerApiKey,
-    environment: config.nodeEnv,
+// --- Sentry (must be configured before other imports) ---
+if (config.sentryDsn) {
+  Sentry.init({
+    dsn: config.sentryDsn,
+    environment: config.sentryEnvironment,
+    tracesSampleRate: config.sentryTracesSampleRate,
+    release: config.sentryRelease,
+    sendDefaultPii: false,
+    beforeSend(event) {
+      if (event.request) {
+        delete event.request.data;
+        delete event.request.cookies;
+      }
+      return event;
+    },
   });
 }
 
@@ -142,9 +152,9 @@ const logApiRequest = createLogApiRequest(repos.apiKeyRepo);
 app.use("/v1", apiKeyRateLimiter, requireSdkHeader, requireApiKey, logApiRequest);
 app.use("/v1/diagrams", createV1DiagramRoutes({ create: useCases.createDiagram, get: useCases.getDiagram, list: useCases.listDiagrams, update: useCases.updateDiagram, delete: useCases.deleteDiagram }, config.frontendUrl));
 
-// --- Honeybadger error handler (must be after all routes) ---
-if (config.honeybadgerApiKey) {
-  app.use(Honeybadger.errorHandler);
+// --- Sentry error handler (must be after all routes) ---
+if (config.sentryDsn) {
+  Sentry.setupExpressErrorHandler(app);
 }
 
 // ============================================================

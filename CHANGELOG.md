@@ -4,6 +4,17 @@ All notable changes to Drawhaus are documented here.
 
 ---
 
+## Unreleased
+
+### Changed
+- **Error monitoring migrated from Honeybadger to Sentry** ([ADR-023](docs/adr/023-sentry-error-monitoring.md)). Backend now uses `@sentry/node` (`Sentry.captureException` + `setupExpressErrorHandler`); frontend ships `@sentry/react` initialized at boot and `@sentry/vite-plugin` for source-map upload at build time. Both are gated by env vars and stay disabled when DSNs are absent.
+- **Deploy env vars split into `vars` vs `secrets` in the GitHub `production` environment**. Repo-level secrets are now limited to `SSH_PRIVATE_KEY` and `DOCKERHUB_TOKEN`; everything else lives in the environment. Adds `SENTRY_*`, `VITE_SENTRY_*`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
+
+### Removed
+- `@honeybadger-io/js` dependency and the `HONEYBADGER_API_KEY` env var.
+
+---
+
 ## v0.12.0 — Concurrent Editing & Redis Shared State (2026-03)
 
 ### Added
@@ -157,7 +168,7 @@ All notable changes to Drawhaus are documented here.
 - **Setup lock** middleware — redirects all routes to `/setup` until initial admin is created
 - **3-step setup wizard** with progress bar: admin account → instance config → integrations (optional)
 - **Setup banner** on dashboard when optional setup steps are skipped
-- **Integration secrets in DB** — Google OAuth, Resend, Honeybadger keys stored encrypted (AES-256-GCM), editable from admin UI
+- **Integration secrets in DB** — Google OAuth and Resend keys stored encrypted (AES-256-GCM), editable from admin UI
 - **Structured audit logger** for security-sensitive operations (login, role changes, deletions)
 - **React Error Boundary** around BoardEditor to catch rendering crashes gracefully
 - **Improved `/health` endpoint** — verifies DB connection, reports app version and uptime

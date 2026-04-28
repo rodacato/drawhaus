@@ -73,24 +73,27 @@ jobs:
 
     env:
       ACTION: ${{ inputs.action || 'deploy' }}
-      COOKIE_DOMAIN: ${{ secrets.COOKIE_DOMAIN }}
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      HOST_IP: ${{ vars.HOST_IP }}
+      COOKIE_DOMAIN: ${{ vars.COOKIE_DOMAIN }}
+      FROM_EMAIL: ${{ vars.FROM_EMAIL }}
+      FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+      GH_CLIENT_ID: ${{ vars.GH_CLIENT_ID }}
+      GH_REDIRECT_URI: ${{ vars.GH_REDIRECT_URI }}
+      GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+      GOOGLE_REDIRECT_URI: ${{ vars.GOOGLE_REDIRECT_URI }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
-      FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
-      FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
-      GH_CLIENT_ID: ${{ secrets.GH_CLIENT_ID }}
       GH_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET }}
-      GH_REDIRECT_URI: ${{ secrets.GH_REDIRECT_URI }}
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
-      HONEYBADGER_API_KEY: ${{ secrets.HONEYBADGER_API_KEY }}
-      HOST_IP: ${{ secrets.HOST_IP }}
-      KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       REDIS_URL: ${{ secrets.REDIS_URL }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      SENTRY_ENVIRONMENT: ${{ vars.SENTRY_ENVIRONMENT || 'production' }}
+      SENTRY_TRACES_SAMPLE_RATE: ${{ vars.SENTRY_TRACES_SAMPLE_RATE || '0' }}
+      SENTRY_RELEASE: ${{ github.sha }}
 
     steps:
       - uses: actions/checkout@v6
@@ -159,6 +162,12 @@ jobs:
             VITE_API_URL=${{ vars.VITE_API_URL }}
             VITE_WS_URL=${{ vars.VITE_WS_URL }}
             VITE_GOOGLE_API_KEY=${{ vars.VITE_GOOGLE_API_KEY }}
+            VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
+            VITE_SENTRY_ENVIRONMENT=${{ vars.VITE_SENTRY_ENVIRONMENT || vars.SENTRY_ENVIRONMENT || 'production' }}
+            VITE_SENTRY_RELEASE=${{ github.sha }}
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
+            SENTRY_ORG=${{ vars.SENTRY_ORG }}
+            SENTRY_PROJECT=${{ vars.SENTRY_PROJECT || 'drawhaus-frontend' }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 
@@ -172,10 +181,16 @@ jobs:
     env:
       ACTION: ${{ inputs.action || 'deploy' }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-      HOST_IP: ${{ secrets.HOST_IP }}
+      HOST_IP: ${{ vars.HOST_IP }}
       VITE_API_URL: ${{ vars.VITE_API_URL }}
       VITE_WS_URL: ${{ vars.VITE_WS_URL }}
       VITE_GOOGLE_API_KEY: ${{ vars.VITE_GOOGLE_API_KEY }}
+      VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+      VITE_SENTRY_ENVIRONMENT: ${{ vars.VITE_SENTRY_ENVIRONMENT || vars.SENTRY_ENVIRONMENT || 'production' }}
+      VITE_SENTRY_RELEASE: ${{ github.sha }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'drawhaus-frontend' }}
 
     steps:
       - uses: actions/checkout@v6

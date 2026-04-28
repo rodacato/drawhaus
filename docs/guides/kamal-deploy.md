@@ -87,7 +87,9 @@ Go to **Settings → Secrets and variables → Actions** in your GitHub repo.
 | `REDIS_URL` | Redis connection string | `redis://localhost:6379/0` |
 | `FRONTEND_URL` | Frontend URL | `https://drawhaus.notdefined.dev` |
 | `COOKIE_DOMAIN` | Cookie domain (if cross-subdomain) | `.notdefined.dev` or leave empty |
-| `HONEYBADGER_API_KEY` | Error monitoring key | From Honeybadger dashboard |
+| `SENTRY_DSN` | Backend error monitoring DSN | From your Sentry Node project *(optional)* |
+| `VITE_SENTRY_DSN` | Frontend error monitoring DSN | From your Sentry React project *(optional)* |
+| `SENTRY_AUTH_TOKEN` | Source-map upload token | Sentry → Account → Auth Tokens *(optional)* |
 | `RESEND_API_KEY` | Email service key | From Resend dashboard *(optional)* |
 | `FROM_EMAIL` | System email sender | `noreply@yourdomain.com` *(optional)* |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID | *(optional, enables Google login)* |
