@@ -1,6 +1,7 @@
 service: drawhaus-backend
 
-image: ghcr.io/rodacato/drawhaus-backend
+# Image name without registry prefix; Kamal prepends `registry.server` automatically.
+image: rodacato/drawhaus-backend
 
 ssh:
   user: deploy
@@ -84,3 +85,10 @@ accessories:
     cmd: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     directories:
       - drawhaus-redis-data:/data
+
+aliases:
+  console: app exec --reuse --interactive 'node'
+  shell: app exec --interactive 'sh'
+  db: accessory exec postgres --interactive 'psql -U drawhaus drawhaus_production'
+  redis: accessory exec redis --interactive 'redis-cli'
+  logs: app logs -f

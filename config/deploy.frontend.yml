@@ -1,6 +1,7 @@
 service: drawhaus-frontend
 
-image: ghcr.io/rodacato/drawhaus-frontend
+# Image name without registry prefix; Kamal prepends `registry.server` automatically.
+image: rodacato/drawhaus-frontend
 
 ssh:
   user: deploy
@@ -42,3 +43,7 @@ logging:
   options:
     max-size: 10m
     max-file: "3"
+
+aliases:
+  shell: app exec --interactive 'sh'
+  logs: app logs -f
