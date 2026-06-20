@@ -13,7 +13,7 @@
     "test": "tsx --test --test-concurrency=1 'src/__tests__/**/*.test.ts'",
     "test:unit": "tsx --test --test-concurrency=1 'src/__tests__/unit/**/*.test.ts'",
     "test:integration": "tsx --test --test-concurrency=1 'src/__tests__/integration/**/*.test.ts'",
-    "test:coverage": "tsx --test --test-concurrency=1 --experimental-test-coverage 'src/__tests__/**/*.test.ts'",
+    "test:coverage": "tsx --test --test-concurrency=1 --experimental-test-coverage --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info 'src/__tests__/**/*.test.ts'",
     "db:backup": "tsx --env-file=../../.env src/scripts/db-backup.ts",
     "db:restore": "tsx --env-file=../../.env src/scripts/db-restore.ts",
     "db:migrate": "node-pg-migrate -m src/migrations up",

@@ -9,7 +9,7 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test 'src/__tests__/**/*.test.ts'",
-    "test:coverage": "tsx --test --experimental-test-coverage 'src/__tests__/**/*.test.ts'"
+    "test:coverage": "tsx --test --experimental-test-coverage --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info 'src/__tests__/**/*.test.ts'"
   },
   "dependencies": {
     "@drawhaus/helpers": "*",
