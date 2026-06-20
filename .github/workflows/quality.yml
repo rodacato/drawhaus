@@ -1,0 +1,24 @@
+# Standardized quality + security gate — calls rodacato/sector-7g.
+# Update the reusable workflows there → this repo inherits the change.
+name: Sector 7g - Quality
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  security:
+    uses: rodacato/sector-7g/.github/workflows/security.yml@master
+    with:
+      blocking: false # report-only for now; flip to true (or remove) to enforce
+
+  sonar:
+    # Manual-only for now: runs on "Run workflow", not on every push/PR.
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    uses: rodacato/sector-7g/.github/workflows/sonar.yml@master
+    with:
+      host_url: ${{ vars.SONAR_HOST_URL }}
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
