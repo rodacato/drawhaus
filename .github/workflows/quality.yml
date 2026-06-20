@@ -48,32 +48,13 @@ jobs:
           mkdir -p apps/backend/coverage
           npm run test:coverage --workspace=backend
 
-      - name: Frontend tests with coverage
-        # node:test coverage on the frontend is unproven; don't block the scans.
-        continue-on-error: true
-        run: |
-          mkdir -p apps/frontend/coverage
-          npm run test:coverage --workspace=frontend
-
+      # Only the backend is scanned. The frontend (three.js/excalidraw) and
+      # packages (zod/dagre/mermaid type graphs) OOM SonarJS's type-aware bridge
+      # even isolated — analyzing them costs more than it returns. Security scans
+      # (sector-7g security.yml) still cover them.
       - name: Scan backend
         uses: rodacato/sector-7g/actions/sonar-scan@master
         with:
           host_url: ${{ vars.SONAR_HOST_URL }}
           token: ${{ secrets.SONAR_TOKEN }}
           project_base_dir: apps/backend
-
-      - name: Scan packages
-        uses: rodacato/sector-7g/actions/sonar-scan@master
-        with:
-          host_url: ${{ vars.SONAR_HOST_URL }}
-          token: ${{ secrets.SONAR_TOKEN }}
-          project_base_dir: packages
-
-      - name: Scan frontend
-        # Heaviest type graph; isolated here. If it still OOMs, only this step fails.
-        continue-on-error: true
-        uses: rodacato/sector-7g/actions/sonar-scan@master
-        with:
-          host_url: ${{ vars.SONAR_HOST_URL }}
-          token: ${{ secrets.SONAR_TOKEN }}
-          project_base_dir: apps/frontend
