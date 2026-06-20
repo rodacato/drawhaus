@@ -16,11 +16,11 @@ jobs:
 
   sonar:
     # Manual-only for now: runs on "Run workflow", not on every push/PR.
-    # Runs backend + frontend tests with coverage (node:test → one lcov per
-    # workspace) before scanning. Mirrors the CI "validate" job's setup.
+    # Monorepo → one Sonar project per workspace (own bridge = lower memory).
+    # Each app has its own sonar-project.properties; scanned via project_base_dir.
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
@@ -43,14 +43,37 @@ jobs:
           npx -w packages/plantuml-to-excalidraw tsc --emitDeclarationOnly
           npx -w packages/mermaid-to-excalidraw tsc --emitDeclarationOnly
 
-      - name: Run tests with coverage
+      - name: Backend tests with coverage
         run: |
-          mkdir -p apps/backend/coverage apps/frontend/coverage
+          mkdir -p apps/backend/coverage
           npm run test:coverage --workspace=backend
+
+      - name: Frontend tests with coverage
+        # node:test coverage on the frontend is unproven; don't block the scans.
+        continue-on-error: true
+        run: |
+          mkdir -p apps/frontend/coverage
           npm run test:coverage --workspace=frontend
 
-      - name: SonarQube scan
+      - name: Scan backend
         uses: rodacato/sector-7g/actions/sonar-scan@master
         with:
           host_url: ${{ vars.SONAR_HOST_URL }}
           token: ${{ secrets.SONAR_TOKEN }}
+          project_base_dir: apps/backend
+
+      - name: Scan packages
+        uses: rodacato/sector-7g/actions/sonar-scan@master
+        with:
+          host_url: ${{ vars.SONAR_HOST_URL }}
+          token: ${{ secrets.SONAR_TOKEN }}
+          project_base_dir: packages
+
+      - name: Scan frontend
+        # Heaviest type graph; isolated here. If it still OOMs, only this step fails.
+        continue-on-error: true
+        uses: rodacato/sector-7g/actions/sonar-scan@master
+        with:
+          host_url: ${{ vars.SONAR_HOST_URL }}
+          token: ${{ secrets.SONAR_TOKEN }}
+          project_base_dir: apps/frontend
