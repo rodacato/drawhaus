@@ -169,8 +169,9 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
         <h2 className="mb-4 text-lg font-semibold text-text-primary">Workspace Identity</h2>
         <div className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-text-secondary">Name</label>
+            <label htmlFor="workspace-name" className="mb-1 block text-sm font-medium text-text-secondary">Name</label>
             <input
+              id="workspace-name"
               className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary/20"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -178,8 +179,9 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-text-secondary">Description</label>
+            <label htmlFor="workspace-description" className="mb-1 block text-sm font-medium text-text-secondary">Description</label>
             <textarea
+              id="workspace-description"
               className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary/20"
               rows={2}
               value={description}
@@ -189,8 +191,9 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-secondary">Icon (emoji)</label>
+            <label htmlFor="workspace-icon" className="mb-2 block text-sm font-medium text-text-secondary">Icon (emoji)</label>
             <input
+              id="workspace-icon"
               className="w-20 rounded-lg border border-border bg-surface px-3 py-2 text-center text-lg outline-none focus:ring-2 focus:ring-primary/20"
               value={icon}
               onChange={(e) => setIcon(e.target.value.slice(0, 4))}
@@ -199,8 +202,8 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-text-secondary">Color</label>
-            <div className="flex gap-2">
+            <span id="workspace-color-label" className="mb-2 block text-sm font-medium text-text-secondary">Color</span>
+            <div role="group" aria-labelledby="workspace-color-label" className="flex gap-2">
               {COLORS.map((c) => (
                 <button
                   key={c}
@@ -313,8 +316,9 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
           ) : (
             <div className="space-y-3">
               <div>
-                <label className="mb-1 block text-sm font-medium text-text-secondary">New Owner</label>
+                <label htmlFor="workspace-new-owner" className="mb-1 block text-sm font-medium text-text-secondary">New Owner</label>
                 <select
+                  id="workspace-new-owner"
                   className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none"
                   value={transferTarget}
                   onChange={(e) => setTransferTarget(e.target.value)}

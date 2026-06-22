@@ -181,7 +181,7 @@ export function BoardSidebar({
 
       {leaveOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !leaving && setLeaveOpen(false)} />
+          <button type="button" aria-label="Cancel" disabled={leaving} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !leaving && setLeaveOpen(false)} />
           <div className={`${ui.card} relative z-10 w-full max-w-sm space-y-4 shadow-2xl`}>
             <h2 className={ui.h2}>Leave Diagram</h2>
             <p className="text-sm text-text-secondary">

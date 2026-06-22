@@ -48,7 +48,9 @@ export function Drawer({ open, onClose, title, subtitle, icon, width = "max-w-xl
   return createPortal(
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
+        aria-label="Close"
         className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0"}`}
         onClick={onClose}
       />
@@ -56,7 +58,6 @@ export function Drawer({ open, onClose, title, subtitle, icon, width = "max-w-xl
       <div
         ref={panelRef}
         className={`relative flex h-full w-full ${width} flex-col bg-surface shadow-2xl transition-transform duration-300 ease-out ${visible ? "translate-x-0" : "translate-x-full"}`}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {(title || icon) && (
