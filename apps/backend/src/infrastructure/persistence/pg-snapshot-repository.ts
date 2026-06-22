@@ -147,7 +147,7 @@ export class PgSnapshotRepository implements SnapshotRepository {
       "SELECT COUNT(*)::text AS count FROM diagram_snapshots WHERE diagram_id = $1 AND name IS NOT NULL",
       [diagramId],
     );
-    return parseInt(rows[0].count, 10);
+    return Number.parseInt(rows[0].count, 10);
   }
 
   async countNamedBatch(diagramIds: string[]): Promise<Map<string, number>> {
@@ -162,7 +162,7 @@ export class PgSnapshotRepository implements SnapshotRepository {
     );
     const map = new Map<string, number>();
     for (const row of rows) {
-      map.set(row.diagram_id, parseInt(row.count, 10));
+      map.set(row.diagram_id, Number.parseInt(row.count, 10));
     }
     return map;
   }

@@ -43,7 +43,7 @@ function threadToDomain(row: ThreadRow, replies: CommentReply[]): CommentThread 
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
     replies,
-    likeCount: parseInt(row.like_count ?? "0", 10),
+    likeCount: Number.parseInt(row.like_count ?? "0", 10),
     likedByMe: row.liked_by_me ?? false,
   };
 }
@@ -86,7 +86,7 @@ export class PgCommentRepository implements CommentRepository {
     );
     const map = new Map<string, { count: number; likedByMe: boolean }>();
     for (const row of rows) {
-      map.set(row.thread_id, { count: parseInt(row.like_count, 10), likedByMe: row.liked_by_me });
+      map.set(row.thread_id, { count: Number.parseInt(row.like_count, 10), likedByMe: row.liked_by_me });
     }
     return map;
   }

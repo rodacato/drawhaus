@@ -16,15 +16,15 @@ export class GetMetricsUseCase {
 
     const diagramsByOrigin: Record<string, number> = {};
     for (const row of createdViaResult.rows) {
-      diagramsByOrigin[row.created_via] = parseInt(row.count, 10);
+      diagramsByOrigin[row.created_via] = Number.parseInt(row.count, 10);
     }
 
     return {
-      totalUsers: parseInt(usersResult.rows[0].count, 10),
-      totalDiagrams: parseInt(diagramsResult.rows[0].count, 10),
-      activeSessions: parseInt(sessionsResult.rows[0].count, 10),
+      totalUsers: Number.parseInt(usersResult.rows[0].count, 10),
+      totalDiagrams: Number.parseInt(diagramsResult.rows[0].count, 10),
+      activeSessions: Number.parseInt(sessionsResult.rows[0].count, 10),
       diagramsByOrigin,
-      apiRequests24h: parseInt(apiRequests24hResult.rows[0].count, 10),
+      apiRequests24h: Number.parseInt(apiRequests24hResult.rows[0].count, 10),
     };
   }
 }

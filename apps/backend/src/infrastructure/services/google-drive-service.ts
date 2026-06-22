@@ -5,7 +5,7 @@ const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 
 function escapeDriveQL(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  return value.replaceAll(/\\/g, "\\\\").replaceAll(/'/g, "\\'");
 }
 
 export class GoogleDriveServiceImpl implements GoogleDriveService {
