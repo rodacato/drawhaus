@@ -6,6 +6,9 @@ All notable changes to Drawhaus are documented here.
 
 ## Unreleased
 
+### Added
+- **`drawhaus-frontend` SonarQube project** scanned by `quality.yml` (`workflow_dispatch`). Adds `apps/frontend/sonar-project.properties` and a `Scan frontend` step alongside the existing backend scan. Frontend uses `sonar.javascript.skipTypechecking=true` and `sonar.javascript.node.maxspace=8192` to dodge the type-aware OOM caused by three.js/excalidraw/dagre type graphs — trading type-aware rules for a scan that completes. Packages remain unscanned for the same reason.
+
 ### Security
 - **Helmet defaults restored on the Express app** (CodeQL `js/insecure-helmet-configuration`). `contentSecurityPolicy` and `crossOriginEmbedderPolicy` were previously disabled; the JSON API + Redoc-stub static path do not require those opt-outs.
 - **Drive ID validation tightened on `/api/drive` routes** (CodeQL `js/request-forgery`). `fileId` / `targetFolderId` / `folderId` now match `^[A-Za-z0-9_-]{10,128}$` via Zod before reaching the Google Drive `fetch` call, blocking path-traversal / special-char payloads.
