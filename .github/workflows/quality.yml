@@ -51,13 +51,26 @@ jobs:
           mkdir -p apps/backend/coverage
           npm run test:coverage --workspace=backend
 
-      # Only the backend is scanned. The frontend (three.js/excalidraw) and
-      # packages (zod/dagre/mermaid type graphs) OOM SonarJS's type-aware bridge
-      # even isolated — analyzing them costs more than it returns. Security scans
-      # (sector-7g security.yml) still cover them.
+      - name: Frontend tests with coverage
+        run: |
+          mkdir -p apps/frontend/coverage
+          npm run test:coverage --workspace=frontend
+
+      # Two Sonar projects in one workflow (one bridge per workspace keeps the
+      # JS/TS analyzer's memory footprint down). Frontend uses skipTypechecking
+      # + maxspace=8192 in its sonar-project.properties to dodge OOM from the
+      # three.js/excalidraw type graph. Packages are still unscanned for the
+      # same reason — security.yml covers them.
       - name: Scan backend
         uses: rodacato/sector-7g/actions/sonar-scan@master
         with:
           host_url: ${{ vars.SONAR_HOST_URL }}
           token: ${{ secrets.SONAR_TOKEN }}
           project_base_dir: apps/backend
+
+      - name: Scan frontend
+        uses: rodacato/sector-7g/actions/sonar-scan@master
+        with:
+          host_url: ${{ vars.SONAR_HOST_URL }}
+          token: ${{ secrets.SONAR_TOKEN }}
+          project_base_dir: apps/frontend
