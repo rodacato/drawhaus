@@ -85,8 +85,8 @@ export function ShareModal({
     if (creating) return;
     setCreating(true);
     try {
-      const days = expiresIn.trim() ? parseInt(expiresIn.trim(), 10) : undefined;
-      const expiresInHours = days && !isNaN(days) ? days * 24 : undefined;
+      const days = expiresIn.trim() ? Number.parseInt(expiresIn.trim(), 10) : undefined;
+      const expiresInHours = days && !Number.isNaN(days) ? days * 24 : undefined;
       const data = await shareApi.create(diagramId, selectedRole, expiresInHours);
       const token = data.shareLink?.token ?? data.token;
       setCreatedToken(token);

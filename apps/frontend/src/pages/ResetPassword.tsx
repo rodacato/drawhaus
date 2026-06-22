@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { authApi } from "@/api/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
 
 export function ResetPassword() {
@@ -24,8 +25,8 @@ export function ResetPassword() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const newPassword = String(formData.get("password") ?? "");
-    const confirmPassword = String(formData.get("confirmPassword") ?? "");
+    const newPassword = formString(formData, "password");
+    const confirmPassword = formString(formData, "confirmPassword");
 
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");

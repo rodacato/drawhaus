@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
 import { authApi } from "@/api/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
 
 export function ForgotPassword() {
@@ -15,7 +16,7 @@ export function ForgotPassword() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") ?? "");
+    const email = formString(formData, "email");
 
     try {
       await authApi.forgotPassword(email);

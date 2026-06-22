@@ -4,6 +4,7 @@ import { adminApi } from "@/api/admin";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
 import { ToggleSwitch } from "@/components/ToggleSwitch";
 
@@ -33,7 +34,7 @@ function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void
     setStatus(null);
 
     const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") ?? "");
+    const email = formString(formData, "email");
 
     try {
       await adminApi.inviteUser(email, role);

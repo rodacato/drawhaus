@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { setupApi } from "@/api/setup";
+import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
 
 export function SetupStep2({ onComplete }: { onComplete: () => void }) {
@@ -12,10 +13,10 @@ export function SetupStep2({ onComplete }: { onComplete: () => void }) {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const instanceName = String(formData.get("instanceName") ?? "");
+    const instanceName = formString(formData, "instanceName");
     const registrationOpen = formData.get("registrationOpen") === "on";
     const backupEnabled = formData.get("backupEnabled") === "on";
-    const backupCron = String(formData.get("backupCron") ?? "0 3 * * *");
+    const backupCron = formString(formData, "backupCron", "0 3 * * *");
     const backupRetentionDays = Number(formData.get("backupRetentionDays")) || 7;
 
     try {

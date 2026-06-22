@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
 
 export function SetupStep1({ onComplete }: { onComplete: () => void }) {
@@ -13,9 +14,9 @@ export function SetupStep1({ onComplete }: { onComplete: () => void }) {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const name = String(formData.get("name") ?? "");
-    const email = String(formData.get("email") ?? "");
-    const password = String(formData.get("password") ?? "");
+    const name = formString(formData, "name");
+    const email = formString(formData, "email");
+    const password = formString(formData, "password");
 
     try {
       await register(name, email, password);

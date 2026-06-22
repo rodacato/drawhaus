@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/api/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
@@ -39,15 +40,15 @@ export function Register() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const name = String(formData.get("name") ?? "");
-    const password = String(formData.get("password") ?? "");
+    const name = formString(formData, "name");
+    const password = formString(formData, "password");
 
     try {
       if (inviteToken) {
         await authApi.acceptInvite(inviteToken, name, password);
         await refreshUser();
       } else {
-        const email = String(formData.get("email") ?? "");
+        const email = formString(formData, "email");
         await register(name, email, password);
       }
       navigate("/dashboard");
