@@ -9,6 +9,7 @@ All notable changes to Drawhaus are documented here.
 ### Security
 - **Helmet defaults restored on the Express app** (CodeQL `js/insecure-helmet-configuration`). `contentSecurityPolicy` and `crossOriginEmbedderPolicy` were previously disabled; the JSON API + Redoc-stub static path do not require those opt-outs.
 - **Drive ID validation tightened on `/api/drive` routes** (CodeQL `js/request-forgery`). `fileId` / `targetFolderId` / `folderId` now match `^[A-Za-z0-9_-]{10,128}$` via Zod before reaching the Google Drive `fetch` call, blocking path-traversal / special-char payloads.
+- **Workflow permissions tightened** (CodeQL `actions/missing-workflow-permissions`). `ci.yml` and `quality.yml` now declare `permissions: contents: read` at workflow level; matches the existing convention in `build-push.yml` and `publish-mcp.yml`.
 
 ### Changed
 - **Error monitoring migrated from Honeybadger to Sentry** ([ADR-023](docs/adr/023-sentry-error-monitoring.md)). Backend now uses `@sentry/node` (`Sentry.captureException` + `setupExpressErrorHandler`); frontend ships `@sentry/react` initialized at boot and `@sentry/vite-plugin` for source-map upload at build time. Both are gated by env vars and stay disabled when DSNs are absent.
