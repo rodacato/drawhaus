@@ -5,20 +5,20 @@ import { workspacesApi } from "@/api/workspaces";
 type User = { name?: string; email?: string };
 
 type DashboardSidebarProps = {
-  user: User | null;
-  workspaces: Workspace[];
-  activeWorkspaceId: string | null;
-  isRecent: boolean;
-  isStarred: boolean;
-  isTemplates: boolean;
-  onNavRecent: () => void;
-  onNavStarred: () => void;
-  onNavTemplates: () => void;
-  onSelectWorkspace: (id: string) => void;
-  onWorkspaceCreated: (ws: Workspace) => void;
-  onStatusMessage: (msg: string) => void;
-  onLogout: () => Promise<void>;
-  onOpenWorkspaceSettings?: (workspaceId: string) => void;
+  readonly user: User | null;
+  readonly workspaces: Workspace[];
+  readonly activeWorkspaceId: string | null;
+  readonly isRecent: boolean;
+  readonly isStarred: boolean;
+  readonly isTemplates: boolean;
+  readonly onNavRecent: () => void;
+  readonly onNavStarred: () => void;
+  readonly onNavTemplates: () => void;
+  readonly onSelectWorkspace: (id: string) => void;
+  readonly onWorkspaceCreated: (ws: Workspace) => void;
+  readonly onStatusMessage: (msg: string) => void;
+  readonly onLogout: () => Promise<void>;
+  readonly onOpenWorkspaceSettings?: (workspaceId: string) => void;
 };
 
 const navBtnClass = (active: boolean) =>

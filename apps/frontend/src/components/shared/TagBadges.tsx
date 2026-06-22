@@ -1,6 +1,6 @@
 import type { Tag } from "@/api/tags";
 
-export function TagBadges({ tags }: { tags: Tag[] }) {
+export function TagBadges({ tags }: { readonly tags: Tag[] }) {
   if (tags.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1">

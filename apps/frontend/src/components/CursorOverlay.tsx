@@ -1,6 +1,6 @@
 import type { CursorInfo } from "@/lib/types";
 
-export function CursorOverlay({ cursors }: { cursors: Record<string, CursorInfo> }) {
+export function CursorOverlay({ cursors }: { readonly cursors: Record<string, CursorInfo> }) {
   return (
     <div className="pointer-events-none fixed inset-0 z-10">
       {Object.entries(cursors).map(([userId, cursor]) => (

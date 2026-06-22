@@ -17,10 +17,10 @@ const BG_PRESETS = [
 ] as const;
 
 type Props = {
-  userEmail: string;
-  onDashboardClick: () => void;
-  canvasPrefs: CanvasPrefs;
-  onCanvasPrefsChange: (patch: Partial<CanvasPrefs>) => void;
+  readonly userEmail: string;
+  readonly onDashboardClick: () => void;
+  readonly canvasPrefs: CanvasPrefs;
+  readonly onCanvasPrefsChange: (patch: Partial<CanvasPrefs>) => void;
 };
 
 export function SettingsPanel({ userEmail, onDashboardClick, canvasPrefs, onCanvasPrefsChange }: Props) {

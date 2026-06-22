@@ -130,7 +130,7 @@ export function TemplatePicker({ open, workspaceId, onClose, onUseTemplate, onUs
     } catch { /* silent */ }
   }
 
-  function CustomTemplateCard({ template }: { template: TemplateDTO }) {
+  function CustomTemplateCard({ template }: { readonly template: TemplateDTO }) {
     return (
       <div className="group relative flex min-h-[140px] flex-col rounded-xl border border-border bg-surface text-left transition hover:border-primary/30 hover:shadow-md">
         <button

@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 
 interface SidebarDrawerProps {
-  open: boolean;
-  onClose: () => void;
-  width?: number;
-  children: React.ReactNode;
+  readonly open: boolean;
+  readonly onClose: () => void;
+  readonly width?: number;
+  readonly children: React.ReactNode;
 }
 
 /**

@@ -9,15 +9,15 @@ const ExcalidrawLazy = lazy(async () => {
 });
 
 type ExcalidrawCanvasProps = {
-  excalidrawAPI?: (api: ExcalidrawApi) => void;
-  initialData: {
+  readonly excalidrawAPI?: (api: ExcalidrawApi) => void;
+  readonly initialData: {
     elements: unknown[];
     appState: Record<string, unknown>;
   };
-  onChange?: (elements: readonly unknown[], appState: Record<string, unknown>) => void;
-  viewModeEnabled?: boolean;
-  objectsSnapModeEnabled?: boolean;
-  UIOptions?: Record<string, unknown>;
+  readonly onChange?: (elements: readonly unknown[], appState: Record<string, unknown>) => void;
+  readonly viewModeEnabled?: boolean;
+  readonly objectsSnapModeEnabled?: boolean;
+  readonly UIOptions?: Record<string, unknown>;
 };
 
 export function ExcalidrawCanvas(props: ExcalidrawCanvasProps) {

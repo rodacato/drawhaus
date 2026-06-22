@@ -24,13 +24,13 @@ import { diagramsApi } from "@/api/diagrams";
 import type { ExcalidrawElement } from "@/lib/types";
 
 type BoardEditorProps = {
-  diagramId: string;
-  title: string;
-  userEmail: string;
-  initialElements: unknown[];
-  initialAppState: Record<string, unknown>;
-  workspaceId?: string | null;
-  createdVia?: string;
+  readonly diagramId: string;
+  readonly title: string;
+  readonly userEmail: string;
+  readonly initialElements: unknown[];
+  readonly initialAppState: Record<string, unknown>;
+  readonly workspaceId?: string | null;
+  readonly createdVia?: string;
 };
 
 export default function BoardEditor({

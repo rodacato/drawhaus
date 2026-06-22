@@ -25,25 +25,25 @@ const PANEL_WIDTH: Partial<Record<NonNullable<ActivePanel>, number>> = {
 };
 
 type BoardSidebarProps = {
-  diagramId: string;
-  userEmail: string;
-  excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
-  commentCount: number;
-  commentsPanelOpen: boolean;
-  onToggleComments: () => void;
-  presenceUsers: PresenceUserWithSelf[];
-  followingUserId: string | null;
-  onFollow: (userId: string | null) => void;
-  onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
-  canEdit: boolean;
-  saveState: string;
-  onBeforeLeave: () => Promise<void>;
-  onSnapshotRestored?: () => void;
-  workspaceId?: string | null;
-  canvasPrefs: CanvasPrefs;
-  onCanvasPrefsChange: (patch: Partial<CanvasPrefs>) => void;
-  socketRef?: React.RefObject<Socket | null>;
-  raisedHands?: Set<string>;
+  readonly diagramId: string;
+  readonly userEmail: string;
+  readonly excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
+  readonly commentCount: number;
+  readonly commentsPanelOpen: boolean;
+  readonly onToggleComments: () => void;
+  readonly presenceUsers: PresenceUserWithSelf[];
+  readonly followingUserId: string | null;
+  readonly onFollow: (userId: string | null) => void;
+  readonly onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
+  readonly canEdit: boolean;
+  readonly saveState: string;
+  readonly onBeforeLeave: () => Promise<void>;
+  readonly onSnapshotRestored?: () => void;
+  readonly workspaceId?: string | null;
+  readonly canvasPrefs: CanvasPrefs;
+  readonly onCanvasPrefsChange: (patch: Partial<CanvasPrefs>) => void;
+  readonly socketRef?: React.RefObject<Socket | null>;
+  readonly raisedHands?: Set<string>;
 };
 
 /* ───────────────────────── main sidebar ───────────────────────── */

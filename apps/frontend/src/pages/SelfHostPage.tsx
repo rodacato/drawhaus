@@ -9,7 +9,7 @@ const GITHUB_URL = "https://github.com/rodacato/drawhaus";
 const EXCALIDRAW_URL = "https://excalidraw.com";
 const EXCALIDRAW_GITHUB = "https://github.com/excalidraw/excalidraw";
 
-function CodeBlock({ children, title }: { children: string; title?: string }) {
+function CodeBlock({ children, title }: { readonly children: string; readonly title?: string }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-[#1e1e2e]">
       {title && (

@@ -15,8 +15,8 @@ import { detectDiagramFormat, type DiagramFormat } from "@/lib/format-utils";
 type Format = DiagramFormat;
 
 type Props = {
-  excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
-  onClose: () => void;
+  readonly excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
+  readonly onClose: () => void;
 };
 
 type ValidationInfo = {

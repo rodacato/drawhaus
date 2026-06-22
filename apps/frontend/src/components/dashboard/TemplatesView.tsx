@@ -5,7 +5,7 @@ import { workspacesApi, type Workspace } from "@/api/workspaces";
 import { ui } from "@/lib/ui";
 
 type TemplatesViewProps = {
-  onStatusMessage: (msg: string) => void;
+  readonly onStatusMessage: (msg: string) => void;
 };
 
 const CATEGORY_COLORS: Record<string, string> = {

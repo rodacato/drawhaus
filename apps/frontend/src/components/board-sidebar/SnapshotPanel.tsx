@@ -21,11 +21,11 @@ async function normalizeElements(elements: unknown[]): Promise<unknown[]> {
 }
 
 type SnapshotPanelProps = {
-  diagramId: string;
-  canEdit: boolean;
-  excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
-  onRestored?: () => void;
-  socketRef?: React.RefObject<Socket | null>;
+  readonly diagramId: string;
+  readonly canEdit: boolean;
+  readonly excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
+  readonly onRestored?: () => void;
+  readonly socketRef?: React.RefObject<Socket | null>;
 };
 
 export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored, socketRef }: SnapshotPanelProps) {

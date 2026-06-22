@@ -2,8 +2,8 @@ import { ErrorBoundary as ReactErrorBoundary, type FallbackProps } from "react-e
 import type { ReactNode } from "react";
 
 interface Props {
-  children: ReactNode;
-  FallbackComponent: React.ComponentType<FallbackProps>;
+  readonly children: ReactNode;
+  readonly FallbackComponent: React.ComponentType<FallbackProps>;
 }
 
 export function ErrorBoundary({ children, FallbackComponent }: Props) {

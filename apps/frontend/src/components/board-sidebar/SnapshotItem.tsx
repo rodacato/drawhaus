@@ -10,12 +10,12 @@ export function SnapshotItem({
   onRename,
   onDelete,
 }: {
-  snapshot: SnapshotMeta;
-  canEdit: boolean;
-  onPreview: () => void;
-  onRestore: () => void;
-  onRename: (name: string | null) => void;
-  onDelete: () => void;
+  readonly snapshot: SnapshotMeta;
+  readonly canEdit: boolean;
+  readonly onPreview: () => void;
+  readonly onRestore: () => void;
+  readonly onRename: (name: string | null) => void;
+  readonly onDelete: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [nameValue, setNameValue] = useState(snapshot.name ?? "");

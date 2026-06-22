@@ -45,7 +45,7 @@ const logos: { label: string; src: string; bg: "light" | "dark" }[] = [
   { label: "Wordmark (dark)", src: "/branding/wordmark_only_dark.svg", bg: "dark" },
 ];
 
-function ColorSwatch({ name, hex, cssVar, usage }: { name: string; hex: string; cssVar: string; usage?: string }) {
+function ColorSwatch({ name, hex, cssVar, usage }: { readonly name: string; readonly hex: string; readonly cssVar: string; readonly usage?: string }) {
   return (
     <div className="flex flex-col gap-2">
       <div
@@ -62,7 +62,7 @@ function ColorSwatch({ name, hex, cssVar, usage }: { name: string; hex: string; 
   );
 }
 
-function Section({ id, title, description, children }: { id?: string; title: string; description?: string; children: React.ReactNode }) {
+function Section({ id, title, description, children }: { readonly id?: string; readonly title: string; readonly description?: string; readonly children: React.ReactNode }) {
   return (
     <section id={id} className="space-y-4 scroll-mt-6">
       <div>
@@ -74,7 +74,7 @@ function Section({ id, title, description, children }: { id?: string; title: str
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: { readonly children: React.ReactNode }) {
   return <p className="text-xs font-medium uppercase tracking-wider text-text-muted">{children}</p>;
 }
 

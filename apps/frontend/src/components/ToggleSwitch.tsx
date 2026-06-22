@@ -1,4 +1,4 @@
-export function ToggleSwitch({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+export function ToggleSwitch({ checked, onChange, disabled }: { readonly checked: boolean; readonly onChange: (v: boolean) => void; readonly disabled?: boolean }) {
   return (
     <button
       type="button"

@@ -16,7 +16,7 @@ export function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-export function SessionBadge({ activeUsers }: { activeUsers: number }) {
+export function SessionBadge({ activeUsers }: { readonly activeUsers: number }) {
   if (activeUsers <= 1) return null;
   return (
     <span className="inline-flex items-center gap-0.5 text-text-muted" title={`${activeUsers} users in session`}>

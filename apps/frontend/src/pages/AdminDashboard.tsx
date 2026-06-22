@@ -35,7 +35,7 @@ const metricCards = [
   },
 ];
 
-function ApiMetricsCards({ metrics }: { metrics: Metrics }) {
+function ApiMetricsCards({ metrics }: { readonly metrics: Metrics }) {
   const apiDiagrams = (metrics.diagramsByOrigin?.api ?? 0) + (metrics.diagramsByOrigin?.mcp ?? 0);
   if (apiDiagrams === 0 && (metrics.apiRequests24h ?? 0) === 0) return null;
 
@@ -76,7 +76,7 @@ function ApiMetricsCards({ metrics }: { metrics: Metrics }) {
 
 type TabId = "admin-overview" | "admin-users" | "admin-site" | "admin-style";
 
-export function AdminOverview({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
+export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId) => void }) {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {

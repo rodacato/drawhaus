@@ -1,16 +1,16 @@
 type WorkspaceToolbarProps = {
-  viewMode: "grid" | "list";
-  actionPending: boolean;
-  creatingFolder: boolean;
-  newFolderName: string;
-  onCreateDiagram: () => void;
-  onStartCreatingFolder: () => void;
-  onCancelCreatingFolder: () => void;
-  onNewFolderNameChange: (name: string) => void;
-  onCreateFolder: () => void;
-  onImport: () => void;
-  onDriveImport: () => void;
-  onViewModeChange: (mode: "grid" | "list") => void;
+  readonly viewMode: "grid" | "list";
+  readonly actionPending: boolean;
+  readonly creatingFolder: boolean;
+  readonly newFolderName: string;
+  readonly onCreateDiagram: () => void;
+  readonly onStartCreatingFolder: () => void;
+  readonly onCancelCreatingFolder: () => void;
+  readonly onNewFolderNameChange: (name: string) => void;
+  readonly onCreateFolder: () => void;
+  readonly onImport: () => void;
+  readonly onDriveImport: () => void;
+  readonly onViewModeChange: (mode: "grid" | "list") => void;
 };
 
 export function WorkspaceToolbar({ viewMode, actionPending, creatingFolder, newFolderName, onCreateDiagram, onStartCreatingFolder, onCancelCreatingFolder, onNewFolderNameChange, onCreateFolder, onImport, onDriveImport, onViewModeChange }: WorkspaceToolbarProps) {

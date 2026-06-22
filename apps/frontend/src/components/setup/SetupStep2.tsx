@@ -2,7 +2,7 @@ import { FormEvent, useState } from "react";
 import { setupApi } from "@/api/setup";
 import { ui } from "@/lib/ui";
 
-export function SetupStep2({ onComplete }: { onComplete: () => void }) {
+export function SetupStep2({ onComplete }: { readonly onComplete: () => void }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

@@ -4,13 +4,13 @@ import type { Diagram } from "./shared/DiagramTypes";
 import { TagBadges } from "./shared/TagBadges";
 
 export interface DiagramListRowProps {
-  diagram: Diagram;
-  onRename: (id: string, title: string) => void;
-  onToggleStar: (id: string, starred: boolean) => void;
-  onShare: (id: string) => void;
-  onEmbed: (id: string) => void;
-  onDuplicate: (id: string) => void;
-  onDelete: (id: string, title: string) => void;
+  readonly diagram: Diagram;
+  readonly onRename: (id: string, title: string) => void;
+  readonly onToggleStar: (id: string, starred: boolean) => void;
+  readonly onShare: (id: string) => void;
+  readonly onEmbed: (id: string) => void;
+  readonly onDuplicate: (id: string) => void;
+  readonly onDelete: (id: string, title: string) => void;
 }
 
 export function DiagramListRow({

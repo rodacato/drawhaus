@@ -5,7 +5,7 @@
  * All icons use currentColor so they inherit text color from their parent.
  */
 
-type IconProps = { size?: number; className?: string };
+type IconProps = { readonly size?: number; readonly className?: string };
 
 const feather = {
   fill: "none" as const,
