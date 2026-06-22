@@ -214,11 +214,12 @@ export default function BoardEditor({
     setEditingTitle(false);
     const newTitle = titleDraft.trim();
     if (!newTitle || newTitle === diagramTitle) return;
+    const previousTitle = diagramTitle;
     setDiagramTitle(newTitle);
     try {
       await diagramsApi.update(diagramId, { title: newTitle });
-    } catch { /* revert on error */
-      setDiagramTitle(diagramTitle);
+    } catch {
+      setDiagramTitle(previousTitle);
     }
   }
 
