@@ -1,3 +1,8 @@
+export function formString(formData: FormData, name: string, fallback = ""): string {
+  const raw = formData.get(name);
+  return typeof raw === "string" ? raw : fallback;
+}
+
 export function isExpired(expiresAt?: string | null): boolean {
   if (!expiresAt) return false;
   return new Date(expiresAt) < new Date();

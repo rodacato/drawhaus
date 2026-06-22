@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
@@ -27,8 +28,8 @@ export function Login() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email") ?? "");
-    const password = String(formData.get("password") ?? "");
+    const email = formString(formData, "email");
+    const password = formString(formData, "password");
 
     try {
       await login(email, password);

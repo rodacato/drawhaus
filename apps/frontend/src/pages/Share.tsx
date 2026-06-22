@@ -156,10 +156,10 @@ function ShareCanvas({ shareToken, data, guestName }: { readonly shareToken: str
 
   // Status badge logic
   let statusBadge: { label: string; className: string };
-  if (!canEdit) {
-    statusBadge = { label: "View only", className: "bg-gray-100 text-gray-600" };
-  } else {
+  if (canEdit) {
     statusBadge = { label: collab.saveLabel, className: collab.saveColor };
+  } else {
+    statusBadge = { label: "View only", className: "bg-gray-100 text-gray-600" };
   }
 
   return (

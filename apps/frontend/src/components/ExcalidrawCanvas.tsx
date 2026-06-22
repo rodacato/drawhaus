@@ -1,5 +1,4 @@
-import { lazy, Suspense } from "react";
-import type { ComponentType } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import "@excalidraw/excalidraw/index.css";
 import type { ExcalidrawApi } from "@/lib/types";
 
