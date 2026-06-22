@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { authApi } from "@/api/auth";
 
 interface AuthUser {
@@ -40,23 +40,28 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     refreshUser().finally(() => setLoading(false));
   }, [refreshUser]);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     await authApi.login(email, password);
     await refreshUser();
-  };
+  }, [refreshUser]);
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = useCallback(async (name: string, email: string, password: string) => {
     await authApi.register(name, email, password);
     await refreshUser();
-  };
+  }, [refreshUser]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await authApi.logout();
     setUser(null);
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({ user, loading, login, register, logout, refreshUser }),
+    [user, loading, login, register, logout, refreshUser],
+  );
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

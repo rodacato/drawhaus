@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 interface ConfirmOptions {
@@ -54,8 +54,10 @@ export function ConfirmProvider({ children }: { readonly children: React.ReactNo
 
   const isDanger = state?.variant === "danger";
 
+  const contextValue = useMemo(() => ({ confirm }), [confirm]);
+
   return (
-    <ConfirmContext.Provider value={{ confirm }}>
+    <ConfirmContext.Provider value={contextValue}>
       {children}
       {state &&
         createPortal(
