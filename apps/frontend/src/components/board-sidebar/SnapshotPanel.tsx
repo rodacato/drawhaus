@@ -194,7 +194,7 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
       {/* Restore confirmation modal */}
       {confirmRestore && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !restoring && setConfirmRestore(null)} />
+          <button type="button" aria-label="Cancel" disabled={restoring} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !restoring && setConfirmRestore(null)} />
           <div className={`${ui.card} relative z-10 w-full max-w-sm space-y-4 shadow-2xl`}>
             <h2 className={ui.h2}>Restore Version</h2>
             <p className="text-sm text-text-secondary">

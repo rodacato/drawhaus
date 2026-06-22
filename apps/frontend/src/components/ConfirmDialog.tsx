@@ -60,7 +60,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
       {state &&
         createPortal(
           <div className="fixed inset-0 z-[110] flex items-center justify-center" role="dialog" aria-modal="true">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleCancel} />
+            <button type="button" aria-label="Cancel" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleCancel} />
             <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-surface-raised p-6 shadow-2xl">
               <div className="mb-1 flex items-center gap-3">
                 {isDanger && (

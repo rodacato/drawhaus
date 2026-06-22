@@ -97,6 +97,7 @@ export function SettingsPanel({ userEmail, onDashboardClick, canvasPrefs, onCanv
               className={`relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-2 transition ${!BG_PRESETS.some((p) => p.color === viewBackgroundColor) ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200 hover:border-gray-400"}`}
               style={{ background: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)" }}
             >
+              <span className="sr-only">Custom background color</span>
               <input
                 type="color"
                 value={viewBackgroundColor}

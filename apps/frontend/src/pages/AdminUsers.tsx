@@ -49,7 +49,7 @@ function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <button type="button" aria-label="Close" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className={`${ui.card} relative z-10 w-full max-w-md space-y-5 shadow-2xl`}>
         <div className="flex items-center justify-between">
           <h2 className={ui.h2}>Invite User</h2>

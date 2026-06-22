@@ -112,7 +112,7 @@ export function DiagramCard({
       {/* Three-dot dropdown menu */}
       {menuOpen && menuPos && (
         <>
-          <div className="fixed inset-0 z-50" onClick={closeMenu} />
+          <button type="button" aria-label="Close menu" className="fixed inset-0 z-50 cursor-default" onClick={closeMenu} />
           <div className="fixed z-50 w-44 rounded-lg border border-border bg-surface-raised py-1 shadow-xl" style={{ top: menuPos.top, left: menuPos.left }}>
             {/* Rename */}
             <button className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-text-secondary transition hover:bg-surface" type="button" onClick={() => { closeMenu(); startRenaming(); }}>
