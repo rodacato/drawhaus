@@ -1,4 +1,4 @@
-import type { Server as HttpServer } from "http";
+import type { Server as HttpServer } from "node:http";
 import { Server } from "socket.io";
 import msgpackParser from "socket.io-msgpack-parser";
 import type { JoinRoomUseCase } from "../../application/use-cases/realtime/join-room";

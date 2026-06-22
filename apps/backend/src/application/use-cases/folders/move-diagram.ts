@@ -6,9 +6,9 @@ import { requireOwnerAccess } from "../../helpers/require-access";
 
 export class MoveDiagramUseCase {
   constructor(
-    private diagrams: DiagramRepository,
-    private folders: FolderRepository,
-    private workspaces?: WorkspaceRepository,
+    private readonly diagrams: DiagramRepository,
+    private readonly folders: FolderRepository,
+    private readonly workspaces?: WorkspaceRepository,
   ) {}
 
   async execute(diagramId: string, userId: string, folderId: string | null, workspaceId?: string) {

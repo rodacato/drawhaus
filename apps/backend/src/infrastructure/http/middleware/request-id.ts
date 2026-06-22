@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import { logger } from "../../logger";
 
 export const requestId: RequestHandler = (req, res, next) => {

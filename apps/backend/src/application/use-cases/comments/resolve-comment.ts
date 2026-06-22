@@ -6,8 +6,8 @@ import type { CommentThread } from "../../../domain/entities/comment";
 
 export class ResolveCommentUseCase {
   constructor(
-    private comments: CommentRepository,
-    private diagrams: DiagramRepository,
+    private readonly comments: CommentRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(threadId: string, userId: string, resolve: boolean): Promise<CommentThread> {

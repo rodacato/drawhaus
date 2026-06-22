@@ -1,7 +1,7 @@
 import type { TemplateRepository } from "../../../domain/ports/template-repository";
 
 export class CreateTemplateUseCase {
-  constructor(private templates: TemplateRepository) {}
+  constructor(private readonly templates: TemplateRepository) {}
 
   async execute(input: {
     creatorId: string;

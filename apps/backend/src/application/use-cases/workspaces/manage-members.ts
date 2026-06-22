@@ -6,9 +6,9 @@ import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
 export class AddWorkspaceMemberUseCase {
   constructor(
-    private workspaces: WorkspaceRepository,
-    private settings: SiteSettingsRepository,
-    private audit: AuditLogger,
+    private readonly workspaces: WorkspaceRepository,
+    private readonly settings: SiteSettingsRepository,
+    private readonly audit: AuditLogger,
   ) {}
 
   async execute(workspaceId: string, actorId: string, targetUserId: string, role: WorkspaceRole) {
@@ -31,7 +31,7 @@ export class AddWorkspaceMemberUseCase {
 }
 
 export class UpdateWorkspaceMemberRoleUseCase {
-  constructor(private workspaces: WorkspaceRepository) {}
+  constructor(private readonly workspaces: WorkspaceRepository) {}
 
   async execute(workspaceId: string, actorId: string, targetUserId: string, role: WorkspaceRole) {
     const workspace = await this.workspaces.findById(workspaceId);
@@ -48,7 +48,7 @@ export class UpdateWorkspaceMemberRoleUseCase {
 }
 
 export class RemoveWorkspaceMemberUseCase {
-  constructor(private workspaces: WorkspaceRepository) {}
+  constructor(private readonly workspaces: WorkspaceRepository) {}
 
   async execute(workspaceId: string, actorId: string, targetUserId: string) {
     const workspace = await this.workspaces.findById(workspaceId);

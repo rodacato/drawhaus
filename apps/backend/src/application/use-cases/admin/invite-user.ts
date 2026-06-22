@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { InvitationRepository } from "../../../domain/ports/invitation-repository";
 import type { SiteSettingsRepository } from "../../../domain/ports/site-settings-repository";
@@ -8,10 +8,10 @@ import { ConflictError } from "../../../domain/errors";
 
 export class InviteUserUseCase {
   constructor(
-    private users: UserRepository,
-    private invitations: InvitationRepository,
-    private siteSettings: SiteSettingsRepository,
-    private emailService: EmailService,
+    private readonly users: UserRepository,
+    private readonly invitations: InvitationRepository,
+    private readonly siteSettings: SiteSettingsRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   async execute(input: { email: string; role: UserRole; invitedBy: string; inviterName: string }) {

@@ -8,9 +8,9 @@ import { requireAccess } from "../../helpers/require-access";
 
 export class JoinRoomUseCase {
   constructor(
-    private sessions: SessionRepository,
-    private diagrams: DiagramRepository,
-    private scenes: SceneRepository,
+    private readonly sessions: SessionRepository,
+    private readonly diagrams: DiagramRepository,
+    private readonly scenes: SceneRepository,
   ) {}
 
   async execute(sessionToken: string | null, roomId: string): Promise<{

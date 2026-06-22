@@ -5,8 +5,8 @@ import { requireAccess } from "../../helpers/require-access";
 
 export class GetDiagramUseCase {
   constructor(
-    private diagrams: DiagramRepository,
-    private scenes?: SceneRepository,
+    private readonly diagrams: DiagramRepository,
+    private readonly scenes?: SceneRepository,
   ) {}
 
   async execute(diagramId: string, userId: string) {

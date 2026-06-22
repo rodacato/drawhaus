@@ -1,7 +1,7 @@
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
 
 export class EnsurePersonalWorkspaceUseCase {
-  constructor(private workspaces: WorkspaceRepository) {}
+  constructor(private readonly workspaces: WorkspaceRepository) {}
 
   async execute(userId: string) {
     const existing = await this.workspaces.findPersonal(userId);

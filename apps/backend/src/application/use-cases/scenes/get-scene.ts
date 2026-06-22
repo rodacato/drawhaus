@@ -6,8 +6,8 @@ import type { Scene } from "../../../domain/entities/scene";
 
 export class GetSceneUseCase {
   constructor(
-    private scenes: SceneRepository,
-    private diagrams: DiagramRepository,
+    private readonly scenes: SceneRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(sceneId: string, userId: string): Promise<Scene> {

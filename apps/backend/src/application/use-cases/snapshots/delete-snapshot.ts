@@ -5,8 +5,8 @@ import { requireEditAccess } from "../../helpers/require-access";
 
 export class DeleteSnapshotUseCase {
   constructor(
-    private snapshots: SnapshotRepository,
-    private diagrams: DiagramRepository,
+    private readonly snapshots: SnapshotRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(snapshotId: string, userId: string): Promise<void> {

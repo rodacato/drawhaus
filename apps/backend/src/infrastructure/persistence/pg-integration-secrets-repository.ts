@@ -3,7 +3,7 @@ import { encrypt, decrypt } from "../services/encryption";
 import { pool } from "../db";
 
 export class PgIntegrationSecretsRepository implements IntegrationSecretsRepository {
-  constructor(private encryptionKey: string) {}
+  constructor(private readonly encryptionKey: string) {}
 
   async get(key: string): Promise<string | null> {
     const { rows } = await pool.query<{

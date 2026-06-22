@@ -4,8 +4,8 @@ import { NotFoundError, UnauthorizedError } from "../../../domain/errors";
 
 export class ChangePasswordUseCase {
   constructor(
-    private users: UserRepository,
-    private hasher: Hasher,
+    private readonly users: UserRepository,
+    private readonly hasher: Hasher,
   ) {}
 
   async execute(userId: string, input: { currentPassword?: string; newPassword: string }) {

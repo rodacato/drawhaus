@@ -5,9 +5,9 @@ import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
 export class TransferTemplateOwnershipUseCase {
   constructor(
-    private templates: TemplateRepository,
-    private workspaces: WorkspaceRepository,
-    private audit: AuditLogger,
+    private readonly templates: TemplateRepository,
+    private readonly workspaces: WorkspaceRepository,
+    private readonly audit: AuditLogger,
   ) {}
 
   async execute(templateIds: string[], actorId: string, newCreatorId: string) {

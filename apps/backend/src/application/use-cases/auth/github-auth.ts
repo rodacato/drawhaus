@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { SessionRepository } from "../../../domain/ports/session-repository";
 import type { OAuthTokenRepository } from "../../../domain/ports/oauth-token-repository";
@@ -28,10 +28,10 @@ type GitHubEmail = {
 
 export class GitHubAuthUseCase {
   constructor(
-    private users: UserRepository,
-    private sessions: SessionRepository,
-    private oauthTokens: OAuthTokenRepository,
-    private siteSettings?: SiteSettingsRepository,
+    private readonly users: UserRepository,
+    private readonly sessions: SessionRepository,
+    private readonly oauthTokens: OAuthTokenRepository,
+    private readonly siteSettings?: SiteSettingsRepository,
   ) {}
 
   get isEnabled(): boolean {

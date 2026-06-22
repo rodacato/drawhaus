@@ -3,7 +3,7 @@ import { NotFoundError } from "../../../domain/errors";
 import { requireEditAccess } from "../../helpers/require-access";
 
 export class UpdateDiagramUseCase {
-  constructor(private diagrams: DiagramRepository) {}
+  constructor(private readonly diagrams: DiagramRepository) {}
 
   async execute(
     diagramId: string,

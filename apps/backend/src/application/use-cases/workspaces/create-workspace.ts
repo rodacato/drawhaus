@@ -4,8 +4,8 @@ import { ForbiddenError } from "../../../domain/errors";
 
 export class CreateWorkspaceUseCase {
   constructor(
-    private workspaces: WorkspaceRepository,
-    private settings: SiteSettingsRepository,
+    private readonly workspaces: WorkspaceRepository,
+    private readonly settings: SiteSettingsRepository,
   ) {}
 
   async execute(input: { userId: string; name: string; description?: string; color?: string; icon?: string }) {

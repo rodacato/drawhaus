@@ -2,7 +2,7 @@ import type { TemplateRepository } from "../../../domain/ports/template-reposito
 import { NotFoundError } from "../../../domain/errors";
 
 export class GetTemplateUseCase {
-  constructor(private templates: TemplateRepository) {}
+  constructor(private readonly templates: TemplateRepository) {}
 
   async execute(id: string) {
     const template = await this.templates.findById(id);

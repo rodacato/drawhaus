@@ -4,8 +4,8 @@ import { requireOwnerAccess } from "../../helpers/require-access";
 
 export class UnassignTagUseCase {
   constructor(
-    private tags: TagRepository,
-    private diagrams: DiagramRepository,
+    private readonly tags: TagRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(tagId: string, diagramId: string, userId: string) {

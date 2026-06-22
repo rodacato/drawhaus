@@ -5,9 +5,9 @@ import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
 export class TransferDiagramOwnershipUseCase {
   constructor(
-    private diagrams: DiagramRepository,
-    private workspaces: WorkspaceRepository,
-    private audit: AuditLogger,
+    private readonly diagrams: DiagramRepository,
+    private readonly workspaces: WorkspaceRepository,
+    private readonly audit: AuditLogger,
   ) {}
 
   async execute(diagramIds: string[], actorId: string, newOwnerId: string) {

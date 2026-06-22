@@ -2,7 +2,7 @@ import type { SessionRepository, AuthUser } from "../../../domain/ports/session-
 import { UnauthorizedError } from "../../../domain/errors";
 
 export class GetCurrentUserUseCase {
-  constructor(private sessions: SessionRepository) {}
+  constructor(private readonly sessions: SessionRepository) {}
 
   async execute(sessionToken: string | null): Promise<AuthUser> {
     if (!sessionToken) throw new UnauthorizedError();

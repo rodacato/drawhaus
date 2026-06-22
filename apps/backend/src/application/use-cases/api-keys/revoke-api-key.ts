@@ -2,7 +2,7 @@ import type { ApiKeyRepository } from "../../../domain/ports/api-key-repository"
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
 export class RevokeApiKeyUseCase {
-  constructor(private apiKeys: ApiKeyRepository) {}
+  constructor(private readonly apiKeys: ApiKeyRepository) {}
 
   async execute(keyId: string, userId: string) {
     const key = await this.apiKeys.findById(keyId);

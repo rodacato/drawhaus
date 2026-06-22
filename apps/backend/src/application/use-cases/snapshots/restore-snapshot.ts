@@ -7,9 +7,9 @@ import { logger } from "../../../infrastructure/logger";
 
 export class RestoreSnapshotUseCase {
   constructor(
-    private snapshots: SnapshotRepository,
-    private scenes: SceneRepository,
-    private diagrams: DiagramRepository,
+    private readonly snapshots: SnapshotRepository,
+    private readonly scenes: SceneRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(snapshotId: string, userId: string): Promise<{ diagramId: string; elements: unknown[]; appState: Record<string, unknown>; sceneId: string | null }> {

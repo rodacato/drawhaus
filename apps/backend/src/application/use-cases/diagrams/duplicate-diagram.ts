@@ -3,7 +3,7 @@ import type { Diagram } from "../../../domain/entities/diagram";
 import { requireAccess } from "../../helpers/require-access";
 
 export class DuplicateDiagramUseCase {
-  constructor(private diagramRepo: DiagramRepository) {}
+  constructor(private readonly diagramRepo: DiagramRepository) {}
 
   async execute(diagramId: string, userId: string): Promise<Diagram> {
     const original = await this.diagramRepo.findById(diagramId);

@@ -5,8 +5,8 @@ import { isShareLinkExpired } from "../../../domain/entities/share-link";
 
 export class ResolveLinkUseCase {
   constructor(
-    private shares: ShareRepository,
-    private diagrams: DiagramRepository,
+    private readonly shares: ShareRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(token: string) {

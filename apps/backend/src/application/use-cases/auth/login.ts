@@ -6,10 +6,10 @@ import { UnauthorizedError, ForbiddenError } from "../../../domain/errors";
 
 export class LoginUseCase {
   constructor(
-    private users: UserRepository,
-    private sessions: SessionRepository,
-    private hasher: Hasher,
-    private audit: AuditLogger,
+    private readonly users: UserRepository,
+    private readonly sessions: SessionRepository,
+    private readonly hasher: Hasher,
+    private readonly audit: AuditLogger,
   ) {}
 
   async execute(input: { email: string; password: string }) {

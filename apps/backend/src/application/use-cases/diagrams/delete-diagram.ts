@@ -4,8 +4,8 @@ import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
 export class DeleteDiagramUseCase {
   constructor(
-    private diagrams: DiagramRepository,
-    private workspaces?: WorkspaceRepository,
+    private readonly diagrams: DiagramRepository,
+    private readonly workspaces?: WorkspaceRepository,
   ) {}
 
   async execute(diagramId: string, userId: string) {

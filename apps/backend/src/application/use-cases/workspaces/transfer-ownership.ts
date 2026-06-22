@@ -6,10 +6,10 @@ import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
 export class TransferWorkspaceOwnershipUseCase {
   constructor(
-    private workspaces: WorkspaceRepository,
-    private diagrams: DiagramRepository,
-    private templates: TemplateRepository,
-    private audit: AuditLogger,
+    private readonly workspaces: WorkspaceRepository,
+    private readonly diagrams: DiagramRepository,
+    private readonly templates: TemplateRepository,
+    private readonly audit: AuditLogger,
   ) {}
 
   async execute(workspaceId: string, actorId: string, newOwnerId: string, transferResources = false) {

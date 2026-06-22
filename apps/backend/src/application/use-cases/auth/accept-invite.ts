@@ -6,10 +6,10 @@ import { NotFoundError, ExpiredError, ConflictError } from "../../../domain/erro
 
 export class AcceptInviteUseCase {
   constructor(
-    private users: UserRepository,
-    private sessions: SessionRepository,
-    private invitations: InvitationRepository,
-    private hasher: Hasher,
+    private readonly users: UserRepository,
+    private readonly sessions: SessionRepository,
+    private readonly invitations: InvitationRepository,
+    private readonly hasher: Hasher,
   ) {}
 
   async resolve(token: string) {

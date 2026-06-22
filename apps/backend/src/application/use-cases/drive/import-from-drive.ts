@@ -5,9 +5,9 @@ import { InvalidInputError } from "../../../domain/errors";
 
 export class ImportFromDriveUseCase {
   constructor(
-    private driveService: GoogleDriveService,
-    private diagrams: DiagramRepository,
-    private tokenRefresher: GoogleTokenRefresher,
+    private readonly driveService: GoogleDriveService,
+    private readonly diagrams: DiagramRepository,
+    private readonly tokenRefresher: GoogleTokenRefresher,
   ) {}
 
   async execute(userId: string, data: { fileId: string; fileName: string }): Promise<{ diagramId: string; title: string }> {

@@ -6,8 +6,8 @@ import { UnauthorizedError } from "../../../domain/errors";
 
 export class ValidateApiKeyUseCase {
   constructor(
-    private apiKeys: ApiKeyRepository,
-    private users: UserRepository,
+    private readonly apiKeys: ApiKeyRepository,
+    private readonly users: UserRepository,
   ) {}
 
   async execute(rawKey: string) {

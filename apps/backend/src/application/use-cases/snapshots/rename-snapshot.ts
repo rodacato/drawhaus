@@ -8,8 +8,8 @@ const MAX_NAMED = 20;
 
 export class RenameSnapshotUseCase {
   constructor(
-    private snapshots: SnapshotRepository,
-    private diagrams: DiagramRepository,
+    private readonly snapshots: SnapshotRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(snapshotId: string, userId: string, name: string | null): Promise<DiagramSnapshot> {

@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import type { SessionRepository, AuthUser } from "../../domain/ports/session-repository";
 import type { Session } from "../../domain/entities/session";
 import type { UserRole } from "../../domain/entities/user";

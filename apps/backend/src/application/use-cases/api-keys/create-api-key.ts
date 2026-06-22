@@ -8,8 +8,8 @@ const MAX_ACTIVE_KEYS_PER_USER = 10;
 
 export class CreateApiKeyUseCase {
   constructor(
-    private apiKeys: ApiKeyRepository,
-    private workspaces: WorkspaceRepository,
+    private readonly apiKeys: ApiKeyRepository,
+    private readonly workspaces: WorkspaceRepository,
   ) {}
 
   async execute(input: {
