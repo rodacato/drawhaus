@@ -5,8 +5,8 @@ import type { ExcalidrawApi } from "@/lib/types";
 import { ui } from "@/lib/ui";
 
 type SaveTemplatePanelProps = {
-  excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
-  workspaceId?: string | null;
+  readonly excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
+  readonly workspaceId?: string | null;
 };
 
 const CATEGORIES = [

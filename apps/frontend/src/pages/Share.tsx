@@ -43,7 +43,7 @@ export function Share() {
   return <ShareViewInner shareToken={token!} data={data} />;
 }
 
-function ShareViewInner({ shareToken, data }: { shareToken: string; data: ShareData }) {
+function ShareViewInner({ shareToken, data }: { readonly shareToken: string; readonly data: ShareData }) {
   const storageKey = `drawhaus_guest_${shareToken}`;
   const [guestName, setGuestName] = useState(() => localStorage.getItem(storageKey) ?? "");
   const [joined, setJoined] = useState(false);
@@ -139,7 +139,7 @@ function ShareViewInner({ shareToken, data }: { shareToken: string; data: ShareD
   return <ShareCanvas shareToken={shareToken} data={data} guestName={guestName} />;
 }
 
-function ShareCanvas({ shareToken, data, guestName }: { shareToken: string; data: ShareData; guestName: string }) {
+function ShareCanvas({ shareToken, data, guestName }: { readonly shareToken: string; readonly data: ShareData; readonly guestName: string }) {
   const canEdit = data.role === "editor";
   const { prefs: canvasPrefs } = useCanvasPrefs();
   const collab = useCollaboration({

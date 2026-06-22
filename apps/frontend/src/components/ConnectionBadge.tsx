@@ -4,8 +4,8 @@ export function ConnectionBadge({
   connectionState,
   connectionError,
 }: {
-  connectionState: ConnectionState;
-  connectionError: string | null;
+  readonly connectionState: ConnectionState;
+  readonly connectionError: string | null;
 }) {
   if (connectionState === "connected") return null;
 

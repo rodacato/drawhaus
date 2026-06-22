@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 
 interface SidebarDrawerProps {
-  open: boolean;
-  onClose: () => void;
-  width?: number;
-  children: React.ReactNode;
+  readonly open: boolean;
+  readonly onClose: () => void;
+  readonly width?: number;
+  readonly children: React.ReactNode;
 }
 
 /**
@@ -39,8 +39,8 @@ export function SidebarDrawer({ open, onClose, width = 300, children }: SidebarD
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+    globalThis.addEventListener("keydown", handleKey);
+    return () => globalThis.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
   return (

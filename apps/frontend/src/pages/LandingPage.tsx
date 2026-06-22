@@ -115,7 +115,7 @@ const FAQ_ITEMS = [
   },
 ];
 
-function ScreenshotFrame({ src, alt }: { src: string; alt: string }) {
+function ScreenshotFrame({ src, alt }: { readonly src: string; readonly alt: string }) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-xl">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
@@ -129,7 +129,7 @@ function ScreenshotFrame({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-function FAQItem({ question, answer }: { question: string; answer: string }) {
+function FAQItem({ question, answer }: { readonly question: string; readonly answer: string }) {
   return (
     <details className="group border-b border-border pb-4">
       <summary className="flex cursor-pointer items-center justify-between py-4 font-sora text-base font-semibold transition hover:text-primary">

@@ -24,13 +24,13 @@ import { diagramsApi } from "@/api/diagrams";
 import type { ExcalidrawElement } from "@/lib/types";
 
 type BoardEditorProps = {
-  diagramId: string;
-  title: string;
-  userEmail: string;
-  initialElements: unknown[];
-  initialAppState: Record<string, unknown>;
-  workspaceId?: string | null;
-  createdVia?: string;
+  readonly diagramId: string;
+  readonly title: string;
+  readonly userEmail: string;
+  readonly initialElements: unknown[];
+  readonly initialAppState: Record<string, unknown>;
+  readonly workspaceId?: string | null;
+  readonly createdVia?: string;
 };
 
 export default function BoardEditor({
@@ -167,7 +167,7 @@ export default function BoardEditor({
       const payload = await shareApi.create(diagramId, role);
       const token = payload.shareLink?.token;
       if (token) {
-        const url = `${window.location.origin}/share/${token}`;
+        const url = `${globalThis.location.origin}/share/${token}`;
         try { localStorage.setItem(cacheShareKey, url); } catch { /* quota */ }
         return url;
       }

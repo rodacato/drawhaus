@@ -148,7 +148,7 @@ export function useDiagramActions({
         const payload = await shareApi.create(diagramId, "viewer");
         const token = payload.shareLink?.token;
         if (!token) return;
-        url = `${window.location.origin}/share/${token}`;
+        url = `${globalThis.location.origin}/share/${token}`;
         try { localStorage.setItem(cacheKey, url); } catch { /* quota */ }
       }
       const embedUrl = url.replace("/share/", "/embed/");

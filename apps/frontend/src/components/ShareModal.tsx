@@ -78,8 +78,8 @@ export function ShareModal({
   }, [open, onClose]);
 
   const linkUrl = createdToken
-    ? `${window.location.origin}/share/${createdToken}`
-    : `${window.location.origin}/share/...`;
+    ? `${globalThis.location.origin}/share/${createdToken}`
+    : `${globalThis.location.origin}/share/...`;
 
   const handleCreateAndCopy = useCallback(async () => {
     if (creating) return;
@@ -90,7 +90,7 @@ export function ShareModal({
       const data = await shareApi.create(diagramId, selectedRole, expiresInHours);
       const token = data.shareLink?.token ?? data.token;
       setCreatedToken(token);
-      const url = `${window.location.origin}/share/${token}`;
+      const url = `${globalThis.location.origin}/share/${token}`;
       await navigator.clipboard.writeText(url);
       setCopied(true);
       await loadLinks();
@@ -111,7 +111,7 @@ export function ShareModal({
   }, [loadLinks]);
 
   const handleCopyExistingLink = useCallback(async (token: string) => {
-    const url = `${window.location.origin}/share/${token}`;
+    const url = `${globalThis.location.origin}/share/${token}`;
     await navigator.clipboard.writeText(url);
     setCopiedToken(token);
   }, []);

@@ -4,8 +4,8 @@ export function DriveSyncBadge({
   state,
   error,
 }: {
-  state: DriveSyncState;
-  error?: string | null;
+  readonly state: DriveSyncState;
+  readonly error?: string | null;
 }) {
   if (state === "idle") return null;
 

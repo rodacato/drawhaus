@@ -1,6 +1,6 @@
 type NewDiagramCardProps = {
-  onClick: () => void;
-  disabled?: boolean;
+  readonly onClick: () => void;
+  readonly disabled?: boolean;
 };
 
 export function NewDiagramCard({ onClick, disabled }: NewDiagramCardProps) {

@@ -1,6 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 
-export function ThemeToggle({ className = "" }: { className?: string }) {
+export function ThemeToggle({ className = "" }: { readonly className?: string }) {
   const { theme, toggleTheme } = useTheme();
   return (
     <button

@@ -5,9 +5,9 @@ import { formatSize, formatDate } from "@/lib/format-utils";
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
 type Props = {
-  open: boolean;
-  onClose: () => void;
-  onImported: (diagramId: string) => void;
+  readonly open: boolean;
+  readonly onClose: () => void;
+  readonly onImported: (diagramId: string) => void;
 };
 
 export function DriveImportModal({ open, onClose, onImported }: Props) {

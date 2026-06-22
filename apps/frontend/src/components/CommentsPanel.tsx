@@ -12,18 +12,18 @@ import {
 } from "@/components/Icons";
 
 type CommentsPanelProps = {
-  threads: CommentThread[];
-  elements: readonly unknown[];
-  selectedElementId: string | null;
-  showIndicators: boolean;
-  onToggleIndicators: () => void;
-  onCreateThread: (elementId: string, body: string) => Promise<void>;
-  onReply: (threadId: string, body: string) => Promise<void>;
-  onResolve: (threadId: string, resolved: boolean) => Promise<void>;
-  onDelete: (threadId: string) => Promise<void>;
-  onToggleLike: (threadId: string) => Promise<void>;
-  onHighlightElement: (elementId: string) => void;
-  onClose: () => void;
+  readonly threads: CommentThread[];
+  readonly elements: readonly unknown[];
+  readonly selectedElementId: string | null;
+  readonly showIndicators: boolean;
+  readonly onToggleIndicators: () => void;
+  readonly onCreateThread: (elementId: string, body: string) => Promise<void>;
+  readonly onReply: (threadId: string, body: string) => Promise<void>;
+  readonly onResolve: (threadId: string, resolved: boolean) => Promise<void>;
+  readonly onDelete: (threadId: string) => Promise<void>;
+  readonly onToggleLike: (threadId: string) => Promise<void>;
+  readonly onHighlightElement: (elementId: string) => void;
+  readonly onClose: () => void;
 };
 
 type Filter = "open" | "resolved" | "all";

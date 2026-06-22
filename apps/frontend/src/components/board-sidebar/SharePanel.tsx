@@ -8,11 +8,11 @@ export function SharePanel({
   onCreateShareLink,
   raisedHands,
 }: {
-  presenceUsers: PresenceUserWithSelf[];
-  followingUserId: string | null;
-  onFollow: (userId: string | null) => void;
-  onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
-  raisedHands?: Set<string>;
+  readonly presenceUsers: PresenceUserWithSelf[];
+  readonly followingUserId: string | null;
+  readonly onFollow: (userId: string | null) => void;
+  readonly onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
+  readonly raisedHands?: Set<string>;
 }) {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareLoading, setShareLoading] = useState(false);

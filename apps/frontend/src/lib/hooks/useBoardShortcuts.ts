@@ -18,7 +18,7 @@ export function useBoardShortcuts({ flushSave, onToggleComments, toast }: UseBoa
         flushSave().then(() => toast("Diagrama guardado", "success"));
       }
     }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
+    return () => globalThis.removeEventListener("keydown", handleKeyDown);
   }, [flushSave, onToggleComments, toast]);
 }

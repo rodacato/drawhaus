@@ -6,9 +6,9 @@ export function BoardToolbarTrigger({
   onToggle,
   userCount,
 }: {
-  open: boolean;
-  onToggle: () => void;
-  userCount: number;
+  readonly open: boolean;
+  readonly onToggle: () => void;
+  readonly userCount: number;
 }) {
   return (
     <button
@@ -55,13 +55,13 @@ export function BoardToolbarPanel({
   onClose,
   raisedHands,
 }: {
-  presenceUsers: PresenceUserWithSelf[];
-  followingUserId: string | null;
-  onFollow: (userId: string | null) => void;
-  onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
-  showShare?: boolean;
-  onClose: () => void;
-  raisedHands?: Set<string>;
+  readonly presenceUsers: PresenceUserWithSelf[];
+  readonly followingUserId: string | null;
+  readonly onFollow: (userId: string | null) => void;
+  readonly onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
+  readonly showShare?: boolean;
+  readonly onClose: () => void;
+  readonly raisedHands?: Set<string>;
 }) {
   const [tab, setTab] = useState<"collab" | "share">("collab");
   const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -74,8 +74,8 @@ export function BoardToolbarPanel({
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    globalThis.addEventListener("keydown", onKey);
+    return () => globalThis.removeEventListener("keydown", onKey);
   }, [onClose]);
 
   useEffect(() => {
@@ -85,11 +85,11 @@ export function BoardToolbarPanel({
       }
     }
     const timer = setTimeout(() => {
-      window.addEventListener("mousedown", onClick);
+      globalThis.addEventListener("mousedown", onClick);
     }, 0);
     return () => {
       clearTimeout(timer);
-      window.removeEventListener("mousedown", onClick);
+      globalThis.removeEventListener("mousedown", onClick);
     };
   }, [onClose]);
 
@@ -266,9 +266,9 @@ export function FollowingBanner({
   followingUserId,
   onStop,
 }: {
-  presenceUsers: PresenceUserWithSelf[];
-  followingUserId: string;
-  onStop: () => void;
+  readonly presenceUsers: PresenceUserWithSelf[];
+  readonly followingUserId: string;
+  readonly onStop: () => void;
 }) {
   const user = presenceUsers.find((u) => u.userId === followingUserId);
   return (

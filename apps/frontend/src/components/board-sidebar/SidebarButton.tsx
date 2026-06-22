@@ -6,12 +6,12 @@ export function SidebarButton({
   accent,
   onClick,
 }: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  badge?: number;
-  accent?: boolean;
-  onClick: () => void;
+  readonly icon: React.ReactNode;
+  readonly label: string;
+  readonly active?: boolean;
+  readonly badge?: number;
+  readonly accent?: boolean;
+  readonly onClick: () => void;
 }) {
   return (
     <button

@@ -203,7 +203,7 @@ export function Settings() {
     },
   ];
 
-  function NavItem({ tab }: { tab: { id: Tab; label: string; icon: React.ReactNode } }) {
+  function NavItem({ tab }: { readonly tab: { id: Tab; label: string; icon: React.ReactNode } }) {
     return (
       <button
         onClick={() => switchTab(tab.id)}

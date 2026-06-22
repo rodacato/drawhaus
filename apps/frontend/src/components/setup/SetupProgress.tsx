@@ -1,6 +1,6 @@
 const STEPS = ["Admin Account", "Instance Config", "Integrations"];
 
-export function SetupProgress({ current }: { current: number }) {
+export function SetupProgress({ current }: { readonly current: number }) {
   return (
     <div className="flex items-center gap-2">
       {STEPS.map((label, i) => {

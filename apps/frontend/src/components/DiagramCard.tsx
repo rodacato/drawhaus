@@ -11,22 +11,22 @@ type WorkspaceOption = { id: string; name: string; isPersonal: boolean };
 const TAG_COLORS = ["#3B82F6", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899", "#06B6D4", "#F97316"];
 
 export interface DiagramCardProps {
-  diagram: Diagram;
-  folders: Folder[];
-  allTags: Tag[];
-  workspaces?: WorkspaceOption[];
-  activeWorkspaceId?: string | null;
-  onMove: (id: string, folderId: string | null, workspaceId?: string) => void;
-  onDelete: (id: string, title: string) => void;
-  onDuplicate: (id: string) => void;
-  onToggleStar: (id: string, starred: boolean) => void;
-  onShare: (id: string) => void;
-  onEmbed: (id: string) => void;
-  onRename: (id: string, title: string) => void;
-  onToggleTag: (diagramId: string, tag: Tag) => void;
-  onCreateTag: (name: string, color: string) => Promise<Tag | null>;
-  onDeleteTag: (tagId: string) => void;
-  onSaveAsTemplate?: (diagramId: string, title: string) => void;
+  readonly diagram: Diagram;
+  readonly folders: Folder[];
+  readonly allTags: Tag[];
+  readonly workspaces?: WorkspaceOption[];
+  readonly activeWorkspaceId?: string | null;
+  readonly onMove: (id: string, folderId: string | null, workspaceId?: string) => void;
+  readonly onDelete: (id: string, title: string) => void;
+  readonly onDuplicate: (id: string) => void;
+  readonly onToggleStar: (id: string, starred: boolean) => void;
+  readonly onShare: (id: string) => void;
+  readonly onEmbed: (id: string) => void;
+  readonly onRename: (id: string, title: string) => void;
+  readonly onToggleTag: (diagramId: string, tag: Tag) => void;
+  readonly onCreateTag: (name: string, color: string) => Promise<Tag | null>;
+  readonly onDeleteTag: (tagId: string) => void;
+  readonly onSaveAsTemplate?: (diagramId: string, title: string) => void;
 }
 
 export function DiagramCard({

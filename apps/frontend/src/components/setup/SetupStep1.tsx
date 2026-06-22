@@ -2,7 +2,7 @@ import { FormEvent, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ui } from "@/lib/ui";
 
-export function SetupStep1({ onComplete }: { onComplete: () => void }) {
+export function SetupStep1({ onComplete }: { readonly onComplete: () => void }) {
   const { register } = useAuth();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);

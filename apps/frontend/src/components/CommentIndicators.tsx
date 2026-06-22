@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import type { ExcalidrawApi, ExcalidrawElement } from "@/lib/types";
 
 type CommentIndicatorsProps = {
-  elementsWithComments: Map<string, number>;
-  excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
-  onClickIndicator: (elementId: string) => void;
+  readonly elementsWithComments: Map<string, number>;
+  readonly excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
+  readonly onClickIndicator: (elementId: string) => void;
 };
 
 type IndicatorPos = { elementId: string; x: number; y: number; count: number };

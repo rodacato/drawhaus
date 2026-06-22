@@ -2,7 +2,7 @@ import { useState } from "react";
 import { setupApi } from "@/api/setup";
 import { ui } from "@/lib/ui";
 
-export function SetupStep3({ onComplete }: { onComplete: () => void }) {
+export function SetupStep3({ onComplete }: { readonly onComplete: () => void }) {
   const [pending, setPending] = useState(false);
 
   async function handleSkip() {

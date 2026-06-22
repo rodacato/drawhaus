@@ -16,11 +16,11 @@ const STORAGE_KEY = "drawhaus_theme";
 function getInitialTheme(): Theme {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored === "dark" || stored === "light") return stored;
-  if (window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+  if (globalThis.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
   return "light";
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+export function ThemeProvider({ children }: { readonly children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {

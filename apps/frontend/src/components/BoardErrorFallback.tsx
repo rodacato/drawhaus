@@ -1,6 +1,6 @@
 import type { FallbackProps } from "react-error-boundary";
 
-export function BoardErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+export function BoardErrorFallback({ error, resetErrorBoundary }: Readonly<FallbackProps>) {
   const message = error instanceof Error ? error.message : String(error);
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", gap: "1rem", fontFamily: "system-ui, sans-serif" }}>

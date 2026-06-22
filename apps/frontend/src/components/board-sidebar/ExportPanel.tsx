@@ -6,8 +6,8 @@ function DriveExportButton({
   getSceneData,
   onStatus,
 }: {
-  getSceneData: () => { elements: unknown[]; appState: unknown; files: unknown } | null;
-  onStatus: (msg: string | null) => void;
+  readonly getSceneData: () => { elements: unknown[]; appState: unknown; files: unknown } | null;
+  readonly onStatus: (msg: string | null) => void;
 }) {
   const [driveConnected, setDriveConnected] = useState<boolean | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -60,7 +60,7 @@ function DriveExportButton({
   );
 }
 
-export function ExportPanel({ excalidrawApiRef }: { excalidrawApiRef: React.RefObject<ExcalidrawApi | null> }) {
+export function ExportPanel({ excalidrawApiRef }: { readonly excalidrawApiRef: React.RefObject<ExcalidrawApi | null> }) {
   const [status, setStatus] = useState<string | null>(null);
 
   const getSceneData = useCallback(() => {

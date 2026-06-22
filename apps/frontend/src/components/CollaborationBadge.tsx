@@ -1,9 +1,9 @@
 interface CollaborationBadgeProps {
-  canEdit: boolean;
-  raisedHands: Set<string>;
-  isHandRaised: boolean;
-  onRaiseHand: () => void;
-  onLowerHand: () => void;
+  readonly canEdit: boolean;
+  readonly raisedHands: Set<string>;
+  readonly isHandRaised: boolean;
+  readonly onRaiseHand: () => void;
+  readonly onLowerHand: () => void;
 }
 
 /**
