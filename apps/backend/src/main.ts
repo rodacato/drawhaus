@@ -77,7 +77,7 @@ const requireAuth = createRequireAuth(useCases.getCurrentUser);
 
 export const app = express();
 
-app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+app.use(helmet());
 app.use(requestId);
 app.use(requestLogger);
 app.use(cors({ origin: config.frontendUrl, credentials: true }));

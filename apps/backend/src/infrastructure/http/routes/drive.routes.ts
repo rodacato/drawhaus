@@ -10,20 +10,26 @@ import type { GoogleTokenRefresher } from "../../services/google-token-refresh";
 import { asyncRoute } from "../middleware/async-handler";
 import { validate } from "../middleware/validate";
 
+const driveId = z.string().regex(/^[A-Za-z0-9_-]{10,128}$/, "Invalid Google Drive ID");
+
 const toggleSchema = z.object({
   enabled: z.boolean(),
 });
 
 const importSchema = z.object({
-  fileId: z.string().min(1),
+  fileId: driveId,
   fileName: z.string().min(1),
 });
 
 const exportSchema = z.object({
   format: z.enum(["excalidraw", "png", "svg"]),
-  targetFolderId: z.string().min(1),
+  targetFolderId: driveId,
   content: z.string().min(1),
   fileName: z.string().min(1),
+});
+
+const filesQuerySchema = z.object({
+  folderId: driveId.optional(),
 });
 
 export function createDriveRoutes(
@@ -66,8 +72,11 @@ export function createDriveRoutes(
   }));
 
   router.get("/files", requireAuth, asyncRoute(async (req, res) => {
-    const folderId = typeof req.query.folderId === "string" ? req.query.folderId : undefined;
-    const result = await useCases.listDriveFiles.execute(req.authUser.id, folderId);
+    const parsed = filesQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid query", details: parsed.error.flatten() });
+    }
+    const result = await useCases.listDriveFiles.execute(req.authUser.id, parsed.data.folderId);
     return res.json(result);
   }));
 
