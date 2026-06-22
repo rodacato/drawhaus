@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import type { ShareRepository } from "../../domain/ports/share-repository";
 import type { ShareLink } from "../../domain/entities/share-link";
 import { pool } from "../db";

@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
 import type { SiteSettingsRepository } from "../../../domain/ports/site-settings-repository";
 import type { EmailService } from "../../../domain/ports/email-service";
@@ -8,9 +8,9 @@ import { pool } from "../../../infrastructure/db";
 
 export class InviteToWorkspaceUseCase {
   constructor(
-    private workspaces: WorkspaceRepository,
-    private settings: SiteSettingsRepository,
-    private emailService: EmailService,
+    private readonly workspaces: WorkspaceRepository,
+    private readonly settings: SiteSettingsRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   async execute(input: { workspaceId: string; actorId: string; actorName: string; email: string; role: WorkspaceRole }) {

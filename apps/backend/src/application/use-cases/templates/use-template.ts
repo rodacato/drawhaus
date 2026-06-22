@@ -4,8 +4,8 @@ import { NotFoundError } from "../../../domain/errors";
 
 export class UseTemplateUseCase {
   constructor(
-    private templates: TemplateRepository,
-    private diagrams: DiagramRepository,
+    private readonly templates: TemplateRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(input: { templateId: string; userId: string; title?: string; workspaceId?: string | null; folderId?: string | null }) {

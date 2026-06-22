@@ -17,9 +17,9 @@ function hashElements(elements: unknown[]): string {
 
 export class CreateSnapshotUseCase {
   constructor(
-    private snapshots: SnapshotRepository,
-    private scenes: SceneRepository,
-    private diagrams: DiagramRepository,
+    private readonly snapshots: SnapshotRepository,
+    private readonly scenes: SceneRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(

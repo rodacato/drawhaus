@@ -6,10 +6,10 @@ import { NotFoundError, ExpiredError, ConflictError } from "../../../domain/erro
 
 export class ResetPasswordUseCase {
   constructor(
-    private users: UserRepository,
-    private sessions: SessionRepository,
-    private resetTokens: PasswordResetRepository,
-    private hasher: Hasher,
+    private readonly users: UserRepository,
+    private readonly sessions: SessionRepository,
+    private readonly resetTokens: PasswordResetRepository,
+    private readonly hasher: Hasher,
   ) {}
 
   async validate(token: string): Promise<{ valid: boolean }> {

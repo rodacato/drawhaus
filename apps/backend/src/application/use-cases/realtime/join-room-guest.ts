@@ -7,9 +7,9 @@ import { isShareLinkExpired } from "../../../domain/entities/share-link";
 
 export class JoinRoomGuestUseCase {
   constructor(
-    private shares: ShareRepository,
-    private diagrams: DiagramRepository,
-    private scenes: SceneRepository,
+    private readonly shares: ShareRepository,
+    private readonly diagrams: DiagramRepository,
+    private readonly scenes: SceneRepository,
   ) {}
 
   async execute(shareToken: string): Promise<{

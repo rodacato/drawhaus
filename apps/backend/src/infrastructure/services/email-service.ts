@@ -5,7 +5,7 @@ import type { EmailService } from "../../domain/ports/email-service";
 import type { ConfigProvider } from "./config-provider";
 
 export class ResendEmailService implements EmailService {
-  private configProvider: ConfigProvider | null;
+  private readonly configProvider: ConfigProvider | null;
 
   constructor(configProvider?: ConfigProvider) {
     this.configProvider = configProvider ?? null;

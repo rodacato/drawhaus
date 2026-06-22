@@ -7,8 +7,8 @@ const MAX_LINKS_PER_DIAGRAM = 20;
 
 export class CreateShareLinkUseCase {
   constructor(
-    private shares: ShareRepository,
-    private diagrams: DiagramRepository,
+    private readonly shares: ShareRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(input: {

@@ -6,9 +6,9 @@ type DriveFileBrowseItem = DriveFileListItem & { isFolder: boolean };
 
 export class ListDriveFilesUseCase {
   constructor(
-    private driveService: GoogleDriveService,
-    private driveBackupRepo: DriveBackupRepository,
-    private tokenRefresher: GoogleTokenRefresher,
+    private readonly driveService: GoogleDriveService,
+    private readonly driveBackupRepo: DriveBackupRepository,
+    private readonly tokenRefresher: GoogleTokenRefresher,
   ) {}
 
   async execute(userId: string, folderId?: string): Promise<{ files: DriveFileBrowseItem[]; currentFolderId: string }> {

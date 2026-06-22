@@ -3,9 +3,9 @@ import type { IntegrationSecretsRepository } from "../../domain/ports/integratio
 const CACHE_TTL = 60_000;
 
 export class ConfigProvider {
-  private cache = new Map<string, { value: string; time: number }>();
+  private readonly cache = new Map<string, { value: string; time: number }>();
 
-  constructor(private secretsRepo: IntegrationSecretsRepository | null) {}
+  constructor(private readonly secretsRepo: IntegrationSecretsRepository | null) {}
 
   async get(key: string): Promise<string> {
     // Check cache

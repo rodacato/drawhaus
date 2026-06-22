@@ -7,11 +7,11 @@ import { logger } from "../../../infrastructure/logger";
 
 export class SyncToDriveUseCase {
   constructor(
-    private driveService: GoogleDriveService,
-    private driveBackupRepo: DriveBackupRepository,
-    private tokenRefresher: GoogleTokenRefresher,
-    private diagrams: DiagramRepository,
-    private folders: FolderRepository,
+    private readonly driveService: GoogleDriveService,
+    private readonly driveBackupRepo: DriveBackupRepository,
+    private readonly tokenRefresher: GoogleTokenRefresher,
+    private readonly diagrams: DiagramRepository,
+    private readonly folders: FolderRepository,
   ) {}
 
   async execute(

@@ -3,7 +3,7 @@ import { DriveTokenError } from "../../domain/errors";
 import { config } from "../config";
 
 export class GoogleTokenRefresher {
-  constructor(private oauthTokens: OAuthTokenRepository) {}
+  constructor(private readonly oauthTokens: OAuthTokenRepository) {}
 
   async getValidAccessToken(userId: string): Promise<string> {
     const token = await this.oauthTokens.findByUserAndProvider(userId, "google");

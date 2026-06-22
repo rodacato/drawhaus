@@ -3,8 +3,8 @@ import type { GoogleTokenRefresher } from "../../../infrastructure/services/goog
 
 export class ExportToDriveUseCase {
   constructor(
-    private driveService: GoogleDriveService,
-    private tokenRefresher: GoogleTokenRefresher,
+    private readonly driveService: GoogleDriveService,
+    private readonly tokenRefresher: GoogleTokenRefresher,
   ) {}
 
   async execute(userId: string, data: {

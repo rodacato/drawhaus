@@ -6,10 +6,10 @@ import { ConflictError, ForbiddenError } from "../../../domain/errors";
 
 export class RegisterUseCase {
   constructor(
-    private users: UserRepository,
-    private sessions: SessionRepository,
-    private hasher: Hasher,
-    private siteSettings?: SiteSettingsRepository,
+    private readonly users: UserRepository,
+    private readonly sessions: SessionRepository,
+    private readonly hasher: Hasher,
+    private readonly siteSettings?: SiteSettingsRepository,
   ) {}
 
   async needsSetup(): Promise<boolean> {

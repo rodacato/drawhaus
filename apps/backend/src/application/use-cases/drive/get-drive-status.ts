@@ -3,8 +3,8 @@ import type { DriveBackupRepository } from "../../../domain/ports/drive-backup-r
 
 export class GetDriveStatusUseCase {
   constructor(
-    private oauthTokens: OAuthTokenRepository,
-    private driveBackupRepo: DriveBackupRepository,
+    private readonly oauthTokens: OAuthTokenRepository,
+    private readonly driveBackupRepo: DriveBackupRepository,
   ) {}
 
   async execute(userId: string): Promise<{

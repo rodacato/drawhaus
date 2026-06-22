@@ -13,7 +13,7 @@ type InviteRow = {
 };
 
 export class AcceptWorkspaceInviteUseCase {
-  constructor(private workspaces: WorkspaceRepository) {}
+  constructor(private readonly workspaces: WorkspaceRepository) {}
 
   async execute(token: string, userId: string) {
     const { rows } = await pool.query<InviteRow>(

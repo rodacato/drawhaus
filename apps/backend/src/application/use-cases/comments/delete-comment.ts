@@ -5,8 +5,8 @@ import { requireAccess } from "../../helpers/require-access";
 
 export class DeleteCommentUseCase {
   constructor(
-    private comments: CommentRepository,
-    private diagrams: DiagramRepository,
+    private readonly comments: CommentRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(threadId: string, userId: string): Promise<void> {

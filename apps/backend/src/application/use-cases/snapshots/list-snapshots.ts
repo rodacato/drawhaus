@@ -5,8 +5,8 @@ import { requireAccess } from "../../helpers/require-access";
 
 export class ListSnapshotsUseCase {
   constructor(
-    private snapshots: SnapshotRepository,
-    private diagrams: DiagramRepository,
+    private readonly snapshots: SnapshotRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(diagramId: string, userId: string): Promise<DiagramSnapshot[]> {

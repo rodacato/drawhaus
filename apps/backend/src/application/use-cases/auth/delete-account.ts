@@ -6,10 +6,10 @@ import { NotFoundError, UnauthorizedError, ConflictError } from "../../../domain
 
 export class DeleteAccountUseCase {
   constructor(
-    private users: UserRepository,
-    private hasher: Hasher,
-    private audit: AuditLogger,
-    private workspaces: WorkspaceRepository,
+    private readonly users: UserRepository,
+    private readonly hasher: Hasher,
+    private readonly audit: AuditLogger,
+    private readonly workspaces: WorkspaceRepository,
   ) {}
 
   async execute(userId: string, password: string | null) {

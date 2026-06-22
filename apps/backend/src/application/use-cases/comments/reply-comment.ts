@@ -6,8 +6,8 @@ import type { CommentReply } from "../../../domain/entities/comment";
 
 export class ReplyCommentUseCase {
   constructor(
-    private comments: CommentRepository,
-    private diagrams: DiagramRepository,
+    private readonly comments: CommentRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(threadId: string, userId: string, body: string): Promise<CommentReply> {

@@ -1,7 +1,7 @@
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
 
 export class CreateDiagramUseCase {
-  constructor(private diagrams: DiagramRepository) {}
+  constructor(private readonly diagrams: DiagramRepository) {}
 
   async execute(input: { ownerId: string; title?: string; workspaceId?: string | null; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown>; createdVia?: string }) {
     return this.diagrams.create({

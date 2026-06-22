@@ -4,8 +4,8 @@ import { NotFoundError } from "../../../domain/errors";
 
 export class ListLinksUseCase {
   constructor(
-    private shares: ShareRepository,
-    private diagrams: DiagramRepository,
+    private readonly shares: ShareRepository,
+    private readonly diagrams: DiagramRepository,
   ) {}
 
   async execute(diagramId: string, userId: string) {

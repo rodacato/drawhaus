@@ -4,8 +4,8 @@ import { DriveTokenError } from "../../../domain/errors";
 
 export class ToggleDriveBackupUseCase {
   constructor(
-    private driveBackupRepo: DriveBackupRepository,
-    private oauthTokens: OAuthTokenRepository,
+    private readonly driveBackupRepo: DriveBackupRepository,
+    private readonly oauthTokens: OAuthTokenRepository,
   ) {}
 
   async execute(userId: string, enabled: boolean): Promise<{ enabled: boolean }> {

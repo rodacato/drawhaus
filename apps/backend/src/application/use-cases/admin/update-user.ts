@@ -6,9 +6,9 @@ import { NotFoundError, InvalidInputError } from "../../../domain/errors";
 
 export class AdminUpdateUserUseCase {
   constructor(
-    private users: UserRepository,
-    private sessions: SessionRepository,
-    private audit: AuditLogger,
+    private readonly users: UserRepository,
+    private readonly sessions: SessionRepository,
+    private readonly audit: AuditLogger,
   ) {}
 
   async execute(targetId: string, adminId: string, data: { role?: UserRole; disabled?: boolean }) {

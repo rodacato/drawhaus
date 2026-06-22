@@ -1,13 +1,13 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { PasswordResetRepository } from "../../../domain/ports/password-reset-repository";
 import type { EmailService } from "../../../domain/ports/email-service";
 
 export class ForgotPasswordUseCase {
   constructor(
-    private users: UserRepository,
-    private resetTokens: PasswordResetRepository,
-    private emailService: EmailService,
+    private readonly users: UserRepository,
+    private readonly resetTokens: PasswordResetRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   async execute(email: string): Promise<void> {

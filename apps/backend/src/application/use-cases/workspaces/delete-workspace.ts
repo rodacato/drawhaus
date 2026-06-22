@@ -2,7 +2,7 @@ import type { WorkspaceRepository } from "../../../domain/ports/workspace-reposi
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
 export class DeleteWorkspaceUseCase {
-  constructor(private workspaces: WorkspaceRepository) {}
+  constructor(private readonly workspaces: WorkspaceRepository) {}
 
   async execute(workspaceId: string, userId: string) {
     const workspace = await this.workspaces.findById(workspaceId);

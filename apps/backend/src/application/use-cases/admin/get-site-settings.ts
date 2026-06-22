@@ -1,7 +1,7 @@
 import type { SiteSettingsRepository } from "../../../domain/ports/site-settings-repository";
 
 export class GetSiteSettingsUseCase {
-  constructor(private settings: SiteSettingsRepository) {}
+  constructor(private readonly settings: SiteSettingsRepository) {}
 
   async execute() {
     return this.settings.get();

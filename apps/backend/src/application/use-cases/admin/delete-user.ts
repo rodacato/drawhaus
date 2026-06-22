@@ -5,9 +5,9 @@ import { NotFoundError, InvalidInputError } from "../../../domain/errors";
 
 export class AdminDeleteUserUseCase {
   constructor(
-    private users: UserRepository,
-    private sessions: SessionRepository,
-    private audit: AuditLogger,
+    private readonly users: UserRepository,
+    private readonly sessions: SessionRepository,
+    private readonly audit: AuditLogger,
   ) {}
 
   async execute(targetId: string, adminId: string) {

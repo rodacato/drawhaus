@@ -2,7 +2,7 @@ import type { UserRepository } from "../../../domain/ports/user-repository";
 import { ConflictError, NotFoundError } from "../../../domain/errors";
 
 export class UpdateProfileUseCase {
-  constructor(private users: UserRepository) {}
+  constructor(private readonly users: UserRepository) {}
 
   async execute(userId: string, input: { name?: string; email?: string }) {
     const user = await this.users.findById(userId);

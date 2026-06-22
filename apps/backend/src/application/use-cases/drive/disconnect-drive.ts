@@ -2,7 +2,7 @@ import type { DriveBackupRepository } from "../../../domain/ports/drive-backup-r
 
 export class DisconnectDriveUseCase {
   constructor(
-    private driveBackupRepo: DriveBackupRepository,
+    private readonly driveBackupRepo: DriveBackupRepository,
   ) {}
 
   async execute(userId: string): Promise<void> {
