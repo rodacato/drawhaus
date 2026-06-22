@@ -117,13 +117,7 @@ export function useSaveManager({
     (elements: readonly unknown[], appState: Record<string, unknown>) => {
       if (applyingRemoteCounter.current > 0) return;
       const now = Date.now();
-      if (!followingUserIdRef.current) {
-        if (now - lastViewportEmitTime.current >= VIEWPORT_THROTTLE_MS) {
-          lastViewportEmitTime.current = now;
-          const zoom = (appState.zoom as { value: number })?.value ?? 1;
-          socketRef.current?.emit("viewport-update", { roomId: diagramId, scrollX: appState.scrollX, scrollY: appState.scrollY, zoom });
-        }
-      } else {
+      if (followingUserIdRef.current) {
         // Lock viewport while following — restore to followed user's viewport
         const fv = followedViewportRef.current;
         if (fv) {
@@ -135,6 +129,11 @@ export function useSaveManager({
           }
         }
         return; // Skip editing while following
+      }
+      if (now - lastViewportEmitTime.current >= VIEWPORT_THROTTLE_MS) {
+        lastViewportEmitTime.current = now;
+        const zoom = (appState.zoom as { value: number })?.value ?? 1;
+        socketRef.current?.emit("viewport-update", { roomId: diagramId, scrollX: appState.scrollX, scrollY: appState.scrollY, zoom });
       }
       if (!canEdit) return;
       setSaveState("pending");
@@ -183,7 +182,7 @@ export function useSaveManager({
     if (!a) return;
     const elements = a.getSceneElements();
     const appState = a.getAppState();
-    await persistScene([...elements], appState as Record<string, unknown>, activeSceneIdRef.current);
+    await persistScene([...elements], appState, activeSceneIdRef.current);
   }, [persistScene, saveState]);
 
   /* ─── derived values ─── */

@@ -132,7 +132,7 @@ export function ApiKeysSettings() {
           <h3 className="text-sm font-semibold text-text-primary mb-4">New API Key</h3>
           <form onSubmit={handleCreate} className="space-y-4">
             <label className={ui.label}>
-              Name
+              <span>Name</span>
               <input
                 className={ui.input}
                 value={createName}
@@ -143,7 +143,7 @@ export function ApiKeysSettings() {
               />
             </label>
             <label className={ui.label}>
-              Workspace
+              <span>Workspace</span>
               <select
                 className={ui.input}
                 value={createWorkspaceId}
@@ -156,7 +156,7 @@ export function ApiKeysSettings() {
               </select>
             </label>
             <label className={ui.label}>
-              Expiration (optional)
+              <span>Expiration (optional)</span>
               <input
                 type="date"
                 className={ui.input}

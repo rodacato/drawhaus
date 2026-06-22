@@ -55,12 +55,14 @@ export default function BoardEditor({
 
   const handleConflict = useCallback((conflictIds: string[], fromUserId: string) => {
     const userName = presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ?? "Otro usuario";
-    toast(`${userName} modificó ${conflictIds.length === 1 ? "un elemento" : `${conflictIds.length} elementos`} que editabas`, "info");
+    const target = conflictIds.length === 1 ? "un elemento" : `${conflictIds.length} elementos`;
+    toast(`${userName} modificó ${target} que editabas`, "info");
   }, [toast]);
 
   const handleRemoteDelete = useCallback((deletedIds: string[], fromUserId: string) => {
     const userName = presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ?? "Otro usuario";
-    toast(`${userName} eliminó ${deletedIds.length === 1 ? "un elemento" : `${deletedIds.length} elementos`} que editabas`, "info");
+    const target = deletedIds.length === 1 ? "un elemento" : `${deletedIds.length} elementos`;
+    toast(`${userName} eliminó ${target} que editabas`, "info");
   }, [toast]);
 
   const collab = useCollaboration({
@@ -212,11 +214,12 @@ export default function BoardEditor({
     setEditingTitle(false);
     const newTitle = titleDraft.trim();
     if (!newTitle || newTitle === diagramTitle) return;
+    const previousTitle = diagramTitle;
     setDiagramTitle(newTitle);
     try {
       await diagramsApi.update(diagramId, { title: newTitle });
-    } catch { /* revert on error */
-      setDiagramTitle(diagramTitle);
+    } catch {
+      setDiagramTitle(previousTitle);
     }
   }
 

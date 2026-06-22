@@ -44,8 +44,8 @@ export function useOfflineSnapshot({
         // Still disconnected after grace period — save snapshot
         const api = excalidrawApiRef.current;
         if (api && selfUserId) {
-          const elements = api.getSceneElements() as unknown[];
-          const appState = api.getAppState() as Record<string, unknown>;
+          const elements = [...api.getSceneElements()];
+          const appState = api.getAppState();
           saveOfflineSnapshot({
             diagramId,
             userId: selfUserId,
@@ -98,8 +98,8 @@ export function useOfflineSnapshot({
       const isOffline = connectionState === "disconnected" || connectionState === "error";
       const offlineLongEnough = disconnectedAtRef.current && (Date.now() - disconnectedAtRef.current) >= OFFLINE_GRACE_MS;
       if (api && selfUserId && isOffline && offlineLongEnough) {
-        const elements = api.getSceneElements() as unknown[];
-        const appState = api.getAppState() as Record<string, unknown>;
+        const elements = [...api.getSceneElements()];
+        const appState = api.getAppState();
         saveOfflineSnapshot({
           diagramId,
           userId: selfUserId,

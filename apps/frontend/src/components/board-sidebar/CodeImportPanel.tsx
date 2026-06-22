@@ -274,7 +274,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
           onChange={(e) => setReplaceAll(e.target.checked)}
           className="rounded border-gray-300"
         />
-        Replace existing elements
+        <span>Replace existing elements</span>
       </label>
 
       {/* Actions */}

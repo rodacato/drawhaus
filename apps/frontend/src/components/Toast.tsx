@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 type ToastType = "success" | "error" | "info";
@@ -26,8 +26,10 @@ export function ToastProvider({ children }: { readonly children: React.ReactNode
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3000);
   }, []);
 
+  const contextValue = useMemo(() => ({ toast }), [toast]);
+
   return (
-    <ToastContext.Provider value={{ toast }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       {toasts.length > 0 &&
         createPortal(
