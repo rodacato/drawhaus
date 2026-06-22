@@ -170,7 +170,7 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
       `SELECT COUNT(*) AS count FROM workspaces WHERE owner_id = $1 AND is_personal = false`,
       [userId],
     );
-    return parseInt(rows[0].count, 10);
+    return Number.parseInt(rows[0].count, 10);
   }
 
   async countMembers(workspaceId: string): Promise<number> {
@@ -178,7 +178,7 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
       `SELECT COUNT(*) AS count FROM workspace_members WHERE workspace_id = $1`,
       [workspaceId],
     );
-    return parseInt(rows[0].count, 10);
+    return Number.parseInt(rows[0].count, 10);
   }
 
   async transferOwnership(workspaceId: string, newOwnerId: string): Promise<void> {

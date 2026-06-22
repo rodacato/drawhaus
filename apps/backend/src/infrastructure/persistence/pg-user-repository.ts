@@ -131,7 +131,7 @@ export class PgUserRepository implements UserRepository {
 
   async count(): Promise<number> {
     const { rows } = await pool.query<{ count: string }>("SELECT count(*) FROM users");
-    return parseInt(rows[0].count, 10);
+    return Number.parseInt(rows[0].count, 10);
   }
 
   async listAll(): Promise<Omit<User, "passwordHash">[]> {

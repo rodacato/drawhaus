@@ -98,7 +98,7 @@ export class PgApiKeyRepository implements ApiKeyRepository {
        AND (expires_at IS NULL OR expires_at > now())`,
       [userId],
     );
-    return parseInt(rows[0].count, 10);
+    return Number.parseInt(rows[0].count, 10);
   }
 
   logRequest(data: {
