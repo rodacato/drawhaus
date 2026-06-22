@@ -9,7 +9,7 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test 'src/__tests__/**/*.test.ts'",
-    "test:coverage": "tsx --test --experimental-test-coverage --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info 'src/__tests__/**/*.test.ts'"
+    "test:coverage": "c8 --all --include='src/**' --exclude='src/__tests__/**' --reporter=text --reporter=lcov --reports-dir=coverage tsx --test 'src/__tests__/**/*.test.ts'"
   },
   "dependencies": {
     "@drawhaus/helpers": "*",
@@ -40,6 +40,7 @@
     "@typescript-eslint/eslint-plugin": "^7",
     "@typescript-eslint/parser": "^7",
     "@vitejs/plugin-react": "^5.1.4",
+    "c8": "^11.0.0",
     "eslint": "^8",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",

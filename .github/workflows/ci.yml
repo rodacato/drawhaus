@@ -51,8 +51,19 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Frontend tests
-        run: npm run test --workspace=frontend
+      - name: Frontend tests with coverage
+        run: |
+          mkdir -p apps/frontend/coverage
+          npm run test:coverage --workspace=frontend
+
+      - name: Upload frontend coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: apps/frontend/coverage/lcov.info
+          retention-days: 14
+          if-no-files-found: warn
 
       - name: Backend tests
         run: npm run test --workspace=backend
