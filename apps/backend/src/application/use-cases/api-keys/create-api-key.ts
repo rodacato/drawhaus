@@ -1,8 +1,7 @@
 import crypto from "node:crypto";
 import type { ApiKeyRepository } from "../../../domain/ports/api-key-repository";
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
-import { ConflictError } from "../../../domain/errors";
-import { ForbiddenError } from "../../../domain/errors";
+import { ConflictError, ForbiddenError } from "../../../domain/errors";
 
 const MAX_ACTIVE_KEYS_PER_USER = 10;
 

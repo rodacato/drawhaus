@@ -72,7 +72,12 @@ export class GitHubAuthUseCase {
     const githubIdStr = String(githubUser.id);
     let user = await this.users.findByGitHubId(githubIdStr);
 
-    if (!user) {
+    if (user) {
+      // Update username in case it changed
+      if (user.githubUsername !== githubUser.login) {
+        await this.users.update(user.id, { githubUsername: githubUser.login });
+      }
+    } else {
       // Check if email already exists (link accounts)
       user = await this.users.findByEmail(email.toLowerCase());
 
@@ -110,11 +115,6 @@ export class GitHubAuthUseCase {
           await this.users.adminUpdate(user.id, { role: "admin" });
           user.role = "admin";
         }
-      }
-    } else {
-      // Update username in case it changed
-      if (user.githubUsername !== githubUser.login) {
-        await this.users.update(user.id, { githubUsername: githubUser.login });
       }
     }
 
