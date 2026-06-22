@@ -53,76 +53,15 @@ export class GitHubAuthUseCase {
   }
 
   async handleCallback(code: string): Promise<{ sessionToken: string; redirectUrl: string }> {
-    // 1. Exchange code for token
     const tokens = await this.exchangeCode(code);
-
-    // 2. Fetch user info from GitHub
     const githubUser = await this.fetchUserInfo(tokens.access_token);
-
-    // 3. Get email (may be private)
-    let email = githubUser.email;
-    if (!email) {
-      email = await this.fetchPrimaryEmail(tokens.access_token);
-    }
-    if (!email) {
-      throw new Error("GitHub account has no verified email address");
-    }
-
-    // 4. Resolve or create local user
-    const githubIdStr = String(githubUser.id);
-    let user = await this.users.findByGitHubId(githubIdStr);
-
-    if (user) {
-      // Update username in case it changed
-      if (user.githubUsername !== githubUser.login) {
-        await this.users.update(user.id, { githubUsername: githubUser.login });
-      }
-    } else {
-      // Check if email already exists (link accounts)
-      user = await this.users.findByEmail(email.toLowerCase());
-
-      if (user) {
-        // Link GitHub to existing account
-        await this.users.update(user.id, {
-          githubId: githubIdStr,
-          githubUsername: githubUser.login,
-          avatarUrl: user.avatarUrl ?? githubUser.avatar_url,
-        });
-        user = (await this.users.findById(user.id))!;
-      } else {
-        // Create new user — respect registration gate
-        const userCount = await this.users.count();
-        const isFirstUser = userCount === 0;
-
-        if (!isFirstUser && this.siteSettings) {
-          const settings = await this.siteSettings.get();
-          if (!settings.registrationOpen) {
-            throw new ForbiddenError();
-          }
-        }
-
-        user = await this.users.create({
-          email: email.toLowerCase(),
-          name: githubUser.name ?? githubUser.login,
-          passwordHash: null,
-          githubId: githubIdStr,
-          githubUsername: githubUser.login,
-          avatarUrl: githubUser.avatar_url,
-        });
-
-        // First user becomes admin
-        if (isFirstUser) {
-          await this.users.adminUpdate(user.id, { role: "admin" });
-          user.role = "admin";
-        }
-      }
-    }
+    const email = await this.resolveEmail(githubUser, tokens.access_token);
+    const user = await this.resolveOrCreateUser(githubUser, email);
 
     if (user.disabled) {
       throw new ForbiddenError();
     }
 
-    // 5. Save OAuth tokens (GitHub tokens don't expire by default)
     await this.oauthTokens.upsert({
       userId: user.id,
       provider: "github",
@@ -132,13 +71,68 @@ export class GitHubAuthUseCase {
       scopes: tokens.scope,
     });
 
-    // 6. Create session
     const session = await this.sessions.create(user.id);
 
     return {
       sessionToken: session.token,
       redirectUrl: `${config.frontendUrl}/dashboard`,
     };
+  }
+
+  private async resolveEmail(githubUser: GitHubUserInfo, accessToken: string): Promise<string> {
+    const email = githubUser.email ?? (await this.fetchPrimaryEmail(accessToken));
+    if (!email) {
+      throw new Error("GitHub account has no verified email address");
+    }
+    return email;
+  }
+
+  private async resolveOrCreateUser(githubUser: GitHubUserInfo, email: string) {
+    const githubIdStr = String(githubUser.id);
+
+    const byGithubId = await this.users.findByGitHubId(githubIdStr);
+    if (byGithubId) {
+      if (byGithubId.githubUsername !== githubUser.login) {
+        await this.users.update(byGithubId.id, { githubUsername: githubUser.login });
+      }
+      return byGithubId;
+    }
+
+    const byEmail = await this.users.findByEmail(email.toLowerCase());
+    if (byEmail) {
+      await this.users.update(byEmail.id, {
+        githubId: githubIdStr,
+        githubUsername: githubUser.login,
+        avatarUrl: byEmail.avatarUrl ?? githubUser.avatar_url,
+      });
+      return (await this.users.findById(byEmail.id))!;
+    }
+
+    const userCount = await this.users.count();
+    const isFirstUser = userCount === 0;
+
+    if (!isFirstUser && this.siteSettings) {
+      const settings = await this.siteSettings.get();
+      if (!settings.registrationOpen) {
+        throw new ForbiddenError();
+      }
+    }
+
+    const created = await this.users.create({
+      email: email.toLowerCase(),
+      name: githubUser.name ?? githubUser.login,
+      passwordHash: null,
+      githubId: githubIdStr,
+      githubUsername: githubUser.login,
+      avatarUrl: githubUser.avatar_url,
+    });
+
+    if (isFirstUser) {
+      await this.users.adminUpdate(created.id, { role: "admin" });
+      created.role = "admin";
+    }
+
+    return created;
   }
 
   async handleLinkCallback(code: string, userId: string): Promise<void> {

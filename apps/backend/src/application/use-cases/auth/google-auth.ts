@@ -51,59 +51,14 @@ export class GoogleAuthUseCase {
   }
 
   async handleCallback(code: string): Promise<{ sessionToken: string; redirectUrl: string }> {
-    // 1. Exchange code for tokens
     const tokens = await this.exchangeCode(code);
-
-    // 2. Fetch user info from Google
     const googleUser = await this.fetchUserInfo(tokens.access_token);
-
-    // 3. Resolve or create local user
-    let user = await this.users.findByGoogleId(googleUser.id);
-
-    if (!user) {
-      // Check if email already exists (link accounts)
-      user = await this.users.findByEmail(googleUser.email.toLowerCase());
-
-      if (user) {
-        // Link Google to existing account
-        await this.users.update(user.id, {
-          googleId: googleUser.id,
-          avatarUrl: user.avatarUrl ?? googleUser.picture ?? null,
-        });
-        user = (await this.users.findById(user.id))!;
-      } else {
-        // Create new user — respect registration gate
-        const userCount = await this.users.count();
-        const isFirstUser = userCount === 0;
-
-        if (!isFirstUser && this.siteSettings) {
-          const settings = await this.siteSettings.get();
-          if (!settings.registrationOpen) {
-            throw new ForbiddenError();
-          }
-        }
-
-        user = await this.users.create({
-          email: googleUser.email.toLowerCase(),
-          name: googleUser.name,
-          passwordHash: null,
-          googleId: googleUser.id,
-          avatarUrl: googleUser.picture,
-        });
-
-        // First user becomes admin
-        if (isFirstUser) {
-          await this.users.adminUpdate(user.id, { role: "admin" });
-          user.role = "admin";
-        }
-      }
-    }
+    const user = await this.resolveOrCreateUser(googleUser);
 
     if (user.disabled) {
       throw new ForbiddenError();
     }
 
-    // 4. Save OAuth tokens
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
     await this.oauthTokens.upsert({
       userId: user.id,
@@ -114,13 +69,51 @@ export class GoogleAuthUseCase {
       scopes: tokens.scope,
     });
 
-    // 5. Create session
     const session = await this.sessions.create(user.id);
 
     return {
       sessionToken: session.token,
       redirectUrl: `${config.frontendUrl}/dashboard`,
     };
+  }
+
+  private async resolveOrCreateUser(googleUser: GoogleUserInfo) {
+    const byGoogleId = await this.users.findByGoogleId(googleUser.id);
+    if (byGoogleId) return byGoogleId;
+
+    const byEmail = await this.users.findByEmail(googleUser.email.toLowerCase());
+    if (byEmail) {
+      await this.users.update(byEmail.id, {
+        googleId: googleUser.id,
+        avatarUrl: byEmail.avatarUrl ?? googleUser.picture ?? null,
+      });
+      return (await this.users.findById(byEmail.id))!;
+    }
+
+    const userCount = await this.users.count();
+    const isFirstUser = userCount === 0;
+
+    if (!isFirstUser && this.siteSettings) {
+      const settings = await this.siteSettings.get();
+      if (!settings.registrationOpen) {
+        throw new ForbiddenError();
+      }
+    }
+
+    const created = await this.users.create({
+      email: googleUser.email.toLowerCase(),
+      name: googleUser.name,
+      passwordHash: null,
+      googleId: googleUser.id,
+      avatarUrl: googleUser.picture,
+    });
+
+    if (isFirstUser) {
+      await this.users.adminUpdate(created.id, { role: "admin" });
+      created.role = "admin";
+    }
+
+    return created;
   }
 
   async handleLinkCallback(code: string, userId: string): Promise<void> {

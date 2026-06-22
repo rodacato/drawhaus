@@ -7,6 +7,8 @@ import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers } fro
 import { config } from "../../config";
 import { logger } from "../../logger";
 
+type RoomUseCases = { joinRoom: JoinRoomUseCase; joinRoomGuest: JoinRoomGuestUseCase; createSnapshot: CreateSnapshotUseCase };
+
 function formatScene(s: { id: string; name: string; sortOrder: number }) {
   return { id: s.id, name: s.name, sortOrder: s.sortOrder };
 }
@@ -14,7 +16,7 @@ function formatScene(s: { id: string; name: string; sortOrder: number }) {
 export function registerRoomHandlers(
   io: Server,
   socket: Socket,
-  useCases: { joinRoom: JoinRoomUseCase; joinRoomGuest: JoinRoomGuestUseCase; createSnapshot: CreateSnapshotUseCase },
+  useCases: RoomUseCases,
 ) {
   socket.on("join-room", async ({ roomId }: { roomId: string }) => {
     try {
@@ -119,41 +121,56 @@ export function registerRoomHandlers(
     const myData = socket.data as SocketData;
 
     for (const roomId of socket.rooms) {
-      if (roomId === socket.id) continue;
-      if (roomId.includes(":")) continue;
+      if (roomId === socket.id || roomId.includes(":")) continue;
 
-      const allSockets = await io.in(roomId).fetchSockets();
-      const seen = new Set<string>();
-      const futureUsers: PresenceUser[] = [];
-
-      for (const s of allSockets) {
-        if (s.id === socket.id) continue;
-        const data = s.data as SocketData;
-        if (data.userId && !seen.has(data.userId)) {
-          seen.add(data.userId);
-          futureUsers.push({ userId: data.userId, name: data.userName, isGuest: data.isGuest ?? false });
-        }
-      }
-
-      // Snapshot on close if this was the last editor leaving
-      const hasRemainingEditors = futureUsers.some((u) => !u.isGuest);
-      if (!hasRemainingEditors && myData.userId) {
-        // +1 to include the disconnecting user in the count
-        const activeCount = futureUsers.length + 1;
-        useCases.createSnapshot.execute(roomId, myData.userId.startsWith("guest_") ? null : myData.userId, "close", undefined, activeCount)
-          .then((snap) => {
-            if (snap) {
-              socket.to(roomId).emit("snapshot-created", {
-                diagramId: roomId,
-                snapshot: { id: snap.id, trigger: snap.trigger, name: snap.name, createdBy: snap.createdBy, createdByName: snap.createdByName, activeUsers: snap.activeUsers, createdAt: snap.createdAt.toISOString() },
-              });
-            }
-          })
-          .catch(() => {});
-      }
+      const futureUsers = await collectFutureUsers(io, roomId, socket.id);
+      await maybeSnapshotOnLastEditorLeaving(useCases, socket, roomId, myData, futureUsers);
 
       socket.to(roomId).emit("room-presence", { roomId, users: futureUsers });
       socket.to(roomId).emit("cursor-left", { userId: myData.userId });
     }
   });
+}
+
+async function collectFutureUsers(io: Server, roomId: string, leavingSocketId: string): Promise<PresenceUser[]> {
+  const allSockets = await io.in(roomId).fetchSockets();
+  const seen = new Set<string>();
+  const futureUsers: PresenceUser[] = [];
+
+  for (const s of allSockets) {
+    if (s.id === leavingSocketId) continue;
+    const data = s.data as SocketData;
+    if (data.userId && !seen.has(data.userId)) {
+      seen.add(data.userId);
+      futureUsers.push({ userId: data.userId, name: data.userName, isGuest: data.isGuest ?? false });
+    }
+  }
+
+  return futureUsers;
+}
+
+async function maybeSnapshotOnLastEditorLeaving(
+  useCases: RoomUseCases,
+  socket: Socket,
+  roomId: string,
+  myData: SocketData,
+  futureUsers: PresenceUser[],
+): Promise<void> {
+  const hasRemainingEditors = futureUsers.some((u) => !u.isGuest);
+  if (hasRemainingEditors || !myData.userId) return;
+
+  const activeCount = futureUsers.length + 1;
+  const actorId = myData.userId.startsWith("guest_") ? null : myData.userId;
+
+  try {
+    const snap = await useCases.createSnapshot.execute(roomId, actorId, "close", undefined, activeCount);
+    if (snap) {
+      socket.to(roomId).emit("snapshot-created", {
+        diagramId: roomId,
+        snapshot: { id: snap.id, trigger: snap.trigger, name: snap.name, createdBy: snap.createdBy, createdByName: snap.createdByName, activeUsers: snap.activeUsers, createdAt: snap.createdAt.toISOString() },
+      });
+    }
+  } catch {
+    // snapshot is best-effort on disconnect
+  }
 }
