@@ -49,7 +49,5 @@ e2e/blob-report/
 e2e/tests/.auth/
 tests/.auth/
 
-
-#kwik-e
-.kwik-e
+.kwik-e/
 CLAUDE.local.md
