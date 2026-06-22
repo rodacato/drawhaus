@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
 import type { Socket } from "socket.io-client";
-import type { LockHolderInfo } from "./types";
 
 /**
  * Stub edit lock hook for concurrent editing.
@@ -51,7 +50,7 @@ export function useEditLock({ socketRef, socketGeneration, selfUserId }: UseEdit
   }, []);
 
   return {
-    editLockHolder: selfUserId ? { userId: selfUserId, userName: "" } as LockHolderInfo : null,
+    editLockHolder: selfUserId ? { userId: selfUserId, userName: "" } : null,
     hasEditLock: selfUserId !== null,
     tryAcquireEditLock,
     queuePosition: 0,
