@@ -1161,19 +1161,19 @@ export function AdminStyleGuide() {
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-[10px] font-medium text-green-700 shadow-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                Connected
+                <span>Connected</span>
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-medium text-amber-700 shadow-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                Disconnected
+                <span>Disconnected</span>
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-medium text-blue-700 shadow-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
-                Connecting
+                <span>Connecting</span>
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-medium text-red-700 shadow-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                Error
+                <span>Error</span>
               </span>
             </div>
           </div>
