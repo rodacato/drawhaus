@@ -19,19 +19,19 @@ import { validate } from "../middleware/validate";
 import { config } from "../../config";
 
 const registerSchema = z.object({
-  email: z.string().trim().email(),
+  email: z.string().trim().pipe(z.email()),
   name: z.string().trim().min(1).max(100),
   password: z.string().min(8).max(128),
 });
 
 const loginSchema = z.object({
-  email: z.string().trim().email(),
+  email: z.string().trim().pipe(z.email()),
   password: z.string().min(1).max(128),
 });
 
 const updateProfileSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
-  email: z.string().trim().email().optional(),
+  email: z.string().trim().pipe(z.email()).optional(),
 }).refine((v) => Object.keys(v).length > 0, { message: "At least one field is required" });
 
 const changePasswordSchema = z.object({
@@ -46,7 +46,7 @@ const acceptInviteSchema = z.object({
 });
 
 const forgotPasswordSchema = z.object({
-  email: z.string().trim().email(),
+  email: z.string().trim().pipe(z.email()),
 });
 
 const resetPasswordSchema = z.object({

@@ -74,7 +74,7 @@ export function createDriveRoutes(
   router.get("/files", requireAuth, asyncRoute(async (req, res) => {
     const parsed = filesQuerySchema.safeParse(req.query);
     if (!parsed.success) {
-      return res.status(400).json({ error: "Invalid query", details: parsed.error.flatten() });
+      return res.status(400).json({ error: "Invalid query", details: z.flattenError(parsed.error) });
     }
     const result = await useCases.listDriveFiles.execute(req.authUser.id, parsed.data.folderId);
     return res.json(result);

@@ -11,7 +11,7 @@ export class ToggleDriveBackupUseCase {
   async execute(userId: string, enabled: boolean): Promise<{ enabled: boolean }> {
     if (enabled) {
       const token = await this.oauthTokens.findByUserAndProvider(userId, "google");
-      if (!token || !token.scopes.includes("drive.file")) {
+      if (!token?.scopes.includes("drive.file")) {
         throw new DriveTokenError("Google Drive scope not granted. Please connect Google Drive first.");
       }
     }

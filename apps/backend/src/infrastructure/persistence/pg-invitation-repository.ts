@@ -18,7 +18,7 @@ function toDomain(row: InvitationRow): Invitation {
   return {
     id: row.id,
     email: row.email,
-    role: row.role as UserRole,
+    role: row.role,
     token: row.token,
     invitedBy: row.invited_by,
     expiresAt: new Date(row.expires_at),

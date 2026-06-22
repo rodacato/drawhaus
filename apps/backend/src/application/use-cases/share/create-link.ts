@@ -26,7 +26,7 @@ export class CreateShareLinkUseCase {
     }
 
     const expiresAt = input.expiresInHours
-      ? new Date(Date.now() + input.expiresInHours * 3600_000)
+      ? new Date(Date.now() + input.expiresInHours * 3_600_000)
       : null;
 
     return this.shares.create({

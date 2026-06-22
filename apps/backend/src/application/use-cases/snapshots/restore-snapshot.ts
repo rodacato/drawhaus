@@ -40,8 +40,8 @@ export class RestoreSnapshotUseCase {
 
     return {
       diagramId: snapshot.diagramId,
-      elements: snapshot.elements as unknown[],
-      appState: snapshot.appState as Record<string, unknown>,
+      elements: snapshot.elements,
+      appState: snapshot.appState,
       sceneId: currentScene?.id ?? null,
     };
   }

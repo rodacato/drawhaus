@@ -13,7 +13,7 @@ import type { CommentThread, CommentReply } from "../../../domain/entities/comme
 const createSchema = z.object({
   elementId: z.string().min(1).max(200),
   body: z.string().trim().min(1).max(5000),
-  sceneId: z.string().uuid().optional(),
+  sceneId: z.uuid().optional(),
 });
 
 const replySchema = z.object({

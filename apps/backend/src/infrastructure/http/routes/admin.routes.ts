@@ -14,7 +14,7 @@ import { INTEGRATION_KEYS } from "../../../domain/entities/integration-secret";
 import { asyncRoute } from "../middleware/async-handler";
 import { validate, validateParams } from "../middleware/validate";
 
-const uuidParams = z.object({ id: z.string().uuid() });
+const uuidParams = z.object({ id: z.uuid() });
 import { requireAdmin } from "../middleware/require-admin";
 import { createBackup, listBackups, getBackupConfig } from "../../services/backup-service";
 
@@ -35,7 +35,7 @@ const updateSettingsSchema = z.object({
 }).refine((v) => Object.keys(v).length > 0, { message: "At least one field is required" });
 
 const inviteSchema = z.object({
-  email: z.string().trim().email(),
+  email: z.string().trim().pipe(z.email()),
   role: z.enum(["user", "admin"]).optional().default("user"),
 });
 

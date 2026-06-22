@@ -43,7 +43,7 @@ function toDomain(row: DiagramRow): Diagram {
 }
 
 function escapeLike(str: string): string {
-  return str.replace(/[%_\\]/g, "\\$&");
+  return str.replaceAll(/[%_\\]/g, String.raw`\$&`);
 }
 
 /** d.col alias helper */

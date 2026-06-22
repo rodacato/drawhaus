@@ -10,7 +10,7 @@ export class ListLinksUseCase {
 
   async execute(diagramId: string, userId: string) {
     const diagram = await this.diagrams.findById(diagramId);
-    if (!diagram || diagram.ownerId !== userId) throw new NotFoundError("Diagram");
+    if (diagram?.ownerId !== userId) throw new NotFoundError("Diagram");
 
     return this.shares.findByDiagram(diagramId);
   }

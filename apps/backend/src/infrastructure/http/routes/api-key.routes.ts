@@ -8,8 +8,8 @@ import { validate } from "../middleware/validate";
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),
-  workspaceId: z.string().uuid(),
-  expiresAt: z.string().datetime().optional(),
+  workspaceId: z.uuid(),
+  expiresAt: z.iso.datetime().optional(),
 });
 
 export function createApiKeyRoutes(

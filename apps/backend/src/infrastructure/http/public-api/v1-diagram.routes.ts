@@ -13,11 +13,11 @@ import type { ApiKeyAuthedRequest } from "./middleware/require-api-key";
 import { ForbiddenError } from "../../../domain/errors";
 import { validateElements } from "@drawhaus/helpers";
 
-const uuidParams = z.object({ id: z.string().uuid() });
+const uuidParams = z.object({ id: z.uuid() });
 
 const createSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
-  folderId: z.string().uuid().nullable().optional(),
+  folderId: z.uuid().nullable().optional(),
   elements: z.array(z.unknown()).optional(),
   appState: z.record(z.string(), z.unknown()).optional(),
 });
@@ -33,7 +33,7 @@ const patchSchema = z
   });
 
 const listQuerySchema = z.object({
-  folderId: z.string().uuid().optional(),
+  folderId: z.uuid().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });

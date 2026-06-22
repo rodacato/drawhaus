@@ -14,7 +14,7 @@ import type { MoveDiagramUseCase } from "../../../application/use-cases/folders/
 import { asyncRoute } from "../middleware/async-handler";
 import { validate, validateParams } from "../middleware/validate";
 
-const uuidParams = z.object({ id: z.string().uuid() });
+const uuidParams = z.object({ id: z.uuid() });
 import type { Diagram } from "../../../domain/entities/diagram";
 import type { Tag } from "../../../domain/entities/tag";
 import type { SnapshotRepository } from "../../../domain/ports/snapshot-repository";
@@ -22,8 +22,8 @@ import type { TagRepository } from "../../../domain/ports/tag-repository";
 
 const createSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
-  workspaceId: z.string().uuid().nullable().optional(),
-  folderId: z.string().uuid().nullable().optional(),
+  workspaceId: z.uuid().nullable().optional(),
+  folderId: z.uuid().nullable().optional(),
   elements: z.array(z.unknown()).optional(),
   appState: z.record(z.string(), z.unknown()).optional(),
 });
@@ -39,8 +39,8 @@ const patchSchema = z
   });
 
 const moveSchema = z.object({
-  folderId: z.string().uuid().nullable(),
-  workspaceId: z.string().uuid().optional(),
+  folderId: z.uuid().nullable(),
+  workspaceId: z.uuid().optional(),
 });
 
 function formatDiagram(d: Diagram, tags?: Tag[]) {
@@ -169,8 +169,8 @@ export function createDiagramRoutes(
 
   // Transfer ownership (bulk)
   const transferSchema = z.object({
-    diagramIds: z.array(z.string().uuid()).min(1),
-    newOwnerId: z.string().uuid(),
+    diagramIds: z.array(z.uuid()).min(1),
+    newOwnerId: z.uuid(),
   });
 
   router.post("/transfer-ownership", validate(transferSchema), asyncRoute(async (req, res) => {
