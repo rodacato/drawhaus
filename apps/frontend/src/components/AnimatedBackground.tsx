@@ -105,11 +105,11 @@ export function AnimatedBackground() {
     container.addEventListener("mousemove", onMouseMove);
 
     let animationId: number;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const animate = () => {
       animationId = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
+      const elapsed = (performance.now() - startTime) / 1000;
       material.uniforms.uTime.value = elapsed;
 
       const posAttr = geometry.getAttribute("position") as THREE.BufferAttribute;
