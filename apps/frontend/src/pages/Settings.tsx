@@ -203,6 +203,12 @@ export function Settings() {
     },
   ];
 
+  const linkedProvidersCount = user?.linkedProviders?.length ?? 0;
+  const passwordCount = user?.hasPassword ? 1 : 0;
+  const signInMethodsCount = linkedProvidersCount + passwordCount;
+  const isLastSignInMethod = signInMethodsCount <= 1;
+  const lastMethodWarning = isLastSignInMethod ? "Cannot disconnect your only sign-in method" : undefined;
+
   function NavItem({ tab }: { readonly tab: { id: Tab; label: string; icon: React.ReactNode } }) {
     return (
       <button
@@ -299,8 +305,8 @@ export function Settings() {
                       <button
                         type="button"
                         className={`${ui.btn} ${ui.btnSecondary} text-xs`}
-                        disabled={unlinkPending === "google" || ((user?.linkedProviders?.length ?? 0) + (user?.hasPassword ? 1 : 0)) <= 1}
-                        title={((user?.linkedProviders?.length ?? 0) + (user?.hasPassword ? 1 : 0)) <= 1 ? "Cannot disconnect your only sign-in method" : undefined}
+                        disabled={unlinkPending === "google" || isLastSignInMethod}
+                        title={lastMethodWarning}
                         onClick={() => handleUnlinkProvider("google")}
                       >
                         {unlinkPending === "google" ? "Disconnecting..." : "Disconnect"}
@@ -327,8 +333,8 @@ export function Settings() {
                       <button
                         type="button"
                         className={`${ui.btn} ${ui.btnSecondary} text-xs`}
-                        disabled={unlinkPending === "github" || ((user?.linkedProviders?.length ?? 0) + (user?.hasPassword ? 1 : 0)) <= 1}
-                        title={((user?.linkedProviders?.length ?? 0) + (user?.hasPassword ? 1 : 0)) <= 1 ? "Cannot disconnect your only sign-in method" : undefined}
+                        disabled={unlinkPending === "github" || isLastSignInMethod}
+                        title={lastMethodWarning}
                         onClick={() => handleUnlinkProvider("github")}
                       >
                         {unlinkPending === "github" ? "Disconnecting..." : "Disconnect"}
