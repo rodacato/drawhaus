@@ -82,8 +82,8 @@ export function TemplatePicker({ open, workspaceId, onClose, onUseTemplate, onUs
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+    globalThis.addEventListener("keydown", handleKey);
+    return () => globalThis.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
   if (!open) return null;

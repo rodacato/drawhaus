@@ -167,7 +167,7 @@ export default function BoardEditor({
       const payload = await shareApi.create(diagramId, role);
       const token = payload.shareLink?.token;
       if (token) {
-        const url = `${window.location.origin}/share/${token}`;
+        const url = `${globalThis.location.origin}/share/${token}`;
         try { localStorage.setItem(cacheShareKey, url); } catch { /* quota */ }
         return url;
       }

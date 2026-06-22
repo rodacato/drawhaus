@@ -16,7 +16,7 @@ const STORAGE_KEY = "drawhaus_theme";
 function getInitialTheme(): Theme {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored === "dark" || stored === "light") return stored;
-  if (window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+  if (globalThis.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
   return "light";
 }
 

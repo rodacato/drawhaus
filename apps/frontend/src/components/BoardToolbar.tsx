@@ -74,8 +74,8 @@ export function BoardToolbarPanel({
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
     }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    globalThis.addEventListener("keydown", onKey);
+    return () => globalThis.removeEventListener("keydown", onKey);
   }, [onClose]);
 
   useEffect(() => {
@@ -85,11 +85,11 @@ export function BoardToolbarPanel({
       }
     }
     const timer = setTimeout(() => {
-      window.addEventListener("mousedown", onClick);
+      globalThis.addEventListener("mousedown", onClick);
     }, 0);
     return () => {
       clearTimeout(timer);
-      window.removeEventListener("mousedown", onClick);
+      globalThis.removeEventListener("mousedown", onClick);
     };
   }, [onClose]);
 

@@ -14,21 +14,21 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 403 && err.response?.data?.error === "setup_required") {
-      if (!window.location.pathname.startsWith("/setup")) {
-        window.location.href = "/setup";
+      if (!globalThis.location.pathname.startsWith("/setup")) {
+        globalThis.location.href = "/setup";
       }
       return Promise.reject(err);
     }
     if (
       err.response?.status === 401 &&
-      window.location.pathname !== "/" &&
-      !window.location.pathname.startsWith("/login") &&
-      !window.location.pathname.startsWith("/register") &&
-      !window.location.pathname.startsWith("/setup") &&
-      !window.location.pathname.startsWith("/share") &&
-      !window.location.pathname.startsWith("/embed")
+      globalThis.location.pathname !== "/" &&
+      !globalThis.location.pathname.startsWith("/login") &&
+      !globalThis.location.pathname.startsWith("/register") &&
+      !globalThis.location.pathname.startsWith("/setup") &&
+      !globalThis.location.pathname.startsWith("/share") &&
+      !globalThis.location.pathname.startsWith("/embed")
     ) {
-      window.location.href = "/login";
+      globalThis.location.href = "/login";
     }
     return Promise.reject(err);
   }
