@@ -6,6 +6,10 @@ All notable changes to Drawhaus are documented here.
 
 ## Unreleased
 
+### Security
+- **Helmet defaults restored on the Express app** (CodeQL `js/insecure-helmet-configuration`). `contentSecurityPolicy` and `crossOriginEmbedderPolicy` were previously disabled; the JSON API + Redoc-stub static path do not require those opt-outs.
+- **Drive ID validation tightened on `/api/drive` routes** (CodeQL `js/request-forgery`). `fileId` / `targetFolderId` / `folderId` now match `^[A-Za-z0-9_-]{10,128}$` via Zod before reaching the Google Drive `fetch` call, blocking path-traversal / special-char payloads.
+
 ### Changed
 - **Error monitoring migrated from Honeybadger to Sentry** ([ADR-023](docs/adr/023-sentry-error-monitoring.md)). Backend now uses `@sentry/node` (`Sentry.captureException` + `setupExpressErrorHandler`); frontend ships `@sentry/react` initialized at boot and `@sentry/vite-plugin` for source-map upload at build time. Both are gated by env vars and stay disabled when DSNs are absent.
 - **Deploy env vars split into `vars` vs `secrets` in the GitHub `production` environment**. Repo-level secrets are now limited to `SSH_PRIVATE_KEY` and `DOCKERHUB_TOKEN`; everything else lives in the environment. Adds `SENTRY_*`, `VITE_SENTRY_*`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
