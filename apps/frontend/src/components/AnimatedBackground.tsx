@@ -107,40 +107,27 @@ export function AnimatedBackground() {
     let animationId: number;
     const clock = new THREE.Clock();
 
-    const animate = () => {
-      animationId = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
-      material.uniforms.uTime.value = elapsed;
-
-      const posAttr = geometry.getAttribute("position") as THREE.BufferAttribute;
-      const posArray = posAttr.array as Float32Array;
-
-      // Drift particles
+    const driftParticles = (posArray: Float32Array) => {
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         posArray[i * 3] += velocities[i * 3];
         posArray[i * 3 + 1] += velocities[i * 3 + 1];
         posArray[i * 3 + 2] += velocities[i * 3 + 2];
 
-        // Wrap around
         if (posArray[i * 3] > 30) posArray[i * 3] = -30;
         if (posArray[i * 3] < -30) posArray[i * 3] = 30;
         if (posArray[i * 3 + 1] > 20) posArray[i * 3 + 1] = -20;
         if (posArray[i * 3 + 1] < -20) posArray[i * 3 + 1] = 20;
       }
-      posAttr.needsUpdate = true;
+    };
 
-      // Update connecting lines
+    const updateConnectingLines = (posArray: Float32Array, lpArray: Float32Array): number => {
       let lineIdx = 0;
-      const lp = lines.geometry.getAttribute("position") as THREE.BufferAttribute;
-      const lpArray = lp.array as Float32Array;
-
       for (let i = 0; i < PARTICLE_COUNT && lineIdx < MAX_LINES; i++) {
         for (let j = i + 1; j < PARTICLE_COUNT && lineIdx < MAX_LINES; j++) {
           const dx = posArray[i * 3] - posArray[j * 3];
           const dy = posArray[i * 3 + 1] - posArray[j * 3 + 1];
           const dz = posArray[i * 3 + 2] - posArray[j * 3 + 2];
-          const dist = dx * dx + dy * dy + dz * dz;
-          if (dist < 80) {
+          if (dx * dx + dy * dy + dz * dz < 80) {
             lpArray[lineIdx * 6] = posArray[i * 3];
             lpArray[lineIdx * 6 + 1] = posArray[i * 3 + 1];
             lpArray[lineIdx * 6 + 2] = posArray[i * 3 + 2];
@@ -151,7 +138,6 @@ export function AnimatedBackground() {
           }
         }
       }
-      // Zero out unused lines
       for (let i = lineIdx; i < MAX_LINES; i++) {
         lpArray[i * 6] = 0;
         lpArray[i * 6 + 1] = 0;
@@ -160,10 +146,23 @@ export function AnimatedBackground() {
         lpArray[i * 6 + 4] = 0;
         lpArray[i * 6 + 5] = 0;
       }
+      return lineIdx;
+    };
+
+    const animate = () => {
+      animationId = requestAnimationFrame(animate);
+      material.uniforms.uTime.value = clock.getElapsedTime();
+
+      const posAttr = geometry.getAttribute("position") as THREE.BufferAttribute;
+      const posArray = posAttr.array as Float32Array;
+      driftParticles(posArray);
+      posAttr.needsUpdate = true;
+
+      const lp = lines.geometry.getAttribute("position") as THREE.BufferAttribute;
+      const lineIdx = updateConnectingLines(posArray, lp.array as Float32Array);
       lp.needsUpdate = true;
       lines.geometry.setDrawRange(0, lineIdx * 2);
 
-      // Subtle camera drift based on mouse
       camera.position.x += (mouse.x * 3 - camera.position.x) * 0.01;
       camera.position.y += (mouse.y * 2 - camera.position.y) * 0.01;
       camera.lookAt(0, 0, 0);

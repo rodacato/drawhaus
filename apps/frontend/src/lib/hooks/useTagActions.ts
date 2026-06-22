@@ -6,6 +6,14 @@ export interface UseTagActionsParams {
   setAllTags: React.Dispatch<React.SetStateAction<Tag[]>>;
 }
 
+function withTagRemoved(diagram: Diagram, tagId: string): Diagram {
+  return { ...diagram, tags: (diagram.tags ?? []).filter((t) => t.id !== tagId) };
+}
+
+function withTagAdded(diagram: Diagram, tag: Tag): Diagram {
+  return { ...diagram, tags: [...(diagram.tags ?? []), tag] };
+}
+
 export function useTagActions({ setDiagrams, setAllTags }: UseTagActionsParams) {
   async function toggleTag(diagramId: string, tag: Tag) {
     // We need to read current diagrams via the setter's callback form
@@ -19,10 +27,10 @@ export function useTagActions({ setDiagrams, setAllTags }: UseTagActionsParams) 
     try {
       if (hasTag) {
         await tagsApi.unassign(tag.id, diagramId);
-        setDiagrams((prev) => prev.map((d) => d.id === diagramId ? { ...d, tags: (d.tags ?? []).filter((t) => t.id !== tag.id) } : d));
+        setDiagrams((prev) => prev.map((d) => d.id === diagramId ? withTagRemoved(d, tag.id) : d));
       } else {
         await tagsApi.assign(tag.id, diagramId);
-        setDiagrams((prev) => prev.map((d) => d.id === diagramId ? { ...d, tags: [...(d.tags ?? []), tag] } : d));
+        setDiagrams((prev) => prev.map((d) => d.id === diagramId ? withTagAdded(d, tag) : d));
       }
     } catch { /* silent */ }
   }
@@ -39,7 +47,7 @@ export function useTagActions({ setDiagrams, setAllTags }: UseTagActionsParams) 
     try {
       await tagsApi.delete(tagId);
       setAllTags((prev) => prev.filter((t) => t.id !== tagId));
-      setDiagrams((prev) => prev.map((d) => ({ ...d, tags: (d.tags ?? []).filter((t) => t.id !== tagId) })));
+      setDiagrams((prev) => prev.map((d) => withTagRemoved(d, tagId)));
     } catch { /* silent */ }
   }
 
