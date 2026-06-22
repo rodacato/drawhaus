@@ -209,14 +209,14 @@ export function AdminUsers() {
                         </span>
                       </td>
                       <td className="py-3 pr-4">
-                        {!isSelf ? (
+                        {isSelf ? (
+                          <span className="text-xs text-text-muted">Active</span>
+                        ) : (
                           <ToggleSwitch
                             checked={!user.disabled}
                             onChange={(enabled) => updateUser(user.id, { disabled: !enabled })}
                             disabled={isPending}
                           />
-                        ) : (
-                          <span className="text-xs text-text-muted">Active</span>
                         )}
                       </td>
                       <td className="py-3">

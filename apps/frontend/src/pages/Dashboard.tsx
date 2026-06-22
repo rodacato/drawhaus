@@ -34,7 +34,7 @@ export function Dashboard() {
 
   const folderIdParam = searchParams.get("folderId");
   const searchQuery = searchParams.get("q") ?? "";
-  const folderId = folderIdParam === null ? undefined : folderIdParam === "null" ? null : folderIdParam;
+  const folderId = parseFolderId(folderIdParam);
 
   // ── Data ──
   const data = useDashboardData({ sidebarView, folderId, searchQuery });
@@ -86,11 +86,7 @@ export function Dashboard() {
     return <div className="flex h-screen items-center justify-center bg-surface text-sm text-text-muted">Loading...</div>;
   }
 
-  const emptyMessage = searchQuery
-    ? "No diagrams match your search."
-    : data.isStarred ? "No starred diagrams yet. Star a diagram to see it here."
-    : data.isRecent ? "No recent diagrams."
-    : "No diagrams here yet. Create your first one.";
+  const emptyMessage = computeEmptyMessage({ searchQuery, isStarred: data.isStarred, isRecent: data.isRecent });
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface">
@@ -248,4 +244,21 @@ export function Dashboard() {
       </Drawer>
     </div>
   );
+}
+
+function parseFolderId(folderIdParam: string | null): string | null | undefined {
+  if (folderIdParam === null) return undefined;
+  if (folderIdParam === "null") return null;
+  return folderIdParam;
+}
+
+function computeEmptyMessage({ searchQuery, isStarred, isRecent }: {
+  searchQuery: string;
+  isStarred: boolean;
+  isRecent: boolean;
+}): string {
+  if (searchQuery) return "No diagrams match your search.";
+  if (isStarred) return "No starred diagrams yet. Star a diagram to see it here.";
+  if (isRecent) return "No recent diagrams.";
+  return "No diagrams here yet. Create your first one.";
 }

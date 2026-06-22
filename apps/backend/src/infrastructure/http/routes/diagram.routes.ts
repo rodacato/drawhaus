@@ -96,7 +96,7 @@ export function createDiagramRoutes(
 
   router.get("/", asyncRoute(async (req, res) => {
     const folderParam = req.query.folderId;
-    const folderId = folderParam === "null" ? null : (typeof folderParam === "string" ? folderParam : undefined);
+    const folderId = parseFolderParam(folderParam);
     const workspaceId = typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
     const diagrams = await useCases.list.execute(req.authUser.id, folderId, workspaceId);
     const ids = diagrams.map((d) => d.id);
@@ -179,4 +179,10 @@ export function createDiagramRoutes(
   }));
 
   return router;
+}
+
+function parseFolderParam(folderParam: unknown): string | null | undefined {
+  if (folderParam === "null") return null;
+  if (typeof folderParam === "string") return folderParam;
+  return undefined;
 }

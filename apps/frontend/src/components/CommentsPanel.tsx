@@ -28,6 +28,12 @@ type CommentsPanelProps = {
 
 type Filter = "open" | "resolved" | "all";
 
+const EMPTY_FILTER_MESSAGES: Record<Filter, string> = {
+  open: "No open comments",
+  resolved: "No resolved comments",
+  all: "No comments yet",
+};
+
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
@@ -219,7 +225,7 @@ export function CommentsPanel({
       <div className="flex-1 overflow-y-auto">
         {filtered.length === 0 && (
           <div className="px-4 py-8 text-center text-xs text-text-muted">
-            {filter === "open" ? "No open comments" : filter === "resolved" ? "No resolved comments" : "No comments yet"}
+            {EMPTY_FILTER_MESSAGES[filter]}
           </div>
         )}
         {filtered.map((thread) => {

@@ -11,6 +11,10 @@ export type OfflineSnapshot = {
   savedAt: string;
 };
 
+function toError(err: DOMException | null, fallback: string): Error {
+  return err ?? new Error(fallback);
+}
+
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -21,7 +25,7 @@ function openDB(): Promise<IDBDatabase> {
       }
     };
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(toError(request.error, "Failed to open offline DB"));
   });
 }
 
@@ -31,7 +35,7 @@ export async function saveOfflineSnapshot(snapshot: OfflineSnapshot): Promise<vo
     const tx = db.transaction(STORE_NAME, "readwrite");
     tx.objectStore(STORE_NAME).put(snapshot);
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
+    tx.onerror = () => reject(toError(tx.error, "Failed to save offline snapshot"));
   });
 }
 
@@ -41,7 +45,7 @@ export async function getOfflineSnapshot(diagramId: string): Promise<OfflineSnap
     const tx = db.transaction(STORE_NAME, "readonly");
     const request = tx.objectStore(STORE_NAME).get(diagramId);
     request.onsuccess = () => resolve(request.result ?? null);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => reject(toError(request.error, "Failed to read offline snapshot"));
   });
 }
 
@@ -51,6 +55,6 @@ export async function deleteOfflineSnapshot(diagramId: string): Promise<void> {
     const tx = db.transaction(STORE_NAME, "readwrite");
     tx.objectStore(STORE_NAME).delete(diagramId);
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
+    tx.onerror = () => reject(toError(tx.error, "Failed to delete offline snapshot"));
   });
 }

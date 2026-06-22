@@ -105,7 +105,7 @@ export function AnimatedBackground() {
     container.addEventListener("mousemove", onMouseMove);
 
     let animationId: number;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const driftParticles = (posArray: Float32Array) => {
       for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -151,7 +151,7 @@ export function AnimatedBackground() {
 
     const animate = () => {
       animationId = requestAnimationFrame(animate);
-      material.uniforms.uTime.value = clock.getElapsedTime();
+      material.uniforms.uTime.value = (performance.now() - startTime) / 1000;
 
       const posAttr = geometry.getAttribute("position") as THREE.BufferAttribute;
       const posArray = posAttr.array as Float32Array;

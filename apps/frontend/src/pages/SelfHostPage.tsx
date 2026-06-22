@@ -255,8 +255,7 @@ git push origin master:production`}</CodeBlock>
             Drawhaus is built on top of{" "}
             <a href={EXCALIDRAW_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
               Excalidraw
-            </a>
-            , the incredible open-source whiteboard. Huge thanks to the Excalidraw team and community.
+            </a>, the incredible open-source whiteboard. Huge thanks to the Excalidraw team and community.
           </p>
           <a
             href={EXCALIDRAW_GITHUB}

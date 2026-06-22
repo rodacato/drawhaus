@@ -184,7 +184,7 @@ export function usePresence({
   const lowerHand = useCallback(() => {
     socketRef.current?.emit("lower-hand", { roomId: diagramId });
     setIsHandRaised(false);
-    setRaisedHands((prev) => { if (!selfUserId) return prev; const next = new Set(prev); next.delete(selfUserId); return next; });
+    setRaisedHands((prev) => { if (!selfUserId) { return prev; } const next = new Set(prev); next.delete(selfUserId); return next; });
   }, [diagramId, selfUserId]);
 
   /* ─── clear raised hands for users who leave ─── */

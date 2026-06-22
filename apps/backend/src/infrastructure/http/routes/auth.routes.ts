@@ -76,6 +76,17 @@ function getCookieOptions() {
   };
 }
 
+function setOAuthStateCookie(res: import("express").Response, statePayload: string) {
+  res.cookie("drawhaus_oauth_state", statePayload, {
+    ...getClearCookieOptions(),
+    maxAge: 10 * 60 * 1000,
+  });
+}
+
+function clearOAuthStateCookie(res: import("express").Response) {
+  res.clearCookie("drawhaus_oauth_state", getClearCookieOptions());
+}
+
 export function createAuthRoutes(
   useCases: {
     register: RegisterUseCase;
@@ -177,17 +188,6 @@ export function createAuthRoutes(
   }));
 
   // --- Google OAuth ---
-
-  function setOAuthStateCookie(res: import("express").Response, statePayload: string) {
-    res.cookie("drawhaus_oauth_state", statePayload, {
-      ...getClearCookieOptions(),
-      maxAge: 10 * 60 * 1000,
-    });
-  }
-
-  function clearOAuthStateCookie(res: import("express").Response) {
-    res.clearCookie("drawhaus_oauth_state", getClearCookieOptions());
-  }
 
   router.get("/google", (_req, res) => {
     if (!useCases.googleAuth.isEnabled) {

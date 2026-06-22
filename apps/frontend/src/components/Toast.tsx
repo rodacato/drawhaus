@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 type ToastType = "success" | "error" | "info";
@@ -15,6 +15,12 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+const TOAST_BORDER_CLASSES: Record<ToastType, string> = {
+  error: "border-error/25 text-error",
+  info: "border-primary/25 text-text-primary",
+  success: "border-success/25 text-text-primary",
+};
+
 let nextId = 0;
 
 export function ToastProvider({ children }: { readonly children: React.ReactNode }) {
@@ -30,8 +36,10 @@ export function ToastProvider({ children }: { readonly children: React.ReactNode
     setTimeout(() => removeToast(id), 3000);
   }, [removeToast]);
 
+  const contextValue = useMemo(() => ({ toast }), [toast]);
+
   return (
-    <ToastContext.Provider value={{ toast }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       {toasts.length > 0 &&
         createPortal(
@@ -39,13 +47,7 @@ export function ToastProvider({ children }: { readonly children: React.ReactNode
             {toasts.map((t) => (
               <div
                 key={t.id}
-                className={`pointer-events-auto flex items-center gap-3 rounded-2xl border bg-surface-raised px-5 py-3.5 text-sm font-medium shadow-xl backdrop-blur-sm transition-all duration-300 ${
-                  t.type === "error"
-                    ? "border-error/25 text-error"
-                    : t.type === "info"
-                      ? "border-primary/25 text-text-primary"
-                      : "border-success/25 text-text-primary"
-                }`}
+                className={`pointer-events-auto flex items-center gap-3 rounded-2xl border bg-surface-raised px-5 py-3.5 text-sm font-medium shadow-xl backdrop-blur-sm transition-all duration-300 ${TOAST_BORDER_CLASSES[t.type]}`}
               >
                 {t.type === "success" && (
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success/15">

@@ -1,5 +1,17 @@
 export type DriveSyncState = "idle" | "syncing" | "synced" | "error";
 
+const BADGE_CLASSES: Record<Exclude<DriveSyncState, "idle">, string> = {
+  synced: "bg-green-100 text-green-700",
+  syncing: "bg-blue-100 text-blue-700",
+  error: "bg-red-100 text-red-700",
+};
+
+function syncLabel(state: Exclude<DriveSyncState, "idle">, error?: string | null): string {
+  if (state === "synced") return "Drive synced";
+  if (state === "syncing") return "Syncing to Drive...";
+  return error ?? "Drive sync failed";
+}
+
 export function DriveSyncBadge({
   state,
   error,
@@ -9,20 +21,8 @@ export function DriveSyncBadge({
 }) {
   if (state === "idle") return null;
 
-  const className = `pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${
-    state === "synced"
-      ? "bg-green-100 text-green-700"
-      : state === "syncing"
-        ? "bg-blue-100 text-blue-700"
-        : "bg-red-100 text-red-700"
-  }`;
-
-  const label =
-    state === "synced"
-      ? "Drive synced"
-      : state === "syncing"
-        ? "Syncing to Drive..."
-        : error ?? "Drive sync failed";
+  const className = `pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${BADGE_CLASSES[state]}`;
+  const label = syncLabel(state, error);
 
   return (
     <div className={className}>

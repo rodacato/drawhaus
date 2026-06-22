@@ -338,7 +338,7 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
                   onChange={(e) => setTransferResources(e.target.checked)}
                   className="rounded border-border"
                 />
-                Also transfer my diagrams and templates in this workspace
+                <span>Also transfer my diagrams and templates in this workspace</span>
               </label>
               <div className="flex gap-2">
                 <button

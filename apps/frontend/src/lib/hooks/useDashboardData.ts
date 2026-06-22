@@ -87,22 +87,11 @@ export function useDashboardData({ sidebarView, folderId, searchQuery }: UseDash
 
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
 
-  const heading = searchQuery
-    ? `Search: "${searchQuery}"`
-    : isRecent ? "Recent"
-    : isStarred ? "Starred"
-    : isTemplates ? "My Templates"
-    : activeWorkspace ? (activeWorkspace.isPersonal ? "Personal" : activeWorkspace.name)
-    : "Diagrams";
-
-  const subtitle = searchQuery
-    ? `${displayDiagrams.length} result${displayDiagrams.length !== 1 ? "s" : ""}`
-    : isRecent ? "Recently edited diagrams"
-    : isStarred ? "Your starred diagrams"
-    : isTemplates ? "Your saved templates — double-click to rename"
-    : isWorkspaceView && activeWorkspace
-      ? (activeWorkspace.isPersonal ? "Personal workspace" : `${activeWorkspace.name} workspace`)
-      : "Manage and organize your visual workflows";
+  const heading = computeHeading({ searchQuery, isRecent, isStarred, isTemplates, activeWorkspace });
+  const subtitle = computeSubtitle({
+    searchQuery, isRecent, isStarred, isTemplates, isWorkspaceView, activeWorkspace,
+    resultCount: displayDiagrams.length,
+  });
 
   return {
     diagrams, setDiagrams,
@@ -115,4 +104,42 @@ export function useDashboardData({ sidebarView, folderId, searchQuery }: UseDash
     heading, subtitle,
     isRecent, isStarred, isTemplates, isWorkspaceView,
   };
+}
+
+interface HeadingParams {
+  searchQuery: string;
+  isRecent: boolean;
+  isStarred: boolean;
+  isTemplates: boolean;
+  activeWorkspace: Workspace | undefined;
+}
+
+function computeHeading({ searchQuery, isRecent, isStarred, isTemplates, activeWorkspace }: HeadingParams): string {
+  if (searchQuery) return `Search: "${searchQuery}"`;
+  if (isRecent) return "Recent";
+  if (isStarred) return "Starred";
+  if (isTemplates) return "My Templates";
+  if (activeWorkspace) return activeWorkspace.isPersonal ? "Personal" : activeWorkspace.name;
+  return "Diagrams";
+}
+
+interface SubtitleParams extends HeadingParams {
+  isWorkspaceView: boolean;
+  resultCount: number;
+}
+
+function computeSubtitle({
+  searchQuery, isRecent, isStarred, isTemplates, isWorkspaceView, activeWorkspace, resultCount,
+}: SubtitleParams): string {
+  if (searchQuery) {
+    const plural = resultCount !== 1 ? "s" : "";
+    return `${resultCount} result${plural}`;
+  }
+  if (isRecent) return "Recently edited diagrams";
+  if (isStarred) return "Your starred diagrams";
+  if (isTemplates) return "Your saved templates — double-click to rename";
+  if (isWorkspaceView && activeWorkspace) {
+    return activeWorkspace.isPersonal ? "Personal workspace" : `${activeWorkspace.name} workspace`;
+  }
+  return "Manage and organize your visual workflows";
 }

@@ -68,16 +68,7 @@ export function ResetPassword() {
           <h1 className={ui.h1}>Set new password</h1>
         </div>
 
-        {!valid ? (
-          <div className="space-y-4">
-            <p className={ui.alertError}>This reset link is invalid or has expired.</p>
-            <div className="text-center">
-              <Link to="/forgot-password" className="text-sm font-medium text-primary hover:underline">
-                Request a new reset link
-              </Link>
-            </div>
-          </div>
-        ) : (
+        {valid ? (
           <form className="space-y-4" onSubmit={onSubmit}>
             <label className={ui.label}>
               <span>New password</span>
@@ -105,6 +96,15 @@ export function ResetPassword() {
               {pending ? "Resetting..." : "Reset password"}
             </button>
           </form>
+        ) : (
+          <div className="space-y-4">
+            <p className={ui.alertError}>This reset link is invalid or has expired.</p>
+            <div className="text-center">
+              <Link to="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+                Request a new reset link
+              </Link>
+            </div>
+          </div>
         )}
 
         <div className="text-center">
