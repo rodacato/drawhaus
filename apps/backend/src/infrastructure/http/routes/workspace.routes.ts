@@ -28,7 +28,7 @@ const updateSchema = z.object({
 }).refine((v) => Object.keys(v).length > 0, { message: "At least one field is required" });
 
 const inviteSchema = z.object({
-  email: z.string().trim().email(),
+  email: z.string().trim().pipe(z.email()),
   role: z.enum(["admin", "editor", "viewer"]).optional().default("editor"),
 });
 
@@ -147,7 +147,7 @@ export function createWorkspaceRoutes(
 
   // Transfer ownership
   const transferSchema = z.object({
-    newOwnerId: z.string().uuid(),
+    newOwnerId: z.uuid(),
     transferResources: z.boolean().optional(),
   });
 

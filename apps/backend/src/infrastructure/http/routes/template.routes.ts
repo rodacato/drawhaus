@@ -15,7 +15,7 @@ const createSchema = z.object({
   title: z.string().trim().min(1).max(200),
   description: z.string().trim().max(500).optional(),
   category: z.string().trim().min(1).max(50).optional(),
-  workspaceId: z.string().uuid().nullable().optional(),
+  workspaceId: z.uuid().nullable().optional(),
   elements: z.array(z.unknown()),
   appState: z.record(z.string(), z.unknown()),
   thumbnail: z.string().nullable().optional(),
@@ -34,8 +34,8 @@ const updateSchema = z
 
 const useSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
-  workspaceId: z.string().uuid().nullable().optional(),
-  folderId: z.string().uuid().nullable().optional(),
+  workspaceId: z.uuid().nullable().optional(),
+  folderId: z.uuid().nullable().optional(),
 });
 
 function formatTemplate(t: Template) {
@@ -134,8 +134,8 @@ export function createTemplateRoutes(
 
   // Transfer ownership (bulk)
   const transferSchema = z.object({
-    templateIds: z.array(z.string().uuid()).min(1),
-    newCreatorId: z.string().uuid(),
+    templateIds: z.array(z.uuid()).min(1),
+    newCreatorId: z.uuid(),
   });
 
   router.post("/transfer-ownership", validate(transferSchema), asyncRoute(async (req, res) => {

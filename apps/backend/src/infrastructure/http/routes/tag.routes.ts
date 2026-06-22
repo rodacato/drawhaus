@@ -24,7 +24,7 @@ const updateSchema = z
   });
 
 const assignSchema = z.object({
-  diagramId: z.string().uuid(),
+  diagramId: z.uuid(),
 });
 
 export function createTagRoutes(

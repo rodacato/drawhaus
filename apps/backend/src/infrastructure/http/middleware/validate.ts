@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
-import type { ZodSchema } from "zod";
+import type { ZodType } from "zod";
 
-export function validate(schema: ZodSchema) {
+export function validate(schema: ZodType) {
   return (req: Request, res: Response, next: NextFunction) => {
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) {
@@ -13,7 +13,7 @@ export function validate(schema: ZodSchema) {
   };
 }
 
-export function validateQuery(schema: ZodSchema) {
+export function validateQuery(schema: ZodType) {
   return (req: Request, res: Response, next: NextFunction) => {
     const parsed = schema.safeParse(req.query);
     if (!parsed.success) {
@@ -25,7 +25,7 @@ export function validateQuery(schema: ZodSchema) {
   };
 }
 
-export function validateParams(schema: ZodSchema) {
+export function validateParams(schema: ZodType) {
   return (req: Request, res: Response, next: NextFunction) => {
     const parsed = schema.safeParse(req.params);
     if (!parsed.success) {

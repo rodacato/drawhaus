@@ -9,7 +9,7 @@ import { validate } from "../middleware/validate";
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),
-  workspaceId: z.string().uuid().nullable().optional(),
+  workspaceId: z.uuid().nullable().optional(),
 });
 
 const renameSchema = z.object({
