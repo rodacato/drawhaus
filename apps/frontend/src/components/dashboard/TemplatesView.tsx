@@ -39,7 +39,8 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
   function scopeLabel(t: TemplateDTO) {
     if (!t.workspaceId) return "Personal";
     const ws = wsMap.get(t.workspaceId);
-    return ws ? (ws.isPersonal ? "Personal" : ws.name) : "Workspace";
+    if (!ws) return "Workspace";
+    return ws.isPersonal ? "Personal" : ws.name;
   }
 
   async function handleUse(template: TemplateDTO) {

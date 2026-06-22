@@ -17,6 +17,18 @@ const LABELS: Record<string, { label: string; group: string }> = {
   FROM_EMAIL: { label: "From Address", group: "Email (Resend)" },
 };
 
+const SOURCE_BADGE_CLASSES: Record<Integration["source"], string> = {
+  db: "bg-primary/10 text-primary",
+  env: "bg-success/10 text-success",
+  none: "bg-surface-raised text-text-muted",
+};
+
+const SOURCE_BADGE_LABELS: Record<Integration["source"], string> = {
+  db: "DB",
+  env: "ENV",
+  none: "Not set",
+};
+
 export function IntegrationSecretsPanel() {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [encryptionEnabled, setEncryptionEnabled] = useState(false);
@@ -98,12 +110,8 @@ export function IntegrationSecretsPanel() {
                   <span className="text-sm font-medium text-text-primary">
                     {LABELS[item.key]?.label ?? item.key}
                   </span>
-                  <span className={`text-xs px-1.5 py-0.5 rounded ${
-                    item.source === "db" ? "bg-primary/10 text-primary" :
-                    item.source === "env" ? "bg-success/10 text-success" :
-                    "bg-surface-raised text-text-muted"
-                  }`}>
-                    {item.source === "db" ? "DB" : item.source === "env" ? "ENV" : "Not set"}
+                  <span className={`text-xs px-1.5 py-0.5 rounded ${SOURCE_BADGE_CLASSES[item.source]}`}>
+                    {SOURCE_BADGE_LABELS[item.source]}
                   </span>
                 </div>
                 {editing === item.key ? (

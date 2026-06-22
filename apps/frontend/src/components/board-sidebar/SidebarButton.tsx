@@ -1,3 +1,9 @@
+function buttonStateClass(active: boolean | undefined, accent: boolean | undefined): string {
+  if (active) return "bg-blue-100 text-blue-600";
+  if (accent) return "bg-blue-500 text-white hover:bg-blue-600";
+  return "text-gray-500 hover:bg-gray-100 hover:text-gray-700";
+}
+
 export function SidebarButton({
   icon,
   label,
@@ -16,13 +22,7 @@ export function SidebarButton({
   return (
     <button
       onClick={onClick}
-      className={`group relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors ${
-        active
-          ? "bg-blue-100 text-blue-600"
-          : accent
-            ? "bg-blue-500 text-white hover:bg-blue-600"
-            : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-      }`}
+      className={`group relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors ${buttonStateClass(active, accent)}`}
       title={label}
       type="button"
     >

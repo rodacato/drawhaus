@@ -93,6 +93,77 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
   const folders = files.filter((f) => f.isFolder);
   const sortedFiles = [...folders, ...excalidrawFiles];
 
+  function renderContent() {
+    if (loading) {
+      return <p className="py-8 text-center text-sm text-text-muted">Loading...</p>;
+    }
+    if (driveConnected === false) {
+      return (
+        <div className="flex flex-col items-center gap-4 py-8">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50">
+            <svg width="32" height="32" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6.6 66.85L14.25 78h58.8l7.65-11.15z" fill="#2684FC" />
+              <path d="M29.05 0L6.6 66.85l7.65 11.15 22.45-38.8z" fill="#0066DA" />
+              <path d="M58.25 0H29.05l22.45 39.2H80.7z" fill="#FFBA00" />
+            </svg>
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-medium text-text-primary">Google Drive not connected</p>
+            <p className="mt-1 text-xs text-text-muted">Connect your Google Drive to import .excalidraw files.</p>
+          </div>
+          <a
+            href={`${API_URL}/api/auth/google/drive`}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition hover:bg-primary-hover"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+            Connect Google Drive
+          </a>
+        </div>
+      );
+    }
+    if (sortedFiles.length === 0) {
+      return <p className="py-8 text-center text-sm text-text-muted">No .excalidraw files found in this folder.</p>;
+    }
+    return (
+      <div className="divide-y divide-border">
+        {sortedFiles.map((file) => (
+          <div key={file.id} className="flex items-center gap-3 py-3">
+            {file.isFolder ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-muted"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-text-primary">{file.name}</p>
+              <p className="text-xs text-text-muted">
+                {formatDate(file.modifiedTime)}
+                {file.size && ` · ${formatSize(file.size)}`}
+              </p>
+            </div>
+            {file.isFolder ? (
+              <button
+                type="button"
+                onClick={() => openFolder(file)}
+                className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/10"
+              >
+                Open
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => importFile(file)}
+                disabled={importing !== null}
+                className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition hover:bg-primary-hover disabled:opacity-50"
+              >
+                {importing === file.id ? "Importing..." : "Import"}
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <button type="button" aria-label="Close" className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -128,70 +199,7 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
             <p className="mb-3 rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</p>
           )}
 
-          {loading ? (
-            <p className="py-8 text-center text-sm text-text-muted">Loading...</p>
-          ) : driveConnected === false ? (
-            /* Not connected — show connect CTA */
-            <div className="flex flex-col items-center gap-4 py-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50">
-                <svg width="32" height="32" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M6.6 66.85L14.25 78h58.8l7.65-11.15z" fill="#2684FC" />
-                  <path d="M29.05 0L6.6 66.85l7.65 11.15 22.45-38.8z" fill="#0066DA" />
-                  <path d="M58.25 0H29.05l22.45 39.2H80.7z" fill="#FFBA00" />
-                </svg>
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-text-primary">Google Drive not connected</p>
-                <p className="mt-1 text-xs text-text-muted">Connect your Google Drive to import .excalidraw files.</p>
-              </div>
-              <a
-                href={`${API_URL}/api/auth/google/drive`}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition hover:bg-primary-hover"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-                Connect Google Drive
-              </a>
-            </div>
-          ) : sortedFiles.length === 0 ? (
-            <p className="py-8 text-center text-sm text-text-muted">No .excalidraw files found in this folder.</p>
-          ) : (
-            <div className="divide-y divide-border">
-              {sortedFiles.map((file) => (
-                <div key={file.id} className="flex items-center gap-3 py-3">
-                  {file.isFolder ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-muted"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-text-primary">{file.name}</p>
-                    <p className="text-xs text-text-muted">
-                      {formatDate(file.modifiedTime)}
-                      {file.size && ` · ${formatSize(file.size)}`}
-                    </p>
-                  </div>
-                  {file.isFolder ? (
-                    <button
-                      type="button"
-                      onClick={() => openFolder(file)}
-                      className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/10"
-                    >
-                      Open
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => importFile(file)}
-                      disabled={importing !== null}
-                      className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition hover:bg-primary-hover disabled:opacity-50"
-                    >
-                      {importing === file.id ? "Importing..." : "Import"}
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          {renderContent()}
         </div>
 
         {/* Footer */}

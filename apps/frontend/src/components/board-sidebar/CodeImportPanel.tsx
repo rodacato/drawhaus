@@ -169,11 +169,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
   const placeholder =
     format === "mermaid" ? MERMAID_PLACEHOLDER : PLANTUML_PLACEHOLDER;
 
-  const buttonLabel = importing
-    ? "Importing..."
-    : validationInfo && format === "plantuml"
-      ? `Add ${validationInfo.entityCount} element${validationInfo.entityCount !== 1 ? "s" : ""} to Canvas`
-      : "Add to Canvas";
+  const buttonLabel = computeButtonLabel({ importing, validationInfo, format });
 
   return (
     <div className="space-y-3">
@@ -289,4 +285,19 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
       </div>
     </div>
   );
+}
+
+function computeButtonLabel({
+  importing, validationInfo, format,
+}: {
+  importing: boolean;
+  validationInfo: ValidationInfo;
+  format: Format;
+}): string {
+  if (importing) return "Importing...";
+  if (validationInfo && format === "plantuml") {
+    const plural = validationInfo.entityCount !== 1 ? "s" : "";
+    return `Add ${validationInfo.entityCount} element${plural} to Canvas`;
+  }
+  return "Add to Canvas";
 }

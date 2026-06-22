@@ -91,23 +91,9 @@ export function TemplatePicker({ open, workspaceId, onClose, onUseTemplate, onUs
   const personalTemplates = customTemplates.filter((t) => !t.workspaceId);
   const workspaceTemplates = customTemplates.filter((t) => !!t.workspaceId);
 
-  const filteredBuiltIn = activeCategory === "all"
-    ? builtInTemplates
-    : activeCategory === "custom" || activeCategory === "workspace"
-      ? []
-      : builtInTemplates.filter((t) => t.category === activeCategory);
-
-  const filteredPersonal = activeCategory === "all" || activeCategory === "custom"
-    ? personalTemplates
-    : activeCategory === "workspace"
-      ? []
-      : personalTemplates.filter((t) => t.category === activeCategory);
-
-  const filteredWorkspace = activeCategory === "all" || activeCategory === "workspace"
-    ? workspaceTemplates
-    : activeCategory === "custom"
-      ? []
-      : workspaceTemplates.filter((t) => t.category === activeCategory);
+  const filteredBuiltIn = filterBuiltIn(builtInTemplates, activeCategory);
+  const filteredPersonal = filterByCategory(personalTemplates, activeCategory, "custom");
+  const filteredWorkspace = filterByCategory(workspaceTemplates, activeCategory, "workspace");
 
   async function handleUseBuiltIn(template: BuiltInTemplate) {
     if (pending) return;
@@ -251,9 +237,7 @@ export function TemplatePicker({ open, workspaceId, onClose, onUseTemplate, onUs
 
               {!hasResults && (
                 <div className="col-span-full py-8 text-center text-sm text-text-muted">
-                  {activeCategory === "custom" ? "No personal templates yet. Save a diagram as a template from the board sidebar or diagram menu."
-                    : activeCategory === "workspace" ? "No workspace templates yet. Share a template with your workspace when saving."
-                    : "No templates in this category."}
+                  {emptyCategoryMessage(activeCategory)}
                 </div>
               )}
             </div>
@@ -263,4 +247,27 @@ export function TemplatePicker({ open, workspaceId, onClose, onUseTemplate, onUs
     </div>,
     document.body,
   );
+}
+
+function filterBuiltIn(items: BuiltInTemplate[], activeCategory: string): BuiltInTemplate[] {
+  if (activeCategory === "all") return items;
+  if (activeCategory === "custom" || activeCategory === "workspace") return [];
+  return items.filter((t) => t.category === activeCategory);
+}
+
+function filterByCategory(items: TemplateDTO[], activeCategory: string, ownCategory: "custom" | "workspace"): TemplateDTO[] {
+  if (activeCategory === "all" || activeCategory === ownCategory) return items;
+  const otherCategory = ownCategory === "custom" ? "workspace" : "custom";
+  if (activeCategory === otherCategory) return [];
+  return items.filter((t) => t.category === activeCategory);
+}
+
+function emptyCategoryMessage(activeCategory: string): string {
+  if (activeCategory === "custom") {
+    return "No personal templates yet. Save a diagram as a template from the board sidebar or diagram menu.";
+  }
+  if (activeCategory === "workspace") {
+    return "No workspace templates yet. Share a template with your workspace when saving.";
+  }
+  return "No templates in this category.";
 }

@@ -23,6 +23,18 @@ type ShareLink = {
   createdAt: string;
 };
 
+function computeLinkBadge(link: ShareLink): { badgeText: string; badgeClass: string } {
+  if (isExpired(link.expiresAt)) {
+    return { badgeText: "Expired", badgeClass: "bg-error/10 text-error ring-error/20" };
+  }
+  if (link.expiresAt) {
+    const d = new Date(link.expiresAt);
+    const badgeText = `Expires ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+    return { badgeText, badgeClass: "bg-warning/10 text-warning ring-warning/20" };
+  }
+  return { badgeText: "Active", badgeClass: "bg-success/10 text-success ring-success/20" };
+}
+
 interface ShareModalProps {
   open: boolean;
   onClose: () => void;
@@ -134,6 +146,93 @@ export function ShareModal({
   const sectionLabel =
     "mb-3 text-[11px] font-semibold uppercase tracking-widest text-text-muted";
 
+  function renderCopyButtonContent({ copied: isCopied, creating: isCreating }: { copied: boolean; creating: boolean }) {
+    if (isCopied) {
+      return (
+        <>
+          <IconCheck size={14} />
+          Copied!
+        </>
+      );
+    }
+    if (isCreating) return "Creating...";
+    return (
+      <>
+        <IconCopy size={14} />
+        Copy Link
+      </>
+    );
+  }
+
+  function renderLinksList() {
+    if (loadingLinks) {
+      return <p className="py-4 text-center text-sm text-text-muted">Loading...</p>;
+    }
+    if (links.length === 0) {
+      return <p className="py-4 text-center text-sm text-text-muted">No active links</p>;
+    }
+    return links.map(renderLinkRow);
+  }
+
+  function renderLinkRow(link: ShareLink) {
+    const isEditor = link.role === "editor";
+    const { badgeText, badgeClass } = computeLinkBadge(link);
+    return (
+      <div
+        key={link.token}
+        className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 transition hover:border-border/80"
+      >
+        {/* Icon circle */}
+        <div
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+            isEditor
+              ? "bg-primary/10 text-primary"
+              : "bg-accent-coral/10 text-accent-coral"
+          }`}
+        >
+          {isEditor ? <IconEdit size={14} /> : <IconEye size={14} />}
+        </div>
+
+        {/* Text content */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-text-primary">
+              {link.role.charAt(0).toUpperCase() + link.role.slice(1)} Link
+            </span>
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${badgeClass}`}
+            >
+              {badgeText}
+            </span>
+          </div>
+          <p className="mt-0.5 text-xs text-text-muted">
+            {formatRelativeDate(link.createdAt)}
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => handleCopyExistingLink(link.token)}
+            className={`rounded-lg p-2 transition ${copiedToken === link.token ? "text-success" : "text-text-muted hover:bg-primary/10 hover:text-primary"}`}
+            aria-label="Copy link"
+            title="Copy link"
+          >
+            {copiedToken === link.token ? <IconCheck size={15} /> : <IconCopy size={15} />}
+          </button>
+          <button
+            onClick={() => handleDeleteLink(link.token)}
+            className="rounded-lg p-2 text-text-muted transition hover:bg-error/10 hover:text-error"
+            aria-label="Delete link"
+            title="Delete link"
+          >
+            <IconTrash size={15} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const modal = (
     <>
       {/* ── Backdrop ─────────────────────────────────────── */}
@@ -231,19 +330,7 @@ export function ShareModal({
                   disabled={creating}
                   className={`${ui.btn} ${ui.btnPrimary} shrink-0 gap-1.5`}
                 >
-                  {copied ? (
-                    <>
-                      <IconCheck size={14} />
-                      Copied!
-                    </>
-                  ) : creating ? (
-                    "Creating..."
-                  ) : (
-                    <>
-                      <IconCopy size={14} />
-                      Copy Link
-                    </>
-                  )}
+                  {renderCopyButtonContent({ copied, creating })}
                 </button>
               </div>
             </section>
@@ -253,97 +340,7 @@ export function ShareModal({
               <p className={sectionLabel}>Active Links</p>
 
               <div className="space-y-2">
-                {loadingLinks ? (
-                  <p className="py-4 text-center text-sm text-text-muted">
-                    Loading...
-                  </p>
-                ) : links.length === 0 ? (
-                  <p className="py-4 text-center text-sm text-text-muted">
-                    No active links
-                  </p>
-                ) : (
-                  links.map((link) => {
-                    const isEditor = link.role === "editor";
-                    const expired = isExpired(link.expiresAt);
-
-                    /* Badge text */
-                    let badgeText: string;
-                    let badgeClass: string;
-                    if (expired) {
-                      badgeText = "Expired";
-                      badgeClass =
-                        "bg-error/10 text-error ring-error/20";
-                    } else if (link.expiresAt) {
-                      const d = new Date(link.expiresAt);
-                      badgeText = `Expires ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
-                      badgeClass =
-                        "bg-warning/10 text-warning ring-warning/20";
-                    } else {
-                      badgeText = "Active";
-                      badgeClass =
-                        "bg-success/10 text-success ring-success/20";
-                    }
-
-                    return (
-                      <div
-                        key={link.token}
-                        className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 transition hover:border-border/80"
-                      >
-                        {/* Icon circle */}
-                        <div
-                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                            isEditor
-                              ? "bg-primary/10 text-primary"
-                              : "bg-accent-coral/10 text-accent-coral"
-                          }`}
-                        >
-                          {isEditor ? (
-                            <IconEdit size={14} />
-                          ) : (
-                            <IconEye size={14} />
-                          )}
-                        </div>
-
-                        {/* Text content */}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-text-primary">
-                              {link.role.charAt(0).toUpperCase() + link.role.slice(1)} Link
-                            </span>
-                            <span
-                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${badgeClass}`}
-                            >
-                              {badgeText}
-                            </span>
-                          </div>
-                          <p className="mt-0.5 text-xs text-text-muted">
-                            {formatRelativeDate(link.createdAt)}
-                          </p>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleCopyExistingLink(link.token)}
-                            className={`rounded-lg p-2 transition ${copiedToken === link.token ? "text-success" : "text-text-muted hover:bg-primary/10 hover:text-primary"}`}
-                            aria-label="Copy link"
-                            title="Copy link"
-                          >
-                            {copiedToken === link.token ? <IconCheck size={15} /> : <IconCopy size={15} />}
-                          </button>
-                          <button
-                            onClick={() => handleDeleteLink(link.token)}
-                            className="rounded-lg p-2 text-text-muted transition hover:bg-error/10 hover:text-error"
-                            aria-label="Delete link"
-                            title="Delete link"
-                          >
-                            <IconTrash size={15} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+                {renderLinksList()}
               </div>
             </section>
           </div>
