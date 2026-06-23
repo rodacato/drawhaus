@@ -3,7 +3,7 @@ import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { SessionRepository } from "../../../domain/ports/session-repository";
 import type { OAuthTokenRepository } from "../../../domain/ports/oauth-token-repository";
 import type { SiteSettingsRepository } from "../../../domain/ports/site-settings-repository";
-import { ForbiddenError } from "../../../domain/errors";
+import { ConflictError, ForbiddenError } from "../../../domain/errors";
 import { config } from "../../../infrastructure/config";
 
 type GitHubTokenResponse = {
@@ -100,12 +100,9 @@ export class GitHubAuthUseCase {
 
     const byEmail = await this.users.findByEmail(email.toLowerCase());
     if (byEmail) {
-      await this.users.update(byEmail.id, {
-        githubId: githubIdStr,
-        githubUsername: githubUser.login,
-        avatarUrl: byEmail.avatarUrl ?? githubUser.avatar_url,
-      });
-      return (await this.users.findById(byEmail.id))!;
+      throw new ConflictError(
+        "An account with this email already exists. Sign in with your password and link GitHub from Settings.",
+      );
     }
 
     const userCount = await this.users.count();

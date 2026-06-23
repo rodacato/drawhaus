@@ -5,7 +5,7 @@ import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { InMemoryOAuthTokenRepository } from "../../fakes/in-memory-oauth-token-repository";
 import { InMemorySiteSettingsRepository } from "../../fakes/in-memory-site-settings-repository";
-import { ForbiddenError } from "../../../domain/errors";
+import { ConflictError, ForbiddenError } from "../../../domain/errors";
 import { config } from "../../../infrastructure/config";
 
 type FetchInput = Parameters<typeof fetch>[0];
@@ -255,9 +255,9 @@ describe("GitHubAuthUseCase", () => {
       assert.equal(users.store[0].githubUsername, "octocat");
     });
 
-    it("links GitHub to an existing user found by email and preserves existing avatar", async () => {
+    it("throws ConflictError when an existing local account shares the email and has no githubId (prevents silent takeover)", async () => {
       installFetchMock(buildHandler());
-      const { users, oauthTokens, useCase } = setup();
+      const { users, oauthTokens, sessions, useCase } = setup();
       const existing = await users.create({
         email: "octo@example.com",
         name: "Octo",
@@ -265,28 +265,18 @@ describe("GitHubAuthUseCase", () => {
         avatarUrl: "https://existing-avatar",
       });
 
-      await useCase.handleCallback("code");
+      await assert.rejects(
+        () => useCase.handleCallback("code"),
+        (err: unknown) => err instanceof ConflictError,
+      );
 
       assert.equal(users.store.length, 1);
       assert.equal(users.store[0].id, existing.id);
-      assert.equal(users.store[0].githubId, "12345");
-      assert.equal(users.store[0].githubUsername, "octocat");
+      assert.equal(users.store[0].githubId, null);
+      assert.equal(users.store[0].githubUsername, null);
       assert.equal(users.store[0].avatarUrl, "https://existing-avatar");
-      assert.equal(oauthTokens.store[0].userId, existing.id);
-    });
-
-    it("uses the GitHub avatar when linking by email if user has no avatar yet", async () => {
-      installFetchMock(buildHandler());
-      const { users, useCase } = setup();
-      await users.create({
-        email: "octo@example.com",
-        name: "Octo",
-        passwordHash: "hashed",
-      });
-
-      await useCase.handleCallback("code");
-
-      assert.equal(users.store[0].avatarUrl, "https://avatars.githubusercontent.com/u/12345");
+      assert.equal(oauthTokens.store.length, 0);
+      assert.equal(sessions.sessions.length, 0);
     });
 
     it("creates a new non-first user with passwordHash=null when registration is open", async () => {
