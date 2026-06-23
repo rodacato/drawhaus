@@ -5,7 +5,7 @@ import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { InMemoryOAuthTokenRepository } from "../../fakes/in-memory-oauth-token-repository";
 import { InMemorySiteSettingsRepository } from "../../fakes/in-memory-site-settings-repository";
-import { ForbiddenError } from "../../../domain/errors";
+import { ConflictError, ForbiddenError } from "../../../domain/errors";
 import { config } from "../../../infrastructure/config";
 
 type ConfigMut = {
@@ -246,8 +246,8 @@ describe("GoogleAuthUseCase.handleCallback — happy paths", () => {
     assert.equal(oauthTokens.store[0].userId, existing.id);
   });
 
-  it("links googleId to existing user found by email, preserving existing avatar", async () => {
-    const { users, oauthTokens, useCase } = setup();
+  it("throws ConflictError when an existing local account shares the email and has no googleId (prevents silent takeover)", async () => {
+    const { users, sessions, oauthTokens, useCase } = setup();
     const existing = await users.create({
       email: "newuser@example.com",
       name: "Existing User",
@@ -256,30 +256,17 @@ describe("GoogleAuthUseCase.handleCallback — happy paths", () => {
     });
     installFetchMock(defaultFetchHandler());
 
-    await useCase.handleCallback("auth-code");
+    await assert.rejects(
+      () => useCase.handleCallback("auth-code"),
+      (err: unknown) => err instanceof ConflictError,
+    );
 
-    const updated = users.store.find((u) => u.id === existing.id);
-    assert.ok(updated);
-    assert.equal(updated.googleId, "google-user-1");
-    assert.equal(updated.avatarUrl, "https://existing.example.com/avatar.png");
-    assert.equal(oauthTokens.store[0].userId, existing.id);
-  });
-
-  it("links googleId to existing user found by email, using Google avatar when user has none", async () => {
-    const { users, useCase } = setup();
-    const existing = await users.create({
-      email: "newuser@example.com",
-      name: "Existing User",
-      passwordHash: "hash",
-    });
-    installFetchMock(defaultFetchHandler());
-
-    await useCase.handleCallback("auth-code");
-
-    const updated = users.store.find((u) => u.id === existing.id);
-    assert.ok(updated);
-    assert.equal(updated.googleId, "google-user-1");
-    assert.equal(updated.avatarUrl, "https://lh3.googleusercontent.com/a/avatar1");
+    const untouched = users.store.find((u) => u.id === existing.id);
+    assert.ok(untouched);
+    assert.equal(untouched.googleId, null);
+    assert.equal(untouched.avatarUrl, "https://existing.example.com/avatar.png");
+    assert.equal(oauthTokens.store.length, 0);
+    assert.equal(sessions.sessions.length, 0);
   });
 
   it("creates new user with passwordHash=null when not first user and registration is open", async () => {
@@ -301,7 +288,7 @@ describe("GoogleAuthUseCase.handleCallback — happy paths", () => {
     assert.equal(created.googleId, "google-user-1");
   });
 
-  it("lowercases the email returned from Google when looking up by email", async () => {
+  it("lowercases the email returned from Google before the email-collision check (still throws ConflictError)", async () => {
     const { users, useCase } = setup();
     await users.create({
       email: "case-test@example.com",
@@ -312,10 +299,13 @@ describe("GoogleAuthUseCase.handleCallback — happy paths", () => {
       defaultFetchHandler({ userInfo: { email: "Case-Test@Example.COM", id: "g-case" } }),
     );
 
-    await useCase.handleCallback("auth-code");
+    await assert.rejects(
+      () => useCase.handleCallback("auth-code"),
+      (err: unknown) => err instanceof ConflictError,
+    );
 
-    assert.equal(users.store.length, 1, "should have linked instead of created a second user");
-    assert.equal(users.store[0].googleId, "g-case");
+    assert.equal(users.store.length, 1, "should not create a second user");
+    assert.equal(users.store[0].googleId, null, "should not link Google to existing account");
   });
 
   it("computes tokenExpiresAt from the expires_in field", async () => {

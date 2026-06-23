@@ -3,7 +3,7 @@ import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { SessionRepository } from "../../../domain/ports/session-repository";
 import type { OAuthTokenRepository } from "../../../domain/ports/oauth-token-repository";
 import type { SiteSettingsRepository } from "../../../domain/ports/site-settings-repository";
-import { ForbiddenError } from "../../../domain/errors";
+import { ConflictError, ForbiddenError } from "../../../domain/errors";
 import { config } from "../../../infrastructure/config";
 
 type GoogleTokenResponse = {
@@ -83,11 +83,9 @@ export class GoogleAuthUseCase {
 
     const byEmail = await this.users.findByEmail(googleUser.email.toLowerCase());
     if (byEmail) {
-      await this.users.update(byEmail.id, {
-        googleId: googleUser.id,
-        avatarUrl: byEmail.avatarUrl ?? googleUser.picture ?? null,
-      });
-      return (await this.users.findById(byEmail.id))!;
+      throw new ConflictError(
+        "An account with this email already exists. Sign in with your password and link Google from Settings.",
+      );
     }
 
     const userCount = await this.users.count();
