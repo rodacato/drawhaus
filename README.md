@@ -35,7 +35,7 @@ Drawhaus is a self-hosted Excalidraw alternative for developers and small teams 
 
 ### Prerequisites
 
-- **Node.js** 22+
+- **Node.js** 24+ (current LTS — see `.nvmrc`)
 - **PostgreSQL** 16+ (or use Docker)
 
 ### Option 1: Local development
@@ -80,7 +80,7 @@ Docker Compose reads `.env` automatically. Starts everything — frontend, backe
 2. Run **Dev Containers: Reopen in Container**
 3. `npm run dev`
 
-The devcontainer includes Node 22, PostgreSQL, GitHub CLI, and forwarded ports.
+The devcontainer includes Node 24, PostgreSQL, GitHub CLI, and forwarded ports.
 
 ### First-time setup
 

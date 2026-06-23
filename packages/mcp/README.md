@@ -6,7 +6,7 @@ MCP (Model Context Protocol) server for [Drawhaus](https://github.com/drawhaus/d
 
 - A running Drawhaus instance
 - An API key (create one in Drawhaus → Settings → API Keys)
-- Node.js >= 18
+- Node.js >= 24
 
 ## Setup
 

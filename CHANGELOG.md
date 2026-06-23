@@ -7,6 +7,7 @@ All notable changes to Drawhaus are documented here.
 ## Unreleased
 
 ### Added
+- **Node.js 24 (current LTS) unified across the toolchain.** Adds `.nvmrc=24` at the repo root; bumps `.devcontainer/devcontainer.json` and all three GitHub Actions workflows (`ci.yml`, `quality.yml`, `publish-mcp.yml`) from `node-version: 22` → `24`; adds `"engines": { "node": ">=24" }` to the root `package.json`, `apps/{backend,frontend}/package.json`, and all four `packages/*/package.json` (previously `>=18`). Application Dockerfiles (`apps/backend/Dockerfile`, `apps/frontend/Dockerfile`) were already on `node:24-slim` — no change there. The Dependabot PRs proposing Node 26 are deferred until Node 26 becomes Active LTS in October 2026.
 - **`drawhaus-frontend` SonarQube project** scanned by `quality.yml` (`workflow_dispatch`). Adds `apps/frontend/sonar-project.properties` and a `Scan frontend` step alongside the existing backend scan. Frontend uses `sonar.javascript.skipTypechecking=true` and `sonar.javascript.node.maxspace=8192` to dodge the type-aware OOM caused by three.js/excalidraw/dagre type graphs — trading type-aware rules for a scan that completes. Packages remain unscanned for the same reason.
 
 ### Security

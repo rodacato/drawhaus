@@ -6,7 +6,7 @@ Use the Drawhaus MCP server to create and manage diagrams directly from AI codin
 
 1. A running Drawhaus instance (local or deployed)
 2. An API key — create one in **Settings → API Keys**
-3. Node.js >= 18 on the machine running the AI tool
+3. Node.js >= 24 on the machine running the AI tool
 
 ## Step 1: Install the MCP Server
 
