@@ -7,7 +7,7 @@
   "features": {
     "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "22"
+      "version": "24"
     },
     "ghcr.io/rails/devcontainer/features/postgres-client": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
