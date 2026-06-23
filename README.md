@@ -9,6 +9,26 @@
   Real-time collaboration. No subscription. Your data, your rules.
 </p>
 
+<p align="center">
+  <a href="https://github.com/rodacato/drawhaus/actions/workflows/ci.yml"><img src="https://github.com/rodacato/drawhaus/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/rodacato/drawhaus/actions/workflows/quality.yml"><img src="https://github.com/rodacato/drawhaus/actions/workflows/quality.yml/badge.svg" alt="Quality" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React" /></a>
+  <a href="https://vite.dev/"><img src="https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white" alt="Vite" /></a>
+  <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white" alt="Express" /></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-%E2%89%A524-5FA04E?logo=nodedotjs&logoColor=white" alt="Node.js" /></a>
+  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white" alt="PostgreSQL" /></a>
+  <a href="https://github.com/excalidraw/excalidraw"><img src="https://img.shields.io/badge/Excalidraw-0.18-6965DB" alt="Excalidraw" /></a>
+  <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+</p>
+
+**Code quality** (SonarQube, per workspace):
+
+| Package | Quality Gate | Coverage | Maintainability | Reliability | Security |
+|---|---|---|---|---|---|
+| **backend** (`apps/backend`) | [![Quality Gate](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=alert_status&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend) | [![Coverage](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=coverage&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend) | [![Maintainability](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=sqale_rating&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend) | [![Reliability](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=reliability_rating&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend) | [![Security](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=security_rating&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend) |
+| **frontend** (`apps/frontend`) | [![Quality Gate](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-frontend&metric=alert_status&token=sqb_664c936aad7f42bda3c4aa5e342d2b5282f32068)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-frontend) | [![Coverage](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-frontend&metric=coverage&token=sqb_664c936aad7f42bda3c4aa5e342d2b5282f32068)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-frontend) | [![Maintainability](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-frontend&metric=sqale_rating&token=sqb_664c936aad7f42bda3c4aa5e342d2b5282f32068)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-frontend) | [![Reliability](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-frontend&metric=reliability_rating&token=sqb_664c936aad7f42bda3c4aa5e342d2b5282f32068)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-frontend) | [![Security](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-frontend&metric=security_rating&token=sqb_664c936aad7f42bda3c4aa5e342d2b5282f32068)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-frontend) |
+
 ---
 
 ## What is Drawhaus?
