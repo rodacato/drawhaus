@@ -113,7 +113,7 @@ describe("ResendEmailService.sendInviteEmail", () => {
     assert.match(payload.html, /Sent by Acme/);
   });
 
-  it("XSS: inviterName is interpolated unescaped, allowing HTML injection into the email body", async () => {
+  it("escapes inviterName HTML to prevent injection into the email body", async () => {
     const { client, sendMock } = makeSuccessClient();
     mock.method(logger, "info", () => {});
     const service = new TestableEmailService({ client, from: "noreply@example.test" });
@@ -122,8 +122,14 @@ describe("ResendEmailService.sendInviteEmail", () => {
     await service.sendInviteEmail("user@example.com", "t", malicious, "Acme");
 
     const payload = sendMock.mock.calls[0].arguments[0] as SendPayload;
-    assert.ok(payload.html.includes('<a href="https://evil.example.com">Click here</a>'),
-      "raw <a> tag should appear in the HTML — confirms inviterName is not escaped");
+    assert.ok(
+      !payload.html.includes('<a href="https://evil.example.com">Click here</a>'),
+      "raw <a> tag must NOT appear in the HTML",
+    );
+    assert.ok(
+      payload.html.includes("&lt;/strong&gt;&lt;a href=&quot;https://evil.example.com&quot;&gt;Click here&lt;/a&gt;&lt;strong&gt;"),
+      "inviterName must be HTML-escaped",
+    );
   });
 });
 
@@ -164,19 +170,20 @@ describe("ResendEmailService.sendWorkspaceInviteEmail", () => {
     assert.match(payload.html, /<strong>Design Team<\/strong>/);
   });
 
-  it("XSS: workspaceName is interpolated unescaped (subject and body)", async () => {
+  it("escapes workspaceName HTML in both subject and body to prevent injection", async () => {
     const { client, sendMock } = makeSuccessClient();
     mock.method(logger, "info", () => {});
     const service = new TestableEmailService({ client, from: "noreply@example.test" });
 
     const malicious = '<img src=x onerror=alert(1)>';
+    const escaped = "&lt;img src=x onerror=alert(1)&gt;";
     await service.sendWorkspaceInviteEmail("invitee@example.com", "t", "Bob", malicious);
 
     const payload = sendMock.mock.calls[0].arguments[0] as SendPayload;
-    assert.ok(payload.html.includes(malicious),
-      "malicious workspaceName must appear unescaped in HTML — XSS surface");
-    assert.ok(payload.subject.includes(malicious),
-      "malicious workspaceName must appear unescaped in the subject too");
+    assert.ok(!payload.html.includes(malicious), "raw <img> must NOT appear in HTML");
+    assert.ok(!payload.subject.includes(malicious), "raw <img> must NOT appear in subject");
+    assert.ok(payload.html.includes(escaped), "workspaceName must be escaped in HTML");
+    assert.ok(payload.subject.includes(escaped), "workspaceName must be escaped in subject");
   });
 });
 
