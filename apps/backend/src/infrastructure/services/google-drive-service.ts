@@ -159,6 +159,9 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
   }
 
   async downloadFile(accessToken: string, fileId: string): Promise<string> {
+    if (!/^[A-Za-z0-9_-]+$/.test(fileId)) {
+      throw new Error("Drive downloadFile: invalid fileId");
+    }
     const res = await timedFetch(`${DRIVE_API}/files/${fileId}?alt=media`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });

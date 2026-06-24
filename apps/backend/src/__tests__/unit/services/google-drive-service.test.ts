@@ -449,6 +449,21 @@ describe("GoogleDriveServiceImpl.downloadFile", () => {
         err instanceof Error && err.message === "Drive downloadFile failed (410): gone",
     );
   });
+
+  it("rejects fileIds with characters outside the Drive ID allowlist before issuing any fetch", async () => {
+    const fetchMock = installFetchMock(() => textResponse("should-not-be-called"));
+    const service = new GoogleDriveServiceImpl();
+
+    for (const bad of ["../etc/passwd", "file 7", "file/7", "file?alt=json", "file#frag", ""]) {
+      await assert.rejects(
+        () => service.downloadFile(TOKEN, bad),
+        (err: unknown) =>
+          err instanceof Error && err.message === "Drive downloadFile: invalid fileId",
+      );
+    }
+
+    assert.equal(fetchMock.mock.calls.length, 0);
+  });
 });
 
 describe("GoogleDriveServiceImpl timeout", () => {
