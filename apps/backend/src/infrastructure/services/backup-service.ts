@@ -5,6 +5,9 @@ import { createWriteStream, createReadStream, existsSync } from "node:fs";
 import { pipeline } from "node:stream/promises";
 import { createGzip, createGunzip } from "node:zlib";
 import { config } from "../config";
+import { logger } from "../logger";
+
+const PG_BIN_VERSIONS = [18, 17, 16, 15, 14];
 
 export interface BackupMeta {
   filename: string;
@@ -25,15 +28,20 @@ export function parseConnectionString(url: string) {
   return {
     host: parsed.hostname,
     port: parsed.port || "5432",
-    user: parsed.username,
+    user: decodeURIComponent(parsed.username),
     password: decodeURIComponent(parsed.password),
-    database: parsed.pathname.slice(1),
+    database: decodeURIComponent(parsed.pathname.slice(1)),
   };
 }
 
 /** Find pg_dump/psql — prefer versioned path (dev containers) over PATH default */
-function findPgBin(name: string): string {
-  for (const ver of [16, 17, 15]) {
+export function findPgBin(name: string): string {
+  const override = process.env.PG_BIN_PATH;
+  if (override) {
+    const p = path.join(override, name);
+    if (existsSync(p)) return p;
+  }
+  for (const ver of PG_BIN_VERSIONS) {
     const p = `/usr/lib/postgresql/${ver}/bin/${name}`;
     if (existsSync(p)) return p;
   }
@@ -189,8 +197,8 @@ export async function getBackupConfig(): Promise<{ backupDir: string; retentionD
         enabled: rows[0].backup_enabled,
       };
     }
-  } catch {
-    // DB not available yet (e.g. during init) — fall back to env vars
+  } catch (err) {
+    logger.warn({ err }, "getBackupConfig: DB read failed, falling back to env vars");
   }
   return {
     backupDir: BACKUP_DIR,
