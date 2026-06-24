@@ -1,11 +1,44 @@
+import { randomBytes } from "node:crypto";
 import type { GoogleDriveService, DriveFile, DriveFolder, DriveFileListItem } from "../../domain/ports/google-drive-service";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 
+// Exported as `let` so tests can override the bound; production callers should treat as readonly.
+export let DRIVE_TIMEOUT_MS = 30_000;
+
+export function __setDriveTimeoutForTest(ms: number): number {
+  const previous = DRIVE_TIMEOUT_MS;
+  DRIVE_TIMEOUT_MS = ms;
+  return previous;
+}
+
+type FetchInit = NonNullable<Parameters<typeof fetch>[1]>;
+
+async function timedFetch(url: string, init: FetchInit = {}): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), DRIVE_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } catch (err) {
+    if (err instanceof Error && (err.name === "AbortError" || (err as { code?: string }).code === "ABORT_ERR")) {
+      throw new Error(`Drive request timed out after ${DRIVE_TIMEOUT_MS}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function escapeDriveQL(value: string): string {
-  return value.replaceAll(/\\/g, String.raw`\\`).replaceAll(/'/g, String.raw`\'`);
+  return value
+    .replaceAll("\0", "")
+    .replaceAll(/\\/g, String.raw`\\`)
+    .replaceAll(/'/g, String.raw`\'`)
+    .replaceAll(/"/g, String.raw`\"`)
+    .replaceAll(/\n/g, " ")
+    .replaceAll(/\r/g, " ");
 }
 
 export class GoogleDriveServiceImpl implements GoogleDriveService {
@@ -13,7 +46,7 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
     const body: Record<string, unknown> = { name, mimeType: FOLDER_MIME };
     if (parentId) body.parents = [parentId];
 
-    const res = await fetch(`${DRIVE_API}/files`, {
+    const res = await timedFetch(`${DRIVE_API}/files`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -34,7 +67,7 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
     const parentClause = parentId ? `and '${escapeDriveQL(parentId)}' in parents` : "";
     const q = `name='${escapeDriveQL(name)}' and mimeType='${FOLDER_MIME}' ${parentClause} and trashed=false`;
 
-    const res = await fetch(`${DRIVE_API}/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=1`, {
+    const res = await timedFetch(`${DRIVE_API}/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=1`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
@@ -59,7 +92,7 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
     folderId: string;
     existingFileId?: string;
   }): Promise<DriveFile> {
-    const boundary = "drawhaus_boundary";
+    const boundary = `drawhaus_${randomBytes(16).toString("hex")}`;
     const isUpdate = !!data.existingFileId;
 
     const metadata: Record<string, unknown> = { name: data.name, mimeType: data.mimeType };
@@ -86,7 +119,7 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
 
     const method = isUpdate ? "PATCH" : "POST";
 
-    const res = await fetch(url, {
+    const res = await timedFetch(url, {
       method,
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -112,7 +145,7 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
     const fields = "files(id,name,mimeType,modifiedTime,size)";
     const orderBy = "modifiedTime desc";
 
-    const res = await fetch(
+    const res = await timedFetch(
       `${DRIVE_API}/files?q=${encodeURIComponent(q)}&fields=${encodeURIComponent(fields)}&orderBy=${encodeURIComponent(orderBy)}&pageSize=100`,
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
@@ -126,7 +159,10 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
   }
 
   async downloadFile(accessToken: string, fileId: string): Promise<string> {
-    const res = await fetch(`${DRIVE_API}/files/${fileId}?alt=media`, {
+    if (!/^[A-Za-z0-9_-]+$/.test(fileId)) {
+      throw new Error("Drive downloadFile: invalid fileId");
+    }
+    const res = await timedFetch(`${DRIVE_API}/files/${fileId}?alt=media`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
