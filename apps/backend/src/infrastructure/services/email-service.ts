@@ -11,7 +11,7 @@ export class ResendEmailService implements EmailService {
     this.configProvider = configProvider ?? null;
   }
 
-  private async getResend(): Promise<{ client: Resend; from: string } | null> {
+  protected async getResend(): Promise<{ client: Resend; from: string } | null> {
     const apiKey = this.configProvider
       ? await this.configProvider.get("RESEND_API_KEY")
       : config.resendApiKey;
