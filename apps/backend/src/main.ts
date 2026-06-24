@@ -11,6 +11,7 @@ import { runMigrations, pool } from "./infrastructure/db";
 import { logger } from "./infrastructure/logger";
 import { requestId } from "./infrastructure/http/middleware/request-id";
 import { requestLogger } from "./infrastructure/http/middleware/request-logger";
+import { createMetricsApp, metricsMiddleware } from "./infrastructure/metrics";
 
 // --- Sentry (must be configured before other imports) ---
 if (config.sentryDsn) {
@@ -80,6 +81,7 @@ export const app = express();
 app.use(helmet());
 app.use(requestId);
 app.use(requestLogger);
+app.use(metricsMiddleware);
 app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json({ limit: "5mb" }));
 
@@ -183,6 +185,12 @@ async function startServer(): Promise<void> {
 
   httpServer.listen(config.port, () => {
     logger.info({ port: config.port }, `Backend running on http://localhost:${config.port}`);
+  });
+
+  // Metrics live on a dedicated port that kamal-proxy never routes, so /metrics
+  // is unreachable from the public hostname — scrape it over the private network.
+  createMetricsApp().listen(config.metricsPort, () => {
+    logger.info({ port: config.metricsPort }, `Metrics on http://localhost:${config.metricsPort}/metrics`);
   });
 }
 

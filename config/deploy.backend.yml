@@ -37,6 +37,9 @@ builder:
 env:
   clear:
     PORT: 4000
+    # Prometheus /metrics — kamal-proxy only routes app_port (4000), so this port
+    # is never internet-facing. Scrape it over the private network / tailnet.
+    METRICS_PORT: 9464
     NODE_ENV: production
     FILES_PATH: /data/files
     SENTRY_ENVIRONMENT: <%= ENV["SENTRY_ENVIRONMENT"] %>
