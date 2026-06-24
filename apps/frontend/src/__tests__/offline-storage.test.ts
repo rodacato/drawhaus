@@ -1,4 +1,4 @@
-import test, { describe, beforeEach, afterEach } from "node:test";
+import { describe, test, beforeEach, afterEach } from "vitest";
 import assert from "node:assert/strict";
 import {
   saveOfflineSnapshot,

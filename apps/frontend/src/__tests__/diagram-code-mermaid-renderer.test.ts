@@ -1,30 +1,29 @@
-import test, { describe, mock, after } from "node:test";
+import { describe, test, vi } from "vitest";
 import assert from "node:assert/strict";
 
+const { state, initCalls, renderCalls } = vi.hoisted(() => ({
+  state: { mode: "ok" as "ok" | "throw" },
+  initCalls: [] as Array<Record<string, unknown>>,
+  renderCalls: [] as Array<{ id: string; code: string }>,
+}));
+
+vi.mock("mermaid", () => ({
+  default: {
+    initialize: (cfg: Record<string, unknown>) => {
+      initCalls.push(cfg);
+    },
+    render: async (id: string, code: string) => {
+      renderCalls.push({ id, code });
+      if (state.mode === "throw") throw new Error("parse error");
+      return { svg: `<svg data-id="${id}"/>` };
+    },
+  },
+}));
+
+import { renderMermaid } from "../lib/diagram-code/mermaid-renderer";
+
 describe("diagram-code/mermaid-renderer renderMermaid", () => {
-  after(() => mock.restoreAll());
-
   test("initializes mermaid once, renders successive svgs, and propagates render errors", async () => {
-    type Mode = "ok" | "throw";
-    let mode: Mode = "ok";
-    const initCalls: Array<Record<string, unknown>> = [];
-    const renderCalls: Array<{ id: string; code: string }> = [];
-
-    mock.module("mermaid", {
-      defaultExport: {
-        initialize: (cfg: Record<string, unknown>) => {
-          initCalls.push(cfg);
-        },
-        render: async (id: string, code: string) => {
-          renderCalls.push({ id, code });
-          if (mode === "throw") throw new Error("parse error");
-          return { svg: `<svg data-id="${id}"/>` };
-        },
-      },
-    });
-
-    const { renderMermaid } = await import("../lib/diagram-code/mermaid-renderer");
-
     const svgA = await renderMermaid("graph TD\nA-->B");
     const svgB = await renderMermaid("flowchart LR\nC-->D");
 
@@ -43,7 +42,7 @@ describe("diagram-code/mermaid-renderer renderMermaid", () => {
     assert.equal(svgA, `<svg data-id="${renderCalls[0].id}"/>`);
     assert.equal(svgB, `<svg data-id="${renderCalls[1].id}"/>`);
 
-    mode = "throw";
+    state.mode = "throw";
     await assert.rejects(() => renderMermaid("invalid"), /parse error/);
     assert.equal(initCalls.length, 1, "initialize should not be called again");
   });
