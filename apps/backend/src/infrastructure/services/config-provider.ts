@@ -1,4 +1,5 @@
 import type { IntegrationSecretsRepository } from "../../domain/ports/integration-secrets-repository";
+import { logger } from "../logger";
 
 const CACHE_TTL = 60_000;
 
@@ -22,8 +23,8 @@ export class ConfigProvider {
           this.cache.set(key, { value: dbValue, time: Date.now() });
           return dbValue;
         }
-      } catch {
-        // Fall through to env var
+      } catch (err) {
+        logger.warn({ err, key }, "ConfigProvider: DB read failed, falling back to env");
       }
     }
 

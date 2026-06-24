@@ -1,6 +1,7 @@
 import { describe, it, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import { ConfigProvider } from "../../../infrastructure/services/config-provider";
+import { logger } from "../../../infrastructure/logger";
 import type { IntegrationSecretsRepository } from "../../../domain/ports/integration-secrets-repository";
 
 type FakeRepo = IntegrationSecretsRepository & {
@@ -77,15 +78,21 @@ describe("ConfigProvider.get — repository path", () => {
     assert.deepEqual(repo.getCalls, ["CFG_TEST_A"]);
   });
 
-  it("swallows repo errors silently and falls back to process.env", async () => {
+  it("logs a warning and falls back to process.env when the repo throws", async () => {
     process.env.CFG_TEST_A = "env-fallback";
     const repo = makeRepo();
     repo.throwOnGet = true;
     const provider = new ConfigProvider(repo);
+    const warnMock = mock.method(logger, "warn", () => {});
 
     const value = await provider.get("CFG_TEST_A");
 
     assert.equal(value, "env-fallback");
+    assert.equal(warnMock.mock.calls.length, 1);
+    const [meta, msg] = warnMock.mock.calls[0].arguments as [{ err: Error; key: string }, string];
+    assert.ok(meta.err instanceof Error);
+    assert.equal(meta.key, "CFG_TEST_A");
+    assert.match(msg, /ConfigProvider/);
   });
 });
 
