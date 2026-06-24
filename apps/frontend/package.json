@@ -11,8 +11,8 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test 'src/__tests__/**/*.test.ts'",
-    "test:coverage": "c8 --all --include='src/**' --exclude='src/__tests__/**' --reporter=text --reporter=lcov --reports-dir=coverage tsx --test 'src/__tests__/**/*.test.ts'"
+    "test": "tsx --test --experimental-test-module-mocks 'src/__tests__/**/*.test.ts'",
+    "test:coverage": "c8 --all --include='src/**' --exclude='src/__tests__/**' --reporter=text --reporter=lcov --reports-dir=coverage tsx --test --experimental-test-module-mocks 'src/__tests__/**/*.test.ts'"
   },
   "dependencies": {
     "@drawhaus/helpers": "*",
