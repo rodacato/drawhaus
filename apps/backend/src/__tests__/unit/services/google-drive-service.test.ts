@@ -1,6 +1,8 @@
 import { describe, it, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
-import { GoogleDriveServiceImpl } from "../../../infrastructure/services/google-drive-service";
+import { GoogleDriveServiceImpl, __setDriveTimeoutForTest } from "../../../infrastructure/services/google-drive-service";
+
+const BOUNDARY_RE = /^drawhaus_[a-f0-9]{32}$/;
 
 type FetchResponse = {
   ok: boolean;
@@ -197,13 +199,13 @@ describe("GoogleDriveServiceImpl.uploadFile", () => {
       );
       assert.equal(init?.method, "POST");
       assert.equal(init?.headers?.["Authorization"], `Bearer ${TOKEN}`);
-      assert.equal(
-        init?.headers?.["Content-Type"],
-        "multipart/related; boundary=drawhaus_boundary",
-      );
+      const ct = init?.headers?.["Content-Type"] ?? "";
+      const boundaryMatch = ct.match(/^multipart\/related; boundary=(drawhaus_[a-f0-9]{32})$/);
+      assert.ok(boundaryMatch, `Content-Type must use a random boundary, got: ${ct}`);
+      const boundary = boundaryMatch[1];
       const body = init?.body ?? "";
-      assert.ok(body.includes("--drawhaus_boundary"));
-      assert.ok(body.includes("--drawhaus_boundary--"), "must terminate the multipart envelope");
+      assert.ok(body.includes(`--${boundary}`));
+      assert.ok(body.includes(`--${boundary}--`), "must terminate the multipart envelope");
       const metaMatch = body.match(/\{"name":"[^}]+\}/);
       assert.ok(metaMatch, "metadata JSON segment must appear in body");
       const meta = JSON.parse(metaMatch[0]) as Record<string, unknown>;
@@ -446,5 +448,93 @@ describe("GoogleDriveServiceImpl.downloadFile", () => {
       (err: unknown) =>
         err instanceof Error && err.message === "Drive downloadFile failed (410): gone",
     );
+  });
+});
+
+describe("GoogleDriveServiceImpl timeout", () => {
+  it("aborts and throws a clear timeout error when the Drive API never responds", async () => {
+    const previous = __setDriveTimeoutForTest(20);
+    try {
+      mock.method(globalThis, "fetch", (_input: unknown, init?: unknown) => {
+        const signal = (init as { signal?: AbortSignal } | undefined)?.signal;
+        return new Promise<Response>((_resolve, reject) => {
+          signal?.addEventListener("abort", () => {
+            const err = new Error("aborted");
+            err.name = "AbortError";
+            reject(err);
+          });
+        });
+      });
+      const service = new GoogleDriveServiceImpl();
+
+      await assert.rejects(
+        () => service.findFolder(TOKEN, "anything", null),
+        (err: unknown) => err instanceof Error && err.message === "Drive request timed out after 20ms",
+      );
+    } finally {
+      __setDriveTimeoutForTest(previous);
+    }
+  });
+
+  it("passes an AbortSignal to fetch on every call", async () => {
+    const fetchMock = installFetchMock((_url, init) => {
+      const signal = (init as unknown as { signal?: AbortSignal }).signal;
+      assert.ok(signal instanceof AbortSignal, "every Drive fetch must carry an AbortSignal");
+      return jsonResponse({ files: [] });
+    });
+    const service = new GoogleDriveServiceImpl();
+
+    await service.findFolder(TOKEN, "x", null);
+
+    assert.equal(fetchMock.mock.calls.length, 1);
+  });
+});
+
+describe("GoogleDriveServiceImpl.uploadFile boundary randomness", () => {
+  it("uses a different random boundary on each call", async () => {
+    const seenBoundaries: string[] = [];
+    installFetchMock((_url, init) => {
+      const ct = init?.headers?.["Content-Type"] ?? "";
+      const m = ct.match(/boundary=(drawhaus_[a-f0-9]{32})/);
+      assert.ok(m, `boundary must match pattern, got: ${ct}`);
+      seenBoundaries.push(m[1]);
+      return jsonResponse({ id: "f", name: "x", mimeType: "text/plain", webViewLink: "x" });
+    });
+    const service = new GoogleDriveServiceImpl();
+
+    await service.uploadFile(TOKEN, { name: "a", mimeType: "text/plain", content: "y", folderId: "fld" });
+    await service.uploadFile(TOKEN, { name: "b", mimeType: "text/plain", content: "y", folderId: "fld" });
+
+    assert.equal(seenBoundaries.length, 2);
+    assert.ok(BOUNDARY_RE.test(seenBoundaries[0]));
+    assert.ok(BOUNDARY_RE.test(seenBoundaries[1]));
+    assert.notEqual(seenBoundaries[0], seenBoundaries[1], "consecutive uploads must use different boundaries");
+  });
+});
+
+describe("escapeDriveQL (via findFolder)", () => {
+  it("escapes double quotes in the folder name", async () => {
+    const fetchMock = installFetchMock(() => jsonResponse({ files: [] }));
+    const service = new GoogleDriveServiceImpl();
+
+    await service.findFolder(TOKEN, 'has "quotes" inside', null);
+
+    const url = fetchMock.mock.calls[0].arguments[0] as string;
+    const q = new URL(url).searchParams.get("q") ?? "";
+    assert.match(q, /name='has \\"quotes\\" inside'/);
+  });
+
+  it("replaces newlines and carriage returns with a space, and strips null bytes", async () => {
+    const fetchMock = installFetchMock(() => jsonResponse({ files: [] }));
+    const service = new GoogleDriveServiceImpl();
+
+    await service.findFolder(TOKEN, "line1\nline2\rline3\0tail", null);
+
+    const url = fetchMock.mock.calls[0].arguments[0] as string;
+    const q = new URL(url).searchParams.get("q") ?? "";
+    assert.match(q, /name='line1 line2 line3tail'/);
+    assert.doesNotMatch(q, /\n/);
+    assert.doesNotMatch(q, /\r/);
+    assert.doesNotMatch(q, /\0/);
   });
 });
