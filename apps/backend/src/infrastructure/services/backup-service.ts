@@ -20,7 +20,7 @@ export interface BackupResult {
 
 const BACKUP_DIR = process.env.BACKUP_PATH ?? "/data/backups";
 
-function parseConnectionString(url: string) {
+export function parseConnectionString(url: string) {
   const parsed = new URL(url);
   return {
     host: parsed.hostname,
