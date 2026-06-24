@@ -86,6 +86,7 @@ jobs:
       ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
       GH_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      METRICS_TOKEN: ${{ secrets.METRICS_TOKEN }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       REDIS_URL: ${{ secrets.REDIS_URL }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
