@@ -38,7 +38,8 @@ env:
   clear:
     PORT: 4000
     # Prometheus /metrics on the public hostname, gated by METRICS_TOKEN (secret).
-    METRICS_ENABLED: true
+    # Toggle on/off from the production environment (vars.METRICS_ENABLED).
+    METRICS_ENABLED: <%= ENV["METRICS_ENABLED"] %>
     NODE_ENV: production
     FILES_PATH: /data/files
     SENTRY_ENVIRONMENT: <%= ENV["SENTRY_ENVIRONMENT"] %>
