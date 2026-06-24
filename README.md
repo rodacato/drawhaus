@@ -119,7 +119,8 @@ After starting, visit the app and you'll be redirected to `/setup` to create the
 | `DATABASE_URL` | Yes | — | PostgreSQL connection string |
 | `SESSION_SECRET` | Yes (prod) | `dev-secret` | Session cookie signing key |
 | `PORT` | No | `4000` | Server port |
-| `METRICS_PORT` | No | `9464` | Prometheus `/metrics` port. Separate from `PORT` so kamal-proxy never routes it to the public hostname — scrape over the private network/tailnet only |
+| `METRICS_ENABLED` | No | `false` | Set to `true` to expose Prometheus `GET /metrics`. Opt-in — left off, there's no endpoint and no instrumentation overhead |
+| `METRICS_TOKEN` | No | — | Bearer token guarding `/metrics`. **Required in production** when metrics are enabled (without it the endpoint returns 404); in dev it's optional (open) |
 | `FRONTEND_URL` | No | `http://localhost:5173` | Allowed CORS origin |
 | `COOKIE_DOMAIN` | No | — | Cookie domain for subdomain sharing (e.g. `.drawhaus.dev`) |
 | `REDIS_URL` | No | — | Redis connection string. Required for multi-container deployments (Socket.IO scaling) |
@@ -266,13 +267,25 @@ Drawhaus is fully self-hosted — both frontend and backend deploy to your serve
 
 ### Observability
 
-The backend exposes Prometheus metrics via [`prom-client`](https://github.com/siimon/prom-client):
+The backend can expose Prometheus metrics via [`prom-client`](https://github.com/siimon/prom-client). It's **opt-in** — set `METRICS_ENABLED=true`; otherwise there's no endpoint and no instrumentation overhead.
 
 - **Default metrics** — process memory, GC, and event-loop lag (`collectDefaultMetrics`).
 - **`http_request_duration_seconds`** — request-latency histogram labelled by `method`, matched `route` (e.g. `/api/diagrams/:id`, never the raw URL), and `status_code`.
 - **`drawhaus_active_collaborators`** — gauge of currently connected real-time collaboration clients (Socket.IO). This is the product's core value and main load driver; it's per-process, so `sum()` across instances in PromQL when running multi-container.
 
-`/metrics` is served on a **dedicated port** (`METRICS_PORT`, default `9464`), **not** on `PORT`. Kamal-proxy only routes the public hostname to `:4000`, so the metrics port is never part of the internet-facing surface — point your self-hosted Prometheus at `HOST:9464` over the private network / tailnet.
+`/metrics` is served on the **public hostname** (same `PORT`, behind kamal-proxy/Cloudflare) and gated by a **bearer token** (`METRICS_TOKEN`), so scraping works like any external service — point your Prometheus at `https://your-api-host/metrics` with an `Authorization: Bearer <token>` header, from anywhere, surviving a host migration with no network rewiring. In production the token is **required**: with metrics enabled but no token set, the endpoint returns 404 instead of exposing data unauthenticated.
+
+```yaml
+# prometheus.yml
+scrape_configs:
+  - job_name: drawhaus
+    metrics_path: /metrics
+    scheme: https
+    authorization:
+      credentials: <METRICS_TOKEN>
+    static_configs:
+      - targets: ["your-api-host"]
+```
 
 ### Prerequisites
 
@@ -390,7 +403,7 @@ kamal rollback -c config/deploy.frontend.yml
 | `GET` | `/health` | Health check (DB status, uptime) |
 | `GET` | `/api/version` | App version, commit, deploy date |
 | `GET` | `/api/site/status` | Site status (maintenance, instance name) |
-| `GET` | `/metrics` | Prometheus metrics (default + HTTP histogram + active collaborators). Served on `METRICS_PORT` (default `9464`), **not** on the public hostname — see [Observability](#observability) |
+| `GET` | `/metrics` | Prometheus metrics (default + HTTP histogram + active collaborators). Opt-in (`METRICS_ENABLED`), bearer-token gated (`METRICS_TOKEN`) — see [Observability](#observability) |
 
 ### Auth
 | Method | Endpoint | Description |

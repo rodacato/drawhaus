@@ -1,9 +1,9 @@
-import express, { type Express, type RequestHandler } from "express";
+import { type Express, type RequestHandler } from "express";
+import { createHash, timingSafeEqual } from "node:crypto";
 import client from "prom-client";
+import { config } from "./config";
 
 export const registry = new client.Registry();
-
-client.collectDefaultMetrics({ register: registry });
 
 const httpRequestDuration = new client.Histogram({
   name: "http_request_duration_seconds",
@@ -33,11 +33,57 @@ export const metricsMiddleware: RequestHandler = (req, res, next) => {
   next();
 };
 
-export function createMetricsApp(): Express {
-  const app = express();
-  app.get("/metrics", async (_req, res) => {
+function tokenMatches(provided: string, expected: string): boolean {
+  const a = createHash("sha256").update(provided).digest();
+  const b = createHash("sha256").update(expected).digest();
+  return timingSafeEqual(a, b) && provided.length === expected.length;
+}
+
+// /metrics sits on the public hostname (behind kamal-proxy/Cloudflare), so a
+// bearer token gates it. No token configured: hidden in production (404),
+// open in dev for convenience.
+function makeRequireToken(token: string, isProduction: boolean): RequestHandler {
+  return (req, res, next) => {
+    if (!token) {
+      if (isProduction) {
+        res.sendStatus(404);
+        return;
+      }
+      next();
+      return;
+    }
+    const header = req.get("authorization") ?? "";
+    const provided = header.startsWith("Bearer ") ? header.slice(7) : "";
+    if (provided && tokenMatches(provided, token)) {
+      next();
+      return;
+    }
+    res.sendStatus(401);
+  };
+}
+
+let defaultMetricsCollected = false;
+
+// Opt-in: when disabled, neither the endpoint nor the instrumentation overhead
+// is mounted, so a self-hoster who wants nothing pays nothing.
+export function registerMetrics(
+  app: Express,
+  options: { enabled?: boolean; token?: string; isProduction?: boolean } = {},
+): void {
+  const enabled = options.enabled ?? config.metricsEnabled;
+  if (!enabled) return;
+
+  const token = options.token ?? config.metricsToken;
+  const isProduction = options.isProduction ?? config.nodeEnv === "production";
+
+  if (!defaultMetricsCollected) {
+    client.collectDefaultMetrics({ register: registry });
+    defaultMetricsCollected = true;
+  }
+
+  app.use(metricsMiddleware);
+  app.get("/metrics", makeRequireToken(token, isProduction), async (_req, res) => {
     res.set("Content-Type", registry.contentType);
     res.end(await registry.metrics());
   });
-  return app;
 }
