@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 export interface UseBoardShortcutsParams {
-  flushSave: () => Promise<void>;
+  flushSave: () => Promise<boolean>;
   onToggleComments: () => void;
   toast: (msg: string, type?: "success" | "error" | "info") => void;
 }
@@ -15,7 +15,9 @@ export function useBoardShortcuts({ flushSave, onToggleComments, toast }: UseBoa
       }
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        flushSave().then(() => toast("Diagrama guardado", "success"));
+        flushSave().then((ok) => {
+          toast(ok ? "Diagrama guardado" : "Error al guardar el diagrama", ok ? "success" : "error");
+        });
       }
     }
     globalThis.addEventListener("keydown", handleKeyDown);

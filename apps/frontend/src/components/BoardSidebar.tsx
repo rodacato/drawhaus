@@ -37,7 +37,7 @@ type BoardSidebarProps = {
   readonly onCreateShareLink: (role: "viewer" | "editor") => Promise<string | null>;
   readonly canEdit: boolean;
   readonly saveState: string;
-  readonly onBeforeLeave: () => Promise<void>;
+  readonly onBeforeLeave: () => Promise<unknown>;
   readonly onSnapshotRestored?: () => void;
   readonly workspaceId?: string | null;
   readonly canvasPrefs: CanvasPrefs;

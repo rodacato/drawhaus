@@ -22,6 +22,7 @@ type RenderOpts = {
   onOfflineSave?: ReturnType<typeof vi.fn>;
   onConflict?: ReturnType<typeof vi.fn>;
   diagramId?: string;
+  graceMs?: number;
 };
 
 function renderOffline(opts: RenderOpts = {}) {
@@ -41,6 +42,7 @@ function renderOffline(opts: RenderOpts = {}) {
         selfUserName: opts.selfUserName,
         onOfflineSave: opts.onOfflineSave,
         onConflict: opts.onConflict,
+        graceMs: opts.graceMs,
       }),
     { initialProps },
   );
@@ -220,5 +222,18 @@ describe("useOfflineSnapshot", () => {
     renderOffline({ initialConnection: "connected" });
     act(() => { window.dispatchEvent(new Event("beforeunload")); });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).not.toHaveBeenCalled();
+  });
+
+  test("custom graceMs overrides the default — fires sooner than 5 minutes", async () => {
+    const onOfflineSave = vi.fn();
+    const { rerender } = renderOffline({ initialConnection: "connected", onOfflineSave, graceMs: 1000 });
+    await act(async () => { rerender({ connection: "disconnected" as ConnectionState }); });
+
+    act(() => { vi.advanceTimersByTime(900); });
+    expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).not.toHaveBeenCalled();
+
+    act(() => { vi.advanceTimersByTime(200); });
+    await act(async () => { await Promise.resolve(); });
+    expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).toHaveBeenCalledTimes(1);
   });
 });
