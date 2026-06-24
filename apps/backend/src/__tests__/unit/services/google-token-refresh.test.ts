@@ -191,6 +191,30 @@ describe("GoogleTokenRefresher.getValidAccessToken — successful refresh", () =
     assert.ok(expMs <= after + 1800 * 1000);
   });
 
+  it("stores the rotated refresh_token when Google returns one in the refresh response", async () => {
+    const tokens = new InMemoryOAuthTokenRepository();
+    await tokens.upsert({
+      userId: USER_ID,
+      provider: "google",
+      accessToken: "old-access",
+      refreshToken: "original-refresh",
+      tokenExpiresAt: new Date(Date.now() - 60_000),
+      scopes: "drive.file openid",
+    });
+    installFetchMock(() => jsonResponse({
+      access_token: "fresh-access",
+      expires_in: 1800,
+      refresh_token: "rotated-refresh",
+    }));
+    const refresher = new GoogleTokenRefresher(tokens);
+
+    await refresher.getValidAccessToken(USER_ID);
+
+    const stored = tokens.store.find((t) => t.userId === USER_ID && t.provider === "google");
+    assert.ok(stored);
+    assert.equal(stored.refreshToken, "rotated-refresh");
+  });
+
   it("sends the refresh request with the configured client credentials and grant_type=refresh_token", async () => {
     const tokens = new InMemoryOAuthTokenRepository();
     await tokens.upsert({

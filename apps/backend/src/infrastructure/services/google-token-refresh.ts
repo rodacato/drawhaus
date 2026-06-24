@@ -40,14 +40,14 @@ export class GoogleTokenRefresher {
       throw new Error(`Token refresh failed: ${body}`);
     }
 
-    const data = (await response.json()) as { access_token: string; expires_in: number };
+    const data = (await response.json()) as { access_token: string; expires_in: number; refresh_token?: string };
     const expiresAt = new Date(Date.now() + data.expires_in * 1000);
 
     await this.oauthTokens.upsert({
       userId,
       provider: "google",
       accessToken: data.access_token,
-      refreshToken: token.refreshToken,
+      refreshToken: data.refresh_token ?? token.refreshToken,
       tokenExpiresAt: expiresAt,
       scopes: token.scopes,
     });

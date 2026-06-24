@@ -17,16 +17,25 @@ export class DeleteAccountUseCase {
     if (!user) throw new NotFoundError("User");
 
     if (user.passwordHash) {
-      // User has a password — verify it
-      if (!password) throw new UnauthorizedError();
+      if (!password) {
+        this.audit.log({ actor: userId, action: "user.delete_account.denied", meta: { reason: "missing_password" } });
+        throw new UnauthorizedError();
+      }
       const valid = await this.hasher.verify(password, user.passwordHash);
-      if (!valid) throw new UnauthorizedError();
+      if (!valid) {
+        this.audit.log({ actor: userId, action: "user.delete_account.denied", meta: { reason: "wrong_password" } });
+        throw new UnauthorizedError();
+      }
     }
-    // Google-only users (no password) can delete without password verification
+    // OAuth-only users (no password) can delete without password verification
 
-    // Block deletion if user owns shared workspaces (with other members)
     const sharedWorkspaces = await this.workspaces.findOwnedSharedWorkspaces(userId);
     if (sharedWorkspaces.length > 0) {
+      this.audit.log({
+        actor: userId,
+        action: "user.delete_account.denied",
+        meta: { reason: "owns_shared_workspaces", count: sharedWorkspaces.length },
+      });
       throw new ConflictError("Transfer workspace ownership before deleting your account");
     }
 

@@ -59,8 +59,8 @@ describe("DeleteAccountUseCase", () => {
     );
   });
 
-  it("throws UnauthorizedError when user has password but null was passed", async () => {
-    const { users, useCase } = setup();
+  it("throws UnauthorizedError and audits the denial when user has password but null was passed", async () => {
+    const { users, audit, useCase } = setup();
     const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_secret" });
 
     await assert.rejects(
@@ -68,10 +68,14 @@ describe("DeleteAccountUseCase", () => {
       (err: unknown) => err instanceof UnauthorizedError,
     );
     assert.equal(users.store.length, 1);
+    assert.equal(audit.events.length, 1);
+    assert.equal(audit.events[0].action, "user.delete_account.denied");
+    assert.equal(audit.events[0].actor, user.id);
+    assert.deepEqual(audit.events[0].meta, { reason: "missing_password" });
   });
 
-  it("throws UnauthorizedError on wrong password", async () => {
-    const { users, useCase } = setup();
+  it("throws UnauthorizedError and audits the denial on wrong password", async () => {
+    const { users, audit, useCase } = setup();
     const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_secret" });
 
     await assert.rejects(
@@ -79,10 +83,13 @@ describe("DeleteAccountUseCase", () => {
       (err: unknown) => err instanceof UnauthorizedError,
     );
     assert.equal(users.store.length, 1);
+    assert.equal(audit.events.length, 1);
+    assert.equal(audit.events[0].action, "user.delete_account.denied");
+    assert.deepEqual(audit.events[0].meta, { reason: "wrong_password" });
   });
 
-  it("throws ConflictError when user owns shared workspaces (>1 member)", async () => {
-    const { users, workspaces, useCase } = setup();
+  it("throws ConflictError and audits the denial when user owns shared workspaces", async () => {
+    const { users, workspaces, audit, useCase } = setup();
     const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_secret" });
     const workspace = await workspaces.create({ name: "Team", ownerId: user.id });
     await workspaces.addMember(workspace.id, "other-user", "editor");
@@ -92,6 +99,10 @@ describe("DeleteAccountUseCase", () => {
       (err: unknown) => err instanceof ConflictError,
     );
     assert.equal(users.store.length, 1);
+    assert.equal(audit.events.length, 1);
+    assert.equal(audit.events[0].action, "user.delete_account.denied");
+    assert.equal(audit.events[0].meta?.reason, "owns_shared_workspaces");
+    assert.equal(audit.events[0].meta?.count, 1);
   });
 
   it("records the audit log BEFORE deleting the user", async () => {
