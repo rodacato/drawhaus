@@ -203,11 +203,33 @@ describe("useSaveManager", () => {
     expect(api.updateScene).toHaveBeenCalled();
   });
 
-  test("flushSave forces a persist using the current scene state", async () => {
+  test("flushSave forces a persist using the current scene state and returns true on success", async () => {
     const api = createExcalidrawApiStub({ elements: [{ id: "x", version: 1 }] });
     const { result } = renderSaveManager({ socket, api, socketConnected: false });
-    await act(async () => { await result.current.flushSave(); });
+    let returned: boolean | undefined;
+    await act(async () => { returned = await result.current.flushSave(); });
     expect(vi.mocked(diagramsApi.update)).toHaveBeenCalledWith("diag-1", expect.objectContaining({ elements: expect.any(Array) }));
+    expect(returned).toBe(true);
+  });
+
+  test("flushSave returns false when the REST persist fails so callers can react", async () => {
+    vi.mocked(diagramsApi.update).mockRejectedValueOnce(new Error("boom"));
+    const api = createExcalidrawApiStub({ elements: [{ id: "x", version: 1 }] });
+    const { result } = renderSaveManager({ socket, api, socketConnected: false });
+    let returned: boolean | undefined;
+    await act(async () => { returned = await result.current.flushSave(); });
+    expect(returned).toBe(false);
+    expect(result.current.saveState).toBe("error");
+  });
+
+  test("flushSave returns true when the socket emit path is taken (best-effort)", async () => {
+    const api = createExcalidrawApiStub({ elements: [{ id: "x", version: 1 }] });
+    const { result } = renderSaveManager({ socket, api, socketConnected: true });
+    let returned: boolean | undefined;
+    await act(async () => { returned = await result.current.flushSave(); });
+    const saves = socket.emit.mock.calls.filter((c) => c[0] === "save-scene");
+    expect(saves.length).toBe(1);
+    expect(returned).toBe(true);
   });
 
   test("flushSave is a no-op when the excalidraw api is not ready", async () => {

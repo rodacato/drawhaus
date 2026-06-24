@@ -23,7 +23,7 @@ export interface UseSaveManagerReturn {
   saveColor: string;
   lastSavedAt: string | null;
   onChange: (elements: readonly unknown[], appState: Record<string, unknown>) => void;
-  flushSave: () => Promise<void>;
+  flushSave: () => Promise<boolean>;
   cancelPendingTimers: () => void;
 }
 
@@ -81,8 +81,8 @@ export function useSaveManager({
 
   /* ─── persist scene ─── */
   const persistScene = useCallback(
-    async (elements: unknown[], appState: Record<string, unknown>, forSceneId: string | null) => {
-      if (forSceneId && forSceneId !== activeSceneIdRef.current) return;
+    async (elements: unknown[], appState: Record<string, unknown>, forSceneId: string | null): Promise<boolean> => {
+      if (forSceneId && forSceneId !== activeSceneIdRef.current) return false;
       setSaveState("saving");
       try {
         const { collaborators: _1, viewBackgroundColor: _2, gridModeEnabled: _3, gridSize: _4, objectsSnapModeEnabled: _5, ...restAppState } = appState; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -92,13 +92,17 @@ export function useSaveManager({
         if (socketRef.current?.connected) {
           socketRef.current.emit("save-scene", { roomId: diagramId, sceneId: activeSceneIdRef.current, elements: safeElements, appState: sanitizedAppState });
           generateThumbnail();
-          return;
+          return true;
         }
         await diagramsApi.update(diagramId, { elements: safeElements, appState: sanitizedAppState });
         lastSavedAt.current = new Date().toLocaleTimeString();
         setSaveState("saved");
         generateThumbnail();
-      } catch { setSaveState("error"); }
+        return true;
+      } catch {
+        setSaveState("error");
+        return false;
+      }
     },
     [diagramId, cacheKey, generateThumbnail],
   );
@@ -177,13 +181,13 @@ export function useSaveManager({
   }, []);
 
   /* ─── flush save ─── */
-  const flushSave = useCallback(async () => {
+  const flushSave = useCallback(async (): Promise<boolean> => {
     const a = excalidrawApiRef.current;
-    if (!a) return;
+    if (!a) return true;
     const elements = a.getSceneElements();
     const appState = a.getAppState();
-    await persistScene([...elements], appState, activeSceneIdRef.current);
-  }, [persistScene, saveState]);
+    return persistScene([...elements], appState, activeSceneIdRef.current);
+  }, [persistScene]);
 
   /* ─── derived values ─── */
   const saveLabel = deriveSaveLabel(saveState, lastSavedAt.current);

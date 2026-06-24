@@ -3,7 +3,7 @@ import type { ExcalidrawApi } from "@/lib/types";
 import type { ConnectionState } from "@/lib/types";
 import { saveOfflineSnapshot, getOfflineSnapshot, deleteOfflineSnapshot, type OfflineSnapshot } from "@/lib/offline-storage";
 
-const OFFLINE_GRACE_MS = 5 * 60 * 1000; // 5 minutes — wait before saving offline snapshot
+const DEFAULT_graceMs = 5 * 60 * 1000;
 
 export interface UseOfflineSnapshotParams {
   diagramId: string;
@@ -13,6 +13,7 @@ export interface UseOfflineSnapshotParams {
   selfUserName?: string;
   onOfflineSave?: () => void;
   onConflict?: (offlineSnapshot: OfflineSnapshot) => void;
+  graceMs?: number;
 }
 
 export function useOfflineSnapshot({
@@ -23,6 +24,7 @@ export function useOfflineSnapshot({
   selfUserName,
   onOfflineSave,
   onConflict,
+  graceMs = DEFAULT_graceMs,
 }: UseOfflineSnapshotParams) {
   const prevConnectionState = useRef<ConnectionState>(connectionState);
   const hasOfflineEdits = useRef(false);
@@ -58,7 +60,7 @@ export function useOfflineSnapshot({
             onOfflineSave?.();
           }).catch(() => {});
         }
-      }, OFFLINE_GRACE_MS);
+      }, graceMs);
     }
 
     // Reconnected: cancel timer if still pending, check for conflict
@@ -96,7 +98,7 @@ export function useOfflineSnapshot({
     function handleBeforeUnload() {
       const api = excalidrawApiRef.current;
       const isOffline = connectionState === "disconnected" || connectionState === "error";
-      const offlineLongEnough = disconnectedAtRef.current && (Date.now() - disconnectedAtRef.current) >= OFFLINE_GRACE_MS;
+      const offlineLongEnough = disconnectedAtRef.current && (Date.now() - disconnectedAtRef.current) >= graceMs;
       if (api && selfUserId && isOffline && offlineLongEnough) {
         const elements = [...api.getSceneElements()];
         const appState = api.getAppState();
