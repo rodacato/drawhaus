@@ -1,8 +1,9 @@
-import { describe, it, before, after, beforeEach, afterEach } from "node:test";
+import { describe, it, before, after, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import { logger } from "../../../infrastructure/logger";
 
 // BACKUP_DIR in backup-service.ts is captured at module load from process.env.BACKUP_PATH.
 // We pin it to a stable tmpdir BEFORE the first require() of the module so all
@@ -18,17 +19,18 @@ const ORIGINAL_ENV: Record<string, string | undefined> = {
 
 // CommonJS require() preserves source order, unlike hoisted ESM/TS imports.
 // Required so BACKUP_PATH is set before the module's top-level const reads it.
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const backupService = require("../../../infrastructure/services/backup-service") as typeof import("../../../infrastructure/services/backup-service");
 const {
   parseConnectionString,
+  findPgBin,
   ensureBackupDir,
   listBackups,
   deleteBackup,
   cleanupOldBackups,
   getBackupConfig,
 } = backupService;
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { pool } = require("../../../infrastructure/db") as typeof import("../../../infrastructure/db");
 
 type QueryFn = typeof pool.query;
@@ -90,6 +92,56 @@ describe("parseConnectionString", () => {
     assert.equal(result.port, "5432");
     assert.equal(result.host, "db.host");
     assert.equal(result.database, "mydb");
+  });
+
+  it("URL-decodes the user, password, and database consistently", () => {
+    const url = "postgres://us%40r:p%40ss@db.host:5432/my%20db";
+    const result = parseConnectionString(url);
+    assert.equal(result.user, "us@r");
+    assert.equal(result.password, "p@ss");
+    assert.equal(result.database, "my db");
+  });
+});
+
+describe("findPgBin", () => {
+  let originalPgBinPath: string | undefined;
+
+  beforeEach(() => {
+    originalPgBinPath = process.env.PG_BIN_PATH;
+  });
+
+  afterEach(() => {
+    if (originalPgBinPath === undefined) delete process.env.PG_BIN_PATH;
+    else process.env.PG_BIN_PATH = originalPgBinPath;
+  });
+
+  it("returns PATH-resolved name when no override and no versioned binary is found", () => {
+    delete process.env.PG_BIN_PATH;
+    const result = findPgBin("pg_dump_nonexistent_999");
+    assert.equal(result, "pg_dump_nonexistent_999");
+  });
+
+  it("uses PG_BIN_PATH override directory when it contains the binary", async () => {
+    const tmpdir = await fs.mkdtemp(path.join(os.tmpdir(), "pgbin-test-"));
+    const fakeBin = path.join(tmpdir, "pg_dump");
+    await fs.writeFile(fakeBin, "#!/bin/sh\necho fake\n", { mode: 0o755 });
+    process.env.PG_BIN_PATH = tmpdir;
+
+    const result = findPgBin("pg_dump");
+
+    assert.equal(result, fakeBin);
+    await fs.rm(tmpdir, { recursive: true, force: true });
+  });
+
+  it("falls through to versioned paths when PG_BIN_PATH is set but does not contain the binary", async () => {
+    const tmpdir = await fs.mkdtemp(path.join(os.tmpdir(), "pgbin-empty-"));
+    process.env.PG_BIN_PATH = tmpdir;
+
+    const result = findPgBin("pg_dump_nonexistent_xyz");
+
+    // No versioned path matches either; falls back to PATH name
+    assert.equal(result, "pg_dump_nonexistent_xyz");
+    await fs.rm(tmpdir, { recursive: true, force: true });
   });
 });
 
@@ -259,19 +311,25 @@ describe("getBackupConfig", () => {
     assert.equal(cfg.retentionDays, 14);
   });
 
-  it("falls back to env vars when pool.query throws", async () => {
+  it("logs a warning and falls back to env vars when pool.query throws", async () => {
     stubPoolQuery(() => {
       throw new Error("db down");
     });
     process.env.BACKUP_ENABLED = "true";
     process.env.BACKUP_CRON = "*/10 * * * *";
     process.env.BACKUP_RETENTION_DAYS = "21";
+    const warnMock = mock.method(logger, "warn", () => {});
 
     const cfg = await getBackupConfig();
 
     assert.equal(cfg.enabled, true);
     assert.equal(cfg.schedule, "*/10 * * * *");
     assert.equal(cfg.retentionDays, 21);
+    assert.equal(warnMock.mock.calls.length, 1);
+    const [meta, msg] = warnMock.mock.calls[0].arguments as [{ err: Error }, string];
+    assert.ok(meta.err instanceof Error);
+    assert.match(msg, /getBackupConfig/);
+    warnMock.mock.restore();
   });
 
   it("falls back to env vars when pool.query returns no rows", async () => {
