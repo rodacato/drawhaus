@@ -10,7 +10,8 @@ function requireEnv(name: string): string {
 
 export const config = {
   port: Number(process.env.PORT) || 4000,
-  metricsPort: Number(process.env.METRICS_PORT) || 9464,
+  metricsEnabled: process.env.METRICS_ENABLED === "true",
+  metricsToken: process.env.METRICS_TOKEN ?? "",
   frontendUrl: isProduction
     ? requireEnv("FRONTEND_URL")
     : process.env.FRONTEND_URL ?? "http://localhost:5173",

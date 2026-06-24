@@ -37,9 +37,8 @@ builder:
 env:
   clear:
     PORT: 4000
-    # Prometheus /metrics — kamal-proxy only routes app_port (4000), so this port
-    # is never internet-facing. Scrape it over the private network / tailnet.
-    METRICS_PORT: 9464
+    # Prometheus /metrics on the public hostname, gated by METRICS_TOKEN (secret).
+    METRICS_ENABLED: true
     NODE_ENV: production
     FILES_PATH: /data/files
     SENTRY_ENVIRONMENT: <%= ENV["SENTRY_ENVIRONMENT"] %>
@@ -57,6 +56,7 @@ env:
     - GOOGLE_CLIENT_ID
     - GOOGLE_CLIENT_SECRET
     - GOOGLE_REDIRECT_URI
+    - METRICS_TOKEN
     - REDIS_URL
     - RESEND_API_KEY
     - SENTRY_DSN
