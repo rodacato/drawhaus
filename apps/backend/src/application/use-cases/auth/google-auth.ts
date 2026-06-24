@@ -79,7 +79,18 @@ export class GoogleAuthUseCase {
 
   private async resolveOrCreateUser(googleUser: GoogleUserInfo) {
     const byGoogleId = await this.users.findByGoogleId(googleUser.id);
-    if (byGoogleId) return byGoogleId;
+    if (byGoogleId) {
+      const updates: Partial<{ name: string; avatarUrl: string }> = {};
+      if (byGoogleId.name !== googleUser.name) updates.name = googleUser.name;
+      if (googleUser.picture && byGoogleId.avatarUrl !== googleUser.picture) {
+        updates.avatarUrl = googleUser.picture;
+      }
+      if (Object.keys(updates).length > 0) {
+        await this.users.update(byGoogleId.id, updates);
+        return (await this.users.findById(byGoogleId.id))!;
+      }
+      return byGoogleId;
+    }
 
     const byEmail = await this.users.findByEmail(googleUser.email.toLowerCase());
     if (byEmail) {

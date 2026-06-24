@@ -220,30 +220,98 @@ describe("GoogleAuthUseCase.handleCallback — happy paths", () => {
     assert.equal(token.scopes, "openid email profile");
   });
 
-  it("returns existing user looked up by googleId without updating", async () => {
+  it("returns existing user looked up by googleId without updating when name and picture are unchanged", async () => {
     const { users, sessions, oauthTokens, useCase } = setup();
     const existing = await users.create({
       email: "stale-email@example.com",
-      name: "Stale Name",
+      name: defaultUserInfoPayload.name,
       passwordHash: null,
       googleId: "google-user-1",
-      avatarUrl: "https://existing.example.com/avatar.png",
+      avatarUrl: defaultUserInfoPayload.picture,
     });
-    installFetchMock(defaultFetchHandler({ userInfo: { name: "Fresh Name From Google" } }));
+    installFetchMock(defaultFetchHandler());
 
     const result = await useCase.handleCallback("auth-code");
 
     assert.equal(users.store.length, 1);
-    // No sync of name/email/avatar — this is by design and worth flagging.
-    assert.equal(users.store[0].name, "Stale Name");
+    assert.equal(users.store[0].name, defaultUserInfoPayload.name);
     assert.equal(users.store[0].email, "stale-email@example.com");
-    assert.equal(users.store[0].avatarUrl, "https://existing.example.com/avatar.png");
+    assert.equal(users.store[0].avatarUrl, defaultUserInfoPayload.picture);
 
     assert.equal(sessions.sessions.length, 1);
     assert.equal(sessions.sessions[0].userId, existing.id);
     assert.equal(result.sessionToken, sessions.sessions[0].token);
     assert.equal(oauthTokens.store.length, 1);
     assert.equal(oauthTokens.store[0].userId, existing.id);
+  });
+
+  it("syncs name on a returning user when Google reports a fresh display name", async () => {
+    const { users, useCase } = setup();
+    const existing = await users.create({
+      email: "user@example.com",
+      name: "Stale Name",
+      passwordHash: null,
+      googleId: "google-user-1",
+      avatarUrl: defaultUserInfoPayload.picture,
+    });
+    installFetchMock(defaultFetchHandler({ userInfo: { name: "Fresh Name From Google" } }));
+
+    await useCase.handleCallback("auth-code");
+
+    const after = users.store.find((u) => u.id === existing.id);
+    assert.ok(after);
+    assert.equal(after.name, "Fresh Name From Google");
+    assert.equal(after.avatarUrl, defaultUserInfoPayload.picture);
+  });
+
+  it("syncs avatarUrl on a returning user when Google reports a fresh picture", async () => {
+    const { users, useCase } = setup();
+    const existing = await users.create({
+      email: "user@example.com",
+      name: defaultUserInfoPayload.name,
+      passwordHash: null,
+      googleId: "google-user-1",
+      avatarUrl: "https://lh3.googleusercontent.com/a/old-avatar",
+    });
+    installFetchMock(
+      defaultFetchHandler({ userInfo: { picture: "https://lh3.googleusercontent.com/a/new-avatar" } }),
+    );
+
+    await useCase.handleCallback("auth-code");
+
+    const after = users.store.find((u) => u.id === existing.id);
+    assert.ok(after);
+    assert.equal(after.avatarUrl, "https://lh3.googleusercontent.com/a/new-avatar");
+  });
+
+  it("preserves existing avatarUrl when Google returns no picture (does not clear)", async () => {
+    const { users, useCase } = setup();
+    const existing = await users.create({
+      email: "user@example.com",
+      name: defaultUserInfoPayload.name,
+      passwordHash: null,
+      googleId: "google-user-1",
+      avatarUrl: "https://existing.example.com/avatar.png",
+    });
+    installFetchMock(
+      (url) => {
+        if (url === TOKEN_URL) return jsonResponse(defaultTokenPayload);
+        if (url === USERINFO_URL) {
+          return jsonResponse({
+            id: defaultUserInfoPayload.id,
+            email: defaultUserInfoPayload.email,
+            name: defaultUserInfoPayload.name,
+          });
+        }
+        throw new Error(`Unexpected fetch URL: ${url}`);
+      },
+    );
+
+    await useCase.handleCallback("auth-code");
+
+    const after = users.store.find((u) => u.id === existing.id);
+    assert.ok(after);
+    assert.equal(after.avatarUrl, "https://existing.example.com/avatar.png");
   });
 
   it("throws ConflictError when an existing local account shares the email and has no googleId (prevents silent takeover)", async () => {

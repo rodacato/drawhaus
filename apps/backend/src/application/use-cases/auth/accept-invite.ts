@@ -2,6 +2,7 @@ import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { SessionRepository } from "../../../domain/ports/session-repository";
 import type { InvitationRepository } from "../../../domain/ports/invitation-repository";
 import type { Hasher } from "../../../domain/ports/hasher";
+import type { Invitation } from "../../../domain/entities/invitation";
 import { NotFoundError, ExpiredError, ConflictError } from "../../../domain/errors";
 
 export class AcceptInviteUseCase {
@@ -13,19 +14,12 @@ export class AcceptInviteUseCase {
   ) {}
 
   async resolve(token: string) {
-    const invitation = await this.invitations.findByToken(token);
-    if (!invitation) throw new NotFoundError("Invitation");
-    if (invitation.usedAt) throw new ConflictError("This invitation has already been used");
-    if (invitation.expiresAt.getTime() <= Date.now()) throw new ExpiredError("Invitation");
-
+    const invitation = await this.assertUsableInvitation(token);
     return { email: invitation.email, role: invitation.role };
   }
 
   async execute(input: { token: string; name: string; password: string }) {
-    const invitation = await this.invitations.findByToken(input.token);
-    if (!invitation) throw new NotFoundError("Invitation");
-    if (invitation.usedAt) throw new ConflictError("This invitation has already been used");
-    if (invitation.expiresAt.getTime() <= Date.now()) throw new ExpiredError("Invitation");
+    const invitation = await this.assertUsableInvitation(input.token);
 
     const existing = await this.users.findByEmail(invitation.email);
     if (existing) throw new ConflictError("A user with this email already exists");
@@ -45,5 +39,13 @@ export class AcceptInviteUseCase {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
       sessionToken: session.token,
     };
+  }
+
+  private async assertUsableInvitation(token: string): Promise<Invitation> {
+    const invitation = await this.invitations.findByToken(token);
+    if (!invitation) throw new NotFoundError("Invitation");
+    if (invitation.usedAt) throw new ConflictError("This invitation has already been used");
+    if (invitation.expiresAt.getTime() <= Date.now()) throw new ExpiredError("Invitation");
+    return invitation;
   }
 }
