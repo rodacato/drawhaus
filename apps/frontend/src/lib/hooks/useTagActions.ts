@@ -2,6 +2,7 @@ import { tagsApi, type Tag } from "@/api/tags";
 import type { Diagram } from "./useDashboardData";
 
 export interface UseTagActionsParams {
+  diagrams: Diagram[];
   setDiagrams: React.Dispatch<React.SetStateAction<Diagram[]>>;
   setAllTags: React.Dispatch<React.SetStateAction<Tag[]>>;
 }
@@ -14,15 +15,10 @@ function withTagAdded(diagram: Diagram, tag: Tag): Diagram {
   return { ...diagram, tags: [...(diagram.tags ?? []), tag] };
 }
 
-export function useTagActions({ setDiagrams, setAllTags }: UseTagActionsParams) {
+export function useTagActions({ diagrams, setDiagrams, setAllTags }: UseTagActionsParams) {
   async function toggleTag(diagramId: string, tag: Tag) {
-    // We need to read current diagrams via the setter's callback form
-    let hasTag = false;
-    setDiagrams((prev) => {
-      const diagram = prev.find((d) => d.id === diagramId);
-      hasTag = diagram?.tags?.some((t) => t.id === tag.id) ?? false;
-      return prev; // no-op read
-    });
+    const diagram = diagrams.find((d) => d.id === diagramId);
+    const hasTag = diagram?.tags?.some((t) => t.id === tag.id) ?? false;
 
     try {
       if (hasTag) {

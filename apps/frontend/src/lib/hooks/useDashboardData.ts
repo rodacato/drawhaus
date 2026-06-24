@@ -9,13 +9,16 @@ export type Diagram = { id: string; title: string; folderId: string | null; thum
 export type Folder = { id: string; name: string };
 export type SidebarView = "all" | "recent" | "starred" | "unfiled" | "folder" | "templates";
 
+type ToastFn = (msg: string, type?: "success" | "error" | "info") => void;
+
 export interface UseDashboardDataParams {
   sidebarView: SidebarView;
   folderId: string | null | undefined;
   searchQuery: string;
+  toast: ToastFn;
 }
 
-export function useDashboardData({ sidebarView, folderId, searchQuery }: UseDashboardDataParams) {
+export function useDashboardData({ sidebarView, folderId, searchQuery, toast }: UseDashboardDataParams) {
   const [diagrams, setDiagrams] = useState<Diagram[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
@@ -67,9 +70,11 @@ export function useDashboardData({ sidebarView, folderId, searchQuery }: UseDash
       setFolders(foldersRes.folders ?? []);
       setDiagrams(diagramsRes.diagrams ?? (Array.isArray(diagramsRes) ? diagramsRes : []));
       setAllTags(tagsRes.tags ?? []);
-    } catch { /* silent */ }
+    } catch {
+      toast("Could not load dashboard data.", "error");
+    }
     setLoading(false);
-  }, [folderId, searchQuery, activeWorkspaceId, isGlobalView]);
+  }, [folderId, searchQuery, activeWorkspaceId, isGlobalView, toast]);
 
   useEffect(() => { loadData(); }, [loadData]);
 

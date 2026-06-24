@@ -37,7 +37,7 @@ export function Dashboard() {
   const folderId = parseFolderId(folderIdParam);
 
   // ── Data ──
-  const data = useDashboardData({ sidebarView, folderId, searchQuery });
+  const data = useDashboardData({ sidebarView, folderId, searchQuery, toast });
 
   // ── Actions ──
   const actions = useDiagramActions({
@@ -46,7 +46,7 @@ export function Dashboard() {
     folderId, activeWorkspaceId: data.activeWorkspaceId,
   });
 
-  const tags = useTagActions({ setDiagrams: data.setDiagrams, setAllTags: data.setAllTags });
+  const tags = useTagActions({ diagrams: data.diagrams, setDiagrams: data.setDiagrams, setAllTags: data.setAllTags });
 
   // ── Sync sidebar view from search params ──
   useEffect(() => {
