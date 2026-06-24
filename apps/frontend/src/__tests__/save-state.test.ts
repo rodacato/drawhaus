@@ -1,4 +1,4 @@
-import test, { describe } from "node:test";
+import { describe, test } from "vitest";
 import assert from "node:assert/strict";
 import { deriveSaveLabel, deriveSaveColor, isCursorStale } from "../lib/save-state";
 

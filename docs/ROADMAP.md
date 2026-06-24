@@ -143,6 +143,7 @@ Architectural decisions that shaped Drawhaus. Full ADRs in [`docs/adr/`](adr/).
 | Versioned migrations | `node-pg-migrate` over inline DDL | Schema changes tracked as versioned files | [019](adr/019-versioned-migrations.md) |
 | Redis as shared state | Rate-limit + snapshot dedup via Redis | In-memory fallback preserves single-instance simplicity | [021](adr/021-redis-shared-state.md) |
 | Sentry for error monitoring | `@sentry/node` (backend) + `@sentry/react` + source maps (frontend) | One vendor for both runtimes, free tier covers our volume, replaces Honeybadger | [023](adr/023-sentry-error-monitoring.md) |
+| Vitest + jsdom for frontend tests | Vite-native runner; backend stays on `tsx --test` | Unlocks DOM testing (components, hooks, contexts); fixes `mock.module()` for CJS modules | [024](adr/024-vitest-for-frontend-tests.md) |
 
 Other decisions not warranting a full ADR:
 

@@ -1,4 +1,4 @@
-import test, { describe } from "node:test";
+import { describe, test } from "vitest";
 import assert from "node:assert/strict";
 import { sortByUpdated, filterStarred, isValidExcalidrawFile } from "../lib/diagram-filters";
 
