@@ -17,6 +17,7 @@ import { registerCommentHandlers } from "./handlers/comment.handler";
 import { registerLockHandlers } from "./handlers/lock.handler";
 import { config } from "../config";
 import { attachRedisAdapter } from "./redis-adapter";
+import { activeCollaborators } from "../metrics";
 
 export async function setupSocketServer(
   httpServer: HttpServer,
@@ -49,6 +50,9 @@ export async function setupSocketServer(
   io.on("connection", (socket) => {
     socket.data.roomRoles = {};
     socket.data.isGuest = false;
+
+    activeCollaborators.inc();
+    socket.on("disconnect", () => activeCollaborators.dec());
 
     registerRoomHandlers(io, socket, {
       joinRoom: useCases.joinRoom,
