@@ -82,6 +82,7 @@ jobs:
       GH_REDIRECT_URI: ${{ vars.GH_REDIRECT_URI }}
       GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
       GOOGLE_REDIRECT_URI: ${{ vars.GOOGLE_REDIRECT_URI }}
+      METRICS_ENABLED: ${{ vars.METRICS_ENABLED || 'false' }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
       GH_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET }}
