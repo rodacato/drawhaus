@@ -18,6 +18,7 @@ function setup(initialDiagrams: Diagram[] = [], initialTags: Tag[] = []) {
   });
   const { result } = renderHook(() =>
     useTagActions({
+      diagrams: initialDiagrams,
       setDiagrams: setDiagrams as unknown as React.Dispatch<React.SetStateAction<Diagram[]>>,
       setAllTags: setAllTags as unknown as React.Dispatch<React.SetStateAction<Tag[]>>,
     }),

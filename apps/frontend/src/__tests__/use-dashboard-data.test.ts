@@ -29,9 +29,12 @@ function stubAllApis(overrides: {
 }
 
 describe("useDashboardData", () => {
+  let toast: ReturnType<typeof vi.fn>;
+
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+    toast = vi.fn();
   });
 
   afterEach(() => {
@@ -41,7 +44,7 @@ describe("useDashboardData", () => {
   test("on mount loads workspaces and auto-picks personal when none stored", async () => {
     stubAllApis();
     const { result } = renderHook(() =>
-      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "" }),
+      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "", toast }),
     );
     await waitFor(() => {
       expect(result.current.activeWorkspaceId).toBe("ws-personal");
@@ -53,7 +56,7 @@ describe("useDashboardData", () => {
     localStorage.setItem("drawhaus_workspace", "ws-team");
     stubAllApis({ workspaces: [personal, team] });
     const { result } = renderHook(() =>
-      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "" }),
+      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "", toast }),
     );
     await waitFor(() => {
       expect(result.current.activeWorkspaceId).toBe("ws-team");
@@ -64,7 +67,7 @@ describe("useDashboardData", () => {
     localStorage.setItem("drawhaus_workspace", "ghost-id");
     stubAllApis({ workspaces: [personal, team] });
     const { result } = renderHook(() =>
-      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "" }),
+      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "", toast }),
     );
     await waitFor(() => {
       expect(result.current.activeWorkspaceId).toBe("ws-personal");
@@ -78,7 +81,7 @@ describe("useDashboardData", () => {
     stubAllApis({ diagrams, folders, tags });
 
     const { result } = renderHook(() =>
-      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "" }),
+      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "", toast }),
     );
 
     await waitFor(() => {
@@ -95,7 +98,7 @@ describe("useDashboardData", () => {
     const listSpy = vi.spyOn(diagramsApi, "list");
 
     renderHook(() =>
-      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "hello" }),
+      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "hello", toast }),
     );
 
     await waitFor(() => {
@@ -109,7 +112,7 @@ describe("useDashboardData", () => {
     const listSpy = vi.spyOn(diagramsApi, "list").mockResolvedValue({ diagrams: [] } as never);
 
     renderHook(() =>
-      useDashboardData({ sidebarView: "all", folderId: null, searchQuery: "" }),
+      useDashboardData({ sidebarView: "all", folderId: null, searchQuery: "", toast }),
     );
 
     await waitFor(() => {
@@ -124,7 +127,7 @@ describe("useDashboardData", () => {
     const listSpy = vi.spyOn(diagramsApi, "list").mockResolvedValue({ diagrams: [] } as never);
 
     renderHook(() =>
-      useDashboardData({ sidebarView: "templates", folderId: undefined, searchQuery: "" }),
+      useDashboardData({ sidebarView: "templates", folderId: undefined, searchQuery: "", toast }),
     );
 
     await waitFor(() => {
@@ -133,20 +136,21 @@ describe("useDashboardData", () => {
     expect(listSpy.mock.calls.at(-1)?.[0]).toEqual({});
   });
 
-  test("silently swallows API errors during loadData and still sets loading=false", async () => {
+  test("surfaces loadData errors via toast and still sets loading=false", async () => {
     vi.spyOn(workspacesApi, "list").mockResolvedValue({ workspaces: [personal] });
     vi.spyOn(foldersApi, "list").mockRejectedValue(new Error("boom"));
     vi.spyOn(tagsApi, "list").mockResolvedValue({ tags: [] });
     vi.spyOn(diagramsApi, "list").mockResolvedValue({ diagrams: [] } as never);
 
     const { result } = renderHook(() =>
-      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "" }),
+      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "", toast }),
     );
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
     });
     expect(result.current.diagrams).toEqual([]);
+    expect(toast).toHaveBeenCalledWith("Could not load dashboard data.", "error");
   });
 
   test("displayDiagrams: 'recent' sorts by updatedAt desc and caps at 10", async () => {
@@ -157,7 +161,7 @@ describe("useDashboardData", () => {
     stubAllApis({ diagrams });
 
     const { result } = renderHook(() =>
-      useDashboardData({ sidebarView: "recent", folderId: undefined, searchQuery: "" }),
+      useDashboardData({ sidebarView: "recent", folderId: undefined, searchQuery: "", toast }),
     );
 
     await waitFor(() => {
@@ -175,7 +179,7 @@ describe("useDashboardData", () => {
     stubAllApis({ diagrams });
 
     const { result } = renderHook(() =>
-      useDashboardData({ sidebarView: "starred", folderId: undefined, searchQuery: "" }),
+      useDashboardData({ sidebarView: "starred", folderId: undefined, searchQuery: "", toast }),
     );
 
     await waitFor(() => {
@@ -189,7 +193,7 @@ describe("useDashboardData", () => {
     localStorage.setItem("drawhaus_workspace", "ws-team");
 
     const { result } = renderHook(() =>
-      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "" }),
+      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "", toast }),
     );
 
     await waitFor(() => {
@@ -206,7 +210,7 @@ describe("useDashboardData", () => {
     stubAllApis({ diagrams });
 
     const { result } = renderHook(() =>
-      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "foo" }),
+      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "foo", toast }),
     );
 
     await waitFor(() => {
@@ -221,7 +225,7 @@ describe("useDashboardData", () => {
     const listSpy = vi.spyOn(diagramsApi, "list").mockResolvedValue({ diagrams: [] } as never);
 
     const { result } = renderHook(() =>
-      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "" }),
+      useDashboardData({ sidebarView: "all", folderId: undefined, searchQuery: "", toast }),
     );
 
     await waitFor(() => {
