@@ -19,6 +19,7 @@ export function registerCommentHandlers(
     deleteComment: DeleteCommentUseCase;
   },
 ) {
+  // Comment events gate on room membership only, not canEdit: viewers may comment by design (use cases call requireAccess, not requireEditAccess).
   socket.on(
     "comment-create",
     async ({ roomId, elementId, body, sceneId }: { roomId: string; elementId: string; body: string; sceneId?: string }) => {

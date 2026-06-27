@@ -7,7 +7,9 @@ import type { UpdateTagUseCase } from "../../../application/use-cases/tags/updat
 import type { AssignTagUseCase } from "../../../application/use-cases/tags/assign-tag";
 import type { UnassignTagUseCase } from "../../../application/use-cases/tags/unassign-tag";
 import { asyncRoute } from "../middleware/async-handler";
-import { validate } from "../middleware/validate";
+import { validate, validateParams } from "../middleware/validate";
+
+const uuidParams = z.object({ id: z.uuid() });
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(50),
@@ -51,22 +53,22 @@ export function createTagRoutes(
     return res.status(201).json({ tag });
   }));
 
-  router.patch("/:id", validate(updateSchema), asyncRoute(async (req, res) => {
+  router.patch("/:id", validateParams(uuidParams), validate(updateSchema), asyncRoute(async (req, res) => {
     const tag = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
     return res.json({ tag });
   }));
 
-  router.delete("/:id", asyncRoute(async (req, res) => {
+  router.delete("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
     await useCases.delete.execute(String(req.params.id), req.authUser.id);
     return res.json({ success: true });
   }));
 
-  router.post("/:id/assign", validate(assignSchema), asyncRoute(async (req, res) => {
+  router.post("/:id/assign", validateParams(uuidParams), validate(assignSchema), asyncRoute(async (req, res) => {
     await useCases.assign.execute(String(req.params.id), req.body.diagramId, req.authUser.id);
     return res.json({ success: true });
   }));
 
-  router.post("/:id/unassign", validate(assignSchema), asyncRoute(async (req, res) => {
+  router.post("/:id/unassign", validateParams(uuidParams), validate(assignSchema), asyncRoute(async (req, res) => {
     await useCases.unassign.execute(String(req.params.id), req.body.diagramId, req.authUser.id);
     return res.json({ success: true });
   }));

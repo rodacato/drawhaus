@@ -4,7 +4,9 @@ import type { CreateApiKeyUseCase } from "../../../application/use-cases/api-key
 import type { ListApiKeysUseCase } from "../../../application/use-cases/api-keys/list-api-keys";
 import type { RevokeApiKeyUseCase } from "../../../application/use-cases/api-keys/revoke-api-key";
 import { asyncRoute } from "../middleware/async-handler";
-import { validate } from "../middleware/validate";
+import { validate, validateParams } from "../middleware/validate";
+
+const uuidParams = z.object({ id: z.uuid() });
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -59,7 +61,7 @@ export function createApiKeyRoutes(
     });
   }));
 
-  router.delete("/:id", asyncRoute(async (req, res) => {
+  router.delete("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
     await useCases.revoke.execute(String(req.params.id), req.authUser.id);
     return res.json({ success: true });
   }));

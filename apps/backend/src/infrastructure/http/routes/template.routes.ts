@@ -8,8 +8,10 @@ import type { DeleteTemplateUseCase } from "../../../application/use-cases/templ
 import type { UseTemplateUseCase } from "../../../application/use-cases/templates/use-template";
 import type { TransferTemplateOwnershipUseCase } from "../../../application/use-cases/templates/transfer-ownership";
 import { asyncRoute } from "../middleware/async-handler";
-import { validate } from "../middleware/validate";
+import { validate, validateParams } from "../middleware/validate";
 import type { Template } from "../../../domain/entities/template";
+
+const uuidParams = z.object({ id: z.uuid() });
 
 const createSchema = z.object({
   title: z.string().trim().min(1).max(200),
@@ -88,7 +90,7 @@ export function createTemplateRoutes(
   }));
 
   // Get single template
-  router.get("/:id", asyncRoute(async (req, res) => {
+  router.get("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
     const template = await useCases.get.execute(String(req.params.id));
     return res.json({ template: formatTemplate(template) });
   }));
@@ -109,7 +111,7 @@ export function createTemplateRoutes(
   }));
 
   // Use template to create a new diagram
-  router.post("/:id/use", validate(useSchema), asyncRoute(async (req, res) => {
+  router.post("/:id/use", validateParams(uuidParams), validate(useSchema), asyncRoute(async (req, res) => {
     const diagram = await useCases.use.execute({
       templateId: String(req.params.id),
       userId: req.authUser.id,
@@ -121,13 +123,13 @@ export function createTemplateRoutes(
   }));
 
   // Update custom template
-  router.patch("/:id", validate(updateSchema), asyncRoute(async (req, res) => {
+  router.patch("/:id", validateParams(uuidParams), validate(updateSchema), asyncRoute(async (req, res) => {
     const template = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
     return res.json({ template: formatTemplate(template) });
   }));
 
   // Delete custom template
-  router.delete("/:id", asyncRoute(async (req, res) => {
+  router.delete("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
     await useCases.delete.execute(String(req.params.id), req.authUser.id);
     return res.json({ success: true });
   }));
