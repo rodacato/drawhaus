@@ -5,7 +5,9 @@ import type { ListFoldersUseCase } from "../../../application/use-cases/folders/
 import type { RenameFolderUseCase } from "../../../application/use-cases/folders/rename-folder";
 import type { DeleteFolderUseCase } from "../../../application/use-cases/folders/delete-folder";
 import { asyncRoute } from "../middleware/async-handler";
-import { validate } from "../middleware/validate";
+import { validate, validateParams } from "../middleware/validate";
+
+const uuidParams = z.object({ id: z.uuid() });
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -39,12 +41,12 @@ export function createFolderRoutes(
     return res.status(201).json({ folder });
   }));
 
-  router.patch("/:id", validate(renameSchema), asyncRoute(async (req, res) => {
+  router.patch("/:id", validateParams(uuidParams), validate(renameSchema), asyncRoute(async (req, res) => {
     const folder = await useCases.rename.execute(String(req.params.id), req.authUser.id, req.body.name);
     return res.json({ folder });
   }));
 
-  router.delete("/:id", asyncRoute(async (req, res) => {
+  router.delete("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
     await useCases.delete.execute(String(req.params.id), req.authUser.id);
     return res.json({ success: true });
   }));

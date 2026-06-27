@@ -5,7 +5,10 @@ import type { ResolveLinkUseCase } from "../../../application/use-cases/share/re
 import type { ListLinksUseCase } from "../../../application/use-cases/share/list-links";
 import type { DeleteLinkUseCase } from "../../../application/use-cases/share/delete-link";
 import { asyncRoute, asyncPublicRoute } from "../middleware/async-handler";
-import { validate } from "../middleware/validate";
+import { validate, validateParams } from "../middleware/validate";
+
+const diagramIdParams = z.object({ diagramId: z.uuid() });
+const tokenParams = z.object({ token: z.string().min(1) });
 
 const createSchema = z.object({
   role: z.enum(["editor", "viewer"]).optional().default("viewer"),
@@ -33,7 +36,7 @@ export function createShareRoutes(
 ) {
   const router = Router();
 
-  router.post("/:diagramId", requireAuth, validate(createSchema), asyncRoute(async (req, res) => {
+  router.post("/:diagramId", requireAuth, validateParams(diagramIdParams), validate(createSchema), asyncRoute(async (req, res) => {
     const link = await useCases.createLink.execute({
       diagramId: String(req.params.diagramId),
       userId: req.authUser.id,
@@ -43,7 +46,7 @@ export function createShareRoutes(
     return res.status(201).json({ shareLink: formatLink(link) });
   }));
 
-  router.get("/:diagramId/links", requireAuth, asyncRoute(async (req, res) => {
+  router.get("/:diagramId/links", requireAuth, validateParams(diagramIdParams), asyncRoute(async (req, res) => {
     const links = await useCases.listLinks.execute(
       String(req.params.diagramId),
       req.authUser.id,
@@ -51,12 +54,12 @@ export function createShareRoutes(
     return res.status(200).json({ links: links.map(formatLink) });
   }));
 
-  router.delete("/link/:token", requireAuth, asyncRoute(async (req, res) => {
+  router.delete("/link/:token", requireAuth, validateParams(tokenParams), asyncRoute(async (req, res) => {
     await useCases.deleteLink.execute(String(req.params.token), req.authUser.id);
     return res.status(200).json({ success: true });
   }));
 
-  router.get("/link/:token", asyncPublicRoute(async (req, res) => {
+  router.get("/link/:token", validateParams(tokenParams), asyncPublicRoute(async (req, res) => {
     const { link, diagram } = await useCases.resolveLink.execute(String(req.params.token));
     return res.status(200).json({
       share: {

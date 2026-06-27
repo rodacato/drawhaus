@@ -8,10 +8,13 @@ import type { RestoreSnapshotUseCase } from "../../../application/use-cases/snap
 import type { RenameSnapshotUseCase } from "../../../application/use-cases/snapshots/rename-snapshot";
 import type { DeleteSnapshotUseCase } from "../../../application/use-cases/snapshots/delete-snapshot";
 import { asyncRoute } from "../middleware/async-handler";
-import { validate } from "../middleware/validate";
+import { validate, validateParams } from "../middleware/validate";
 import type { DiagramSnapshot } from "../../../domain/entities/diagram-snapshot";
 
 export type IoHolder = { io: Server | null };
+
+const diagramIdParams = z.object({ diagramId: z.uuid() });
+const snapshotParams = z.object({ diagramId: z.uuid(), snapshotId: z.uuid() });
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
@@ -58,13 +61,13 @@ export function createSnapshotRoutes(
   router.use(requireAuth);
 
   // GET /api/diagrams/:diagramId/snapshots
-  router.get("/", asyncRoute(async (req, res) => {
+  router.get("/", validateParams(diagramIdParams), asyncRoute(async (req, res) => {
     const snapshots = await useCases.list.execute(String(req.params.diagramId), req.authUser.id);
     return res.json({ snapshots: snapshots.map(formatSnapshot) });
   }));
 
   // POST /api/diagrams/:diagramId/snapshots
-  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
+  router.post("/", validateParams(diagramIdParams), validate(createSchema), asyncRoute(async (req, res) => {
     const diagramId = String(req.params.diagramId);
     const snapshot = await useCases.create.execute(
       diagramId,
@@ -80,13 +83,13 @@ export function createSnapshotRoutes(
   }));
 
   // GET /api/diagrams/:diagramId/snapshots/:snapshotId
-  router.get("/:snapshotId", asyncRoute(async (req, res) => {
+  router.get("/:snapshotId", validateParams(snapshotParams), asyncRoute(async (req, res) => {
     const snapshot = await useCases.get.execute(String(req.params.snapshotId), req.authUser.id);
     return res.json({ snapshot: formatSnapshotFull(snapshot) });
   }));
 
   // POST /api/diagrams/:diagramId/snapshots/:snapshotId/restore
-  router.post("/:snapshotId/restore", asyncRoute(async (req, res) => {
+  router.post("/:snapshotId/restore", validateParams(snapshotParams), asyncRoute(async (req, res) => {
     const result = await useCases.restore.execute(String(req.params.snapshotId), req.authUser.id);
 
     if (ioHolder?.io) {
@@ -112,7 +115,7 @@ export function createSnapshotRoutes(
   }));
 
   // PATCH /api/diagrams/:diagramId/snapshots/:snapshotId
-  router.patch("/:snapshotId", validate(renameSchema), asyncRoute(async (req, res) => {
+  router.patch("/:snapshotId", validateParams(snapshotParams), validate(renameSchema), asyncRoute(async (req, res) => {
     const snapshot = await useCases.rename.execute(
       String(req.params.snapshotId),
       req.authUser.id,
@@ -122,7 +125,7 @@ export function createSnapshotRoutes(
   }));
 
   // DELETE /api/diagrams/:diagramId/snapshots/:snapshotId
-  router.delete("/:snapshotId", asyncRoute(async (req, res) => {
+  router.delete("/:snapshotId", validateParams(snapshotParams), asyncRoute(async (req, res) => {
     await useCases.delete.execute(String(req.params.snapshotId), req.authUser.id);
     return res.json({ success: true });
   }));
