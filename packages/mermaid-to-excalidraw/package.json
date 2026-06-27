@@ -21,6 +21,7 @@
     "pretest": "npm run build",
     "test": "tsx --test 'src/__tests__/*.test.ts'",
     "typecheck": "tsc --noEmit",
+    "lint": "echo 'no lint configured'",
     "playground": "vite serve playground --config playground/vite.config.ts",
     "playground:build": "vite build --config playground/vite.config.ts"
   },
