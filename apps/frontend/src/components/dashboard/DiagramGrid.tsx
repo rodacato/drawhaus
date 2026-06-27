@@ -1,8 +1,8 @@
 import type { Tag } from "@/api/tags";
 import { DiagramCard } from "@/components/DiagramCard";
 import { DiagramListRow } from "@/components/DiagramListRow";
+import type { Diagram } from "@/components/shared/DiagramTypes";
 
-type Diagram = { id: string; title: string; folderId: string | null; thumbnail: string | null; starred?: boolean; tags?: Tag[]; updatedAt?: string; updated_at?: string };
 type Folder = { id: string; name: string };
 type WorkspaceOption = { id: string; name: string; isPersonal: boolean };
 
