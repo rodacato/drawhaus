@@ -1,8 +1,9 @@
 import type { OAuthTokenRepository } from "../../domain/ports/oauth-token-repository";
+import type { TokenRefresherPort } from "../../domain/ports/token-refresher";
 import { DriveTokenError } from "../../domain/errors";
 import { config } from "../config";
 
-export class GoogleTokenRefresher {
+export class GoogleTokenRefresher implements TokenRefresherPort {
   constructor(private readonly oauthTokens: OAuthTokenRepository) {}
 
   async getValidAccessToken(userId: string): Promise<string> {

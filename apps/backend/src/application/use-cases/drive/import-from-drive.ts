@@ -1,13 +1,13 @@
 import type { GoogleDriveService } from "../../../domain/ports/google-drive-service";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
-import type { GoogleTokenRefresher } from "../../../infrastructure/services/google-token-refresh";
+import type { TokenRefresherPort } from "../../../domain/ports/token-refresher";
 import { InvalidInputError } from "../../../domain/errors";
 
 export class ImportFromDriveUseCase {
   constructor(
     private readonly driveService: GoogleDriveService,
     private readonly diagrams: DiagramRepository,
-    private readonly tokenRefresher: GoogleTokenRefresher,
+    private readonly tokenRefresher: TokenRefresherPort,
   ) {}
 
   async execute(userId: string, data: { fileId: string; fileName: string }): Promise<{ diagramId: string; title: string }> {
