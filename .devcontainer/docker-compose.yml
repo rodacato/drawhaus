@@ -3,6 +3,7 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
+    init: true
     volumes:
       - ..:/workspaces/drawhaus:cached
     command: sleep infinity
