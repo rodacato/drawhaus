@@ -167,7 +167,7 @@ The structure mirrors the architecture: `domain/` has no framework imports, `app
 
 ### Ports (interfaces in `domain/ports/`)
 
-The domain defines 24 port interfaces. Key ones:
+The domain defines 28 port interfaces. Key ones:
 
 ```typescript
 // Repository ports — data persistence
@@ -216,6 +216,10 @@ interface DriveService {
 | EmailService | `ResendEmailService` | Falls back to console.log |
 | EncryptionService | `AesEncryptionService` | AES-256-GCM, requires ENCRYPTION_KEY |
 | DriveService | `GoogleDriveService` | OAuth token refresh handled separately |
+| MetricsRepository | `PgMetricsRepository` | Aggregate counts for admin metrics (keeps SQL out of the use case) |
+| WorkspaceInvitationRepository | `PgWorkspaceInvitationRepository` | Workspace invite tokens — create / resolve / accept |
+| OAuthProviderPort | `GitHubOAuthProvider`, `GoogleOAuthProvider` | Provider HTTP (token exchange + profile) behind a port; use cases stay HTTP-free |
+| TokenRefresherPort | `GoogleTokenRefresher` | Refreshes Drive access tokens; injected into Drive use cases |
 
 ---
 
