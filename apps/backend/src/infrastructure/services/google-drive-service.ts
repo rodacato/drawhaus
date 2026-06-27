@@ -5,12 +5,11 @@ const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 
-// Exported as `let` so tests can override the bound; production callers should treat as readonly.
-export let DRIVE_TIMEOUT_MS = 30_000;
+const driveTimeout = { ms: 30_000 };
 
 export function __setDriveTimeoutForTest(ms: number): number {
-  const previous = DRIVE_TIMEOUT_MS;
-  DRIVE_TIMEOUT_MS = ms;
+  const previous = driveTimeout.ms;
+  driveTimeout.ms = ms;
   return previous;
 }
 
@@ -18,12 +17,12 @@ type FetchInit = NonNullable<Parameters<typeof fetch>[1]>;
 
 async function timedFetch(url: string, init: FetchInit = {}): Promise<Response> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), DRIVE_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), driveTimeout.ms);
   try {
     return await fetch(url, { ...init, signal: controller.signal });
   } catch (err) {
     if (err instanceof Error && (err.name === "AbortError" || (err as { code?: string }).code === "ABORT_ERR")) {
-      throw new Error(`Drive request timed out after ${DRIVE_TIMEOUT_MS}ms`);
+      throw new Error(`Drive request timed out after ${driveTimeout.ms}ms`);
     }
     throw err;
   } finally {
@@ -34,11 +33,11 @@ async function timedFetch(url: string, init: FetchInit = {}): Promise<Response> 
 function escapeDriveQL(value: string): string {
   return value
     .replaceAll("\0", "")
-    .replaceAll(/\\/g, String.raw`\\`)
-    .replaceAll(/'/g, String.raw`\'`)
-    .replaceAll(/"/g, String.raw`\"`)
-    .replaceAll(/\n/g, " ")
-    .replaceAll(/\r/g, " ");
+    .replaceAll("\\", String.raw`\\`)
+    .replaceAll("'", String.raw`\'`)
+    .replaceAll('"', String.raw`\"`)
+    .replaceAll("\n", " ")
+    .replaceAll("\r", " ");
 }
 
 export class GoogleDriveServiceImpl implements GoogleDriveService {
