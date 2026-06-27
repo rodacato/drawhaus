@@ -1,30 +1,20 @@
-import { pool } from "../../../infrastructure/db";
+import type { MetricsRepository } from "../../../domain/ports/metrics-repository";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export class GetMetricsUseCase {
+  constructor(private readonly metrics: MetricsRepository) {}
+
   async execute() {
-    const [usersResult, diagramsResult, sessionsResult, createdViaResult, apiRequests24hResult] = await Promise.all([
-      pool.query<{ count: string }>("SELECT count(*) FROM users"),
-      pool.query<{ count: string }>("SELECT count(*) FROM diagrams"),
-      pool.query<{ count: string }>("SELECT count(*) FROM sessions WHERE expires_at > now()"),
-      pool.query<{ created_via: string; count: string }>(
-        "SELECT COALESCE(created_via, 'ui') AS created_via, count(*) FROM diagrams GROUP BY COALESCE(created_via, 'ui')",
-      ),
-      pool.query<{ count: string }>(
-        "SELECT count(*) FROM api_request_logs WHERE created_at > now() - interval '24 hours'",
-      ),
+    const since24h = new Date(Date.now() - DAY_MS);
+    const [totalUsers, totalDiagrams, activeSessions, diagramsByOrigin, apiRequests24h] = await Promise.all([
+      this.metrics.countUsers(),
+      this.metrics.countDiagrams(),
+      this.metrics.countActiveSessions(),
+      this.metrics.countDiagramsByOrigin(),
+      this.metrics.countApiRequestsSince(since24h),
     ]);
 
-    const diagramsByOrigin: Record<string, number> = {};
-    for (const row of createdViaResult.rows) {
-      diagramsByOrigin[row.created_via] = Number.parseInt(row.count, 10);
-    }
-
-    return {
-      totalUsers: Number.parseInt(usersResult.rows[0].count, 10),
-      totalDiagrams: Number.parseInt(diagramsResult.rows[0].count, 10),
-      activeSessions: Number.parseInt(sessionsResult.rows[0].count, 10),
-      diagramsByOrigin,
-      apiRequests24h: Number.parseInt(apiRequests24hResult.rows[0].count, 10),
-    };
+    return { totalUsers, totalDiagrams, activeSessions, diagramsByOrigin, apiRequests24h };
   }
 }
