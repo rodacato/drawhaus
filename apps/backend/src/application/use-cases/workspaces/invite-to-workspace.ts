@@ -1,14 +1,15 @@
 import crypto from "node:crypto";
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
+import type { WorkspaceInvitationRepository } from "../../../domain/ports/workspace-invitation-repository";
 import type { SiteSettingsRepository } from "../../../domain/ports/site-settings-repository";
 import type { EmailService } from "../../../domain/ports/email-service";
 import type { WorkspaceRole } from "../../../domain/entities/workspace";
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
-import { pool } from "../../../infrastructure/db";
 
 export class InviteToWorkspaceUseCase {
   constructor(
     private readonly workspaces: WorkspaceRepository,
+    private readonly invitations: WorkspaceInvitationRepository,
     private readonly settings: SiteSettingsRepository,
     private readonly emailService: EmailService,
   ) {}
@@ -31,11 +32,14 @@ export class InviteToWorkspaceUseCase {
     const token = crypto.randomBytes(24).toString("base64url");
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-    await pool.query(
-      `INSERT INTO workspace_invitations (workspace_id, email, role, token, invited_by, expires_at)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [input.workspaceId, input.email, input.role, token, input.actorId, expiresAt],
-    );
+    await this.invitations.create({
+      workspaceId: input.workspaceId,
+      email: input.email,
+      role: input.role,
+      token,
+      invitedBy: input.actorId,
+      expiresAt,
+    });
 
     await this.emailService.sendWorkspaceInviteEmail(input.email, token, input.actorName, workspace.name);
 

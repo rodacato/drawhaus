@@ -16,6 +16,8 @@ import { PgIntegrationSecretsRepository } from "../infrastructure/persistence/pg
 import { PgTemplateRepository } from "../infrastructure/persistence/pg-template-repository";
 import { PgSnapshotRepository } from "../infrastructure/persistence/pg-snapshot-repository";
 import { PgApiKeyRepository } from "../infrastructure/persistence/pg-api-key-repository";
+import { PgMetricsRepository } from "../infrastructure/persistence/pg-metrics-repository";
+import { PgWorkspaceInvitationRepository } from "../infrastructure/persistence/pg-workspace-invitation-repository";
 import { config } from "../infrastructure/config";
 
 export function createRepositories() {
@@ -39,12 +41,15 @@ export function createRepositories() {
   const templateRepo = new PgTemplateRepository();
   const snapshotRepo = new PgSnapshotRepository();
   const apiKeyRepo = new PgApiKeyRepository();
+  const metricsRepo = new PgMetricsRepository();
+  const workspaceInvitationRepo = new PgWorkspaceInvitationRepository();
 
   return {
     userRepo, sessionRepo, diagramRepo, shareRepo, siteSettingsRepo,
     folderRepo, sceneRepo, commentRepo, tagRepo, invitationRepo,
     passwordResetRepo, oauthTokenRepo, driveBackupRepo, workspaceRepo,
     integrationSecretsRepo, templateRepo, snapshotRepo, apiKeyRepo,
+    metricsRepo, workspaceInvitationRepo,
   };
 }
 

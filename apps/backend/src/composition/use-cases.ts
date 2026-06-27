@@ -33,6 +33,7 @@ import { DeleteWorkspaceUseCase } from "../application/use-cases/workspaces/dele
 import { AddWorkspaceMemberUseCase, UpdateWorkspaceMemberRoleUseCase, RemoveWorkspaceMemberUseCase } from "../application/use-cases/workspaces/manage-members";
 import { InviteToWorkspaceUseCase } from "../application/use-cases/workspaces/invite-to-workspace";
 import { AcceptWorkspaceInviteUseCase } from "../application/use-cases/workspaces/accept-workspace-invite";
+import { ResolveWorkspaceInviteUseCase } from "../application/use-cases/workspaces/resolve-workspace-invite";
 import { EnsurePersonalWorkspaceUseCase } from "../application/use-cases/workspaces/ensure-personal-workspace";
 
 // --- Folders ---
@@ -134,8 +135,8 @@ export function createUseCases(repos: Repositories, services: Services) {
   const forgotPassword = new ForgotPasswordUseCase(repos.userRepo, repos.passwordResetRepo, services.emailService);
   const resetPassword = new ResetPasswordUseCase(repos.userRepo, repos.sessionRepo, repos.passwordResetRepo, services.hasher);
   const deleteAccount = new DeleteAccountUseCase(repos.userRepo, services.hasher, services.auditLogger, repos.workspaceRepo);
-  const googleAuth = new GoogleAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo);
-  const githubAuth = new GitHubAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo);
+  const googleAuth = new GoogleAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo, services.googleOAuthProvider);
+  const githubAuth = new GitHubAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo, services.githubOAuthProvider);
   const unlinkOAuth = new UnlinkOAuthUseCase(repos.userRepo, repos.oauthTokenRepo, repos.driveBackupRepo);
 
   // Diagrams
@@ -158,8 +159,9 @@ export function createUseCases(repos: Repositories, services: Services) {
   const addWorkspaceMember = new AddWorkspaceMemberUseCase(repos.workspaceRepo, repos.siteSettingsRepo, services.auditLogger);
   const updateWorkspaceMemberRole = new UpdateWorkspaceMemberRoleUseCase(repos.workspaceRepo);
   const removeWorkspaceMember = new RemoveWorkspaceMemberUseCase(repos.workspaceRepo);
-  const inviteToWorkspace = new InviteToWorkspaceUseCase(repos.workspaceRepo, repos.siteSettingsRepo, services.emailService);
-  const acceptWorkspaceInvite = new AcceptWorkspaceInviteUseCase(repos.workspaceRepo);
+  const inviteToWorkspace = new InviteToWorkspaceUseCase(repos.workspaceRepo, repos.workspaceInvitationRepo, repos.siteSettingsRepo, services.emailService);
+  const acceptWorkspaceInvite = new AcceptWorkspaceInviteUseCase(repos.workspaceRepo, repos.workspaceInvitationRepo);
+  const resolveWorkspaceInvite = new ResolveWorkspaceInviteUseCase(repos.workspaceRepo, repos.workspaceInvitationRepo);
   const ensurePersonalWorkspace = new EnsurePersonalWorkspaceUseCase(repos.workspaceRepo);
 
   // Folders
@@ -181,7 +183,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   const adminDeleteUser = new AdminDeleteUserUseCase(repos.userRepo, repos.sessionRepo, services.auditLogger);
   const getSettings = new GetSiteSettingsUseCase(repos.siteSettingsRepo);
   const updateSettings = new UpdateSiteSettingsUseCase(repos.siteSettingsRepo);
-  const getMetrics = new GetMetricsUseCase();
+  const getMetrics = new GetMetricsUseCase(repos.metricsRepo);
   const inviteUser = new InviteUserUseCase(repos.userRepo, repos.invitationRepo, repos.siteSettingsRepo, services.emailService);
 
   // Scenes
@@ -256,7 +258,7 @@ export function createUseCases(repos: Repositories, services: Services) {
     // workspaces
     createWorkspace, listWorkspaces, getWorkspace, updateWorkspace, deleteWorkspace,
     addWorkspaceMember, updateWorkspaceMemberRole, removeWorkspaceMember,
-    inviteToWorkspace, acceptWorkspaceInvite, ensurePersonalWorkspace,
+    inviteToWorkspace, acceptWorkspaceInvite, resolveWorkspaceInvite, ensurePersonalWorkspace,
     // folders
     createFolder, listFolders, renameFolder, deleteFolder, moveDiagram,
     // share

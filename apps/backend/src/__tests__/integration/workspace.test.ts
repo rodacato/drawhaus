@@ -28,6 +28,7 @@ import {
 } from "../../application/use-cases/workspaces/manage-members";
 import { InviteToWorkspaceUseCase } from "../../application/use-cases/workspaces/invite-to-workspace";
 import { AcceptWorkspaceInviteUseCase } from "../../application/use-cases/workspaces/accept-workspace-invite";
+import { ResolveWorkspaceInviteUseCase } from "../../application/use-cases/workspaces/resolve-workspace-invite";
 import { EnsurePersonalWorkspaceUseCase } from "../../application/use-cases/workspaces/ensure-personal-workspace";
 import { TransferWorkspaceOwnershipUseCase } from "../../application/use-cases/workspaces/transfer-ownership";
 import { createAuthRoutes } from "../../infrastructure/http/routes/auth.routes";
@@ -40,11 +41,14 @@ import { InMemoryDiagramRepository } from "../fakes/in-memory-diagram-repository
 import { InMemoryTemplateRepository } from "../fakes/in-memory-template-repository";
 import { InMemorySiteSettingsRepository } from "../fakes/in-memory-site-settings-repository";
 import { InMemoryInvitationRepository } from "../fakes/in-memory-invitation-repository";
+import { InMemoryWorkspaceInvitationRepository } from "../fakes/in-memory-workspace-invitation-repository";
 import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-reset-repository";
 import { InMemoryOAuthTokenRepository } from "../fakes/in-memory-oauth-token-repository";
 import { NoopEmailService } from "../fakes/noop-email-service";
 import { FakeHasher } from "../fakes/fake-hasher";
 import { NoopAuditLogger } from "../fakes/noop-audit-logger";
+import { InMemoryDriveBackupRepository } from "../fakes/in-memory-drive-backup-repository";
+import { FakeOAuthProvider } from "../fakes/fake-oauth-provider";
 import { pool } from "../../infrastructure/db";
 
 type PgRow = Record<string, unknown>;
@@ -52,6 +56,7 @@ type PgResult = { rows: PgRow[] };
 type QueryHandler = (sql: string, params?: unknown[]) => PgResult | Promise<PgResult>;
 
 let workspaces: InMemoryWorkspaceRepository;
+let workspaceInvitations: InMemoryWorkspaceInvitationRepository;
 let diagrams: InMemoryDiagramRepository;
 let templates: InMemoryTemplateRepository;
 let siteSettings: InMemorySiteSettingsRepository;
@@ -66,6 +71,7 @@ function createApp() {
   const users = new InMemoryUserRepository();
   const sessions = new InMemorySessionRepository(() => users.store);
   workspaces = new InMemoryWorkspaceRepository();
+  workspaceInvitations = new InMemoryWorkspaceInvitationRepository();
   diagrams = new InMemoryDiagramRepository();
   templates = new InMemoryTemplateRepository();
   siteSettings = new InMemorySiteSettingsRepository();
@@ -81,7 +87,7 @@ function createApp() {
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
   app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher),
+    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
     login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
     logout: new LogoutUseCase(sessions),
     getCurrentUser,
@@ -91,9 +97,9 @@ function createApp() {
     forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
     resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
     deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository()),
+    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
   }, requireAuth));
 
   app.use("/api/workspaces", createWorkspaceRoutes({
@@ -105,8 +111,9 @@ function createApp() {
     addMember: new AddWorkspaceMemberUseCase(workspaces, siteSettings, new NoopAuditLogger()),
     updateMemberRole: new UpdateWorkspaceMemberRoleUseCase(workspaces),
     removeMember: new RemoveWorkspaceMemberUseCase(workspaces),
-    invite: new InviteToWorkspaceUseCase(workspaces, siteSettings, emailService),
-    acceptInvite: new AcceptWorkspaceInviteUseCase(workspaces),
+    invite: new InviteToWorkspaceUseCase(workspaces, workspaceInvitations, siteSettings, emailService),
+    acceptInvite: new AcceptWorkspaceInviteUseCase(workspaces, workspaceInvitations),
+    resolveInvite: new ResolveWorkspaceInviteUseCase(workspaces, workspaceInvitations),
     ensurePersonal: new EnsurePersonalWorkspaceUseCase(workspaces),
     transferOwnership: new TransferWorkspaceOwnershipUseCase(workspaces, diagrams, templates, new NoopAuditLogger()),
   }, requireAuth));
@@ -347,16 +354,10 @@ test("DELETE /api/workspaces/:id returns 403 when caller is admin-member but not
 
 // ---------- POST /api/workspaces/:id/invite ----------
 
-test("POST /:id/invite issues an invitation for an admin (writes via raw SQL)", async () => {
+test("POST /:id/invite issues an invitation for an admin", async () => {
   const app = createApp();
   const { cookie, userId } = await registerAndGetUser(app, "winvite@example.com");
   const ws = await workspaces.create({ name: "Team", ownerId: userId });
-  // The invite use case INSERTs into workspace_invitations via raw SQL; stub to accept it.
-  let insertedRole: string | null = null;
-  setQueryHandler((_sql, params) => {
-    insertedRole = (params?.[2] as string) ?? null;
-    return { rows: [] };
-  });
 
   const res = await request(app)
     .post(`/api/workspaces/${ws.id}/invite`)
@@ -368,7 +369,7 @@ test("POST /:id/invite issues an invitation for an admin (writes via raw SQL)", 
   assert.equal(res.body.invitation.role, "editor");
   assert.ok(res.body.invitation.token);
   assert.ok(res.body.invitation.expiresAt);
-  assert.equal(insertedRole, "editor");
+  assert.equal(workspaceInvitations.store[0].role, "editor");
 });
 
 test("POST /:id/invite defaults role to editor when omitted", async () => {
@@ -432,18 +433,13 @@ test("POST /accept-invite accepts a valid invitation and adds the caller as memb
   const { cookie, userId } = await registerAndGetUser(app, "wacc@example.com");
   const ws = await workspaces.create({ name: "Team", ownerId: "owner-id" });
 
-  setQueryHandler((sql) => {
-    if (sql.includes("UPDATE workspace_invitations")) return { rows: [] };
-    return {
-      rows: [{
-        id: "invite-1",
-        workspace_id: ws.id,
-        email: "wacc@example.com",
-        role: "viewer",
-        expires_at: new Date(Date.now() + 1_000_000).toISOString(),
-        used_at: null,
-      }],
-    };
+  await workspaceInvitations.create({
+    workspaceId: ws.id,
+    email: "wacc@example.com",
+    role: "viewer",
+    token: "valid-token",
+    invitedBy: "owner-id",
+    expiresAt: new Date(Date.now() + 1_000_000),
   });
 
   const res = await request(app)
@@ -460,7 +456,6 @@ test("POST /accept-invite accepts a valid invitation and adds the caller as memb
 test("POST /accept-invite returns 404 when the token does not match", async () => {
   const app = createApp();
   const { cookie } = await registerAndGetUser(app, "wacc404@example.com");
-  setQueryHandler(() => ({ rows: [] }));
 
   const res = await request(app)
     .post("/api/workspaces/accept-invite")
@@ -475,16 +470,14 @@ test("POST /accept-invite returns 410 when invitation expired", async () => {
   const { cookie } = await registerAndGetUser(app, "waccexp@example.com");
   const ws = await workspaces.create({ name: "Team", ownerId: "owner-id" });
 
-  setQueryHandler(() => ({
-    rows: [{
-      id: "invite-1",
-      workspace_id: ws.id,
-      email: "waccexp@example.com",
-      role: "editor",
-      expires_at: new Date(Date.now() - 1000).toISOString(),
-      used_at: null,
-    }],
-  }));
+  await workspaceInvitations.create({
+    workspaceId: ws.id,
+    email: "waccexp@example.com",
+    role: "editor",
+    token: "expired",
+    invitedBy: "owner-id",
+    expiresAt: new Date(Date.now() - 1000),
+  });
 
   const res = await request(app)
     .post("/api/workspaces/accept-invite")
@@ -512,20 +505,19 @@ test("POST /accept-invite returns 400 when token missing", async () => {
   assert.equal(res.status, 400);
 });
 
-// ---------- GET /api/workspaces/invite/:token (raw SQL, no auth required) ----------
+// ---------- GET /api/workspaces/invite/:token (no auth required) ----------
 
 test("GET /invite/:token returns invite metadata for a valid token (no auth required)", async () => {
   const app = createApp();
-  setQueryHandler(() => ({
-    rows: [{
-      id: "inv-1",
-      email: "guest@example.com",
-      role: "viewer",
-      expires_at: new Date(Date.now() + 1_000_000).toISOString(),
-      used_at: null,
-      workspace_name: "Acme",
-    }],
-  }));
+  const ws = await workspaces.create({ name: "Acme", ownerId: "owner-id" });
+  await workspaceInvitations.create({
+    workspaceId: ws.id,
+    email: "guest@example.com",
+    role: "viewer",
+    token: "some-token",
+    invitedBy: "owner-id",
+    expiresAt: new Date(Date.now() + 1_000_000),
+  });
 
   const res = await request(app).get("/api/workspaces/invite/some-token");
 
@@ -537,7 +529,6 @@ test("GET /invite/:token returns invite metadata for a valid token (no auth requ
 
 test("GET /invite/:token returns 404 when the token does not match", async () => {
   const app = createApp();
-  setQueryHandler(() => ({ rows: [] }));
 
   const res = await request(app).get("/api/workspaces/invite/missing");
   assert.equal(res.status, 404);
@@ -545,16 +536,16 @@ test("GET /invite/:token returns 404 when the token does not match", async () =>
 
 test("GET /invite/:token returns 404 when invitation has been used", async () => {
   const app = createApp();
-  setQueryHandler(() => ({
-    rows: [{
-      id: "inv-1",
-      email: "guest@example.com",
-      role: "viewer",
-      expires_at: new Date(Date.now() + 1_000_000).toISOString(),
-      used_at: new Date().toISOString(),
-      workspace_name: "Acme",
-    }],
-  }));
+  const ws = await workspaces.create({ name: "Acme", ownerId: "owner-id" });
+  const invite = await workspaceInvitations.create({
+    workspaceId: ws.id,
+    email: "guest@example.com",
+    role: "viewer",
+    token: "used-token",
+    invitedBy: "owner-id",
+    expiresAt: new Date(Date.now() + 1_000_000),
+  });
+  await workspaceInvitations.markUsed(invite.id);
 
   const res = await request(app).get("/api/workspaces/invite/used-token");
   assert.equal(res.status, 404);
@@ -562,16 +553,15 @@ test("GET /invite/:token returns 404 when invitation has been used", async () =>
 
 test("GET /invite/:token returns 410 when invitation expired", async () => {
   const app = createApp();
-  setQueryHandler(() => ({
-    rows: [{
-      id: "inv-1",
-      email: "guest@example.com",
-      role: "viewer",
-      expires_at: new Date(Date.now() - 1000).toISOString(),
-      used_at: null,
-      workspace_name: "Acme",
-    }],
-  }));
+  const ws = await workspaces.create({ name: "Acme", ownerId: "owner-id" });
+  await workspaceInvitations.create({
+    workspaceId: ws.id,
+    email: "guest@example.com",
+    role: "viewer",
+    token: "expired",
+    invitedBy: "owner-id",
+    expiresAt: new Date(Date.now() - 1000),
+  });
 
   const res = await request(app).get("/api/workspaces/invite/expired");
   assert.equal(res.status, 410);
