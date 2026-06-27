@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { setupApi } from "@/api/setup";
 import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
+import { getErrorMessage } from "@/lib/api-error";
 
 export function SetupStep2({ onComplete }: { readonly onComplete: () => void }) {
   const [pending, setPending] = useState(false);
@@ -23,7 +24,7 @@ export function SetupStep2({ onComplete }: { readonly onComplete: () => void }) 
       await setupApi.submitStep2({ instanceName, registrationOpen, backupEnabled, backupCron, backupRetentionDays });
       onComplete();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Update failed";
+      const msg = getErrorMessage(err, "Update failed");
       setError(msg);
     } finally {
       setPending(false);

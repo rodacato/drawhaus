@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { apiKeysApi, type ApiKeyResponse } from "@/api/api-keys";
 import { workspacesApi, type Workspace } from "@/api/workspaces";
 import { ui } from "@/lib/ui";
+import { getErrorMessage } from "@/lib/api-error";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
@@ -66,7 +67,7 @@ export function ApiKeysSettings() {
       setShowCreate(false);
       await loadKeys();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Failed to create key";
+      const msg = getErrorMessage(err, "Failed to create key");
       setError(msg);
     } finally {
       setCreating(false);
