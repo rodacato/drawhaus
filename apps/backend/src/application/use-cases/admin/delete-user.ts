@@ -1,7 +1,7 @@
 import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { SessionRepository } from "../../../domain/ports/session-repository";
 import type { AuditLogger } from "../../../domain/ports/audit-logger";
-import { NotFoundError, InvalidInputError } from "../../../domain/errors";
+import { NotFoundError, InvalidInputError, ForbiddenError } from "../../../domain/errors";
 
 export class AdminDeleteUserUseCase {
   constructor(
@@ -11,6 +11,9 @@ export class AdminDeleteUserUseCase {
   ) {}
 
   async execute(targetId: string, adminId: string) {
+    const actor = await this.users.findById(adminId);
+    if (actor?.role !== "admin") throw new ForbiddenError();
+
     if (targetId === adminId) {
       throw new InvalidInputError("Cannot delete your own account");
     }

@@ -36,6 +36,9 @@ import { InMemoryWorkspaceRepository } from "../fakes/in-memory-workspace-reposi
 import { NoopEmailService } from "../fakes/noop-email-service";
 import { FakeHasher } from "../fakes/fake-hasher";
 import { NoopAuditLogger } from "../fakes/noop-audit-logger";
+import { InMemoryDriveBackupRepository } from "../fakes/in-memory-drive-backup-repository";
+import { InMemorySiteSettingsRepository } from "../fakes/in-memory-site-settings-repository";
+import { FakeOAuthProvider } from "../fakes/fake-oauth-provider";
 
 let templates: InMemoryTemplateRepository;
 let diagrams: InMemoryDiagramRepository;
@@ -59,7 +62,7 @@ function createApp() {
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
   app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher),
+    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
     login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
     logout: new LogoutUseCase(sessions),
     getCurrentUser,
@@ -69,9 +72,9 @@ function createApp() {
     forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
     resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
     deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository()),
+    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
   }, requireAuth));
 
   app.use("/api/templates", createTemplateRoutes({

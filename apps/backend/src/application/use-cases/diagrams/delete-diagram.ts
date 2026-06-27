@@ -5,7 +5,7 @@ import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 export class DeleteDiagramUseCase {
   constructor(
     private readonly diagrams: DiagramRepository,
-    private readonly workspaces?: WorkspaceRepository,
+    private readonly workspaces: WorkspaceRepository,
   ) {}
 
   async execute(diagramId: string, userId: string) {
@@ -19,7 +19,7 @@ export class DeleteDiagramUseCase {
     }
 
     // Workspace admin can delete diagrams in their workspace
-    if (diagram.workspaceId && this.workspaces) {
+    if (diagram.workspaceId) {
       const wsRole = await this.workspaces.findMemberRole(diagram.workspaceId, userId);
       if (wsRole === "admin") {
         await this.diagrams.delete(diagramId);
