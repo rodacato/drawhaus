@@ -35,6 +35,9 @@ import { InMemoryWorkspaceRepository } from "../fakes/in-memory-workspace-reposi
 import { NoopEmailService } from "../fakes/noop-email-service";
 import { FakeHasher } from "../fakes/fake-hasher";
 import { NoopAuditLogger } from "../fakes/noop-audit-logger";
+import { InMemoryDriveBackupRepository } from "../fakes/in-memory-drive-backup-repository";
+import { InMemorySiteSettingsRepository } from "../fakes/in-memory-site-settings-repository";
+import { FakeOAuthProvider } from "../fakes/fake-oauth-provider";
 
 let comments: InMemoryCommentRepository;
 let diagrams: InMemoryDiagramRepository;
@@ -58,7 +61,7 @@ function createApp() {
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
   app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(userStore, sessions, hasher),
+    register: new RegisterUseCase(userStore, sessions, hasher, new InMemorySiteSettingsRepository()),
     login: new LoginUseCase(userStore, sessions, hasher, new NoopAuditLogger()),
     logout: new LogoutUseCase(sessions),
     getCurrentUser,
@@ -68,9 +71,9 @@ function createApp() {
     forgotPassword: new ForgotPasswordUseCase(userStore, passwordResets, emailService),
     resetPassword: new ResetPasswordUseCase(userStore, sessions, passwordResets, hasher),
     deleteAccount: new DeleteAccountUseCase(userStore, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(userStore, sessions, new InMemoryOAuthTokenRepository()),
-    githubAuth: new GitHubAuthUseCase(userStore, sessions, new InMemoryOAuthTokenRepository()),
-    unlinkOAuth: new UnlinkOAuthUseCase(userStore, new InMemoryOAuthTokenRepository()),
+    googleAuth: new GoogleAuthUseCase(userStore, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    githubAuth: new GitHubAuthUseCase(userStore, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    unlinkOAuth: new UnlinkOAuthUseCase(userStore, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
   }, requireAuth));
 
   app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({

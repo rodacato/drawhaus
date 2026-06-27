@@ -6,13 +6,14 @@ import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { FakeHasher } from "../../fakes/fake-hasher";
 import { NoopAuditLogger } from "../../fakes/noop-audit-logger";
+import { InMemorySiteSettingsRepository } from "../../fakes/in-memory-site-settings-repository";
 import { UnauthorizedError } from "../../../domain/errors";
 
 function setup() {
   const users = new InMemoryUserRepository();
   const sessions = new InMemorySessionRepository(() => users.store);
   const hasher = new FakeHasher();
-  const register = new RegisterUseCase(users, sessions, hasher);
+  const register = new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository());
   const login = new LoginUseCase(users, sessions, hasher, new NoopAuditLogger());
   return { users, sessions, register, login };
 }

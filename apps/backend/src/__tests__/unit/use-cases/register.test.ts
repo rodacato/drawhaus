@@ -4,13 +4,15 @@ import { RegisterUseCase } from "../../../application/use-cases/auth/register";
 import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { FakeHasher } from "../../fakes/fake-hasher";
+import { InMemorySiteSettingsRepository } from "../../fakes/in-memory-site-settings-repository";
 import { ConflictError } from "../../../domain/errors";
 
 function setup() {
   const users = new InMemoryUserRepository();
   const sessions = new InMemorySessionRepository(() => users.store);
   const hasher = new FakeHasher();
-  const useCase = new RegisterUseCase(users, sessions, hasher);
+  const siteSettings = new InMemorySiteSettingsRepository();
+  const useCase = new RegisterUseCase(users, sessions, hasher, siteSettings);
   return { users, sessions, hasher, useCase };
 }
 

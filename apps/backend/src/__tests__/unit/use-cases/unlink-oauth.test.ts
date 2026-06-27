@@ -6,17 +6,17 @@ import { InMemoryOAuthTokenRepository } from "../../fakes/in-memory-oauth-token-
 import { InMemoryDriveBackupRepository } from "../../fakes/in-memory-drive-backup-repository";
 import { InvalidInputError, NotFoundError } from "../../../domain/errors";
 
-function setup(opts: { withDriveBackup?: boolean } = {}) {
+function setup() {
   const users = new InMemoryUserRepository();
   const oauthTokens = new InMemoryOAuthTokenRepository();
-  const driveBackupRepo = opts.withDriveBackup ? new InMemoryDriveBackupRepository() : undefined;
+  const driveBackupRepo = new InMemoryDriveBackupRepository();
   const useCase = new UnlinkOAuthUseCase(users, oauthTokens, driveBackupRepo);
   return { users, oauthTokens, driveBackupRepo, useCase };
 }
 
 describe("UnlinkOAuthUseCase", () => {
   it("unlinks google: clears googleId, deletes oauth token, deletes drive backup settings", async () => {
-    const { users, oauthTokens, driveBackupRepo, useCase } = setup({ withDriveBackup: true });
+    const { users, oauthTokens, driveBackupRepo, useCase } = setup();
     const user = await users.create({
       email: "u@example.com",
       name: "U",
@@ -29,13 +29,13 @@ describe("UnlinkOAuthUseCase", () => {
       accessToken: "at",
       scopes: "https://www.googleapis.com/auth/drive.file",
     });
-    await driveBackupRepo!.upsertSettings(user.id, { enabled: true });
+    await driveBackupRepo.upsertSettings(user.id, { enabled: true });
 
     await useCase.execute(user.id, "google");
 
     assert.equal(users.store[0].googleId, null);
     assert.equal(oauthTokens.store.length, 0);
-    assert.equal(driveBackupRepo!.settings.get(user.id), undefined);
+    assert.equal(driveBackupRepo.settings.get(user.id), undefined);
   });
 
   it("unlinks github: clears githubId AND githubUsername, deletes oauth token", async () => {
@@ -101,7 +101,7 @@ describe("UnlinkOAuthUseCase", () => {
     assert.equal(users.store[0].passwordHash, "hashed_pw");
   });
 
-  it("works for google unlink without driveBackupRepo injected (no crash)", async () => {
+  it("works for google unlink when no drive backup settings exist (no crash)", async () => {
     const { users, useCase } = setup();
     const user = await users.create({
       email: "u@example.com",
@@ -116,7 +116,7 @@ describe("UnlinkOAuthUseCase", () => {
   });
 
   it("does NOT touch drive backup settings when unlinking github", async () => {
-    const { users, driveBackupRepo, useCase } = setup({ withDriveBackup: true });
+    const { users, driveBackupRepo, useCase } = setup();
     const user = await users.create({
       email: "u@example.com",
       name: "U",
@@ -124,10 +124,10 @@ describe("UnlinkOAuthUseCase", () => {
       githubId: "gh-1",
       githubUsername: "octo",
     });
-    await driveBackupRepo!.upsertSettings(user.id, { enabled: true });
+    await driveBackupRepo.upsertSettings(user.id, { enabled: true });
 
     await useCase.execute(user.id, "github");
 
-    assert.ok(driveBackupRepo!.settings.get(user.id));
+    assert.ok(driveBackupRepo.settings.get(user.id));
   });
 });

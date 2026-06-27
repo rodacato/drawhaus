@@ -17,6 +17,8 @@ import { createV1HealthRoutes } from "../../infrastructure/http/public-api/v1-he
 import { InMemoryDiagramRepository } from "../fakes/in-memory-diagram-repository";
 import { InMemoryApiKeyRepository } from "../fakes/in-memory-api-key-repository";
 import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
+import { InMemorySceneRepository } from "../fakes/in-memory-scene-repository";
+import { InMemoryWorkspaceRepository } from "../fakes/in-memory-workspace-repository";
 
 const FRONTEND_URL = "http://localhost:5173";
 const WORKSPACE_ID = crypto.randomUUID();
@@ -82,10 +84,10 @@ function createApp() {
   // Diagram routes
   app.use("/v1/diagrams", createV1DiagramRoutes({
     create: new CreateDiagramUseCase(diagrams),
-    get: new GetDiagramUseCase(diagrams),
+    get: new GetDiagramUseCase(diagrams, new InMemorySceneRepository()),
     list: new ListDiagramsUseCase(diagrams),
     update: new UpdateDiagramUseCase(diagrams),
-    delete: new DeleteDiagramUseCase(diagrams),
+    delete: new DeleteDiagramUseCase(diagrams, new InMemoryWorkspaceRepository()),
   }, FRONTEND_URL));
 
   return app;

@@ -6,7 +6,7 @@ import { requireAccess } from "../../helpers/require-access";
 export class GetDiagramUseCase {
   constructor(
     private readonly diagrams: DiagramRepository,
-    private readonly scenes?: SceneRepository,
+    private readonly scenes: SceneRepository,
   ) {}
 
   async execute(diagramId: string, userId: string) {
@@ -17,11 +17,9 @@ export class GetDiagramUseCase {
     if (!diagram) throw new NotFoundError("Diagram");
 
     // Return first scene's data when available — it's the source of truth
-    if (this.scenes) {
-      const scenes = await this.scenes.findByDiagram(diagramId);
-      if (scenes.length > 0) {
-        return { ...diagram, elements: scenes[0].elements, appState: scenes[0].appState };
-      }
+    const scenes = await this.scenes.findByDiagram(diagramId);
+    if (scenes.length > 0) {
+      return { ...diagram, elements: scenes[0].elements, appState: scenes[0].appState };
     }
 
     return diagram;

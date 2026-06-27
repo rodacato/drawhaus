@@ -29,6 +29,7 @@ import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../fakes/in-memory-session-repository";
 import { InMemoryDiagramRepository } from "../fakes/in-memory-diagram-repository";
 import { InMemoryFolderRepository } from "../fakes/in-memory-folder-repository";
+import { InMemorySceneRepository } from "../fakes/in-memory-scene-repository";
 import { FakeHasher } from "../fakes/fake-hasher";
 import { InMemoryInvitationRepository } from "../fakes/in-memory-invitation-repository";
 import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-reset-repository";
@@ -40,6 +41,9 @@ import { UnlinkOAuthUseCase } from "../../application/use-cases/auth/unlink-oaut
 import { TransferDiagramOwnershipUseCase } from "../../application/use-cases/diagrams/transfer-ownership";
 import { NoopAuditLogger } from "../fakes/noop-audit-logger";
 import { InMemoryWorkspaceRepository } from "../fakes/in-memory-workspace-repository";
+import { InMemoryDriveBackupRepository } from "../fakes/in-memory-drive-backup-repository";
+import { InMemorySiteSettingsRepository } from "../fakes/in-memory-site-settings-repository";
+import { FakeOAuthProvider } from "../fakes/fake-oauth-provider";
 
 let diagrams: InMemoryDiagramRepository;
 
@@ -58,7 +62,7 @@ function createApp() {
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
   app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher),
+    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
     login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
     logout: new LogoutUseCase(sessions),
     getCurrentUser,
@@ -68,22 +72,22 @@ function createApp() {
     forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
     resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
     deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), new InMemoryWorkspaceRepository()),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository()),
+    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
   }, requireAuth));
   const folders = new InMemoryFolderRepository();
   app.use("/api/diagrams", createDiagramRoutes({
     create: new CreateDiagramUseCase(diagrams),
-    get: new GetDiagramUseCase(diagrams),
+    get: new GetDiagramUseCase(diagrams, new InMemorySceneRepository()),
     list: new ListDiagramsUseCase(diagrams),
     search: new SearchDiagramsUseCase(diagrams),
     update: new UpdateDiagramUseCase(diagrams),
     updateThumbnail: new UpdateThumbnailUseCase(diagrams),
-    delete: new DeleteDiagramUseCase(diagrams),
+    delete: new DeleteDiagramUseCase(diagrams, new InMemoryWorkspaceRepository()),
     toggleStar: new ToggleStarUseCase(diagrams),
     duplicate: new DuplicateDiagramUseCase(diagrams),
-    move: new MoveDiagramUseCase(diagrams, folders),
+    move: new MoveDiagramUseCase(diagrams, folders, new InMemoryWorkspaceRepository()),
     transferOwnership: new TransferDiagramOwnershipUseCase(diagrams, new InMemoryWorkspaceRepository(), new NoopAuditLogger()),
   }, requireAuth));
   return app;
