@@ -1,5 +1,5 @@
 import type { GoogleDriveService } from "../../../domain/ports/google-drive-service";
-import type { GoogleTokenRefresher } from "../../../infrastructure/services/google-token-refresh";
+import type { TokenRefresherPort } from "../../../domain/ports/token-refresher";
 
 type ExportFormat = "excalidraw" | "png" | "svg";
 
@@ -12,7 +12,7 @@ const MIME_TYPES: Record<ExportFormat, string> = {
 export class ExportToDriveUseCase {
   constructor(
     private readonly driveService: GoogleDriveService,
-    private readonly tokenRefresher: GoogleTokenRefresher,
+    private readonly tokenRefresher: TokenRefresherPort,
   ) {}
 
   async execute(userId: string, data: {

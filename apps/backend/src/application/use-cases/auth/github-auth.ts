@@ -3,39 +3,21 @@ import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { SessionRepository } from "../../../domain/ports/session-repository";
 import type { OAuthTokenRepository } from "../../../domain/ports/oauth-token-repository";
 import type { SiteSettingsRepository } from "../../../domain/ports/site-settings-repository";
+import type { OAuthProviderPort, OAuthProfile } from "../../../domain/ports/oauth-provider";
 import { ConflictError, ForbiddenError } from "../../../domain/errors";
 import { config } from "../../../infrastructure/config";
-
-type GitHubTokenResponse = {
-  access_token: string;
-  token_type: string;
-  scope: string;
-};
-
-type GitHubUserInfo = {
-  id: number;
-  login: string;
-  name: string | null;
-  email: string | null;
-  avatar_url: string;
-};
-
-type GitHubEmail = {
-  email: string;
-  primary: boolean;
-  verified: boolean;
-};
 
 export class GitHubAuthUseCase {
   constructor(
     private readonly users: UserRepository,
     private readonly sessions: SessionRepository,
     private readonly oauthTokens: OAuthTokenRepository,
-    private readonly siteSettings?: SiteSettingsRepository,
+    private readonly siteSettings: SiteSettingsRepository,
+    private readonly provider: OAuthProviderPort,
   ) {}
 
   get isEnabled(): boolean {
-    return !!(config.githubClientId && config.githubClientSecret && config.githubRedirectUri);
+    return this.provider.isEnabled;
   }
 
   generateStateToken(): string {
@@ -43,20 +25,14 @@ export class GitHubAuthUseCase {
   }
 
   getAuthorizationUrl(state: string): string {
-    const params = new URLSearchParams({
-      client_id: config.githubClientId,
-      redirect_uri: config.githubRedirectUri,
-      scope: "read:user user:email",
-      state,
-    });
-    return `https://github.com/login/oauth/authorize?${params.toString()}`;
+    return this.provider.getAuthorizationUrl(state);
   }
 
   async handleCallback(code: string): Promise<{ sessionToken: string; redirectUrl: string }> {
-    const tokens = await this.exchangeCode(code);
-    const githubUser = await this.fetchUserInfo(tokens.access_token);
-    const email = await this.resolveEmail(githubUser, tokens.access_token);
-    const user = await this.resolveOrCreateUser(githubUser, email);
+    const tokens = await this.provider.exchangeCode(code);
+    const profile = await this.provider.fetchUserInfo(tokens.accessToken);
+    const email = this.requireEmail(profile);
+    const user = await this.resolveOrCreateUser(profile, email);
 
     if (user.disabled) {
       throw new ForbiddenError();
@@ -65,10 +41,10 @@ export class GitHubAuthUseCase {
     await this.oauthTokens.upsert({
       userId: user.id,
       provider: "github",
-      accessToken: tokens.access_token,
+      accessToken: tokens.accessToken,
       refreshToken: undefined,
       tokenExpiresAt: undefined,
-      scopes: tokens.scope,
+      scopes: tokens.scopes,
     });
 
     const session = await this.sessions.create(user.id);
@@ -79,21 +55,19 @@ export class GitHubAuthUseCase {
     };
   }
 
-  private async resolveEmail(githubUser: GitHubUserInfo, accessToken: string): Promise<string> {
-    const email = githubUser.email ?? (await this.fetchPrimaryEmail(accessToken));
-    if (!email) {
+  private requireEmail(profile: OAuthProfile): string {
+    if (!profile.email) {
       throw new Error("GitHub account has no verified email address");
     }
-    return email;
+    return profile.email;
   }
 
-  private async resolveOrCreateUser(githubUser: GitHubUserInfo, email: string) {
-    const githubIdStr = String(githubUser.id);
-
-    const byGithubId = await this.users.findByGitHubId(githubIdStr);
+  private async resolveOrCreateUser(profile: OAuthProfile, email: string) {
+    const login = profile.username ?? "";
+    const byGithubId = await this.users.findByGitHubId(profile.providerId);
     if (byGithubId) {
-      if (byGithubId.githubUsername !== githubUser.login) {
-        await this.users.update(byGithubId.id, { githubUsername: githubUser.login });
+      if (byGithubId.githubUsername !== login) {
+        await this.users.update(byGithubId.id, { githubUsername: login });
       }
       return byGithubId;
     }
@@ -108,7 +82,7 @@ export class GitHubAuthUseCase {
     const userCount = await this.users.count();
     const isFirstUser = userCount === 0;
 
-    if (!isFirstUser && this.siteSettings) {
+    if (!isFirstUser) {
       const settings = await this.siteSettings.get();
       if (!settings.registrationOpen) {
         throw new ForbiddenError();
@@ -117,11 +91,11 @@ export class GitHubAuthUseCase {
 
     const created = await this.users.create({
       email: email.toLowerCase(),
-      name: githubUser.name ?? githubUser.login,
+      name: profile.name ?? login,
       passwordHash: null,
-      githubId: githubIdStr,
-      githubUsername: githubUser.login,
-      avatarUrl: githubUser.avatar_url,
+      githubId: profile.providerId,
+      githubUsername: login,
+      avatarUrl: profile.avatarUrl ?? undefined,
     });
 
     if (isFirstUser) {
@@ -133,88 +107,26 @@ export class GitHubAuthUseCase {
   }
 
   async handleLinkCallback(code: string, userId: string): Promise<void> {
-    const tokens = await this.exchangeCode(code);
-    const githubUser = await this.fetchUserInfo(tokens.access_token);
-    const githubIdStr = String(githubUser.id);
+    const tokens = await this.provider.exchangeCode(code);
+    const profile = await this.provider.fetchUserInfo(tokens.accessToken);
 
-    // Check if this GitHub account is already linked to another user
-    const existingUser = await this.users.findByGitHubId(githubIdStr);
+    const existingUser = await this.users.findByGitHubId(profile.providerId);
     if (existingUser && existingUser.id !== userId) {
       throw new Error("This GitHub account is already linked to another user");
     }
 
     await this.users.update(userId, {
-      githubId: githubIdStr,
-      githubUsername: githubUser.login,
+      githubId: profile.providerId,
+      githubUsername: profile.username ?? "",
     });
 
     await this.oauthTokens.upsert({
       userId,
       provider: "github",
-      accessToken: tokens.access_token,
+      accessToken: tokens.accessToken,
       refreshToken: undefined,
       tokenExpiresAt: undefined,
-      scopes: tokens.scope,
+      scopes: tokens.scopes,
     });
-  }
-
-  private async exchangeCode(code: string): Promise<GitHubTokenResponse> {
-    const response = await fetch("https://github.com/login/oauth/access_token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        client_id: config.githubClientId,
-        client_secret: config.githubClientSecret,
-        code,
-        redirect_uri: config.githubRedirectUri,
-      }),
-    });
-
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`GitHub token exchange failed: ${body}`);
-    }
-
-    const data = (await response.json()) as GitHubTokenResponse & { error?: string };
-    if (data.error) {
-      throw new Error(`GitHub token exchange failed: ${data.error}`);
-    }
-
-    return data;
-  }
-
-  private async fetchUserInfo(accessToken: string): Promise<GitHubUserInfo> {
-    const response = await fetch("https://api.github.com/user", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/vnd.github+json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch GitHub user info");
-    }
-
-    return response.json() as Promise<GitHubUserInfo>;
-  }
-
-  private async fetchPrimaryEmail(accessToken: string): Promise<string | null> {
-    const response = await fetch("https://api.github.com/user/emails", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/vnd.github+json",
-      },
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const emails = (await response.json()) as GitHubEmail[];
-    const primary = emails.find((e) => e.primary && e.verified);
-    return primary?.email ?? null;
   }
 }
