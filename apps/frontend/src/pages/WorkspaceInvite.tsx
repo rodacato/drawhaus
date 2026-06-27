@@ -47,6 +47,8 @@ export function WorkspaceInvite() {
     return <div className="flex h-screen items-center justify-center bg-surface text-sm text-text-muted">Loading...</div>;
   }
 
+  const acceptLabel = user ? "Accept Invitation" : "Log in to Accept";
+
   return (
     <div className="flex h-screen items-center justify-center bg-surface">
       <div className="w-full max-w-md rounded-xl border border-border bg-surface-raised p-8 text-center">
@@ -68,7 +70,7 @@ export function WorkspaceInvite() {
               <p className="mb-4 text-sm text-text-muted">You'll need to log in or create an account to accept.</p>
             )}
             <button onClick={handleAccept} disabled={accepting} className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover" type="button">
-              {accepting ? "Accepting..." : user ? "Accept Invitation" : "Log in to Accept"}
+              {accepting ? "Accepting..." : acceptLabel}
             </button>
           </>
         )}

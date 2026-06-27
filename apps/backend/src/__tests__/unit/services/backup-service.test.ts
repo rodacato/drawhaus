@@ -175,7 +175,7 @@ describe("listBackups", () => {
     const backups = await listBackups();
 
     assert.equal(backups.length, 2);
-    const names = backups.map((b) => b.filename).sort();
+    const names = backups.map((b) => b.filename).sort((a, b) => a.localeCompare(b));
     assert.deepEqual(names, ["drawhaus_2026-01-01.sql.gz", "drawhaus_2026-01-02.sql.gz"]);
   });
 
@@ -237,7 +237,7 @@ describe("cleanupOldBackups", () => {
     const deleted = await cleanupOldBackups(7);
 
     assert.equal(deleted.length, 2);
-    assert.deepEqual(deleted.sort(), ["old1.sql.gz", "old2.sql.gz"]);
+    assert.deepEqual([...deleted].sort((a, b) => a.localeCompare(b)), ["old1.sql.gz", "old2.sql.gz"]);
     await assert.rejects(() => fs.access(old1));
     await assert.rejects(() => fs.access(old2));
     await assert.doesNotReject(() => fs.access(fresh));

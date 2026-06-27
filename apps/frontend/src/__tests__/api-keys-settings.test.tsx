@@ -54,17 +54,10 @@ function makeKey(overrides: Partial<ApiKeyResponse> = {}): ApiKeyResponse {
 const clipboardWrite = vi.fn().mockResolvedValue(undefined);
 
 // jsdom does not implement navigator.clipboard. Install a stable stub once.
-if (!("clipboard" in navigator)) {
-  Object.defineProperty(navigator, "clipboard", {
-    configurable: true,
-    value: { writeText: clipboardWrite },
-  });
-} else {
-  Object.defineProperty(navigator, "clipboard", {
-    configurable: true,
-    value: { writeText: clipboardWrite },
-  });
-}
+Object.defineProperty(navigator, "clipboard", {
+  configurable: true,
+  value: { writeText: clipboardWrite },
+});
 
 describe("ApiKeysSettings", () => {
   beforeEach(() => {

@@ -30,9 +30,8 @@ async function reset() {
   const tables = tablesResult.rows.map((r) => r.tablename);
   if (tables.length > 0) {
     console.log(`  Dropping ${tables.length} tables: ${tables.join(", ")}`);
-    await pool.query(
-      `DROP TABLE IF EXISTS ${tables.map((t) => `"${t}"`).join(", ")} CASCADE`,
-    );
+    const quotedTables = tables.map((t) => `"${t}"`).join(", ");
+    await pool.query(`DROP TABLE IF EXISTS ${quotedTables} CASCADE`);
     console.log("  ✓ All tables dropped");
   } else {
     console.log("  No tables to drop");

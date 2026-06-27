@@ -49,8 +49,9 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
   }
 
   async findByUser(userId: string): Promise<Workspace[]> {
+    const qualifiedCols = COLS.split(", ").map((c) => `w.${c}`).join(", ");
     const { rows } = await pool.query<WorkspaceRow>(
-      `SELECT DISTINCT ${COLS.split(", ").map((c) => `w.${c}`).join(", ")}
+      `SELECT DISTINCT ${qualifiedCols}
        FROM workspaces w
        LEFT JOIN workspace_members wm ON wm.workspace_id = w.id
        WHERE w.owner_id = $1 OR wm.user_id = $1

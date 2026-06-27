@@ -50,12 +50,6 @@ export default [
       "sonarjs/publicly-writable-directories": "off", // (1) in a *.test.ts, Sonar-excluded
 
       // Real backlog — ratchet: re-enable after clearing.
-      "sonarjs/prefer-regexp-exec": "off", // ratchet: re-enable after clearing backlog (4)
-      "sonarjs/no-alphabetical-sort": "off", // ratchet: re-enable after clearing backlog (2)
-      "sonarjs/deprecation": "off", // ratchet: re-enable after clearing backlog (2)
-      "sonarjs/no-nested-template-literals": "off", // ratchet: re-enable after clearing backlog (2)
-      "sonarjs/no-misleading-array-reverse": "off", // ratchet: re-enable after clearing backlog (1)
-      "sonarjs/no-nested-conditional": "off", // ratchet: re-enable after clearing backlog (1)
       "sonarjs/super-linear-regex": "off", // ratchet: re-enable after clearing backlog (1) — also a server hotspot S5852 TO_REVIEW (real, prod sanitizer)
     },
   },

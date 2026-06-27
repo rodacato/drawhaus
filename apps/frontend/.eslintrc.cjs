@@ -44,10 +44,5 @@ module.exports = {
 
     // Real backlog — ratchet: re-enable after clearing.
     "sonarjs/prefer-specific-assertions": "off", // ratchet: re-enable after clearing backlog (18)
-    "sonarjs/no-nested-conditional": "off", // ratchet: re-enable after clearing backlog (2)
-    "sonarjs/no-all-duplicated-branches": "off", // ratchet: re-enable after clearing backlog (1) — may be a real bug
-    "sonarjs/no-duplicated-branches": "off", // ratchet: re-enable after clearing backlog (1) — may be a real bug
-    "sonarjs/no-trivial-assertions": "off", // ratchet: re-enable after clearing backlog (1)
-    "sonarjs/no-nested-functions": "off", // ratchet: re-enable after clearing backlog (1)
   },
 };
