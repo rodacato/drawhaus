@@ -6,6 +6,7 @@ import { useToast } from "@/components/Toast";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
+import { getErrorMessage } from "@/lib/api-error";
 import { ToggleSwitch } from "@/components/ToggleSwitch";
 
 // --- Invite User Modal ---
@@ -41,7 +42,7 @@ function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void
       setStatus({ type: "success", message: `Invitation sent to ${email}` });
       (event.target as HTMLFormElement).reset();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Failed to send invitation";
+      const msg = getErrorMessage(err, "Failed to send invitation");
       setStatus({ type: "error", message: msg });
     } finally {
       setPending(false);
@@ -130,7 +131,7 @@ export function AdminUsers() {
       const res = await adminApi.listUsers();
       setUsers(res.users ?? []);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Update failed";
+      const msg = getErrorMessage(err, "Update failed");
       setError(msg);
     } finally {
       setPending(null);
@@ -151,7 +152,7 @@ export function AdminUsers() {
       setUsers((prev) => prev.filter((u) => u.id !== user.id));
       toast("User deleted");
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Delete failed";
+      const msg = getErrorMessage(err, "Delete failed");
       setError(msg);
     }
   }

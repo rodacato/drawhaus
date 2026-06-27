@@ -4,6 +4,7 @@ import { authApi } from "@/api/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
+import { getErrorMessage } from "@/lib/api-error";
 
 export function ResetPassword() {
   const { token } = useParams<{ token: string }>();
@@ -38,7 +39,7 @@ export function ResetPassword() {
       await authApi.resetPassword(token, newPassword);
       navigate("/login", { replace: true });
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Failed to reset password";
+      const msg = getErrorMessage(err, "Failed to reset password");
       setError(msg);
     } finally {
       setPending(false);

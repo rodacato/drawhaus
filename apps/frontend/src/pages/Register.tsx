@@ -5,6 +5,7 @@ import { authApi } from "@/api/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
+import { getErrorMessage } from "@/lib/api-error";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -28,7 +29,7 @@ export function Register() {
     authApi.resolveInvite(inviteToken)
       .then((data) => { setInviteEmail(data.email); setInviteLoading(false); })
       .catch((err: unknown) => {
-        const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "This invitation is invalid or has expired.";
+        const msg = getErrorMessage(err, "This invitation is invalid or has expired.");
         setInviteError(msg);
         setInviteLoading(false);
       });
@@ -53,7 +54,7 @@ export function Register() {
       }
       navigate("/dashboard");
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Registration failed";
+      const msg = getErrorMessage(err, "Registration failed");
       setError(msg);
     } finally {
       setPending(false);
