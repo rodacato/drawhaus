@@ -2,8 +2,8 @@ import type { Tag } from "@/api/tags";
 import type { DiagramActions } from "./DiagramGrid";
 import { DiagramGrid } from "./DiagramGrid";
 import { ui } from "@/lib/ui";
+import type { Diagram } from "@/components/shared/DiagramTypes";
 
-type Diagram = { id: string; title: string; folderId: string | null; thumbnail: string | null; starred?: boolean; tags?: Tag[]; updatedAt?: string; updated_at?: string };
 type Folder = { id: string; name: string };
 
 type WorkspaceOption = { id: string; name: string; isPersonal: boolean };
