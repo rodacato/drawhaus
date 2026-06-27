@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
+import { getErrorMessage } from "@/lib/api-error";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -35,7 +36,7 @@ export function Login() {
       await login(email, password);
       navigate("/dashboard");
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Authentication failed";
+      const msg = getErrorMessage(err, "Authentication failed");
       setError(msg);
     } finally {
       setPending(false);

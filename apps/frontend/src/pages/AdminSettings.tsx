@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { adminApi } from "@/api/admin";
 import { ui } from "@/lib/ui";
+import { getErrorMessage } from "@/lib/api-error";
 import { ToggleSwitch } from "@/components/ToggleSwitch";
 import { IntegrationSecretsPanel } from "@/components/IntegrationSecretsPanel";
 
@@ -42,7 +43,7 @@ export function AdminSettings() {
       await adminApi.updateSettings({ instanceName: instanceName.trim(), registrationOpen, maintenanceMode, maxWorkspacesPerUser, maxMembersPerWorkspace, backupEnabled, backupCron: backupCron.trim(), backupRetentionDays });
       setStatus({ type: "success", message: "Settings saved" });
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Update failed";
+      const msg = getErrorMessage(err, "Update failed");
       setStatus({ type: "error", message: msg });
     } finally {
       setPending(false);

@@ -4,8 +4,9 @@ import { foldersApi } from "@/api/folders";
 import { tagsApi, type Tag } from "@/api/tags";
 import { workspacesApi, type Workspace } from "@/api/workspaces";
 import { sortByUpdated, filterStarred } from "@/lib/diagram-filters";
+import type { Diagram } from "@/components/shared/DiagramTypes";
 
-export type Diagram = { id: string; title: string; folderId: string | null; thumbnail: string | null; starred?: boolean; tags?: Tag[]; updatedAt?: string; updated_at?: string };
+export type { Diagram };
 export type Folder = { id: string; name: string };
 export type SidebarView = "all" | "recent" | "starred" | "unfiled" | "folder" | "templates";
 

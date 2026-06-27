@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
+import { getErrorMessage } from "@/lib/api-error";
 
 export function SetupStep1({ onComplete }: { readonly onComplete: () => void }) {
   const { register } = useAuth();
@@ -22,7 +23,7 @@ export function SetupStep1({ onComplete }: { readonly onComplete: () => void }) 
       await register(name, email, password);
       onComplete();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Setup failed";
+      const msg = getErrorMessage(err, "Setup failed");
       setError(msg);
     } finally {
       setPending(false);
