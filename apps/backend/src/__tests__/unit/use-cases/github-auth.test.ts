@@ -5,6 +5,7 @@ import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { InMemoryOAuthTokenRepository } from "../../fakes/in-memory-oauth-token-repository";
 import { InMemorySiteSettingsRepository } from "../../fakes/in-memory-site-settings-repository";
+import { GitHubOAuthProvider } from "../../../infrastructure/services/github-oauth-provider";
 import { ConflictError, ForbiddenError } from "../../../domain/errors";
 import { config } from "../../../infrastructure/config";
 
@@ -64,7 +65,8 @@ function setup() {
   const sessions = new InMemorySessionRepository(() => users.store);
   const oauthTokens = new InMemoryOAuthTokenRepository();
   const siteSettings = new InMemorySiteSettingsRepository();
-  const useCase = new GitHubAuthUseCase(users, sessions, oauthTokens, siteSettings);
+  const provider = new GitHubOAuthProvider();
+  const useCase = new GitHubAuthUseCase(users, sessions, oauthTokens, siteSettings, provider);
   return { users, sessions, oauthTokens, siteSettings, useCase };
 }
 
@@ -461,7 +463,7 @@ describe("GitHubAuthUseCase", () => {
     });
   });
 
-  describe("handleCallback - registration gating without siteSettings", () => {
+  describe("handleCallback - registration gating", () => {
     beforeEach(() => {
       setOAuthConfig({
         clientId: "id",
@@ -471,12 +473,9 @@ describe("GitHubAuthUseCase", () => {
       });
     });
 
-    it("allows new non-first user when siteSettings dependency is absent", async () => {
+    it("allows new non-first user when registration is open", async () => {
       installFetchMock(buildHandler());
-      const users = new InMemoryUserRepository();
-      const sessions = new InMemorySessionRepository(() => users.store);
-      const oauthTokens = new InMemoryOAuthTokenRepository();
-      const useCase = new GitHubAuthUseCase(users, sessions, oauthTokens);
+      const { users, useCase } = setup();
       await users.create({ email: "first@example.com", name: "First", passwordHash: "h" });
 
       await useCase.handleCallback("code");

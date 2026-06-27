@@ -37,6 +37,8 @@ import { FakeHasher } from "../fakes/fake-hasher";
 import { NoopAuditLogger } from "../fakes/noop-audit-logger";
 import { FakeGoogleDriveService } from "../fakes/fake-google-drive-service";
 import { StubGoogleTokenRefresher } from "../fakes/stub-google-token-refresher";
+import { InMemorySiteSettingsRepository } from "../fakes/in-memory-site-settings-repository";
+import { FakeOAuthProvider } from "../fakes/fake-oauth-provider";
 
 let oauth: InMemoryOAuthTokenRepository;
 let driveBackup: InMemoryDriveBackupRepository;
@@ -65,7 +67,7 @@ function createApp() {
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
   app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher),
+    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
     login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
     logout: new LogoutUseCase(sessions),
     getCurrentUser,
@@ -75,9 +77,9 @@ function createApp() {
     forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
     resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
     deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository()),
+    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
   }, requireAuth));
 
   app.use("/api/drive", createDriveRoutes(

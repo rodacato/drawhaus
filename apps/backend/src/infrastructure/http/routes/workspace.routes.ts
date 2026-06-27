@@ -8,10 +8,13 @@ import type { DeleteWorkspaceUseCase } from "../../../application/use-cases/work
 import type { AddWorkspaceMemberUseCase, UpdateWorkspaceMemberRoleUseCase, RemoveWorkspaceMemberUseCase } from "../../../application/use-cases/workspaces/manage-members";
 import type { InviteToWorkspaceUseCase } from "../../../application/use-cases/workspaces/invite-to-workspace";
 import type { AcceptWorkspaceInviteUseCase } from "../../../application/use-cases/workspaces/accept-workspace-invite";
+import type { ResolveWorkspaceInviteUseCase } from "../../../application/use-cases/workspaces/resolve-workspace-invite";
 import type { EnsurePersonalWorkspaceUseCase } from "../../../application/use-cases/workspaces/ensure-personal-workspace";
 import type { TransferWorkspaceOwnershipUseCase } from "../../../application/use-cases/workspaces/transfer-ownership";
 import { asyncRoute } from "../middleware/async-handler";
-import { validate } from "../middleware/validate";
+import { validate, validateParams } from "../middleware/validate";
+
+const uuidParams = z.object({ id: z.uuid() });
 
 const createSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -48,6 +51,7 @@ export function createWorkspaceRoutes(
     removeMember: RemoveWorkspaceMemberUseCase;
     invite: InviteToWorkspaceUseCase;
     acceptInvite: AcceptWorkspaceInviteUseCase;
+    resolveInvite: ResolveWorkspaceInviteUseCase;
     ensurePersonal: EnsurePersonalWorkspaceUseCase;
     transferOwnership: TransferWorkspaceOwnershipUseCase;
   },
@@ -65,17 +69,8 @@ export function createWorkspaceRoutes(
 
   // Public: resolve invite token (check validity without accepting)
   router.get("/invite/:token", asyncRoute(async (req, res) => {
-    // Just check if the token is valid — lightweight check
-    const { pool } = await import("../../db");
-    const { rows } = await pool.query(
-      `SELECT wi.id, wi.email, wi.role, wi.expires_at, wi.used_at, w.name AS workspace_name
-       FROM workspace_invitations wi JOIN workspaces w ON w.id = wi.workspace_id
-       WHERE wi.token = $1 LIMIT 1`,
-      [req.params.token],
-    );
-    if (!rows[0] || rows[0].used_at) return res.status(404).json({ error: "Invitation not found" });
-    if (new Date(rows[0].expires_at) < new Date()) return res.status(410).json({ error: "Invitation expired" });
-    return res.json({ workspaceName: rows[0].workspace_name, role: rows[0].role, email: rows[0].email });
+    const result = await useCases.resolveInvite.execute(String(req.params.token));
+    return res.json(result);
   }));
 
   // All remaining routes require auth
@@ -108,23 +103,23 @@ export function createWorkspaceRoutes(
     return res.json({ workspaces: rows });
   }));
 
-  router.get("/:id", asyncRoute(async (req, res) => {
+  router.get("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
     const result = await useCases.get.execute(String(req.params.id), req.authUser.id);
     return res.json(result);
   }));
 
-  router.patch("/:id", validate(updateSchema), asyncRoute(async (req, res) => {
+  router.patch("/:id", validateParams(uuidParams), validate(updateSchema), asyncRoute(async (req, res) => {
     const workspace = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
     return res.json({ workspace });
   }));
 
-  router.delete("/:id", asyncRoute(async (req, res) => {
+  router.delete("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
     await useCases.delete.execute(String(req.params.id), req.authUser.id);
     return res.json({ success: true });
   }));
 
   // Members
-  router.post("/:id/invite", validate(inviteSchema), asyncRoute(async (req, res) => {
+  router.post("/:id/invite", validateParams(uuidParams), validate(inviteSchema), asyncRoute(async (req, res) => {
     const invitation = await useCases.invite.execute({
       workspaceId: String(req.params.id),
       actorId: req.authUser.id,
@@ -135,12 +130,12 @@ export function createWorkspaceRoutes(
     return res.status(201).json({ invitation });
   }));
 
-  router.patch("/:id/members/:userId", validate(roleSchema), asyncRoute(async (req, res) => {
+  router.patch("/:id/members/:userId", validateParams(uuidParams), validate(roleSchema), asyncRoute(async (req, res) => {
     await useCases.updateMemberRole.execute(String(req.params.id), req.authUser.id, String(req.params.userId), req.body.role);
     return res.json({ success: true });
   }));
 
-  router.delete("/:id/members/:userId", asyncRoute(async (req, res) => {
+  router.delete("/:id/members/:userId", validateParams(uuidParams), asyncRoute(async (req, res) => {
     await useCases.removeMember.execute(String(req.params.id), req.authUser.id, String(req.params.userId));
     return res.json({ success: true });
   }));
@@ -151,7 +146,7 @@ export function createWorkspaceRoutes(
     transferResources: z.boolean().optional(),
   });
 
-  router.post("/:id/transfer-ownership", validate(transferSchema), asyncRoute(async (req, res) => {
+  router.post("/:id/transfer-ownership", validateParams(uuidParams), validate(transferSchema), asyncRoute(async (req, res) => {
     const result = await useCases.transferOwnership.execute(
       String(req.params.id),
       req.authUser.id,

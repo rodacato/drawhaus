@@ -39,6 +39,8 @@ import { InMemoryIntegrationSecretsRepository } from "../fakes/in-memory-integra
 import { NoopEmailService } from "../fakes/noop-email-service";
 import { FakeHasher } from "../fakes/fake-hasher";
 import { NoopAuditLogger } from "../fakes/noop-audit-logger";
+import { InMemoryDriveBackupRepository } from "../fakes/in-memory-drive-backup-repository";
+import { FakeOAuthProvider } from "../fakes/fake-oauth-provider";
 
 interface MetricsStub {
   totalUsers: number;
@@ -80,7 +82,7 @@ function buildBaseApp(opts?: { withSecrets?: boolean }) {
   app.use(express.json());
 
   app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher),
+    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
     login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
     logout: new LogoutUseCase(sessions),
     getCurrentUser,
@@ -90,9 +92,9 @@ function buildBaseApp(opts?: { withSecrets?: boolean }) {
     forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
     resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
     deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository()),
+    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
+    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
   }, requireAuth));
 
   // Stub GetMetricsUseCase: the real one calls pool.query directly.

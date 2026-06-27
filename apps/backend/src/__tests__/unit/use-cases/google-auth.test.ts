@@ -5,6 +5,7 @@ import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { InMemoryOAuthTokenRepository } from "../../fakes/in-memory-oauth-token-repository";
 import { InMemorySiteSettingsRepository } from "../../fakes/in-memory-site-settings-repository";
+import { GoogleOAuthProvider } from "../../../infrastructure/services/google-oauth-provider";
 import { ConflictError, ForbiddenError } from "../../../domain/errors";
 import { config } from "../../../infrastructure/config";
 
@@ -104,8 +105,10 @@ function setup(opts?: { withSiteSettings?: boolean }) {
   const users = new InMemoryUserRepository();
   const sessions = new InMemorySessionRepository(() => users.store);
   const oauthTokens = new InMemoryOAuthTokenRepository();
-  const siteSettings = opts?.withSiteSettings ? new InMemorySiteSettingsRepository() : undefined;
-  const useCase = new GoogleAuthUseCase(users, sessions, oauthTokens, siteSettings);
+  const siteSettingsImpl = new InMemorySiteSettingsRepository();
+  const provider = new GoogleOAuthProvider();
+  const useCase = new GoogleAuthUseCase(users, sessions, oauthTokens, siteSettingsImpl, provider);
+  const siteSettings = opts?.withSiteSettings ? siteSettingsImpl : undefined;
   return { users, sessions, oauthTokens, siteSettings, useCase };
 }
 

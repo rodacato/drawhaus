@@ -1,6 +1,6 @@
 import type { GoogleDriveService, DriveFileListItem } from "../../../domain/ports/google-drive-service";
 import type { DriveBackupRepository } from "../../../domain/ports/drive-backup-repository";
-import type { GoogleTokenRefresher } from "../../../infrastructure/services/google-token-refresh";
+import type { TokenRefresherPort } from "../../../domain/ports/token-refresher";
 
 type DriveFileBrowseItem = DriveFileListItem & { isFolder: boolean };
 
@@ -8,7 +8,7 @@ export class ListDriveFilesUseCase {
   constructor(
     private readonly driveService: GoogleDriveService,
     private readonly driveBackupRepo: DriveBackupRepository,
-    private readonly tokenRefresher: GoogleTokenRefresher,
+    private readonly tokenRefresher: TokenRefresherPort,
   ) {}
 
   async execute(userId: string, folderId?: string): Promise<{ files: DriveFileBrowseItem[]; currentFolderId: string }> {

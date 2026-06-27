@@ -2,14 +2,14 @@ import type { GoogleDriveService } from "../../../domain/ports/google-drive-serv
 import type { DriveBackupRepository } from "../../../domain/ports/drive-backup-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
 import type { FolderRepository } from "../../../domain/ports/folder-repository";
-import type { GoogleTokenRefresher } from "../../../infrastructure/services/google-token-refresh";
+import type { TokenRefresherPort } from "../../../domain/ports/token-refresher";
 import { logger } from "../../../infrastructure/logger";
 
 export class SyncToDriveUseCase {
   constructor(
     private readonly driveService: GoogleDriveService,
     private readonly driveBackupRepo: DriveBackupRepository,
-    private readonly tokenRefresher: GoogleTokenRefresher,
+    private readonly tokenRefresher: TokenRefresherPort,
     private readonly diagrams: DiagramRepository,
     private readonly folders: FolderRepository,
   ) {}

@@ -8,7 +8,7 @@ export class MoveDiagramUseCase {
   constructor(
     private readonly diagrams: DiagramRepository,
     private readonly folders: FolderRepository,
-    private readonly workspaces?: WorkspaceRepository,
+    private readonly workspaces: WorkspaceRepository,
   ) {}
 
   async execute(diagramId: string, userId: string, folderId: string | null, workspaceId?: string) {
@@ -17,12 +17,10 @@ export class MoveDiagramUseCase {
 
     // If moving to a different workspace, update workspace and reset folder
     if (workspaceId !== undefined) {
-      if (this.workspaces) {
-        const workspace = await this.workspaces.findById(workspaceId);
-        if (!workspace) throw new NotFoundError("Workspace");
-        const role = await this.workspaces.findMemberRole(workspaceId, userId);
-        if (!role) throw new ForbiddenError();
-      }
+      const workspace = await this.workspaces.findById(workspaceId);
+      if (!workspace) throw new NotFoundError("Workspace");
+      const memberRole = await this.workspaces.findMemberRole(workspaceId, userId);
+      if (!memberRole) throw new ForbiddenError();
       await this.diagrams.moveToWorkspace(diagramId, workspaceId);
       return;
     }

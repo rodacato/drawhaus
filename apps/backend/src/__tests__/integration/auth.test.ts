@@ -26,6 +26,9 @@ import { InMemoryOAuthTokenRepository } from "../fakes/in-memory-oauth-token-rep
 import { NoopEmailService } from "../fakes/noop-email-service";
 import { FakeHasher } from "../fakes/fake-hasher";
 import { NoopAuditLogger } from "../fakes/noop-audit-logger";
+import { InMemoryDriveBackupRepository } from "../fakes/in-memory-drive-backup-repository";
+import { InMemorySiteSettingsRepository } from "../fakes/in-memory-site-settings-repository";
+import { FakeOAuthProvider } from "../fakes/fake-oauth-provider";
 
 let users: InMemoryUserRepository;
 let sessions: InMemorySessionRepository;
@@ -35,7 +38,7 @@ function createApp() {
   sessions = new InMemorySessionRepository(() => users.store);
   const hasher = new FakeHasher();
 
-  const register = new RegisterUseCase(users, sessions, hasher);
+  const register = new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository());
   const audit = new NoopAuditLogger();
   const login = new LoginUseCase(users, sessions, hasher, audit);
   const logout = new LogoutUseCase(sessions);
@@ -50,9 +53,9 @@ function createApp() {
   const resetPassword = new ResetPasswordUseCase(users, sessions, passwordResets, hasher);
   const deleteAccount = new DeleteAccountUseCase(users, hasher, audit, new InMemoryWorkspaceRepository());
   const oauthTokens = new InMemoryOAuthTokenRepository();
-  const googleAuth = new GoogleAuthUseCase(users, sessions, oauthTokens);
-  const githubAuth = new GitHubAuthUseCase(users, sessions, oauthTokens);
-  const unlinkOAuth = new UnlinkOAuthUseCase(users, oauthTokens);
+  const googleAuth = new GoogleAuthUseCase(users, sessions, oauthTokens, new InMemorySiteSettingsRepository(), new FakeOAuthProvider());
+  const githubAuth = new GitHubAuthUseCase(users, sessions, oauthTokens, new InMemorySiteSettingsRepository(), new FakeOAuthProvider());
+  const unlinkOAuth = new UnlinkOAuthUseCase(users, oauthTokens, new InMemoryDriveBackupRepository());
   const requireAuth = createRequireAuth(getCurrentUser);
 
   const app = express();

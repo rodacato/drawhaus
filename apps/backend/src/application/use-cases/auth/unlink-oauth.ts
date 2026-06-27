@@ -7,7 +7,7 @@ export class UnlinkOAuthUseCase {
   constructor(
     private readonly users: UserRepository,
     private readonly oauthTokens: OAuthTokenRepository,
-    private readonly driveBackupRepo?: DriveBackupRepository,
+    private readonly driveBackupRepo: DriveBackupRepository,
   ) {}
 
   async execute(userId: string, provider: "google" | "github"): Promise<void> {
@@ -27,9 +27,7 @@ export class UnlinkOAuthUseCase {
     if (provider === "google") {
       await this.users.update(userId, { googleId: null });
       // Clean up Drive backup settings since they depend on Google OAuth
-      if (this.driveBackupRepo) {
-        await this.driveBackupRepo.deleteSettings(userId);
-      }
+      await this.driveBackupRepo.deleteSettings(userId);
     } else {
       await this.users.update(userId, { githubId: null, githubUsername: null });
     }

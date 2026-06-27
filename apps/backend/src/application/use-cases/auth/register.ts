@@ -9,7 +9,7 @@ export class RegisterUseCase {
     private readonly users: UserRepository,
     private readonly sessions: SessionRepository,
     private readonly hasher: Hasher,
-    private readonly siteSettings?: SiteSettingsRepository,
+    private readonly siteSettings: SiteSettingsRepository,
   ) {}
 
   async needsSetup(): Promise<boolean> {
@@ -26,7 +26,7 @@ export class RegisterUseCase {
     const isFirstUser = userCount === 0;
 
     // Gate registration unless it's the first user
-    if (!isFirstUser && this.siteSettings) {
+    if (!isFirstUser) {
       const settings = await this.siteSettings.get();
       if (!settings.registrationOpen) {
         throw new ForbiddenError();
@@ -40,9 +40,7 @@ export class RegisterUseCase {
     if (isFirstUser) {
       await this.users.adminUpdate(user.id, { role: "admin" });
       user.role = "admin";
-      if (this.siteSettings) {
-        await this.siteSettings.update({ setupCompleted: true });
-      }
+      await this.siteSettings.update({ setupCompleted: true });
     }
 
     const session = await this.sessions.create(user.id);
