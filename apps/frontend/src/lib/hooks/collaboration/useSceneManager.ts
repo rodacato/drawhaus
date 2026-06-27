@@ -49,6 +49,8 @@ export function useSceneManager({
     const socket = socketRef.current;
     if (!socket) return;
 
+    const releaseRemoteFlag = () => { setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0); };
+
     const handleSceneFromDb = ({ elements, activeSceneId: sceneId }: { elements: unknown[]; activeSceneId?: string | null }) => {
       if (sceneId) setActiveSceneId(sceneId);
 
@@ -58,7 +60,7 @@ export function useSceneManager({
         if (!excalidrawApiRef.current) { pendingSceneRef.current = { elements: els }; return; }
         applyingRemoteCounter.current += 1;
         excalidrawApiRef.current.updateScene({ elements: els });
-        setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+        releaseRemoteFlag();
       };
 
       getRestoreElements()
@@ -72,7 +74,7 @@ export function useSceneManager({
       const merged = mergeElements(localElements, remoteElements);
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ elements: merged });
-      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+      releaseRemoteFlag();
     };
 
     const handleSceneDeltaReceived = ({ fromSocketId, fromUserId, changed, removedIds }: { fromSocketId: string; fromUserId: string; changed: unknown[]; removedIds: string[] }) => {
@@ -81,7 +83,7 @@ export function useSceneManager({
       const { elements: merged, conflictIds, deletedIds } = mergeDelta(localElements, changed, removedIds);
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ elements: merged });
-      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+      releaseRemoteFlag();
       if (conflictIds.length > 0) onConflict?.(conflictIds, fromUserId);
       if (deletedIds.length > 0) onRemoteDelete?.(deletedIds, fromUserId);
     };

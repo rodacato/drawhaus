@@ -13,6 +13,12 @@ type FetchInput = Parameters<typeof fetch>[0];
 type FetchInit = Parameters<typeof fetch>[1];
 type FetchHandler = (url: string, init?: FetchInit) => unknown;
 
+function toUrl(input: FetchInput): string {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.toString();
+  return input.url;
+}
+
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -26,8 +32,7 @@ function textResponse(body: string, status = 200): Response {
 
 function installFetchMock(handler: FetchHandler) {
   return mock.method(globalThis, "fetch", async (input: FetchInput, init?: FetchInit) => {
-    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-    const result = await handler(url, init);
+    const result = await handler(toUrl(input), init);
     return result as Response;
   });
 }

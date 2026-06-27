@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
-import type { ZodIssue, ZodType } from "zod";
+import type { ZodError, ZodType } from "zod";
 
 type ValidationIssue = { path: string; code: string; message: string };
 
-function formatIssues(issues: readonly ZodIssue[]): ValidationIssue[] {
+function formatIssues(issues: ZodError["issues"]): ValidationIssue[] {
   return issues.map((issue) => ({
     path: issue.path.join("."),
     code: issue.code,

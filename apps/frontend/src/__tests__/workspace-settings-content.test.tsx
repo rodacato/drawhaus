@@ -392,7 +392,7 @@ describe("WorkspaceSettingsContent", () => {
     const swatches = container.querySelectorAll("[style*=\"background-color\"]");
     expect(swatches.length).toBeGreaterThan(0);
     await user.click(swatches[1] as HTMLElement);
-    // Verifies no crash; assertion-light by design — color is internal state.
-    expect(true).toBe(true);
+    // Color is internal state; assert the component survived the interaction.
+    expect(screen.getByText("Workspace Identity")).toBeTruthy();
   });
 });

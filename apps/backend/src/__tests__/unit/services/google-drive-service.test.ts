@@ -200,13 +200,13 @@ describe("GoogleDriveServiceImpl.uploadFile", () => {
       assert.equal(init?.method, "POST");
       assert.equal(init?.headers?.["Authorization"], `Bearer ${TOKEN}`);
       const ct = init?.headers?.["Content-Type"] ?? "";
-      const boundaryMatch = ct.match(/^multipart\/related; boundary=(drawhaus_[a-f0-9]{32})$/);
+      const boundaryMatch = /^multipart\/related; boundary=(drawhaus_[a-f0-9]{32})$/.exec(ct);
       assert.ok(boundaryMatch, `Content-Type must use a random boundary, got: ${ct}`);
       const boundary = boundaryMatch[1];
       const body = init?.body ?? "";
       assert.ok(body.includes(`--${boundary}`));
       assert.ok(body.includes(`--${boundary}--`), "must terminate the multipart envelope");
-      const metaMatch = body.match(/\{"name":"[^}]+\}/);
+      const metaMatch = /\{"name":"[^}]+\}/.exec(body);
       assert.ok(metaMatch, "metadata JSON segment must appear in body");
       const meta = JSON.parse(metaMatch[0]) as Record<string, unknown>;
       assert.equal(meta.name, "draw.json");
@@ -241,7 +241,7 @@ describe("GoogleDriveServiceImpl.uploadFile", () => {
       );
       assert.equal(init?.method, "PATCH");
       const body = init?.body ?? "";
-      const metaMatch = body.match(/\{"name":"[^}]+\}/);
+      const metaMatch = /\{"name":"[^}]+\}/.exec(body);
       assert.ok(metaMatch);
       const meta = JSON.parse(metaMatch[0]) as Record<string, unknown>;
       assert.equal(meta.name, "draw.json");
@@ -510,7 +510,7 @@ describe("GoogleDriveServiceImpl.uploadFile boundary randomness", () => {
     const seenBoundaries: string[] = [];
     installFetchMock((_url, init) => {
       const ct = init?.headers?.["Content-Type"] ?? "";
-      const m = ct.match(/boundary=(drawhaus_[a-f0-9]{32})/);
+      const m = /boundary=(drawhaus_[a-f0-9]{32})/.exec(ct);
       assert.ok(m, `boundary must match pattern, got: ${ct}`);
       seenBoundaries.push(m[1]);
       return jsonResponse({ id: "f", name: "x", mimeType: "text/plain", webViewLink: "x" });
