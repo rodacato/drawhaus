@@ -9,6 +9,14 @@ export default mergeConfig(
       globals: false,
       include: ["src/__tests__/**/*.test.{ts,tsx}"],
       setupFiles: ["src/__tests__/_setup.ts"],
+      // Cap the fork pool: the default (cpus-1) spawns ~11 heavy jsdom workers,
+      // which thrash the devcontainer and pile up unreaped. 4 forks at 512MB each.
+      pool: "forks",
+      maxWorkers: 4,
+      minWorkers: 1,
+      poolOptions: {
+        forks: { execArgv: ["--max-old-space-size=512"] },
+      },
       coverage: {
         provider: "v8",
         include: ["src/**"],
