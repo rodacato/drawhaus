@@ -98,7 +98,7 @@ export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId
                 <div className={`mb-2 ${card.color}`}>{card.icon}</div>
                 <p className={ui.muted}>{card.label}</p>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <p className="text-3xl font-bold text-text-primary">{metrics[card.key].toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-text-primary">{(metrics[card.key] ?? 0).toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -168,7 +168,7 @@ export function AdminDashboard() {
                 <div className={`mb-2 ${card.color}`}>{card.icon}</div>
                 <p className={ui.muted}>{card.label}</p>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <p className="text-3xl font-bold text-text-primary">{metrics[card.key].toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-text-primary">{(metrics[card.key] ?? 0).toLocaleString()}</p>
                 </div>
               </div>
             </div>
