@@ -12,7 +12,7 @@ type OfflineRecoveryDialogProps = {
   onClose: () => void;
 };
 
-function timeAgo(dateStr: string): string {
+export function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "just now";

@@ -6,7 +6,7 @@ const BADGE_CLASSES: Partial<Record<ConnectionState, string>> = {
 };
 const DEFAULT_BADGE_CLASS = "bg-blue-100 text-blue-700";
 
-function connectionLabel(state: ConnectionState, error: string | null): string {
+export function connectionLabel(state: ConnectionState, error: string | null): string {
   if (state === "error") return error ?? "Connection error";
   if (state === "disconnected") return "Reconnecting...";
   return "Connecting...";

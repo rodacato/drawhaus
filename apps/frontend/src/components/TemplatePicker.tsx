@@ -249,20 +249,20 @@ export function TemplatePicker({ open, workspaceId, onClose, onUseTemplate, onUs
   );
 }
 
-function filterBuiltIn(items: BuiltInTemplate[], activeCategory: string): BuiltInTemplate[] {
+export function filterBuiltIn(items: BuiltInTemplate[], activeCategory: string): BuiltInTemplate[] {
   if (activeCategory === "all") return items;
   if (activeCategory === "custom" || activeCategory === "workspace") return [];
   return items.filter((t) => t.category === activeCategory);
 }
 
-function filterByCategory(items: TemplateDTO[], activeCategory: string, ownCategory: "custom" | "workspace"): TemplateDTO[] {
+export function filterByCategory(items: TemplateDTO[], activeCategory: string, ownCategory: "custom" | "workspace"): TemplateDTO[] {
   if (activeCategory === "all" || activeCategory === ownCategory) return items;
   const otherCategory = ownCategory === "custom" ? "workspace" : "custom";
   if (activeCategory === otherCategory) return [];
   return items.filter((t) => t.category === activeCategory);
 }
 
-function emptyCategoryMessage(activeCategory: string): string {
+export function emptyCategoryMessage(activeCategory: string): string {
   if (activeCategory === "custom") {
     return "No personal templates yet. Save a diagram as a template from the board sidebar or diagram menu.";
   }

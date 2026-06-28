@@ -6,7 +6,7 @@ const BADGE_CLASSES: Record<Exclude<DriveSyncState, "idle">, string> = {
   error: "bg-red-100 text-red-700",
 };
 
-function syncLabel(state: Exclude<DriveSyncState, "idle">, error?: string | null): string {
+export function syncLabel(state: Exclude<DriveSyncState, "idle">, error?: string | null): string {
   if (state === "synced") return "Drive synced";
   if (state === "syncing") return "Syncing to Drive...";
   return error ?? "Drive sync failed";
