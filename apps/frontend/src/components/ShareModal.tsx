@@ -23,7 +23,7 @@ type ShareLink = {
   createdAt: string;
 };
 
-function computeLinkBadge(link: ShareLink): { badgeText: string; badgeClass: string } {
+export function computeLinkBadge(link: ShareLink): { badgeText: string; badgeClass: string } {
   if (isExpired(link.expiresAt)) {
     return { badgeText: "Expired", badgeClass: "bg-error/10 text-error ring-error/20" };
   }
