@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Bare-metal local setup. For the zero-toolchain path use `docker compose up`.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+if [ ! -f .env ]; then
+  cp .env.example .env
+  echo "Created .env from .env.example"
+fi
+
+npm install
+
+echo
+echo "Setup complete. Start the app with:"
+echo "  docker compose up   # full stack incl. Postgres + Redis (recommended)"
+echo "  npm run dev         # needs your own Postgres (+ Redis) — see GETTING_STARTED.md"

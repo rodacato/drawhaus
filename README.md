@@ -53,58 +53,19 @@ Drawhaus is a self-hosted Excalidraw alternative for developers and small teams 
 
 ## Quick Start
 
-### Prerequisites
-
-- **Node.js** 24+ (current LTS — see `.nvmrc`)
-- **PostgreSQL** 16+ (or use Docker)
-
-### Option 1: Local development
-
-Requires a running PostgreSQL 16+ instance. The backend auto-creates all tables on first run.
+The fastest path is Docker Compose — it runs the whole stack (frontend, backend, PostgreSQL,
+Redis) with hot reload:
 
 ```bash
-git clone https://github.com/rodacato/drawhaus.git
-cd drawhaus
-cp .env.example .env          # edit DATABASE_URL if your PG is not on localhost:5432
-npm install
-npm run dev
-```
-
-This starts:
-- **Frontend** at http://localhost:5173 (Vite dev server)
-- **Backend** at http://localhost:4000 (Express)
-
-> **Tip:** If you don't have PostgreSQL installed locally, use Option 2 (Docker Compose) or Option 3 (Dev Container) instead.
-
-### Option 2: Docker Compose
-
-```bash
-cp .env.example .env   # edit .env to add Google OAuth keys, etc.
+cp .env.example .env   # optional — defaults work out of the box
 docker compose up
 ```
 
-Docker Compose reads `.env` automatically. Starts everything — frontend, backend, PostgreSQL, and Redis:
+Then open **http://localhost:5173** and follow the `/setup` wizard to create the first admin.
 
-| Service  | URL / Port              | Notes |
-|----------|-------------------------|-------|
-| Frontend | http://localhost:5173   | Vite dev server |
-| Backend  | http://localhost:4300   | Mapped from internal port 4000 |
-| Postgres | localhost:5643          | Mapped from internal port 5432 |
-| Redis    | localhost:6479          | Mapped from internal port 6379 |
-
-> **Note:** Docker Compose maps the backend to port **4300** externally (not 4000). The frontend Vite proxy handles routing `/api` calls to the backend automatically, so you only need to access http://localhost:5173.
-
-### Option 3: Dev Container
-
-1. Open the project in VS Code
-2. Run **Dev Containers: Reopen in Container**
-3. `npm run dev`
-
-The devcontainer includes Node 24, PostgreSQL, GitHub CLI, and forwarded ports.
-
-### First-time setup
-
-After starting, visit the app and you'll be redirected to `/setup` to create the first admin account.
+**See [GETTING_STARTED.md](GETTING_STARTED.md) for the full guide** — all three run paths
+(Docker Compose, Dev Container, bare metal), enabling social login, a first-run check, and
+troubleshooting.
 
 ---
 
@@ -631,6 +592,9 @@ npm test --workspace=backend
 
 ### End-to-End Tests (Playwright)
 
+> **Status:** the E2E suite is temporarily disabled in CI (`ci.yml` — "tests need fixing").
+> The steps below still run locally, but expect failures until the suite is repaired.
+
 E2E tests require a running backend, frontend, and PostgreSQL:
 
 ```bash
@@ -668,6 +632,7 @@ CI runs automatically on every PR (lint, typecheck, backend tests, build).
 
 | Document | Description |
 |----------|-------------|
+| [GETTING_STARTED.md](GETTING_STARTED.md) | Run Drawhaus locally — all paths, social login, troubleshooting |
 | [CHANGELOG.md](CHANGELOG.md) | Full version history |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Feature plan and backlog |
 | [docs/VISION.md](docs/VISION.md) | Product vision and architecture principles |
