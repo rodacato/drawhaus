@@ -1,6 +1,6 @@
 # Use slim (glibc) for builder — Alpine/musl breaks npm optional deps
 # for native bindings (rollup, lightningcss) even with npm install
-FROM node:24-slim AS builder
+FROM node:25-slim AS builder
 WORKDIR /app
 
 # Copy all package manifests for workspace resolution
