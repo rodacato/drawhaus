@@ -23,3 +23,21 @@ if [ -d "$CLAUDE_PROJECT_DIR" ]; then
 else
   echo "[post-install] No .claude in project, created empty ~/.claude."
 fi
+
+echo "[post-install] Installing Kamal for the read-only deploy commands..."
+# Deploys still run in CI — nothing installed here holds a secret. Version tracks
+# .github/workflows/build-push.yml's KAMAL_VERSION.
+if ! gem list -i '^kamal$' >/dev/null 2>&1; then
+  gem install kamal -v '~> 2.7' --no-document
+fi
+
+# Load the non-secret Kamal environment in every shell. Idempotent across rebuilds.
+for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
+  [ -f "$rc" ] || continue
+  grep -q 'devcontainer/kamal-env.sh' "$rc" && continue
+  {
+    echo ''
+    echo 'export DRAWHAUS_ROOT="/workspaces/drawhaus"'
+    echo '[ -r "$DRAWHAUS_ROOT/.devcontainer/kamal-env.sh" ] && . "$DRAWHAUS_ROOT/.devcontainer/kamal-env.sh"'
+  } >> "$rc"
+done
