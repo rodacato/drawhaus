@@ -39,12 +39,12 @@ env:
     PORT: 4000
     # Prometheus /metrics on the public hostname, gated by METRICS_TOKEN (secret).
     # Toggle on/off from the production environment (vars.METRICS_ENABLED).
-    METRICS_ENABLED: <%= ENV["METRICS_ENABLED"] %>
+    METRICS_ENABLED: "<%= ENV.fetch("METRICS_ENABLED", "false") %>"
     NODE_ENV: production
     FILES_PATH: /data/files
-    SENTRY_ENVIRONMENT: <%= ENV["SENTRY_ENVIRONMENT"] %>
-    SENTRY_TRACES_SAMPLE_RATE: <%= ENV["SENTRY_TRACES_SAMPLE_RATE"] %>
-    SENTRY_RELEASE: <%= ENV["SENTRY_RELEASE"] %>
+    SENTRY_ENVIRONMENT: "<%= ENV.fetch("SENTRY_ENVIRONMENT", "production") %>"
+    SENTRY_TRACES_SAMPLE_RATE: "<%= ENV.fetch("SENTRY_TRACES_SAMPLE_RATE", "0") %>"
+    SENTRY_RELEASE: "<%= ENV.fetch("SENTRY_RELEASE", "") %>"
   secret:
     - COOKIE_DOMAIN
     - DATABASE_URL

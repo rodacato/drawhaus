@@ -32,15 +32,15 @@ builder:
   target: production
   arch: amd64
   args:
-    VITE_API_URL: <%= ENV["VITE_API_URL"] %>
-    VITE_WS_URL: <%= ENV["VITE_WS_URL"] %>
-    VITE_GOOGLE_API_KEY: <%= ENV["VITE_GOOGLE_API_KEY"] %>
-    VITE_SENTRY_DSN: <%= ENV["VITE_SENTRY_DSN"] %>
-    VITE_SENTRY_ENVIRONMENT: <%= ENV["VITE_SENTRY_ENVIRONMENT"] %>
-    VITE_SENTRY_RELEASE: <%= ENV["VITE_SENTRY_RELEASE"] %>
-    SENTRY_AUTH_TOKEN: <%= ENV["SENTRY_AUTH_TOKEN"] %>
-    SENTRY_ORG: <%= ENV["SENTRY_ORG"] %>
-    SENTRY_PROJECT: <%= ENV["SENTRY_PROJECT"] %>
+    VITE_API_URL: "<%= ENV.fetch("VITE_API_URL", "") %>"
+    VITE_WS_URL: "<%= ENV.fetch("VITE_WS_URL", "") %>"
+    VITE_GOOGLE_API_KEY: "<%= ENV.fetch("VITE_GOOGLE_API_KEY", "") %>"
+    VITE_SENTRY_DSN: "<%= ENV.fetch("VITE_SENTRY_DSN", "") %>"
+    VITE_SENTRY_ENVIRONMENT: "<%= ENV.fetch("VITE_SENTRY_ENVIRONMENT", "production") %>"
+    VITE_SENTRY_RELEASE: "<%= ENV.fetch("VITE_SENTRY_RELEASE", "") %>"
+    SENTRY_AUTH_TOKEN: "<%= ENV.fetch("SENTRY_AUTH_TOKEN", "") %>"
+    SENTRY_ORG: "<%= ENV.fetch("SENTRY_ORG", "") %>"
+    SENTRY_PROJECT: "<%= ENV.fetch("SENTRY_PROJECT", "") %>"
   cache:
     type: gha
 

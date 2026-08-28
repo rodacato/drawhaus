@@ -6,6 +6,9 @@ services:
     init: true
     volumes:
       - ..:/workspaces/drawhaus:cached
+      # The shell-history feature writes here (/dc/shellhistory, per its
+      # devcontainer-feature.json); without the volume every rebuild starts empty.
+      - devcontainer-commandhistory:/dc/shellhistory
     command: sleep infinity
     mem_limit: 8g
 
@@ -29,3 +32,4 @@ services:
 
 volumes:
   devcontainer-pgdata:
+  devcontainer-commandhistory:
