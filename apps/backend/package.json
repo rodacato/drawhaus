@@ -50,7 +50,7 @@
     "@types/cookie": "^0.6.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^24.13.3",
     "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.18.0",
     "@types/pino": "^7.0.4",
