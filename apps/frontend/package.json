@@ -43,7 +43,7 @@
     "@types/node": "^24.13.3",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@types/three": "^0.183.1",
+    "@types/three": "^0.185.4",
     "@typescript-eslint/eslint-plugin": "^7",
     "@typescript-eslint/parser": "^7",
     "@vitejs/plugin-react": "^5.1.4",
