@@ -1,6 +1,6 @@
-import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, test, expect, beforeEach, afterEach, vi, type Mock } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useDashboardData } from "../lib/hooks/useDashboardData";
+import { useDashboardData, type UseDashboardDataParams } from "../lib/hooks/useDashboardData";
 import { diagramsApi } from "../api/diagrams";
 import { foldersApi } from "../api/folders";
 import { tagsApi } from "../api/tags";
@@ -29,12 +29,12 @@ function stubAllApis(overrides: {
 }
 
 describe("useDashboardData", () => {
-  let toast: ReturnType<typeof vi.fn>;
+  let toast: Mock<UseDashboardDataParams["toast"]>;
 
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
-    toast = vi.fn();
+    toast = vi.fn<UseDashboardDataParams["toast"]>();
   });
 
   afterEach(() => {

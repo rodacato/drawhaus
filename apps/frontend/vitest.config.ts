@@ -14,9 +14,7 @@ export default mergeConfig(
       pool: "forks",
       maxWorkers: 4,
       minWorkers: 1,
-      poolOptions: {
-        forks: { execArgv: ["--max-old-space-size=512"] },
-      },
+      execArgv: ["--max-old-space-size=512"],
       coverage: {
         provider: "v8",
         include: ["src/**"],
