@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { describe, test, expect, beforeEach, vi, type Mock } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import {
   createMockSocket,
@@ -14,13 +14,16 @@ vi.mock("@excalidraw/excalidraw", () => ({
     (els as { id: string }[]).map((e) => ({ ...e, _restored: true })),
 }));
 
-import { useSceneManager } from "../lib/hooks/collaboration/useSceneManager";
+import { useSceneManager, type UseSceneManagerParams } from "../lib/hooks/collaboration/useSceneManager";
+
+type OnConflict = NonNullable<UseSceneManagerParams["onConflict"]>;
+type OnRemoteDelete = NonNullable<UseSceneManagerParams["onRemoteDelete"]>;
 
 function renderScene(opts: {
   socket: MockSocket;
   api?: ReturnType<typeof createExcalidrawApiStub> | null;
-  onConflict?: ReturnType<typeof vi.fn>;
-  onRemoteDelete?: ReturnType<typeof vi.fn>;
+  onConflict?: Mock<OnConflict>;
+  onRemoteDelete?: Mock<OnRemoteDelete>;
   pendingSceneRef?: { current: { elements: unknown[] } | null };
 }) {
   const socketRef = makeRef(opts.socket as unknown as Socket | null);
@@ -118,8 +121,8 @@ describe("useSceneManager", () => {
   });
 
   test("scene-delta-received fires onConflict when remote version overwrites local edit", () => {
-    const onConflict = vi.fn();
-    const onRemoteDelete = vi.fn();
+    const onConflict = vi.fn<OnConflict>();
+    const onRemoteDelete = vi.fn<OnRemoteDelete>();
     // Conflict requires: remote.version > local.version > 0
     const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });
     renderScene({ socket, api, onConflict, onRemoteDelete });
@@ -139,7 +142,7 @@ describe("useSceneManager", () => {
   });
 
   test("scene-delta-received fires onRemoteDelete with deleted IDs", () => {
-    const onRemoteDelete = vi.fn();
+    const onRemoteDelete = vi.fn<OnRemoteDelete>();
     const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }, { id: "b", version: 1 }] });
     renderScene({ socket, api, onRemoteDelete });
 
@@ -157,7 +160,7 @@ describe("useSceneManager", () => {
   });
 
   test("scene-delta-received ignores delta from self", () => {
-    const onConflict = vi.fn();
+    const onConflict = vi.fn<OnConflict>();
     const api = createExcalidrawApiStub({ elements: [] });
     const { apiRef } = renderScene({ socket, api, onConflict });
 

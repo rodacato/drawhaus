@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, test, expect, beforeEach, afterEach, vi, type Mock } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { createExcalidrawApiStub, makeRef } from "./_helpers/mock-socket";
 import type { ConnectionState } from "../lib/types";
@@ -9,18 +9,21 @@ vi.mock("../lib/offline-storage", () => ({
   deleteOfflineSnapshot: vi.fn(async () => undefined),
 }));
 
-import { useOfflineSnapshot } from "../lib/hooks/collaboration/useOfflineSnapshot";
+import { useOfflineSnapshot, type UseOfflineSnapshotParams } from "../lib/hooks/collaboration/useOfflineSnapshot";
 import * as offlineStorage from "../lib/offline-storage";
 
 const OFFLINE_GRACE_MS = 5 * 60 * 1000;
+
+type OnOfflineSave = NonNullable<UseOfflineSnapshotParams["onOfflineSave"]>;
+type OnConflict = NonNullable<UseOfflineSnapshotParams["onConflict"]>;
 
 type RenderOpts = {
   initialConnection?: ConnectionState;
   api?: ReturnType<typeof createExcalidrawApiStub> | null;
   selfUserId?: string | null;
   selfUserName?: string;
-  onOfflineSave?: ReturnType<typeof vi.fn>;
-  onConflict?: ReturnType<typeof vi.fn>;
+  onOfflineSave?: Mock<OnOfflineSave>;
+  onConflict?: Mock<OnConflict>;
   diagramId?: string;
   graceMs?: number;
 };
@@ -106,7 +109,7 @@ describe("useOfflineSnapshot", () => {
   });
 
   test("onOfflineSave callback is invoked once the snapshot completes", async () => {
-    const onOfflineSave = vi.fn();
+    const onOfflineSave = vi.fn<OnOfflineSave>();
     const { rerender } = renderOffline({ initialConnection: "connected", onOfflineSave });
     rerender({ connection: "disconnected" });
     act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100); });
@@ -116,7 +119,7 @@ describe("useOfflineSnapshot", () => {
   });
 
   test("after an offline save, reconnecting fires onConflict when a snapshot exists", async () => {
-    const onConflict = vi.fn();
+    const onConflict = vi.fn<OnConflict>();
     const snapshot = {
       diagramId: "diag-1",
       userId: "user-1",
@@ -140,7 +143,7 @@ describe("useOfflineSnapshot", () => {
   });
 
   test("reconnect without prior offline edits does NOT call onConflict", async () => {
-    const onConflict = vi.fn();
+    const onConflict = vi.fn<OnConflict>();
     const { rerender } = renderOffline({ initialConnection: "connected", onConflict });
     // Brief disconnect that does not exceed the grace window — no offline save happens.
     rerender({ connection: "disconnected" });
@@ -225,7 +228,7 @@ describe("useOfflineSnapshot", () => {
   });
 
   test("custom graceMs overrides the default — fires sooner than 5 minutes", async () => {
-    const onOfflineSave = vi.fn();
+    const onOfflineSave = vi.fn<OnOfflineSave>();
     const { rerender } = renderOffline({ initialConnection: "connected", onOfflineSave, graceMs: 1000 });
     await act(async () => { rerender({ connection: "disconnected" as ConnectionState }); });
 
