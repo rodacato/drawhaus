@@ -222,11 +222,10 @@ export function normalizeElements(elements: unknown[]): Record<string, unknown>[
 
 /** Trim, collapse internal whitespace runs (preserving newlines). */
 function normalizeText(text: string): string {
-  return text
-    .split("\n")
-    .map((line) => line.trim().split(/\s+/).join(" "))
-    .join("\n")
-    .replace(/^\n+|\n+$/g, "");
+  const lines = text.split("\n").map((line) => line.trim().split(/\s+/).join(" "));
+  while (lines.length > 0 && lines[0] === "") lines.shift();
+  while (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
+  return lines.join("\n");
 }
 
 /** Remove consecutive points closer than threshold (euclidean). */
