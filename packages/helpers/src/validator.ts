@@ -224,7 +224,7 @@ export function normalizeElements(elements: unknown[]): Record<string, unknown>[
 function normalizeText(text: string): string {
   return text
     .split("\n")
-    .map((line) => line.trim().replace(/\s{2,}/g, " "))
+    .map((line) => line.trim().split(/\s+/).join(" "))
     .join("\n")
     .replace(/^\n+|\n+$/g, "");
 }

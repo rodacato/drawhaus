@@ -474,3 +474,25 @@ describe("normalizeElements", () => {
     assert.equal(points.length, 2);
   });
 });
+
+// ── normalizeElements: text whitespace ────────────────────────────
+
+describe("normalizeElements text normalization", () => {
+  const textOf = (input: unknown[]) => normalizeElements(input)[0].text as string;
+
+  it("collapses runs of spaces", () => {
+    assert.equal(textOf([{ type: "text", x: 0, y: 0, text: "a    b" }]), "a b");
+  });
+
+  it("collapses a lone tab to a single space", () => {
+    assert.equal(textOf([{ type: "text", x: 0, y: 0, text: "a\tb" }]), "a b");
+  });
+
+  it("trims each line but keeps newlines", () => {
+    assert.equal(textOf([{ type: "text", x: 0, y: 0, text: "  a  \n  b  " }]), "a\nb");
+  });
+
+  it("strips leading and trailing blank lines", () => {
+    assert.equal(textOf([{ type: "text", x: 0, y: 0, text: "\n\na\n\n" }]), "a");
+  });
+});

@@ -1,7 +1,14 @@
-const HTML_TAG_RE = /<[^>]*>/g;
+const HTML_TAG_RE = /<[^<>]*>/g;
 
+// Repeats to a fixed point: one pass turns "<<a>script>" back into a live "<script>".
 function sanitizeString(value: string): string {
-  return value.replace(HTML_TAG_RE, "");
+  let previous: string;
+  let current = value;
+  do {
+    previous = current;
+    current = current.replace(HTML_TAG_RE, "");
+  } while (current !== previous);
+  return current;
 }
 
 export function sanitizeElements(elements: unknown[]): unknown[] {

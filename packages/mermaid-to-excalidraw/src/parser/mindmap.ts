@@ -100,12 +100,8 @@ function parseNodeContent(content: string): { label: string; shape: MindmapShape
   // Then try suffix match: "id((label))" or "id[label]" etc.
   // Mermaid allows prefixing shape with an ID
   for (const { re, shape } of SHAPE_PATTERNS) {
-    // Build a regex that allows a prefix word before the shape
-    const suffixRe = new RegExp(`^\\w+${re.source.slice(1)}$`);
-    // Actually, simpler: find the shape delimiters anywhere
-    const source = re.source;
-    // Extract the opening/closing delimiters pattern
-    const innerRe = new RegExp(source.replace("^", "").replace("$", ""));
+    // Strip only the anchors: a bare replace("^") would eat a negated class's caret.
+    const innerRe = new RegExp(re.source.replace(/^\^/, "").replace(/\$$/, ""));
     const innerMatch = content.match(innerRe);
     if (innerMatch) {
       return { label: innerMatch[1], shape };
