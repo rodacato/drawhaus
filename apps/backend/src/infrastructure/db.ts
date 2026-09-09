@@ -7,6 +7,9 @@ import { logger } from "./logger";
 
 export const pool = new Pool({
   connectionString: config.databaseUrl,
+  // Without this an unreachable host never resolves the connect promise, holding the
+  // process open: the CI backend suite hit the 20-minute job timeout that way.
+  connectionTimeoutMillis: config.nodeEnv === "test" ? 1_000 : 10_000,
 });
 
 export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
