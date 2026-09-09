@@ -16,6 +16,8 @@ COPY e2e/package.json e2e/
 RUN npm ci
 
 # Copy source for backend and its workspace dependency
+# Package tsconfigs extend this base; without it tsc fails with TS5083
+COPY packages/tsconfig.base.json packages/
 COPY packages/helpers/ packages/helpers/
 COPY apps/backend/ apps/backend/
 
