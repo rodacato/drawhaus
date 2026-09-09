@@ -49,6 +49,7 @@
     "@vitest/coverage-v8": "^4.1.11",
     "c8": "^11.0.0",
     "eslint": "^10.0.0",
+    "eslint-config-prettier": "^10.1.8",
     "globals": "^17.6.0",
     "jsdom": "^29.1.1",
     "postcss": "^8.5.8",

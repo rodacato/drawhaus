@@ -3,6 +3,7 @@ import tsPlugin from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import sonarjs from "eslint-plugin-sonarjs";
 import globals from "globals";
+import eslintConfigPrettier from "eslint-config-prettier";
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
@@ -55,4 +56,6 @@ export default [
       "sonarjs/prefer-specific-assertions": "off", // ratchet: re-enable after clearing backlog (18)
     },
   },
+
+  eslintConfigPrettier,
 ];
