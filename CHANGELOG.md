@@ -38,6 +38,7 @@ All notable changes to Drawhaus are documented here.
 - **Deploy env vars split into `vars` vs `secrets` in the GitHub `production` environment**. Repo-level secrets are now limited to `SSH_PRIVATE_KEY` and `DOCKERHUB_TOKEN`; everything else lives in the environment. Adds `SENTRY_*`, `VITE_SENTRY_*`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
 
 ### Removed
+- **`dompurify` and `@types/dompurify` dropped from `apps/frontend`.** Neither was imported anywhere in the frontend — the declared `^3.3.3` range mirrored what `mermaid` already depends on, and `@types/dompurify` is a deprecated stub (DOMPurify has shipped its own types since 3.2). Removing them changes nothing at runtime: `dompurify` stays at 3.4.15 in the tree via `mermaid@11.17.2` (`^3.3.3`), and `npm audit` is unchanged at 14 findings.
 - `@honeybadger-io/js` dependency and the `HONEYBADGER_API_KEY` env var.
 
 ---
