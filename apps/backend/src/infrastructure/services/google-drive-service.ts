@@ -22,7 +22,7 @@ async function timedFetch(url: string, init: FetchInit = {}): Promise<Response> 
     return await fetch(url, { ...init, signal: controller.signal });
   } catch (err) {
     if (err instanceof Error && (err.name === "AbortError" || (err as { code?: string }).code === "ABORT_ERR")) {
-      throw new Error(`Drive request timed out after ${driveTimeout.ms}ms`);
+      throw new Error(`Drive request timed out after ${driveTimeout.ms}ms`, { cause: err });
     }
     throw err;
   } finally {
