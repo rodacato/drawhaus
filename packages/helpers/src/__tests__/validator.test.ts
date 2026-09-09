@@ -495,4 +495,12 @@ describe("normalizeElements text normalization", () => {
   it("strips leading and trailing blank lines", () => {
     assert.equal(textOf([{ type: "text", x: 0, y: 0, text: "\n\na\n\n" }]), "a");
   });
+
+  it("keeps blank lines between content", () => {
+    assert.equal(textOf([{ type: "text", x: 0, y: 0, text: "a\n\n\nb" }]), "a\n\n\nb");
+  });
+
+  it("returns empty for text that is only newlines", () => {
+    assert.equal(textOf([{ type: "text", x: 0, y: 0, text: "\n\n\n" }]), "");
+  });
 });
