@@ -223,9 +223,12 @@ export function normalizeElements(elements: unknown[]): Record<string, unknown>[
 /** Trim, collapse internal whitespace runs (preserving newlines). */
 function normalizeText(text: string): string {
   const lines = text.split("\n").map((line) => line.trim().split(/\s+/).join(" "));
-  while (lines.length > 0 && lines[0] === "") lines.shift();
-  while (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
-  return lines.join("\n");
+  // Index walk, not shift/pop: shift() is O(n), so trimming n blank lines would be quadratic.
+  let start = 0;
+  let end = lines.length;
+  while (start < end && lines[start] === "") start++;
+  while (end > start && lines[end - 1] === "") end--;
+  return lines.slice(start, end).join("\n");
 }
 
 /** Remove consecutive points closer than threshold (euclidean). */
