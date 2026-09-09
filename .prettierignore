@@ -9,3 +9,6 @@ apps/*/dist/
 
 # Kamal deploy configs embed ERB, which prettier cannot parse as YAML
 config/deploy.*.yml
+
+# Peggy regenerates these at prebuild, so formatting them makes format:check unstable
+packages/*/src/parser/grammar/*.js
