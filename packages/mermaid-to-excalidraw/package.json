@@ -27,8 +27,8 @@
   },
   "dependencies": {
     "@drawhaus/helpers": "*",
-    "@excalidraw/mermaid-to-excalidraw": "^1.1.2",
-    "mermaid": "^11.15.0"
+    "@excalidraw/mermaid-to-excalidraw": "^2.2.2",
+    "mermaid": "^11.16.1"
   },
   "devDependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
