@@ -13,11 +13,13 @@ COPY packages/mermaid-to-excalidraw/package.json packages/mermaid-to-excalidraw/
 COPY packages/plantuml-to-excalidraw/package.json packages/plantuml-to-excalidraw/
 COPY e2e/package.json e2e/
 
-# npm ci + lockfile skips platform-specific optional deps (npm/cli#4828)
-# Fresh install without lockfile resolves correct native bindings
-RUN rm package-lock.json && npm install
+# Must stay npm ci: without the lockfile npm hoists TypeScript 6 to satisfy
+# @typescript-eslint's peer range, and tsup's dts build then fails with TS5101
+RUN npm ci
 
 # Copy source for frontend and its workspace dependencies
+# Package tsconfigs extend this base; without it tsc fails with TS5083
+COPY packages/tsconfig.base.json packages/
 COPY packages/helpers/ packages/helpers/
 COPY packages/mermaid-to-excalidraw/ packages/mermaid-to-excalidraw/
 COPY packages/plantuml-to-excalidraw/ packages/plantuml-to-excalidraw/
