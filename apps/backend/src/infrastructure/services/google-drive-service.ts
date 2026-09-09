@@ -1,5 +1,10 @@
 import { randomBytes } from "node:crypto";
-import type { GoogleDriveService, DriveFile, DriveFolder, DriveFileListItem } from "../../domain/ports/google-drive-service";
+import type {
+  GoogleDriveService,
+  DriveFile,
+  DriveFolder,
+  DriveFileListItem,
+} from "../../domain/ports/google-drive-service";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
@@ -21,7 +26,10 @@ async function timedFetch(url: string, init: FetchInit = {}): Promise<Response> 
   try {
     return await fetch(url, { ...init, signal: controller.signal });
   } catch (err) {
-    if (err instanceof Error && (err.name === "AbortError" || (err as { code?: string }).code === "ABORT_ERR")) {
+    if (
+      err instanceof Error &&
+      (err.name === "AbortError" || (err as { code?: string }).code === "ABORT_ERR")
+    ) {
       throw new Error(`Drive request timed out after ${driveTimeout.ms}ms`, { cause: err });
     }
     throw err;
@@ -41,7 +49,11 @@ function escapeDriveQL(value: string): string {
 }
 
 export class GoogleDriveServiceImpl implements GoogleDriveService {
-  async createFolder(accessToken: string, name: string, parentId: string | null): Promise<DriveFolder> {
+  async createFolder(
+    accessToken: string,
+    name: string,
+    parentId: string | null,
+  ): Promise<DriveFolder> {
     const body: Record<string, unknown> = { name, mimeType: FOLDER_MIME };
     if (parentId) body.parents = [parentId];
 
@@ -62,13 +74,20 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
     return { id: data.id, name: data.name };
   }
 
-  async findFolder(accessToken: string, name: string, parentId: string | null): Promise<DriveFolder | null> {
+  async findFolder(
+    accessToken: string,
+    name: string,
+    parentId: string | null,
+  ): Promise<DriveFolder | null> {
     const parentClause = parentId ? `and '${escapeDriveQL(parentId)}' in parents` : "";
     const q = `name='${escapeDriveQL(name)}' and mimeType='${FOLDER_MIME}' ${parentClause} and trashed=false`;
 
-    const res = await timedFetch(`${DRIVE_API}/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=1`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const res = await timedFetch(
+      `${DRIVE_API}/files?q=${encodeURIComponent(q)}&fields=files(id,name)&pageSize=1`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
 
     if (!res.ok) {
       throw new Error(`Drive findFolder failed (${res.status}): ${await res.text()}`);
@@ -78,19 +97,26 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
     return data.files[0] ? { id: data.files[0].id, name: data.files[0].name } : null;
   }
 
-  async ensureFolder(accessToken: string, name: string, parentId: string | null): Promise<DriveFolder> {
+  async ensureFolder(
+    accessToken: string,
+    name: string,
+    parentId: string | null,
+  ): Promise<DriveFolder> {
     const existing = await this.findFolder(accessToken, name, parentId);
     if (existing) return existing;
     return this.createFolder(accessToken, name, parentId);
   }
 
-  async uploadFile(accessToken: string, data: {
-    name: string;
-    mimeType: string;
-    content: Buffer | string;
-    folderId: string;
-    existingFileId?: string;
-  }): Promise<DriveFile> {
+  async uploadFile(
+    accessToken: string,
+    data: {
+      name: string;
+      mimeType: string;
+      content: Buffer | string;
+      folderId: string;
+      existingFileId?: string;
+    },
+  ): Promise<DriveFile> {
     const boundary = `drawhaus_${randomBytes(16).toString("hex")}`;
     const isUpdate = !!data.existingFileId;
 
@@ -99,8 +125,10 @@ export class GoogleDriveServiceImpl implements GoogleDriveService {
       metadata.parents = [data.folderId];
     }
 
-    const contentStr = typeof data.content === "string" ? data.content : data.content.toString("base64");
-    const encoding = typeof data.content === "string" ? "" : "\r\nContent-Transfer-Encoding: base64";
+    const contentStr =
+      typeof data.content === "string" ? data.content : data.content.toString("base64");
+    const encoding =
+      typeof data.content === "string" ? "" : "\r\nContent-Transfer-Encoding: base64";
 
     const multipartBody = [
       `--${boundary}`,

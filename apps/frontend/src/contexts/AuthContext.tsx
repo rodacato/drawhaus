@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  type ReactNode,
+} from "react";
 import { authApi } from "@/api/auth";
 
 interface AuthUser {
@@ -40,15 +48,21 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     refreshUser().finally(() => setLoading(false));
   }, [refreshUser]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    await authApi.login(email, password);
-    await refreshUser();
-  }, [refreshUser]);
+  const login = useCallback(
+    async (email: string, password: string) => {
+      await authApi.login(email, password);
+      await refreshUser();
+    },
+    [refreshUser],
+  );
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    await authApi.register(name, email, password);
-    await refreshUser();
-  }, [refreshUser]);
+  const register = useCallback(
+    async (name: string, email: string, password: string) => {
+      await authApi.register(name, email, password);
+      await refreshUser();
+    },
+    [refreshUser],
+  );
 
   const logout = useCallback(async () => {
     await authApi.logout();
@@ -60,11 +74,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     [user, loading, login, register, logout, refreshUser],
   );
 
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

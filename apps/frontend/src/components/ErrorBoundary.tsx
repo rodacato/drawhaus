@@ -7,9 +7,5 @@ interface Props {
 }
 
 export function ErrorBoundary({ children, FallbackComponent }: Props) {
-  return (
-    <ReactErrorBoundary FallbackComponent={FallbackComponent}>
-      {children}
-    </ReactErrorBoundary>
-  );
+  return <ReactErrorBoundary FallbackComponent={FallbackComponent}>{children}</ReactErrorBoundary>;
 }

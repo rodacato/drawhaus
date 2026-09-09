@@ -54,9 +54,7 @@ export function createRect(opts: {
     roughness: opts.roughness ?? BASE_DEFAULTS.roughness,
     opacity: opts.opacity ?? BASE_DEFAULTS.opacity,
     roundness: opts.roundness ? { type: 3, value: opts.roundness } : null,
-    ...(opts.label
-      ? { label: { text: opts.label, x: opts.x, y: opts.y } }
-      : {}),
+    ...(opts.label ? { label: { text: opts.label, x: opts.x, y: opts.y } } : {}),
   };
 }
 
@@ -127,9 +125,7 @@ export function createArrow(opts: {
     strokeColor: opts.strokeColor ?? BASE_DEFAULTS.strokeColor,
     strokeWidth: opts.strokeWidth ?? BASE_DEFAULTS.strokeWidth,
     opacity: opts.opacity ?? BASE_DEFAULTS.opacity,
-    ...(opts.label
-      ? { label: { text: opts.label, x: midPoint.x, y: midPoint.y } }
-      : {}),
+    ...(opts.label ? { label: { text: opts.label, x: midPoint.x, y: midPoint.y } } : {}),
     ...(opts.startBinding
       ? { startBinding: { elementId: opts.startBinding.elementId, focus: 0, gap: 5 } }
       : {}),
@@ -195,9 +191,7 @@ export function createDiamond(opts: {
     strokeStyle: opts.strokeStyle ?? BASE_DEFAULTS.strokeStyle,
     fillStyle: opts.fillStyle ?? BASE_DEFAULTS.fillStyle,
     opacity: opts.opacity ?? BASE_DEFAULTS.opacity,
-    ...(opts.label
-      ? { label: { text: opts.label, x: opts.x, y: opts.y } }
-      : {}),
+    ...(opts.label ? { label: { text: opts.label, x: opts.x, y: opts.y } } : {}),
   };
 }
 
@@ -227,8 +221,6 @@ export function createEllipse(opts: {
     strokeStyle: opts.strokeStyle ?? BASE_DEFAULTS.strokeStyle,
     fillStyle: opts.fillStyle ?? BASE_DEFAULTS.fillStyle,
     opacity: opts.opacity ?? BASE_DEFAULTS.opacity,
-    ...(opts.label
-      ? { label: { text: opts.label, x: opts.x, y: opts.y } }
-      : {}),
+    ...(opts.label ? { label: { text: opts.label, x: opts.x, y: opts.y } } : {}),
   };
 }

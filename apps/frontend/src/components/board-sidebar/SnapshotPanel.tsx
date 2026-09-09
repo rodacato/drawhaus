@@ -15,7 +15,8 @@ let _restoreElements: ((elements: unknown[], localElements: null) => unknown[]) 
 async function normalizeElements(elements: unknown[]): Promise<unknown[]> {
   if (!_restoreElements) {
     const mod = await import("@excalidraw/excalidraw");
-    _restoreElements = (mod as unknown as { restoreElements: typeof _restoreElements }).restoreElements!;
+    _restoreElements = (mod as unknown as { restoreElements: typeof _restoreElements })
+      .restoreElements!;
   }
   return _restoreElements ? _restoreElements(elements, null) : elements;
 }
@@ -28,8 +29,24 @@ type SnapshotPanelProps = {
   readonly socketRef?: React.RefObject<Socket | null>;
 };
 
-export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored, socketRef }: SnapshotPanelProps) {
-  const { named, auto, loading, getSnapshot, createSnapshot, restoreSnapshot, renameSnapshot, deleteSnapshot, refresh } = useSnapshots(diagramId);
+export function SnapshotPanel({
+  diagramId,
+  canEdit,
+  excalidrawApiRef,
+  onRestored,
+  socketRef,
+}: SnapshotPanelProps) {
+  const {
+    named,
+    auto,
+    loading,
+    getSnapshot,
+    createSnapshot,
+    restoreSnapshot,
+    renameSnapshot,
+    deleteSnapshot,
+    refresh,
+  } = useSnapshots(diagramId);
 
   // Auto-refresh when other users create snapshots
   useEffect(() => {
@@ -56,7 +73,11 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
 
   async function handleCreate() {
     setCreating(true);
-    try { await createSnapshot(); } catch { /* ignore */ }
+    try {
+      await createSnapshot();
+    } catch {
+      /* ignore */
+    }
     setCreating(false);
   }
 
@@ -69,7 +90,9 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
       }
       setPreviewSnapshot(null);
       onRestored?.();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   async function handleRestoreFromConfirm() {
@@ -80,14 +103,19 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
     setConfirmRestore(null);
   }
 
-  const handlePreview = useCallback(async (snapshotId: string) => {
-    setLoadingPreview(snapshotId);
-    try {
-      const full = await getSnapshot(snapshotId);
-      if (full) setPreviewSnapshot(full);
-    } catch { /* ignore */ }
-    setLoadingPreview(null);
-  }, [getSnapshot]);
+  const handlePreview = useCallback(
+    async (snapshotId: string) => {
+      setLoadingPreview(snapshotId);
+      try {
+        const full = await getSnapshot(snapshotId);
+        if (full) setPreviewSnapshot(full);
+      } catch {
+        /* ignore */
+      }
+      setLoadingPreview(null);
+    },
+    [getSnapshot],
+  );
 
   // Use refs to avoid stale closures in preview callbacks
   const previewSnapshotRef = useRef(previewSnapshot);
@@ -106,15 +134,20 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
       }
       setPreviewSnapshot(null);
       onRestored?.();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [excalidrawApiRef, onRestored]);
 
-  const handlePreviewRename = useCallback(async (name: string) => {
-    const snap = previewSnapshotRef.current;
-    if (!snap) return;
-    await renameSnapshot(snap.id, name);
-    setPreviewSnapshot((prev) => prev ? { ...prev, name } : null);
-  }, [renameSnapshot]);
+  const handlePreviewRename = useCallback(
+    async (name: string) => {
+      const snap = previewSnapshotRef.current;
+      if (!snap) return;
+      await renameSnapshot(snap.id, name);
+      setPreviewSnapshot((prev) => (prev ? { ...prev, name } : null));
+    },
+    [renameSnapshot],
+  );
 
   function renderList(items: SnapshotMeta[], label: string) {
     if (items.length === 0) return null;
@@ -146,7 +179,16 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
           onClick={() => refresh()}
           title="Refresh"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M23 4v6h-6" />
             <path d="M1 20v-6h6" />
             <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
@@ -170,7 +212,9 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
       )}
 
       {!loading && named.length === 0 && auto.length === 0 && (
-        <p className="text-xs text-text-muted text-center py-4">No snapshots yet. They are created automatically when you close or edit a diagram.</p>
+        <p className="text-xs text-text-muted text-center py-4">
+          No snapshots yet. They are created automatically when you close or edit a diagram.
+        </p>
       )}
 
       {loadingPreview && (
@@ -192,41 +236,51 @@ export function SnapshotPanel({ diagramId, canEdit, excalidrawApiRef, onRestored
       )}
 
       {/* Restore confirmation modal */}
-      {confirmRestore && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <button type="button" aria-label="Cancel" disabled={restoring} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !restoring && setConfirmRestore(null)} />
-          <div className={`${ui.card} relative z-10 w-full max-w-sm space-y-4 shadow-2xl`}>
-            <h2 className={ui.h2}>Restore Version</h2>
-            <p className="text-sm text-text-secondary">
-              This will replace the current diagram content with the version from{" "}
-              <strong>{confirmRestore.name ?? timeAgo(confirmRestore.createdAt)}</strong>
-              {confirmRestore.createdByName && (
-                <> by <strong>{confirmRestore.createdByName}</strong></>
-              )}.
-              A backup of the current state will be saved automatically.
-            </p>
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setConfirmRestore(null)}
-                disabled={restoring}
-                className={`${ui.btn} ${ui.btnSecondary}`}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={restoring}
-                className={`${ui.btn} ${ui.btnPrimary}`}
-                onClick={handleRestoreFromConfirm}
-              >
-                {restoring ? "Restoring..." : "Restore"}
-              </button>
+      {confirmRestore &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <button
+              type="button"
+              aria-label="Cancel"
+              disabled={restoring}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => !restoring && setConfirmRestore(null)}
+            />
+            <div className={`${ui.card} relative z-10 w-full max-w-sm space-y-4 shadow-2xl`}>
+              <h2 className={ui.h2}>Restore Version</h2>
+              <p className="text-sm text-text-secondary">
+                This will replace the current diagram content with the version from{" "}
+                <strong>{confirmRestore.name ?? timeAgo(confirmRestore.createdAt)}</strong>
+                {confirmRestore.createdByName && (
+                  <>
+                    {" "}
+                    by <strong>{confirmRestore.createdByName}</strong>
+                  </>
+                )}
+                . A backup of the current state will be saved automatically.
+              </p>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmRestore(null)}
+                  disabled={restoring}
+                  className={`${ui.btn} ${ui.btnSecondary}`}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={restoring}
+                  className={`${ui.btn} ${ui.btnPrimary}`}
+                  onClick={handleRestoreFromConfirm}
+                >
+                  {restoring ? "Restoring..." : "Restore"}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

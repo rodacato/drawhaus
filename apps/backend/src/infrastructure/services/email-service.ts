@@ -32,7 +32,12 @@ export class ResendEmailService implements EmailService {
     return { client: new Resend(apiKey), from: from || "noreply@drawhaus.app" };
   }
 
-  async sendInviteEmail(to: string, inviteToken: string, inviterName: string, instanceName: string): Promise<void> {
+  async sendInviteEmail(
+    to: string,
+    inviteToken: string,
+    inviterName: string,
+    instanceName: string,
+  ): Promise<void> {
     const inviteUrl = `${config.frontendUrl}/invite/${inviteToken}`;
     const safeInviter = escapeHtml(inviterName);
     const safeInstance = escapeHtml(instanceName);
@@ -57,7 +62,12 @@ export class ResendEmailService implements EmailService {
     await this.send(to, subject, html, inviteUrl);
   }
 
-  async sendWorkspaceInviteEmail(to: string, inviteToken: string, inviterName: string, workspaceName: string): Promise<void> {
+  async sendWorkspaceInviteEmail(
+    to: string,
+    inviteToken: string,
+    inviterName: string,
+    workspaceName: string,
+  ): Promise<void> {
     const inviteUrl = `${config.frontendUrl}/workspace-invite/${inviteToken}`;
     const safeInviter = escapeHtml(inviterName);
     const safeWorkspace = escapeHtml(workspaceName);
@@ -108,7 +118,10 @@ export class ResendEmailService implements EmailService {
   private async send(to: string, subject: string, html: string, actionUrl: string): Promise<void> {
     const resend = await this.getResend();
     if (!resend) {
-      logger.info({ to, subject, actionUrl }, "[Email] No RESEND_API_KEY set — logging email instead of sending");
+      logger.info(
+        { to, subject, actionUrl },
+        "[Email] No RESEND_API_KEY set — logging email instead of sending",
+      );
       return;
     }
 

@@ -162,10 +162,7 @@ describe("convertSequenceDiagram", () => {
 
     for (let i = 0; i < examples.length; i++) {
       const result = await convertSequenceDiagram(examples[i]);
-      assert.ok(
-        result.elements.length > 0,
-        `Example ${i + 1} should produce elements`,
-      );
+      assert.ok(result.elements.length > 0, `Example ${i + 1} should produce elements`);
       assert.equal(result.diagramType, "sequenceDiagram");
     }
   });
@@ -214,10 +211,7 @@ describe("convertSequenceDiagram", () => {
 
     for (let i = 0; i < examples.length; i++) {
       const result = await convertSequenceDiagram(examples[i]);
-      assert.ok(
-        result.elements.length > 0,
-        `Real-world example ${i + 1} should produce elements`,
-      );
+      assert.ok(result.elements.length > 0, `Real-world example ${i + 1} should produce elements`);
     }
   });
 });

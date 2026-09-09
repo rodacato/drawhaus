@@ -20,22 +20,23 @@ Production ✓
 
 **Images built:**
 
-| Image | Source | Purpose |
-|-------|--------|---------|
-| `ghcr.io/rodacato/drawhaus-backend` | `apps/backend/Dockerfile` | Express API + Socket.IO (Node.js) |
-| `ghcr.io/rodacato/drawhaus-frontend` | `apps/frontend/Dockerfile` | React SPA (nginx) |
+| Image                                | Source                     | Purpose                           |
+| ------------------------------------ | -------------------------- | --------------------------------- |
+| `ghcr.io/rodacato/drawhaus-backend`  | `apps/backend/Dockerfile`  | Express API + Socket.IO (Node.js) |
+| `ghcr.io/rodacato/drawhaus-frontend` | `apps/frontend/Dockerfile` | React SPA (nginx)                 |
 
 **Kamal manages on the VPS:**
 
-| Container | Role | Config |
-|-----------|------|--------|
-| `drawhaus-backend` | Express API (port 4000) | `config/deploy.backend.yml` |
+| Container           | Role                        | Config                       |
+| ------------------- | --------------------------- | ---------------------------- |
+| `drawhaus-backend`  | Express API (port 4000)     | `config/deploy.backend.yml`  |
 | `drawhaus-frontend` | nginx serving SPA (port 80) | `config/deploy.frontend.yml` |
-| `drawhaus-postgres` | PostgreSQL 16 | Accessory in backend config |
-| `drawhaus-redis` | Redis 7 (Socket.IO scaling) | Accessory in backend config |
-| `kamal-proxy` | Reverse proxy (port 80) | Managed by Kamal |
+| `drawhaus-postgres` | PostgreSQL 16               | Accessory in backend config  |
+| `drawhaus-redis`    | Redis 7 (Socket.IO scaling) | Accessory in backend config  |
+| `kamal-proxy`       | Reverse proxy (port 80)     | Managed by Kamal             |
 
 **Deploy order** (enforced by CI job dependencies):
+
 1. Build backend image → push to GHCR
 2. Deploy backend via Kamal (with health check gate on `/health`)
 3. Build frontend image → push to GHCR (parallel with step 2)
@@ -76,28 +77,28 @@ Go to **Settings → Secrets and variables → Actions** in your GitHub repo.
 
 ### Required Secrets
 
-| Secret | Value | How to generate |
-|--------|-------|-----------------|
-| `HOST_IP` | Your server's public IP | `curl ifconfig.me` on VPS |
-| `SSH_PRIVATE_KEY` | Full SSH private key content | Must match `~/.ssh/authorized_keys` on VPS |
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://drawhaus:<POSTGRES_PASSWORD>@localhost:5432/drawhaus_production` |
-| `SESSION_SECRET` | 128-char hex string | `openssl rand -hex 64` |
-| `POSTGRES_PASSWORD` | 64-char hex string | `openssl rand -hex 32` |
-| `ENCRYPTION_KEY` | 64-char hex string | `openssl rand -hex 32` |
-| `REDIS_URL` | Redis connection string | `redis://localhost:6379/0` |
-| `FRONTEND_URL` | Frontend URL | `https://drawhaus.notdefined.dev` |
-| `COOKIE_DOMAIN` | Cookie domain (if cross-subdomain) | `.notdefined.dev` or leave empty |
-| `SENTRY_DSN` | Backend error monitoring DSN | From your Sentry Node project *(optional)* |
-| `VITE_SENTRY_DSN` | Frontend error monitoring DSN | From your Sentry React project *(optional)* |
-| `SENTRY_AUTH_TOKEN` | Source-map upload token | Sentry → Account → Auth Tokens *(optional)* |
-| `RESEND_API_KEY` | Email service key | From Resend dashboard *(optional)* |
-| `FROM_EMAIL` | System email sender | `noreply@yourdomain.com` *(optional)* |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID | *(optional, enables Google login)* |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | *(optional)* |
-| `GOOGLE_REDIRECT_URI` | OAuth callback URL | *(optional)* |
-| `GH_CLIENT_ID` | GitHub OAuth client ID | *(optional, enables GitHub login)* |
-| `GH_CLIENT_SECRET` | GitHub OAuth client secret | *(optional)* |
-| `GH_REDIRECT_URI` | GitHub OAuth callback URL | *(optional)* |
+| Secret                 | Value                              | How to generate                                                                |
+| ---------------------- | ---------------------------------- | ------------------------------------------------------------------------------ |
+| `HOST_IP`              | Your server's public IP            | `curl ifconfig.me` on VPS                                                      |
+| `SSH_PRIVATE_KEY`      | Full SSH private key content       | Must match `~/.ssh/authorized_keys` on VPS                                     |
+| `DATABASE_URL`         | PostgreSQL connection string       | `postgresql://drawhaus:<POSTGRES_PASSWORD>@localhost:5432/drawhaus_production` |
+| `SESSION_SECRET`       | 128-char hex string                | `openssl rand -hex 64`                                                         |
+| `POSTGRES_PASSWORD`    | 64-char hex string                 | `openssl rand -hex 32`                                                         |
+| `ENCRYPTION_KEY`       | 64-char hex string                 | `openssl rand -hex 32`                                                         |
+| `REDIS_URL`            | Redis connection string            | `redis://localhost:6379/0`                                                     |
+| `FRONTEND_URL`         | Frontend URL                       | `https://drawhaus.notdefined.dev`                                              |
+| `COOKIE_DOMAIN`        | Cookie domain (if cross-subdomain) | `.notdefined.dev` or leave empty                                               |
+| `SENTRY_DSN`           | Backend error monitoring DSN       | From your Sentry Node project _(optional)_                                     |
+| `VITE_SENTRY_DSN`      | Frontend error monitoring DSN      | From your Sentry React project _(optional)_                                    |
+| `SENTRY_AUTH_TOKEN`    | Source-map upload token            | Sentry → Account → Auth Tokens _(optional)_                                    |
+| `RESEND_API_KEY`       | Email service key                  | From Resend dashboard _(optional)_                                             |
+| `FROM_EMAIL`           | System email sender                | `noreply@yourdomain.com` _(optional)_                                          |
+| `GOOGLE_CLIENT_ID`     | Google OAuth client ID             | _(optional, enables Google login)_                                             |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret         | _(optional)_                                                                   |
+| `GOOGLE_REDIRECT_URI`  | OAuth callback URL                 | _(optional)_                                                                   |
+| `GH_CLIENT_ID`         | GitHub OAuth client ID             | _(optional, enables GitHub login)_                                             |
+| `GH_CLIENT_SECRET`     | GitHub OAuth client secret         | _(optional)_                                                                   |
+| `GH_REDIRECT_URI`      | GitHub OAuth callback URL          | _(optional)_                                                                   |
 
 > **Note:** `KAMAL_REGISTRY_PASSWORD` uses `GITHUB_TOKEN` automatically — no PAT needed.
 
@@ -105,11 +106,11 @@ Go to **Settings → Secrets and variables → Actions** in your GitHub repo.
 
 Go to **Settings → Secrets and variables → Actions → Variables tab**.
 
-| Variable | Value | Example |
-|----------|-------|---------|
-| `VITE_API_URL` | Backend API URL | `https://drawhaus-api.notdefined.dev` |
-| `VITE_WS_URL` | WebSocket URL | `wss://drawhaus-api.notdefined.dev` |
-| `VITE_GOOGLE_API_KEY` | Google API key for frontend | *(optional)* |
+| Variable              | Value                       | Example                               |
+| --------------------- | --------------------------- | ------------------------------------- |
+| `VITE_API_URL`        | Backend API URL             | `https://drawhaus-api.notdefined.dev` |
+| `VITE_WS_URL`         | WebSocket URL               | `wss://drawhaus-api.notdefined.dev`   |
+| `VITE_GOOGLE_API_KEY` | Google API key for frontend | _(optional)_                          |
 
 > **Important:** `DATABASE_URL` must use the same password as `POSTGRES_PASSWORD`.
 
@@ -171,6 +172,7 @@ kamal setup -c config/deploy.frontend.yml
 ```
 
 This will:
+
 1. Install Docker on the VPS (if needed)
 2. Start kamal-proxy (reverse proxy on port 80)
 3. Boot accessories: PostgreSQL 16, Redis 7
@@ -204,6 +206,7 @@ git push origin production
 ```
 
 The workflow (`.github/workflows/build-push.yml`) handles everything:
+
 1. Builds backend image → pushes to GHCR
 2. Deploys backend via Kamal (boots accessories if needed)
 3. Builds frontend image → pushes to GHCR (parallel)
@@ -217,7 +220,7 @@ No manual steps needed after the initial setup.
 
 ### From the devcontainer
 
-The devcontainer ships Kamal and can run the *read-only* commands below without holding a
+The devcontainer ships Kamal and can run the _read-only_ commands below without holding a
 single production secret. Copy the example file once and set the server address:
 
 ```bash
@@ -285,15 +288,15 @@ kamal app details -c config/deploy.frontend.yml
 
 ## Key Config Files
 
-| File | Purpose |
-|------|---------|
-| `config/deploy.backend.yml` | Kamal config for backend (includes accessories) |
-| `config/deploy.frontend.yml` | Kamal config for frontend |
-| `.kamal/secrets` | Secret env var references |
-| `.github/workflows/build-push.yml` | CI/CD deploy workflow |
-| `.github/workflows/ci.yml` | CI tests (runs on PRs and master) |
-| `apps/backend/Dockerfile` | Backend multi-stage build |
-| `apps/frontend/Dockerfile` | Frontend multi-stage build (nginx) |
+| File                               | Purpose                                         |
+| ---------------------------------- | ----------------------------------------------- |
+| `config/deploy.backend.yml`        | Kamal config for backend (includes accessories) |
+| `config/deploy.frontend.yml`       | Kamal config for frontend                       |
+| `.kamal/secrets`                   | Secret env var references                       |
+| `.github/workflows/build-push.yml` | CI/CD deploy workflow                           |
+| `.github/workflows/ci.yml`         | CI tests (runs on PRs and master)               |
+| `apps/backend/Dockerfile`          | Backend multi-stage build                       |
+| `apps/frontend/Dockerfile`         | Frontend multi-stage build (nginx)              |
 
 ---
 
@@ -301,10 +304,10 @@ kamal app details -c config/deploy.frontend.yml
 
 ### Backend (clear)
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `PORT` | `4000` | Express server port |
-| `NODE_ENV` | `production` | Environment mode |
+| Variable     | Value         | Description         |
+| ------------ | ------------- | ------------------- |
+| `PORT`       | `4000`        | Express server port |
+| `NODE_ENV`   | `production`  | Environment mode    |
 | `FILES_PATH` | `/data/files` | Upload storage path |
 
 ### Backend (secret)
@@ -313,10 +316,10 @@ Defined in `.kamal/secrets` and injected via GitHub Actions secrets. See Step 2 
 
 ### Frontend (build args)
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_API_URL` | Backend API base URL |
-| `VITE_WS_URL` | WebSocket connection URL |
+| Variable              | Description               |
+| --------------------- | ------------------------- |
+| `VITE_API_URL`        | Backend API base URL      |
+| `VITE_WS_URL`         | WebSocket connection URL  |
 | `VITE_GOOGLE_API_KEY` | Google API key (optional) |
 
 These are baked into the frontend at build time via Vite.
@@ -325,12 +328,12 @@ These are baked into the frontend at build time via Vite.
 
 ## Volumes
 
-| Docker Volume | Mount Point | Purpose |
-|---------------|-------------|---------|
-| `drawhaus-uploads` | `/data/files` | User file uploads |
-| `drawhaus-backups` | `/data/backups` | Database backups |
-| `drawhaus-pgdata` | `/var/lib/postgresql/data` | PostgreSQL data |
-| `drawhaus-redis-data` | `/data` | Redis AOF persistence |
+| Docker Volume         | Mount Point                | Purpose               |
+| --------------------- | -------------------------- | --------------------- |
+| `drawhaus-uploads`    | `/data/files`              | User file uploads     |
+| `drawhaus-backups`    | `/data/backups`            | Database backups      |
+| `drawhaus-pgdata`     | `/var/lib/postgresql/data` | PostgreSQL data       |
+| `drawhaus-redis-data` | `/data`                    | Redis AOF persistence |
 
 ---
 
@@ -352,6 +355,7 @@ kamal accessory logs postgres -c config/deploy.backend.yml
 ### Images not found in GHCR
 
 Check that the build jobs succeeded in GitHub Actions. Images should be at:
+
 - `ghcr.io/rodacato/drawhaus-backend:latest`
 - `ghcr.io/rodacato/drawhaus-frontend:latest`
 
@@ -376,12 +380,12 @@ curl http://localhost:80  # Test kamal-proxy directly
 
 ## Differences from Docker Compose
 
-| Feature | Docker Compose | Kamal + CI/CD |
-|---------|---------------|---------------|
-| Zero-downtime deploys | No | Yes |
-| Automatic on push | No | Yes |
-| Rolling restarts | No | Yes |
-| Health check gating | No | Yes |
-| Setup complexity | Low | Medium (one-time) |
-| Rollback | Manual | `kamal rollback` |
-| Requires Ruby locally | No | Only for first setup |
+| Feature               | Docker Compose | Kamal + CI/CD        |
+| --------------------- | -------------- | -------------------- |
+| Zero-downtime deploys | No             | Yes                  |
+| Automatic on push     | No             | Yes                  |
+| Rolling restarts      | No             | Yes                  |
+| Health check gating   | No             | Yes                  |
+| Setup complexity      | Low            | Medium (one-time)    |
+| Rollback              | Manual         | `kamal rollback`     |
+| Requires Ruby locally | No             | Only for first setup |

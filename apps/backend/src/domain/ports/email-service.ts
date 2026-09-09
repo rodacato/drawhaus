@@ -1,5 +1,15 @@
 export interface EmailService {
-  sendInviteEmail(to: string, inviteToken: string, inviterName: string, instanceName: string): Promise<void>;
+  sendInviteEmail(
+    to: string,
+    inviteToken: string,
+    inviterName: string,
+    instanceName: string,
+  ): Promise<void>;
   sendPasswordResetEmail(to: string, resetToken: string): Promise<void>;
-  sendWorkspaceInviteEmail(to: string, inviteToken: string, inviterName: string, workspaceName: string): Promise<void>;
+  sendWorkspaceInviteEmail(
+    to: string,
+    inviteToken: string,
+    inviterName: string,
+    workspaceName: string,
+  ): Promise<void>;
 }

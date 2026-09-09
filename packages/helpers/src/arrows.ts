@@ -42,9 +42,7 @@ export function buildArrowPoints(
 ): Array<{ x: number; y: number }> {
   if (dagrePoints && dagrePoints.length >= 2) {
     const firstWaypoint = dagrePoints[1] ?? dagrePoints[0];
-    const lastWaypoint =
-      dagrePoints[dagrePoints.length - 2] ??
-      dagrePoints[dagrePoints.length - 1];
+    const lastWaypoint = dagrePoints[dagrePoints.length - 2] ?? dagrePoints[dagrePoints.length - 1];
 
     const start = clampToBoxBorder(source, firstWaypoint);
     const end = clampToBoxBorder(target, lastWaypoint);

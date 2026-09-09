@@ -1,9 +1,9 @@
-import type { ExcalidrawElementSkeleton, PlantUMLConfig, PlantUMLToExcalidrawResult } from "./types.js";
-import {
-  parsePlantUML,
-  PlantUMLParseError,
-  PlantUMLUnsupportedError,
-} from "./parser/index.js";
+import type {
+  ExcalidrawElementSkeleton,
+  PlantUMLConfig,
+  PlantUMLToExcalidrawResult,
+} from "./types.js";
+import { parsePlantUML, PlantUMLParseError, PlantUMLUnsupportedError } from "./parser/index.js";
 import { mapClassDiagram } from "./converter/class.js";
 import { mapObjectDiagram } from "./converter/object.js";
 import { mapUseCaseDiagram } from "./converter/usecase.js";
@@ -17,10 +17,7 @@ import { resolveTheme } from "./theme/index.js";
 
 // ── Re-exports ─────────────────────────────────────────────────
 
-export {
-  PlantUMLParseError,
-  PlantUMLUnsupportedError,
-} from "./parser/types.js";
+export { PlantUMLParseError, PlantUMLUnsupportedError } from "./parser/types.js";
 
 export type {
   DiagramType,
@@ -113,7 +110,10 @@ export function parsePlantUMLToExcalidraw(
   if (trimmed.length > MAX_INPUT_LENGTH) {
     throw new PlantUMLParseError(
       `Input too large (${trimmed.length} chars, max ${MAX_INPUT_LENGTH})`,
-      0, 0, [], null,
+      0,
+      0,
+      [],
+      null,
     );
   }
 

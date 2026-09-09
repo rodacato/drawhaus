@@ -27,7 +27,10 @@ describe("foldersApi", () => {
   test("create posts name with undefined workspaceId when omitted", async () => {
     const stub = vi.spyOn(api, "post").mockResolvedValue({});
     await foldersApi.create("docs");
-    assert.deepEqual(stub.mock.calls[0], ["/api/folders", { name: "docs", workspaceId: undefined }]);
+    assert.deepEqual(stub.mock.calls[0], [
+      "/api/folders",
+      { name: "docs", workspaceId: undefined },
+    ]);
   });
 
   test("delete removes by id", async () => {

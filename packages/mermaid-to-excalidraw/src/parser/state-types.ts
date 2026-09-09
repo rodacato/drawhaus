@@ -7,7 +7,7 @@ export interface StateNode {
   label?: string;
   description?: string;
   kind: StateKind;
-  children?: StateDiagramAST;  // composite state
+  children?: StateDiagramAST; // composite state
 }
 
 export interface StateTransition {

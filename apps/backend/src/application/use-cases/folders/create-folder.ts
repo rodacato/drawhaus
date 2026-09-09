@@ -3,7 +3,10 @@ import type { WorkspaceRepository } from "../../../domain/ports/workspace-reposi
 import { ForbiddenError } from "../../../domain/errors";
 
 export class CreateFolderUseCase {
-  constructor(private readonly folders: FolderRepository, private readonly workspaces: WorkspaceRepository) {}
+  constructor(
+    private readonly folders: FolderRepository,
+    private readonly workspaces: WorkspaceRepository,
+  ) {}
 
   async execute(userId: string, name: string, workspaceId?: string | null) {
     if (workspaceId) {

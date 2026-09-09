@@ -13,7 +13,10 @@ export class JoinRoomUseCase {
     private readonly scenes: SceneRepository,
   ) {}
 
-  async execute(sessionToken: string | null, roomId: string): Promise<{
+  async execute(
+    sessionToken: string | null,
+    roomId: string,
+  ): Promise<{
     user: AuthUser;
     role: DiagramRole;
     scenes: Scene[];

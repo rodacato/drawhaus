@@ -17,6 +17,7 @@ Adopt a **two-room model** with msgpack binary encoding:
 Use **msgpack** parser for binary encoding (smaller payloads than JSON). Add **perMessageDeflate** compression for messages >1KB.
 
 Rate limits per event type:
+
 - Scene updates: 30 req/s
 - Cursor movements: 60 req/s (volatile/ephemeral)
 - Comments: 10 req/s

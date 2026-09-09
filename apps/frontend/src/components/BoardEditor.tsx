@@ -51,19 +51,31 @@ export default function BoardEditor({
   const { prefs: canvasPrefs, updatePrefs: updateCanvasPrefs } = useCanvasPrefs();
 
   const toast = useToast();
-  const presenceRef = useRef<{ presenceUsers: Array<{ userId: string; name: string }> }>({ presenceUsers: [] });
+  const presenceRef = useRef<{ presenceUsers: Array<{ userId: string; name: string }> }>({
+    presenceUsers: [],
+  });
 
-  const handleConflict = useCallback((conflictIds: string[], fromUserId: string) => {
-    const userName = presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ?? "Otro usuario";
-    const target = conflictIds.length === 1 ? "un elemento" : `${conflictIds.length} elementos`;
-    toast(`${userName} modificó ${target} que editabas`, "info");
-  }, [toast]);
+  const handleConflict = useCallback(
+    (conflictIds: string[], fromUserId: string) => {
+      const userName =
+        presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ??
+        "Otro usuario";
+      const target = conflictIds.length === 1 ? "un elemento" : `${conflictIds.length} elementos`;
+      toast(`${userName} modificó ${target} que editabas`, "info");
+    },
+    [toast],
+  );
 
-  const handleRemoteDelete = useCallback((deletedIds: string[], fromUserId: string) => {
-    const userName = presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ?? "Otro usuario";
-    const target = deletedIds.length === 1 ? "un elemento" : `${deletedIds.length} elementos`;
-    toast(`${userName} eliminó ${target} que editabas`, "info");
-  }, [toast]);
+  const handleRemoteDelete = useCallback(
+    (deletedIds: string[], fromUserId: string) => {
+      const userName =
+        presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ??
+        "Otro usuario";
+      const target = deletedIds.length === 1 ? "un elemento" : `${deletedIds.length} elementos`;
+      toast(`${userName} eliminó ${target} que editabas`, "info");
+    },
+    [toast],
+  );
 
   const collab = useCollaboration({
     diagramId,
@@ -77,10 +89,13 @@ export default function BoardEditor({
   });
   presenceRef.current = collab;
 
-  const handleCanvasPrefsChange = useCallback((patch: Partial<CanvasPrefs>) => {
-    updateCanvasPrefs(patch);
-    collab.excalidrawApiRef.current?.updateScene({ appState: patch });
-  }, [updateCanvasPrefs, collab.excalidrawApiRef]);
+  const handleCanvasPrefsChange = useCallback(
+    (patch: Partial<CanvasPrefs>) => {
+      updateCanvasPrefs(patch);
+      collab.excalidrawApiRef.current?.updateScene({ appState: patch });
+    },
+    [updateCanvasPrefs, collab.excalidrawApiRef],
+  );
 
   // Offline snapshot recovery
   const [offlineSnapshot, setOfflineSnapshot] = useState<OfflineSnapshot | null>(null);
@@ -94,7 +109,11 @@ export default function BoardEditor({
     onConflict: setOfflineSnapshot,
   });
 
-  const comments = useComments({ diagramId, sceneId: collab.activeSceneId, socketRef: collab.socketRef });
+  const comments = useComments({
+    diagramId,
+    sceneId: collab.activeSceneId,
+    socketRef: collab.socketRef,
+  });
 
   // Drive sync status from socket
   const { driveSyncState, driveSyncError } = useDriveSyncStatus(collab.socketRef);
@@ -109,7 +128,6 @@ export default function BoardEditor({
   const selectedElementIdRef = useRef<string | null>(null);
   const currentElementsRef = useRef<readonly unknown[]>(initialElements);
   const [currentElementsVersion, setCurrentElementsVersion] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _elemVer = currentElementsVersion; // subscribe to version bumps
   const currentElements = currentElementsRef.current;
 
@@ -143,13 +161,20 @@ export default function BoardEditor({
   useEffect(() => {
     const socket = collab.socketRef.current;
     if (!socket) return;
-    const handler = ({ restoredBy }: { diagramId: string; restoredBy: { userId: string; userName: string } }) => {
+    const handler = ({
+      restoredBy,
+    }: {
+      diagramId: string;
+      restoredBy: { userId: string; userName: string };
+    }) => {
       if (restoredBy.userId !== collab.selfUserId) {
         toast(`${restoredBy.userName} restauro una version anterior`, "info");
       }
     };
     socket.on("snapshot-restored", handler);
-    return () => { socket.off("snapshot-restored", handler); };
+    return () => {
+      socket.off("snapshot-restored", handler);
+    };
   }, [collab.socketRef, collab.selfUserId, toast]);
 
   // Keyboard shortcuts
@@ -159,45 +184,57 @@ export default function BoardEditor({
     toast,
   });
 
+  const handleCreateShareLink = useCallback(
+    async (role: "viewer" | "editor"): Promise<string | null> => {
+      const cacheShareKey = `drawhaus_share_${diagramId}_${role}`;
+      const cached = localStorage.getItem(cacheShareKey);
+      if (cached) return cached;
 
-  const handleCreateShareLink = useCallback(async (role: "viewer" | "editor"): Promise<string | null> => {
-    const cacheShareKey = `drawhaus_share_${diagramId}_${role}`;
-    const cached = localStorage.getItem(cacheShareKey);
-    if (cached) return cached;
-
-    try {
-      const payload = await shareApi.create(diagramId, role);
-      const token = payload.shareLink?.token;
-      if (token) {
-        const url = `${globalThis.location.origin}/share/${token}`;
-        try { localStorage.setItem(cacheShareKey, url); } catch { /* quota */ }
-        return url;
+      try {
+        const payload = await shareApi.create(diagramId, role);
+        const token = payload.shareLink?.token;
+        if (token) {
+          const url = `${globalThis.location.origin}/share/${token}`;
+          try {
+            localStorage.setItem(cacheShareKey, url);
+          } catch {
+            /* quota */
+          }
+          return url;
+        }
+        return null;
+      } catch {
+        return null;
       }
-      return null;
-    } catch {
-      return null;
-    }
-  }, [diagramId]);
+    },
+    [diagramId],
+  );
 
-  const handleHighlightElement = useCallback((elementId: string) => {
-    const api = collab.excalidrawApiRef.current;
-    if (!api) return;
-    const elements = api.getSceneElements() as ExcalidrawElement[];
-    const el = elements.find((e) => e.id === elementId);
-    if (!el) return;
-    api.updateScene({
-      appState: {
-        selectedElementIds: { [elementId]: true },
-        scrollX: -(el.x as number) + window.innerWidth / 2 - ((el.width as number) ?? 0) / 2,
-        scrollY: -(el.y as number) + window.innerHeight / 2 - ((el.height as number) ?? 0) / 2,
-      },
-    });
-  }, [collab.excalidrawApiRef]);
+  const handleHighlightElement = useCallback(
+    (elementId: string) => {
+      const api = collab.excalidrawApiRef.current;
+      if (!api) return;
+      const elements = api.getSceneElements() as ExcalidrawElement[];
+      const el = elements.find((e) => e.id === elementId);
+      if (!el) return;
+      api.updateScene({
+        appState: {
+          selectedElementIds: { [elementId]: true },
+          scrollX: -(el.x as number) + window.innerWidth / 2 - ((el.width as number) ?? 0) / 2,
+          scrollY: -(el.y as number) + window.innerHeight / 2 - ((el.height as number) ?? 0) / 2,
+        },
+      });
+    },
+    [collab.excalidrawApiRef],
+  );
 
-  const handleClickIndicator = useCallback((elementId: string) => {
-    handleHighlightElement(elementId);
-    setCommentsPanelOpen(true);
-  }, [handleHighlightElement]);
+  const handleClickIndicator = useCallback(
+    (elementId: string) => {
+      handleHighlightElement(elementId);
+      setCommentsPanelOpen(true);
+    },
+    [handleHighlightElement],
+  );
 
   // No lock acquisition needed — concurrent editing allows everyone to edit
   const handleCanvasPointerDown = useCallback(() => {
@@ -285,13 +322,18 @@ export default function BoardEditor({
             </div>
             {/* Connection badge */}
             <div className="pointer-events-auto flex items-center">
-              <ConnectionBadge connectionState={collab.connectionState} connectionError={collab.connectionError} />
+              <ConnectionBadge
+                connectionState={collab.connectionState}
+                connectionError={collab.connectionError}
+              />
             </div>
           </div>
           {/* Save status + Lock status + Drive sync */}
           <div className="pointer-events-auto flex items-center gap-2">
             {canEdit && (
-              <div className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}>
+              <div
+                className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}
+              >
                 {collab.saveLabel}
               </div>
             )}
@@ -324,7 +366,11 @@ export default function BoardEditor({
         )}
 
         {/* Canvas */}
-        <div className="relative flex-1 h-full min-w-0" onPointerDown={handleCanvasPointerDown} onPointerMove={collab.onPointerMove}>
+        <div
+          className="relative flex-1 h-full min-w-0"
+          onPointerDown={handleCanvasPointerDown}
+          onPointerMove={collab.onPointerMove}
+        >
           <ExcalidrawCanvas
             excalidrawAPI={collab.onExcalidrawApi}
             initialData={collab.initialData}

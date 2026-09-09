@@ -27,6 +27,10 @@ export function deriveSaveColor(state: SaveState): string {
 
 const CURSOR_STALE_MS = 5000;
 
-export function isCursorStale(lastSeen: number, now: number, thresholdMs = CURSOR_STALE_MS): boolean {
+export function isCursorStale(
+  lastSeen: number,
+  now: number,
+  thresholdMs = CURSOR_STALE_MS,
+): boolean {
   return now - lastSeen >= thresholdMs;
 }

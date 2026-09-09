@@ -76,7 +76,11 @@ describe("AcceptInviteUseCase", () => {
       const { users, sessions, invitations, useCase } = setup();
       const invite = await createInvite(invitations, { email: "newuser@example.com" });
 
-      const result = await useCase.execute({ token: "invite-token", name: "New User", password: "pw12345678" });
+      const result = await useCase.execute({
+        token: "invite-token",
+        name: "New User",
+        password: "pw12345678",
+      });
 
       assert.equal(users.store.length, 1);
       assert.equal(users.store[0].email, "newuser@example.com");
@@ -93,7 +97,11 @@ describe("AcceptInviteUseCase", () => {
       const { users, invitations, useCase } = setup();
       await createInvite(invitations, { role: "admin" });
 
-      const result = await useCase.execute({ token: "invite-token", name: "Admin", password: "pw12345678" });
+      const result = await useCase.execute({
+        token: "invite-token",
+        name: "Admin",
+        password: "pw12345678",
+      });
 
       assert.equal(users.store[0].role, "admin");
       assert.equal(result.user.role, "admin");

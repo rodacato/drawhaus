@@ -174,7 +174,10 @@ describe("GoogleAuthUseCase.getAuthorizationUrl", () => {
 
     assert.equal(url.origin + url.pathname, "https://accounts.google.com/o/oauth2/v2/auth");
     assert.equal(url.searchParams.get("client_id"), "client-id-123");
-    assert.equal(url.searchParams.get("redirect_uri"), "https://app.example.com/oauth/google/callback");
+    assert.equal(
+      url.searchParams.get("redirect_uri"),
+      "https://app.example.com/oauth/google/callback",
+    );
     assert.equal(url.searchParams.get("response_type"), "code");
     assert.equal(url.searchParams.get("scope"), "openid email profile");
     assert.equal(url.searchParams.get("state"), "state-token");
@@ -185,7 +188,11 @@ describe("GoogleAuthUseCase.getAuthorizationUrl", () => {
   it("uses custom scopes when provided, joined by spaces", () => {
     const { useCase } = setup();
     const url = new URL(
-      useCase.getAuthorizationUrl("s", ["openid", "email", "https://www.googleapis.com/auth/drive.file"]),
+      useCase.getAuthorizationUrl("s", [
+        "openid",
+        "email",
+        "https://www.googleapis.com/auth/drive.file",
+      ]),
     );
     assert.equal(
       url.searchParams.get("scope"),
@@ -277,7 +284,9 @@ describe("GoogleAuthUseCase.handleCallback — happy paths", () => {
       avatarUrl: "https://lh3.googleusercontent.com/a/old-avatar",
     });
     installFetchMock(
-      defaultFetchHandler({ userInfo: { picture: "https://lh3.googleusercontent.com/a/new-avatar" } }),
+      defaultFetchHandler({
+        userInfo: { picture: "https://lh3.googleusercontent.com/a/new-avatar" },
+      }),
     );
 
     await useCase.handleCallback("auth-code");
@@ -296,19 +305,17 @@ describe("GoogleAuthUseCase.handleCallback — happy paths", () => {
       googleId: "google-user-1",
       avatarUrl: "https://existing.example.com/avatar.png",
     });
-    installFetchMock(
-      (url) => {
-        if (url === TOKEN_URL) return jsonResponse(defaultTokenPayload);
-        if (url === USERINFO_URL) {
-          return jsonResponse({
-            id: defaultUserInfoPayload.id,
-            email: defaultUserInfoPayload.email,
-            name: defaultUserInfoPayload.name,
-          });
-        }
-        throw new Error(`Unexpected fetch URL: ${url}`);
-      },
-    );
+    installFetchMock((url) => {
+      if (url === TOKEN_URL) return jsonResponse(defaultTokenPayload);
+      if (url === USERINFO_URL) {
+        return jsonResponse({
+          id: defaultUserInfoPayload.id,
+          email: defaultUserInfoPayload.email,
+          name: defaultUserInfoPayload.name,
+        });
+      }
+      throw new Error(`Unexpected fetch URL: ${url}`);
+    });
 
     await useCase.handleCallback("auth-code");
 
@@ -478,7 +485,8 @@ describe("GoogleAuthUseCase.handleCallback — sad paths", () => {
 
     await assert.rejects(
       () => useCase.handleCallback("code"),
-      (err: unknown) => err instanceof Error && /Failed to fetch Google user info/.test(err.message),
+      (err: unknown) =>
+        err instanceof Error && /Failed to fetch Google user info/.test(err.message),
     );
   });
 });
@@ -541,8 +549,7 @@ describe("GoogleAuthUseCase.handleLinkCallback", () => {
 
     await assert.rejects(
       () => useCase.handleLinkCallback("code", me.id),
-      (err: unknown) =>
-        err instanceof Error && /already linked to another user/.test(err.message),
+      (err: unknown) => err instanceof Error && /already linked to another user/.test(err.message),
     );
     assert.equal(oauthTokens.store.length, 0, "oauth token must not be stored on conflict");
     assert.equal(users.store.find((u) => u.id === me.id)?.googleId, null);
@@ -574,7 +581,9 @@ describe("GoogleAuthUseCase.handleDriveCallback", () => {
       passwordHash: "h",
     });
     const userSnapshotBefore = { ...user };
-    installFetchMock(defaultFetchHandler({ token: { scope: "https://www.googleapis.com/auth/drive.file" } }));
+    installFetchMock(
+      defaultFetchHandler({ token: { scope: "https://www.googleapis.com/auth/drive.file" } }),
+    );
 
     await useCase.handleDriveCallback("code", user.id);
 

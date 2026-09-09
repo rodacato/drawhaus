@@ -53,11 +53,7 @@ export function MermaidPreview({ code }: MermaidPreviewProps) {
     <div className="mermaid-preview">
       <div className="mermaid-preview-header">Mermaid Reference</div>
       <div className="mermaid-preview-content">
-        {error ? (
-          <div className="mermaid-preview-error">{error}</div>
-        ) : (
-          <div ref={containerRef} />
-        )}
+        {error ? <div className="mermaid-preview-error">{error}</div> : <div ref={containerRef} />}
       </div>
     </div>
   );

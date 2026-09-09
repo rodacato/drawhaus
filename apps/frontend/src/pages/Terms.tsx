@@ -14,34 +14,51 @@ export function Terms() {
 
       <main className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="font-sora text-3xl font-bold tracking-tight">Terms of Use</h1>
-        <p className="mt-2 text-sm text-text-muted">Last updated: {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}</p>
+        <p className="mt-2 text-sm text-text-muted">
+          Last updated: {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+        </p>
 
         <div className="mt-10 space-y-8 text-text-secondary leading-relaxed">
           <section>
-            <h2 className="font-sora text-lg font-semibold text-text-primary">Open Source License</h2>
+            <h2 className="font-sora text-lg font-semibold text-text-primary">
+              Open Source License
+            </h2>
             <p className="mt-2">
-              Drawhaus is open-source software. You are free to use, modify, and distribute it
-              under the terms of its license. The source code is available on{" "}
-              <a href="https://github.com/rodacato/drawhaus" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GitHub</a>.
+              Drawhaus is open-source software. You are free to use, modify, and distribute it under
+              the terms of its license. The source code is available on{" "}
+              <a
+                href="https://github.com/rodacato/drawhaus"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                GitHub
+              </a>
+              .
             </p>
           </section>
 
           <section>
-            <h2 className="font-sora text-lg font-semibold text-text-primary">Use at Your Own Risk</h2>
+            <h2 className="font-sora text-lg font-semibold text-text-primary">
+              Use at Your Own Risk
+            </h2>
             <p className="mt-2">
-              This software is provided <strong className="text-text-primary">"as is"</strong>, without warranty of any kind,
-              express or implied, including but not limited to the warranties of merchantability,
-              fitness for a particular purpose, and noninfringement.
+              This software is provided <strong className="text-text-primary">"as is"</strong>,
+              without warranty of any kind, express or implied, including but not limited to the
+              warranties of merchantability, fitness for a particular purpose, and noninfringement.
             </p>
             <p className="mt-2">
               In no event shall the authors or copyright holders be liable for any claim, damages,
               or other liability, whether in an action of contract, tort, or otherwise, arising
-              from, out of, or in connection with the software or the use or other dealings in the software.
+              from, out of, or in connection with the software or the use or other dealings in the
+              software.
             </p>
           </section>
 
           <section>
-            <h2 className="font-sora text-lg font-semibold text-text-primary">Self-Hosted Responsibility</h2>
+            <h2 className="font-sora text-lg font-semibold text-text-primary">
+              Self-Hosted Responsibility
+            </h2>
             <p className="mt-2">
               When you deploy Drawhaus on your own infrastructure, you are solely responsible for:
             </p>
@@ -64,12 +81,21 @@ export function Terms() {
           </section>
 
           <section>
-            <h2 className="font-sora text-lg font-semibold text-text-primary">Third-Party Software</h2>
+            <h2 className="font-sora text-lg font-semibold text-text-primary">
+              Third-Party Software
+            </h2>
             <p className="mt-2">
               Drawhaus is built on top of{" "}
-              <a href="https://excalidraw.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Excalidraw</a>{" "}
-              and other open-source libraries, each with their own licenses and terms. Use of
-              those components is subject to their respective licenses.
+              <a
+                href="https://excalidraw.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Excalidraw
+              </a>{" "}
+              and other open-source libraries, each with their own licenses and terms. Use of those
+              components is subject to their respective licenses.
             </p>
           </section>
 
@@ -77,7 +103,15 @@ export function Terms() {
             <h2 className="font-sora text-lg font-semibold text-text-primary">Contact</h2>
             <p className="mt-2">
               For questions, please open an issue on{" "}
-              <a href="https://github.com/rodacato/drawhaus" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GitHub</a>.
+              <a
+                href="https://github.com/rodacato/drawhaus"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                GitHub
+              </a>
+              .
             </p>
           </section>
         </div>

@@ -76,7 +76,8 @@ describe("layoutGraph", () => {
     const tight = layoutGraph(nodes, edges, "TB", 20, 40);
     const wide = layoutGraph(nodes, edges, "TB", 200, 300);
 
-    const tightGap = tight.nodes.get("B")!.y - (tight.nodes.get("A")!.y + tight.nodes.get("A")!.height);
+    const tightGap =
+      tight.nodes.get("B")!.y - (tight.nodes.get("A")!.y + tight.nodes.get("A")!.height);
     const wideGap = wide.nodes.get("B")!.y - (wide.nodes.get("A")!.y + wide.nodes.get("A")!.height);
 
     assert.ok(wideGap > tightGap, "Wider spacing should produce larger gaps");

@@ -13,7 +13,12 @@ function setup() {
   const users = new InMemoryUserRepository();
   const sessions = new InMemorySessionRepository(() => users.store);
   const hasher = new FakeHasher();
-  const register = new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository());
+  const register = new RegisterUseCase(
+    users,
+    sessions,
+    hasher,
+    new InMemorySiteSettingsRepository(),
+  );
   const login = new LoginUseCase(users, sessions, hasher, new NoopAuditLogger());
   return { users, sessions, register, login };
 }

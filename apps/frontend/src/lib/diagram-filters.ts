@@ -13,7 +13,9 @@ export function filterStarred<T extends WithStarred>(items: readonly T[]): T[] {
   return items.filter((d) => d.starred);
 }
 
-export function isValidExcalidrawFile(data: unknown): data is { type: "excalidraw"; elements: unknown[] } {
+export function isValidExcalidrawFile(
+  data: unknown,
+): data is { type: "excalidraw"; elements: unknown[] } {
   return (
     typeof data === "object" &&
     data !== null &&

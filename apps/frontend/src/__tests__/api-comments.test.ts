@@ -15,7 +15,10 @@ describe("commentsApi", () => {
   test("list includes sceneId when provided", async () => {
     const stub = vi.spyOn(api, "get").mockResolvedValue([]);
     await commentsApi.list("d1", "s1");
-    assert.deepEqual(stub.mock.calls[0], ["/api/diagrams/d1/comments", { params: { sceneId: "s1" } }]);
+    assert.deepEqual(stub.mock.calls[0], [
+      "/api/diagrams/d1/comments",
+      { params: { sceneId: "s1" } },
+    ]);
   });
 
   test("list with null sceneId omits params", async () => {

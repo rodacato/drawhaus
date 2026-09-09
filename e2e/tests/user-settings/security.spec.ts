@@ -1,9 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("User Security Settings", () => {
-  test("POST /api/auth/change-password succeeds with same password", async ({
-    request,
-  }) => {
+  test("POST /api/auth/change-password succeeds with same password", async ({ request }) => {
     const response = await request.post("/api/auth/change-password", {
       data: {
         currentPassword: "Test1234!pass",
@@ -13,9 +11,7 @@ test.describe("User Security Settings", () => {
     expect(response.ok()).toBeTruthy();
   });
 
-  test("POST /api/auth/change-password fails with wrong current password", async ({
-    request,
-  }) => {
+  test("POST /api/auth/change-password fails with wrong current password", async ({ request }) => {
     const response = await request.post("/api/auth/change-password", {
       data: {
         currentPassword: "WrongPassword123!",
@@ -26,9 +22,7 @@ test.describe("User Security Settings", () => {
     expect(response.status()).toBeGreaterThanOrEqual(400);
   });
 
-  test("DELETE /api/auth/account fails with wrong password", async ({
-    request,
-  }) => {
+  test("DELETE /api/auth/account fails with wrong password", async ({ request }) => {
     const response = await request.delete("/api/auth/account", {
       data: {
         password: "WrongPassword123!",

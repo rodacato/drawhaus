@@ -46,44 +46,77 @@ export function createDriveRoutes(
 ) {
   const router = Router();
 
-  router.get("/status", requireAuth, asyncRoute(async (req, res) => {
-    const status = await useCases.getDriveStatus.execute(req.authUser.id);
-    return res.json(status);
-  }));
+  router.get(
+    "/status",
+    requireAuth,
+    asyncRoute(async (req, res) => {
+      const status = await useCases.getDriveStatus.execute(req.authUser.id);
+      return res.json(status);
+    }),
+  );
 
-  router.post("/backup/toggle", requireAuth, validate(toggleSchema), asyncRoute(async (req, res) => {
-    const result = await useCases.toggleDriveBackup.execute(req.authUser.id, req.body.enabled);
-    return res.json(result);
-  }));
+  router.post(
+    "/backup/toggle",
+    requireAuth,
+    validate(toggleSchema),
+    asyncRoute(async (req, res) => {
+      const result = await useCases.toggleDriveBackup.execute(req.authUser.id, req.body.enabled);
+      return res.json(result);
+    }),
+  );
 
-  router.post("/disconnect", requireAuth, asyncRoute(async (req, res) => {
-    await useCases.disconnectDrive.execute(req.authUser.id);
-    return res.json({ success: true });
-  }));
+  router.post(
+    "/disconnect",
+    requireAuth,
+    asyncRoute(async (req, res) => {
+      await useCases.disconnectDrive.execute(req.authUser.id);
+      return res.json({ success: true });
+    }),
+  );
 
-  router.post("/export", requireAuth, validate(exportSchema), asyncRoute(async (req, res) => {
-    const result = await useCases.exportToDrive.execute(req.authUser.id, req.body);
-    return res.json(result);
-  }));
+  router.post(
+    "/export",
+    requireAuth,
+    validate(exportSchema),
+    asyncRoute(async (req, res) => {
+      const result = await useCases.exportToDrive.execute(req.authUser.id, req.body);
+      return res.json(result);
+    }),
+  );
 
-  router.get("/picker-token", requireAuth, asyncRoute(async (req, res) => {
-    const accessToken = await tokenRefresher.getValidAccessToken(req.authUser.id);
-    return res.json({ accessToken });
-  }));
+  router.get(
+    "/picker-token",
+    requireAuth,
+    asyncRoute(async (req, res) => {
+      const accessToken = await tokenRefresher.getValidAccessToken(req.authUser.id);
+      return res.json({ accessToken });
+    }),
+  );
 
-  router.get("/files", requireAuth, asyncRoute(async (req, res) => {
-    const parsed = filesQuerySchema.safeParse(req.query);
-    if (!parsed.success) {
-      return res.status(400).json({ error: "Invalid query", details: z.flattenError(parsed.error) });
-    }
-    const result = await useCases.listDriveFiles.execute(req.authUser.id, parsed.data.folderId);
-    return res.json(result);
-  }));
+  router.get(
+    "/files",
+    requireAuth,
+    asyncRoute(async (req, res) => {
+      const parsed = filesQuerySchema.safeParse(req.query);
+      if (!parsed.success) {
+        return res
+          .status(400)
+          .json({ error: "Invalid query", details: z.flattenError(parsed.error) });
+      }
+      const result = await useCases.listDriveFiles.execute(req.authUser.id, parsed.data.folderId);
+      return res.json(result);
+    }),
+  );
 
-  router.post("/import", requireAuth, validate(importSchema), asyncRoute(async (req, res) => {
-    const result = await useCases.importFromDrive.execute(req.authUser.id, req.body);
-    return res.json(result);
-  }));
+  router.post(
+    "/import",
+    requireAuth,
+    validate(importSchema),
+    asyncRoute(async (req, res) => {
+      const result = await useCases.importFromDrive.execute(req.authUser.id, req.body);
+      return res.json(result);
+    }),
+  );
 
   return router;
 }

@@ -18,24 +18,27 @@ Enables programmatic diagram management for MCP servers, CLI tools, CI/CD pipeli
 
 ## Endpoints
 
-| Method | Path | Description | Use Case |
-|--------|------|-------------|----------|
-| `GET` | `/v1/health` | Health check (no auth) | MCP connectivity check |
-| `POST` | `/v1/diagrams` | Create diagram | CreateDiagramUseCase |
-| `GET` | `/v1/diagrams` | List diagrams in workspace | ListDiagramsUseCase |
-| `GET` | `/v1/diagrams/:id` | Get diagram with elements | GetDiagramUseCase |
-| `PATCH` | `/v1/diagrams/:id` | Update title, elements, appState | UpdateDiagramUseCase |
-| `DELETE` | `/v1/diagrams/:id` | Delete diagram | DeleteDiagramUseCase |
+| Method   | Path               | Description                      | Use Case               |
+| -------- | ------------------ | -------------------------------- | ---------------------- |
+| `GET`    | `/v1/health`       | Health check (no auth)           | MCP connectivity check |
+| `POST`   | `/v1/diagrams`     | Create diagram                   | CreateDiagramUseCase   |
+| `GET`    | `/v1/diagrams`     | List diagrams in workspace       | ListDiagramsUseCase    |
+| `GET`    | `/v1/diagrams/:id` | Get diagram with elements        | GetDiagramUseCase      |
+| `PATCH`  | `/v1/diagrams/:id` | Update title, elements, appState | UpdateDiagramUseCase   |
+| `DELETE` | `/v1/diagrams/:id` | Delete diagram                   | DeleteDiagramUseCase   |
 
 ## Request/Response Examples
 
 ### `GET /v1/health`
+
 No auth required.
+
 ```json
 { "status": "ok", "version": "0.9.x" }
 ```
 
 ### `POST /v1/diagrams`
+
 ```json
 // Request
 {
@@ -57,7 +60,9 @@ No auth required.
 ```
 
 ### `GET /v1/diagrams`
+
 Query params: `folderId`, `limit` (default 50, max 100), `offset`.
+
 ```json
 {
   "data": [
@@ -68,6 +73,7 @@ Query params: `folderId`, `limit` (default 50, max 100), `offset`.
 ```
 
 ### `GET /v1/diagrams/:id`
+
 ```json
 {
   "data": {
@@ -83,7 +89,9 @@ Query params: `folderId`, `limit` (default 50, max 100), `offset`.
 ```
 
 ### `PATCH /v1/diagrams/:id`
+
 All fields optional. At least one required.
+
 ```json
 // Request
 { "title": "Updated Title", "elements": [...] }
@@ -93,6 +101,7 @@ All fields optional. At least one required.
 ```
 
 ### `DELETE /v1/diagrams/:id`
+
 ```json
 // Response 200
 { "data": { "id": "uuid", "deleted": true } }
@@ -116,14 +125,14 @@ Consistent error format with HTTP status codes:
 { "error": "Diagram not found" }
 ```
 
-| Status | When |
-|--------|------|
-| 400 | Missing `X-Drawhaus-Client`, invalid body, validation failure |
-| 401 | Missing/invalid/expired/revoked API key |
-| 403 | Diagram belongs to different workspace than API key scope |
-| 404 | Diagram not found |
-| 429 | Rate limit exceeded |
-| 500 | Internal error |
+| Status | When                                                          |
+| ------ | ------------------------------------------------------------- |
+| 400    | Missing `X-Drawhaus-Client`, invalid body, validation failure |
+| 401    | Missing/invalid/expired/revoked API key                       |
+| 403    | Diagram belongs to different workspace than API key scope     |
+| 404    | Diagram not found                                             |
+| 429    | Rate limit exceeded                                           |
+| 500    | Internal error                                                |
 
 ## Ownership
 

@@ -39,19 +39,13 @@ describe("snapshotsApi", () => {
   test("rename patches name", async () => {
     const stub = vi.spyOn(api, "patch").mockResolvedValue({ snapshot: { id: "s1" } });
     await snapshotsApi.rename("d1", "s1", "new-name");
-    assert.deepEqual(stub.mock.calls[0], [
-      "/api/diagrams/d1/snapshots/s1",
-      { name: "new-name" },
-    ]);
+    assert.deepEqual(stub.mock.calls[0], ["/api/diagrams/d1/snapshots/s1", { name: "new-name" }]);
   });
 
   test("rename accepts null to clear name", async () => {
     const stub = vi.spyOn(api, "patch").mockResolvedValue({ snapshot: { id: "s1" } });
     await snapshotsApi.rename("d1", "s1", null);
-    assert.deepEqual(stub.mock.calls[0], [
-      "/api/diagrams/d1/snapshots/s1",
-      { name: null },
-    ]);
+    assert.deepEqual(stub.mock.calls[0], ["/api/diagrams/d1/snapshots/s1", { name: null }]);
   });
 
   test("delete removes snapshot", async () => {

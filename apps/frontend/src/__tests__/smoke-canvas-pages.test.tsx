@@ -11,30 +11,40 @@ vi.mock("@/components/ExcalidrawCanvas", () => ({
   ExcalidrawCanvas: () => <div data-testid="excalidraw-canvas" />,
 }));
 // convert-to-excalidraw.ts imports the lib directly, which drags in roughjs (unresolvable under jsdom).
-vi.mock("@excalidraw/excalidraw", () => ({ convertToExcalidrawElements: vi.fn((x: unknown) => x) }));
+vi.mock("@excalidraw/excalidraw", () => ({
+  convertToExcalidrawElements: vi.fn((x: unknown) => x),
+}));
 vi.mock("@/lib/services/socket", () => ({ createSocket: () => nextSocket }));
 vi.mock("@/api/share", () => ({
   shareApi: {
-    resolve: vi.fn().mockResolvedValue({ elements: [], appState: {}, role: "viewer", title: "Shared" }),
+    resolve: vi
+      .fn()
+      .mockResolvedValue({ elements: [], appState: {}, role: "viewer", title: "Shared" }),
   },
 }));
 vi.mock("@/api/diagrams", () => ({
   diagramsApi: {
-    get: vi.fn().mockResolvedValue({ diagram: { id: "d1", title: "Board", elements: [], appState: {}, workspaceId: null } }),
+    get: vi.fn().mockResolvedValue({
+      diagram: { id: "d1", title: "Board", elements: [], appState: {}, workspaceId: null },
+    }),
   },
 }));
 vi.mock("@/api/comments", () => ({
   commentsApi: { list: vi.fn().mockResolvedValue({ threads: [] }) },
 }));
 vi.mock("@/api/auth", () => ({
-  authApi: { getMe: vi.fn().mockResolvedValue({ id: "u1", name: "Me", email: "me@x.com", role: "user" }) },
+  authApi: {
+    getMe: vi.fn().mockResolvedValue({ id: "u1", name: "Me", email: "me@x.com", role: "user" }),
+  },
 }));
 
 import { Embed } from "../pages/Embed";
 import { Share } from "../pages/Share";
 import { Board } from "../pages/Board";
 
-beforeEach(() => { nextSocket = createMockSocket(); });
+beforeEach(() => {
+  nextSocket = createMockSocket();
+});
 
 describe("canvas pages — smoke (ExcalidrawCanvas + socket stubbed)", () => {
   test("Embed mounts the canvas once the share resolves", async () => {

@@ -9,11 +9,7 @@
  *  - Single root node requirement
  */
 
-import type {
-  MindmapAST,
-  MindmapNode,
-  MindmapShape,
-} from "./mindmap-types.js";
+import type { MindmapAST, MindmapNode, MindmapShape } from "./mindmap-types.js";
 
 // ── Shape patterns (order by specificity) ────────────────────────
 

@@ -28,10 +28,13 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
     Promise.all([
       templatesApi.list().then((res) => res.templates ?? []),
       workspacesApi.list().then((res) => res.workspaces ?? []),
-    ]).then(([tpls, ws]) => {
-      setTemplates(tpls.filter((t) => !t.isBuiltIn));
-      setWorkspaces(ws);
-    }).catch(() => {}).finally(() => setLoading(false));
+    ])
+      .then(([tpls, ws]) => {
+        setTemplates(tpls.filter((t) => !t.isBuiltIn));
+        setWorkspaces(ws);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const wsMap = new Map(workspaces.map((w) => [w.id, w]));
@@ -68,7 +71,7 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
     try {
       const res = await templatesApi.update(id, { title: newTitle.trim() });
       const updated = res.template ?? res;
-      setTemplates((prev) => prev.map((t) => t.id === id ? { ...t, ...updated } : t));
+      setTemplates((prev) => prev.map((t) => (t.id === id ? { ...t, ...updated } : t)));
     } catch {
       onStatusMessage("Could not rename template.");
     }
@@ -101,7 +104,16 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
               <img src={t.thumbnail} alt="" className="max-h-full max-w-full object-contain" />
             ) : (
               <div className="text-3xl text-gray-300">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="40"
+                  height="40"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <rect x="3" y="3" width="18" height="18" rx="2" />
                   <line x1="3" y1="9" x2="21" y2="9" />
                   <line x1="9" y1="21" x2="9" y2="9" />
@@ -127,7 +139,10 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
             ) : (
               <h3
                 className="mb-1 truncate text-sm font-semibold text-text-primary cursor-pointer hover:text-primary"
-                onDoubleClick={() => { setEditingId(t.id); setEditTitle(t.title); }}
+                onDoubleClick={() => {
+                  setEditingId(t.id);
+                  setEditTitle(t.title);
+                }}
                 title="Double-click to rename"
               >
                 {t.title}
@@ -137,7 +152,9 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
               <p className="mb-2 line-clamp-2 text-xs text-text-muted">{t.description}</p>
             )}
             <div className="mt-auto flex items-center gap-2 flex-wrap">
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${CATEGORY_COLORS[t.category] ?? CATEGORY_COLORS.general}`}>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${CATEGORY_COLORS[t.category] ?? CATEGORY_COLORS.general}`}
+              >
                 {t.category}
               </span>
               <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-medium text-text-muted ring-1 ring-inset ring-border">
@@ -163,7 +180,19 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
               className="rounded-md bg-white px-2 py-1 text-[11px] font-medium text-error shadow-sm ring-1 ring-border transition hover:bg-error/5"
               title="Delete template"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+              </svg>
             </button>
           </div>
         </div>

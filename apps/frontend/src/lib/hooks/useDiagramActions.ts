@@ -7,7 +7,12 @@ import { isValidExcalidrawFile } from "@/lib/diagram-filters";
 import type { Diagram } from "./useDashboardData";
 
 type ToastFn = (msg: string, type?: "success" | "error" | "info") => void;
-type ConfirmFn = (opts: { title: string; message: string; confirmLabel?: string; variant?: "default" | "danger" }) => Promise<boolean>;
+type ConfirmFn = (opts: {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  variant?: "default" | "danger";
+}) => Promise<boolean>;
 
 export interface UseDiagramActionsParams {
   navigate: (path: string) => void;
@@ -21,12 +26,20 @@ export interface UseDiagramActionsParams {
 }
 
 export function useDiagramActions({
-  navigate, toast, confirm, loadData, setDiagrams, diagrams,
-  folderId, activeWorkspaceId,
+  navigate,
+  toast,
+  confirm,
+  loadData,
+  setDiagrams,
+  diagrams,
+  folderId,
+  activeWorkspaceId,
 }: UseDiagramActionsParams) {
   const [actionPending, setActionPending] = useState(false);
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
-  const [templatePickerFolderId, setTemplatePickerFolderId] = useState<string | undefined>(undefined);
+  const [templatePickerFolderId, setTemplatePickerFolderId] = useState<string | undefined>(
+    undefined,
+  );
 
   function openTemplatePicker(targetFolderId?: string) {
     setTemplatePickerFolderId(targetFolderId);
@@ -37,15 +50,29 @@ export function useDiagramActions({
     setTemplatePickerOpen(false);
     setActionPending(true);
     try {
-      const payload = await diagramsApi.create({ title: "Untitled", folderId: templatePickerFolderId ?? folderId ?? undefined, workspaceId: activeWorkspaceId ?? undefined });
+      const payload = await diagramsApi.create({
+        title: "Untitled",
+        folderId: templatePickerFolderId ?? folderId ?? undefined,
+        workspaceId: activeWorkspaceId ?? undefined,
+      });
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
-      else { toast("Diagram created, but missing id.", "info"); loadData(); }
-    } catch { toast("Could not create diagram.", "error"); }
-    finally { setActionPending(false); }
+      else {
+        toast("Diagram created, but missing id.", "info");
+        loadData();
+      }
+    } catch {
+      toast("Could not create diagram.", "error");
+    } finally {
+      setActionPending(false);
+    }
   }
 
-  async function createFromBuiltIn(template: { name: string; elements: unknown[]; appState: Record<string, unknown> }) {
+  async function createFromBuiltIn(template: {
+    name: string;
+    elements: unknown[];
+    appState: Record<string, unknown>;
+  }) {
     setTemplatePickerOpen(false);
     setActionPending(true);
     try {
@@ -58,9 +85,15 @@ export function useDiagramActions({
       });
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
-      else { toast("Diagram created, but missing id.", "info"); loadData(); }
-    } catch { toast("Could not create diagram.", "error"); }
-    finally { setActionPending(false); }
+      else {
+        toast("Diagram created, but missing id.", "info");
+        loadData();
+      }
+    } catch {
+      toast("Could not create diagram.", "error");
+    } finally {
+      setActionPending(false);
+    }
   }
 
   async function createFromTemplate(templateId: string, title: string) {
@@ -74,9 +107,15 @@ export function useDiagramActions({
       });
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
-      else { toast("Diagram created, but missing id.", "info"); loadData(); }
-    } catch { toast("Could not create diagram.", "error"); }
-    finally { setActionPending(false); }
+      else {
+        toast("Diagram created, but missing id.", "info");
+        loadData();
+      }
+    } catch {
+      toast("Could not create diagram.", "error");
+    } finally {
+      setActionPending(false);
+    }
   }
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
@@ -93,20 +132,38 @@ export function useDiagramActions({
         return;
       }
       const title = file.name.replace(/\.(excalidraw|json)$/i, "") || "Imported";
-      const payload = await diagramsApi.create({ title, folderId: folderId ?? undefined, workspaceId: activeWorkspaceId ?? undefined, elements: data.elements });
+      const payload = await diagramsApi.create({
+        title,
+        folderId: folderId ?? undefined,
+        workspaceId: activeWorkspaceId ?? undefined,
+        elements: data.elements,
+      });
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
-      else { toast("Imported, but missing id.", "info"); loadData(); }
+      else {
+        toast("Imported, but missing id.", "info");
+        loadData();
+      }
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       if (status === 413) toast("File is too large to import. Try a smaller diagram.", "error");
       else toast("Could not read file.", "error");
+    } finally {
+      setActionPending(false);
     }
-    finally { setActionPending(false); }
   }
 
-  async function moveDiagram(diagramId: string, targetFolderId: string | null, workspaceId?: string) {
-    try { await diagramsApi.move(diagramId, targetFolderId, workspaceId); loadData(); } catch { /* silent */ }
+  async function moveDiagram(
+    diagramId: string,
+    targetFolderId: string | null,
+    workspaceId?: string,
+  ) {
+    try {
+      await diagramsApi.move(diagramId, targetFolderId, workspaceId);
+      loadData();
+    } catch {
+      /* silent */
+    }
   }
 
   async function deleteDiagram(diagramId: string, title: string) {
@@ -121,7 +178,9 @@ export function useDiagramActions({
       await diagramsApi.delete(diagramId);
       toast("Diagram deleted");
       loadData();
-    } catch { toast("Failed to delete diagram.", "error"); }
+    } catch {
+      toast("Failed to delete diagram.", "error");
+    }
   }
 
   async function duplicateDiagram(diagramId: string) {
@@ -130,14 +189,18 @@ export function useDiagramActions({
       const id = payload.diagram?.id;
       if (id) navigate(`/board/${id}`);
       else loadData();
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   async function toggleStar(diagramId: string, starred: boolean) {
     try {
       await diagramsApi.toggleStar(diagramId, starred);
-      setDiagrams((prev) => prev.map((d) => d.id === diagramId ? { ...d, starred } : d));
-    } catch { /* silent */ }
+      setDiagrams((prev) => prev.map((d) => (d.id === diagramId ? { ...d, starred } : d)));
+    } catch {
+      /* silent */
+    }
   }
 
   async function embedDiagram(diagramId: string) {
@@ -149,13 +212,19 @@ export function useDiagramActions({
         const token = payload.shareLink?.token;
         if (!token) return;
         url = `${globalThis.location.origin}/share/${token}`;
-        try { localStorage.setItem(cacheKey, url); } catch { /* quota */ }
+        try {
+          localStorage.setItem(cacheKey, url);
+        } catch {
+          /* quota */
+        }
       }
       const embedUrl = url.replace("/share/", "/embed/");
       const snippet = `<iframe src="${embedUrl}" width="100%" height="400" style="border:none;border-radius:8px;" loading="lazy"></iframe>`;
       await navigator.clipboard.writeText(snippet);
       toast("Embed code copied!");
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   async function renameDiagram(diagramId: string, newTitle: string) {
@@ -163,8 +232,10 @@ export function useDiagramActions({
     if (!title) return;
     try {
       await diagramsApi.update(diagramId, { title });
-      setDiagrams((prev) => prev.map((d) => d.id === diagramId ? { ...d, title } : d));
-    } catch { /* silent */ }
+      setDiagrams((prev) => prev.map((d) => (d.id === diagramId ? { ...d, title } : d)));
+    } catch {
+      /* silent */
+    }
   }
 
   async function saveAsTemplate(diagramId: string, title: string) {
@@ -179,7 +250,9 @@ export function useDiagramActions({
         thumbnail: d.thumbnail ?? null,
       });
       toast("Template saved!");
-    } catch { toast("Could not save template.", "error"); }
+    } catch {
+      toast("Could not save template.", "error");
+    }
   }
 
   async function createFolder(name: string) {
@@ -187,13 +260,18 @@ export function useDiagramActions({
     try {
       await foldersApi.create(name.trim(), activeWorkspaceId ?? undefined);
       loadData();
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   async function deleteFolder(id: string, setSearchParams: (p: Record<string, string>) => void) {
     const hasDiagrams = diagrams.some((d) => d.folderId === id);
     if (hasDiagrams) {
-      toast("Cannot delete this folder because it still contains diagrams. Move or delete them first.", "error");
+      toast(
+        "Cannot delete this folder because it still contains diagrams. Move or delete them first.",
+        "error",
+      );
       return;
     }
     const ok = await confirm({
@@ -208,7 +286,9 @@ export function useDiagramActions({
       if (folderId === id) setSearchParams({});
       toast("Folder deleted");
       loadData();
-    } catch { toast("Failed to delete folder.", "error"); }
+    } catch {
+      toast("Failed to delete folder.", "error");
+    }
   }
 
   const diagramActions = {
@@ -223,11 +303,15 @@ export function useDiagramActions({
 
   return {
     actionPending,
-    templatePickerOpen, setTemplatePickerOpen,
+    templatePickerOpen,
+    setTemplatePickerOpen,
     openTemplatePicker,
-    createBlankDiagram, createFromBuiltIn, createFromTemplate,
+    createBlankDiagram,
+    createFromBuiltIn,
+    createFromTemplate,
     handleImport,
-    createFolder, deleteFolder,
+    createFolder,
+    deleteFolder,
     diagramActions,
   };
 }

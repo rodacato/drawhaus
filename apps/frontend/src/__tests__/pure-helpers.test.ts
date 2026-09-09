@@ -1,5 +1,9 @@
 import { describe, test, expect } from "vitest";
-import { filterBuiltIn, filterByCategory, emptyCategoryMessage } from "../components/TemplatePicker";
+import {
+  filterBuiltIn,
+  filterByCategory,
+  emptyCategoryMessage,
+} from "../components/TemplatePicker";
 import { computeLinkBadge } from "../components/ShareModal";
 import { syncLabel } from "../components/DriveSyncBadge";
 import { connectionLabel } from "../components/ConnectionBadge";
@@ -7,15 +11,9 @@ import { timeAgo } from "../components/OfflineRecoveryDialog";
 import type { BuiltInTemplate } from "../data/templates";
 import type { TemplateDTO } from "../api/templates";
 
-const builtIns = [
-  { category: "flowchart" },
-  { category: "uml" },
-] as unknown as BuiltInTemplate[];
+const builtIns = [{ category: "flowchart" }, { category: "uml" }] as unknown as BuiltInTemplate[];
 
-const dtos = [
-  { category: "custom" },
-  { category: "uml" },
-] as unknown as TemplateDTO[];
+const dtos = [{ category: "custom" }, { category: "uml" }] as unknown as TemplateDTO[];
 
 describe("TemplatePicker.filterBuiltIn", () => {
   test("returns all for 'all'", () => {
@@ -52,7 +50,13 @@ describe("TemplatePicker.emptyCategoryMessage", () => {
 });
 
 describe("ShareModal.computeLinkBadge", () => {
-  const link = (expiresAt: string | null) => ({ token: "t", diagramId: "d", role: "viewer", expiresAt, createdAt: "2026-01-01" });
+  const link = (expiresAt: string | null) => ({
+    token: "t",
+    diagramId: "d",
+    role: "viewer",
+    expiresAt,
+    createdAt: "2026-01-01",
+  });
 
   test("Active when there is no expiry", () => {
     expect(computeLinkBadge(link(null)).badgeText).toBe("Active");

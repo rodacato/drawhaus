@@ -30,7 +30,11 @@ export class SyncToDriveUseCase {
       // Ensure root folder
       let rootFolderId = settings.rootFolderId;
       if (!rootFolderId) {
-        const rootFolder = await this.driveService.ensureFolder(accessToken, "Drawhaus Backups", null);
+        const rootFolder = await this.driveService.ensureFolder(
+          accessToken,
+          "Drawhaus Backups",
+          null,
+        );
         rootFolderId = rootFolder.id;
         await this.driveBackupRepo.upsertSettings(ownerId, { enabled: true, rootFolderId });
       }
@@ -46,16 +50,24 @@ export class SyncToDriveUseCase {
         if (folder) subfolderName = folder.name;
       }
 
-      const subfolder = await this.driveService.ensureFolder(accessToken, subfolderName, rootFolderId);
+      const subfolder = await this.driveService.ensureFolder(
+        accessToken,
+        subfolderName,
+        rootFolderId,
+      );
 
       // Build .excalidraw JSON
-      const excalidrawData = JSON.stringify({
-        type: "excalidraw",
-        version: 2,
-        source: "drawhaus",
-        elements,
-        appState: { ...appState, collaborators: undefined },
-      }, null, 2);
+      const excalidrawData = JSON.stringify(
+        {
+          type: "excalidraw",
+          version: 2,
+          source: "drawhaus",
+          elements,
+          appState: { ...appState, collaborators: undefined },
+        },
+        null,
+        2,
+      );
 
       const fileName = `${diagram.title || "Untitled"}.excalidraw`;
 

@@ -16,7 +16,8 @@ type UserRow = {
   created_at: string;
 };
 
-const SELECT_COLS = "id, email, name, password_hash, role, disabled, google_id, github_id, github_username, avatar_url, created_at";
+const SELECT_COLS =
+  "id, email, name, password_hash, role, disabled, google_id, github_id, github_username, avatar_url, created_at";
 
 function toDomain(row: UserRow): User {
   return {
@@ -67,17 +68,41 @@ export class PgUserRepository implements UserRepository {
     return rows[0] ? toDomain(rows[0]) : null;
   }
 
-  async create(data: { email: string; name: string; passwordHash: string | null; googleId?: string; githubId?: string; githubUsername?: string; avatarUrl?: string }): Promise<User> {
+  async create(data: {
+    email: string;
+    name: string;
+    passwordHash: string | null;
+    googleId?: string;
+    githubId?: string;
+    githubUsername?: string;
+    avatarUrl?: string;
+  }): Promise<User> {
     const { rows } = await pool.query<UserRow>(
       `INSERT INTO users (email, name, password_hash, google_id, github_id, github_username, avatar_url)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING ${SELECT_COLS}`,
-      [data.email, data.name, data.passwordHash, data.googleId ?? null, data.githubId ?? null, data.githubUsername ?? null, data.avatarUrl ?? null],
+      [
+        data.email,
+        data.name,
+        data.passwordHash,
+        data.googleId ?? null,
+        data.githubId ?? null,
+        data.githubUsername ?? null,
+        data.avatarUrl ?? null,
+      ],
     );
     return toDomain(rows[0]);
   }
 
-  async update(id: string, data: Partial<Pick<User, "email" | "name" | "passwordHash" | "googleId" | "githubId" | "githubUsername" | "avatarUrl">>): Promise<User | null> {
+  async update(
+    id: string,
+    data: Partial<
+      Pick<
+        User,
+        "email" | "name" | "passwordHash" | "googleId" | "githubId" | "githubUsername" | "avatarUrl"
+      >
+    >,
+  ): Promise<User | null> {
     const updates: string[] = [];
     const values: unknown[] = [];
     let index = 1;
@@ -144,7 +169,10 @@ export class PgUserRepository implements UserRepository {
     });
   }
 
-  async adminUpdate(id: string, data: { role?: UserRole; disabled?: boolean }): Promise<User | null> {
+  async adminUpdate(
+    id: string,
+    data: { role?: UserRole; disabled?: boolean },
+  ): Promise<User | null> {
     const updates: string[] = [];
     const values: unknown[] = [];
     let index = 1;

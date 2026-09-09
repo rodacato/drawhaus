@@ -21,7 +21,14 @@ export class InMemoryWorkspaceRepository implements WorkspaceRepository {
     return this.store.find((w) => w.ownerId === userId && w.isPersonal) ?? null;
   }
 
-  async create(data: { name: string; description?: string; ownerId: string; isPersonal?: boolean; color?: string; icon?: string }): Promise<Workspace> {
+  async create(data: {
+    name: string;
+    description?: string;
+    ownerId: string;
+    isPersonal?: boolean;
+    color?: string;
+    icon?: string;
+  }): Promise<Workspace> {
     const workspace: Workspace = {
       id: crypto.randomUUID(),
       name: data.name,
@@ -45,7 +52,10 @@ export class InMemoryWorkspaceRepository implements WorkspaceRepository {
     return workspace;
   }
 
-  async update(id: string, data: Partial<Pick<Workspace, "name" | "description" | "color" | "icon">>): Promise<Workspace | null> {
+  async update(
+    id: string,
+    data: Partial<Pick<Workspace, "name" | "description" | "color" | "icon">>,
+  ): Promise<Workspace | null> {
     const workspace = this.store.find((w) => w.id === id);
     if (!workspace) return null;
     if (data.name !== undefined) workspace.name = data.name;
@@ -66,7 +76,9 @@ export class InMemoryWorkspaceRepository implements WorkspaceRepository {
     return member?.role ?? null;
   }
 
-  async findMembers(workspaceId: string): Promise<(WorkspaceMember & { userName: string; userEmail: string })[]> {
+  async findMembers(
+    workspaceId: string,
+  ): Promise<(WorkspaceMember & { userName: string; userEmail: string })[]> {
     return this.members.filter((m) => m.workspaceId === workspaceId);
   }
 
@@ -92,7 +104,9 @@ export class InMemoryWorkspaceRepository implements WorkspaceRepository {
   }
 
   async removeMember(workspaceId: string, userId: string): Promise<void> {
-    this.members = this.members.filter((m) => !(m.workspaceId === workspaceId && m.userId === userId));
+    this.members = this.members.filter(
+      (m) => !(m.workspaceId === workspaceId && m.userId === userId),
+    );
   }
 
   async countByOwner(userId: string): Promise<number> {
@@ -115,7 +129,9 @@ export class InMemoryWorkspaceRepository implements WorkspaceRepository {
 
     // Demote old owner to admin (keep as member)
     if (oldOwnerId !== newOwnerId) {
-      const oldMember = this.members.find((m) => m.workspaceId === workspaceId && m.userId === oldOwnerId);
+      const oldMember = this.members.find(
+        (m) => m.workspaceId === workspaceId && m.userId === oldOwnerId,
+      );
       if (oldMember) oldMember.role = "admin";
     }
   }

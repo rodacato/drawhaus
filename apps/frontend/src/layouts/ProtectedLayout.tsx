@@ -12,7 +12,8 @@ export function ProtectedLayout() {
   const [showSetupBanner, setShowSetupBanner] = useState(false);
 
   useEffect(() => {
-    siteApi.getStatus()
+    siteApi
+      .getStatus()
       .then((data) => setMaintenance(data.maintenanceMode))
       .catch(() => {})
       .finally(() => setStatusLoaded(true));
@@ -20,8 +21,11 @@ export function ProtectedLayout() {
 
   useEffect(() => {
     if (user?.role === "admin") {
-      setupApi.getStatus()
-        .then((status) => setShowSetupBanner(status.setupSkippedIntegrations === true && status.setupCompleted))
+      setupApi
+        .getStatus()
+        .then((status) =>
+          setShowSetupBanner(status.setupSkippedIntegrations === true && status.setupCompleted),
+        )
         .catch(() => {});
     }
   }, [user]);

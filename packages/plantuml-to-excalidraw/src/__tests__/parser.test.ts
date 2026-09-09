@@ -6,7 +6,16 @@ import {
   PlantUMLParseError,
   PlantUMLUnsupportedError,
 } from "../parser/index.js";
-import type { ClassDiagramAST, ObjectDiagramAST, UseCaseDiagramAST, StateDiagramAST, ComponentDiagramAST, DeploymentDiagramAST, SequenceDiagramAST, MindmapDiagramAST } from "../parser/types.js";
+import type {
+  ClassDiagramAST,
+  ObjectDiagramAST,
+  UseCaseDiagramAST,
+  StateDiagramAST,
+  ComponentDiagramAST,
+  DeploymentDiagramAST,
+  SequenceDiagramAST,
+  MindmapDiagramAST,
+} from "../parser/types.js";
 
 function parseClass(code: string): ClassDiagramAST {
   const ast = parsePlantUML(code);
@@ -106,7 +115,7 @@ describe("parsePlantUML", () => {
   });
 
   test("parses relation with label", () => {
-    const code = '@startuml\nclass A\nclass B\nA --> B : uses\n@enduml';
+    const code = "@startuml\nclass A\nclass B\nA --> B : uses\n@enduml";
     const ast = parseClass(code);
     assert.equal(ast.relations[0].label, "uses");
   });
@@ -324,7 +333,7 @@ User --> UC1
     const ast = parseUseCase(code);
     assert.equal(ast.boundaries.length, 1);
     assert.equal(ast.boundaries[0].name, "System");
-    assert.equal(ast.useCases.filter(uc => uc.boundary === "System").length, 2);
+    assert.equal(ast.useCases.filter((uc) => uc.boundary === "System").length, 2);
   });
 
   test("parses simple relation", () => {
@@ -335,14 +344,14 @@ User --> UC1
   });
 
   test("parses include stereotype", () => {
-    const code = '@startuml\nusecase Login\nusecase Auth\nLogin ..> Auth : <<include>>\n@enduml';
+    const code = "@startuml\nusecase Login\nusecase Auth\nLogin ..> Auth : <<include>>\n@enduml";
     const ast = parseUseCase(code);
     assert.equal(ast.relations[0].relationType, "include");
     assert.equal(ast.relations[0].stereotype, "include");
   });
 
   test("parses extend stereotype", () => {
-    const code = '@startuml\nusecase Login\nusecase SSO\nSSO ..> Login : <<extend>>\n@enduml';
+    const code = "@startuml\nusecase Login\nusecase SSO\nSSO ..> Login : <<extend>>\n@enduml";
     const ast = parseUseCase(code);
     assert.equal(ast.relations[0].relationType, "extend");
   });
@@ -436,7 +445,7 @@ state "Not Started" as NS
 [*] --> NS
 @enduml`;
     const ast = parseState(code);
-    const ns = ast.states.find(s => s.name === "NS");
+    const ns = ast.states.find((s) => s.name === "NS");
     assert.ok(ns);
     assert.equal(ns!.kind, "simple");
     if (ns!.kind === "simple") {
@@ -450,7 +459,7 @@ state Idle : waiting for input
 [*] --> Idle
 @enduml`;
     const ast = parseState(code);
-    const idle = ast.states.find(s => s.name === "Idle");
+    const idle = ast.states.find((s) => s.name === "Idle");
     assert.ok(idle);
     if (idle!.kind === "simple") {
       assert.equal(idle!.description, "waiting for input");
@@ -470,7 +479,7 @@ Active --> [*]
 @enduml`;
     const ast = parseState(code);
 
-    const active = ast.states.find(s => s.name === "Active");
+    const active = ast.states.find((s) => s.name === "Active");
     assert.ok(active);
     assert.equal(active!.kind, "composite");
     if (active!.kind === "composite") {
@@ -490,7 +499,7 @@ state "Processing Phase" as Proc {
 }
 @enduml`;
     const ast = parseState(code);
-    const proc = ast.states.find(s => s.name === "Proc");
+    const proc = ast.states.find((s) => s.name === "Proc");
     assert.ok(proc);
     assert.equal(proc!.kind, "composite");
     if (proc!.kind === "composite") {
@@ -575,7 +584,7 @@ component MyService
 [Client] --> MyService
 @enduml`;
     const ast = parseComponent(code);
-    assert.ok(ast.components.some(c => c.name === "MyService"));
+    assert.ok(ast.components.some((c) => c.name === "MyService"));
   });
 
   test("parses package container with children", () => {
@@ -641,8 +650,8 @@ package "API" {
 @enduml`;
     const ast = parseComponent(code);
     // Handler and Logic should appear as both container children and global components
-    assert.ok(ast.components.some(c => c.name === "Handler"));
-    assert.ok(ast.components.some(c => c.name === "Logic"));
+    assert.ok(ast.components.some((c) => c.name === "Handler"));
+    assert.ok(ast.components.some((c) => c.name === "Logic"));
     assert.equal(ast.containers[0].children.length, 2);
   });
 });
@@ -694,7 +703,7 @@ storage data
 webapp --> data
 @enduml`;
     const ast = parseDeployment(code);
-    const webapp = ast.nodes.find(n => n.name === "webapp");
+    const webapp = ast.nodes.find((n) => n.name === "webapp");
     assert.ok(webapp);
     assert.equal(webapp!.label, "Web Application");
   });
@@ -745,7 +754,7 @@ agent worker
 events --> worker
 @enduml`;
     const ast = parseDeployment(code);
-    const kindSet = new Set(ast.nodes.map(n => n.kind));
+    const kindSet = new Set(ast.nodes.map((n) => n.kind));
     assert.ok(kindSet.has("queue"));
     assert.ok(kindSet.has("stack"));
     assert.ok(kindSet.has("card"));

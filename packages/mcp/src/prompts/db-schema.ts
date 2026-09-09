@@ -6,7 +6,11 @@ export function registerDbSchemaPrompt(server: McpServer) {
   server.prompt(
     "db_schema_diagram",
     "Generate a database schema diagram from table definitions. Provide table names or paste SQL schema.",
-    { tables: z.string().describe("Comma-separated table names, or paste your schema/migration SQL") },
+    {
+      tables: z
+        .string()
+        .describe("Comma-separated table names, or paste your schema/migration SQL"),
+    },
     ({ tables }) => ({
       messages: [
         {

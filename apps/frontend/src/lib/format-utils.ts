@@ -29,17 +29,18 @@ export function formatSize(size?: string): string {
 }
 
 export function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 export type DiagramFormat = "mermaid" | "plantuml";
 
 export function detectDiagramFormat(code: string): DiagramFormat {
   const trimmed = code.trimStart();
-  if (
-    trimmed.startsWith("@startuml") ||
-    trimmed.startsWith("@startactivity")
-  ) {
+  if (trimmed.startsWith("@startuml") || trimmed.startsWith("@startactivity")) {
     return "plantuml";
   }
   return "mermaid";

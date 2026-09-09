@@ -4,14 +4,17 @@ export const diagramsApi = {
   list: (params?: { folderId?: string; workspaceId?: string }) =>
     api.get("/api/diagrams", { params }),
 
-  search: (q: string) =>
-    api.get("/api/diagrams/search", { params: { q } }),
+  search: (q: string) => api.get("/api/diagrams/search", { params: { q } }),
 
-  get: (id: string) =>
-    api.get(`/api/diagrams/${id}`),
+  get: (id: string) => api.get(`/api/diagrams/${id}`),
 
-  create: (data: { title?: string; elements?: unknown; appState?: unknown; folderId?: string; workspaceId?: string }) =>
-    api.post("/api/diagrams", data),
+  create: (data: {
+    title?: string;
+    elements?: unknown;
+    appState?: unknown;
+    folderId?: string;
+    workspaceId?: string;
+  }) => api.post("/api/diagrams", data),
 
   update: (id: string, data: { title?: string; elements?: unknown; appState?: unknown }) =>
     api.patch(`/api/diagrams/${id}`, data),
@@ -22,12 +25,9 @@ export const diagramsApi = {
   move: (id: string, folderId: string | null, workspaceId?: string) =>
     api.post(`/api/diagrams/${id}/move`, { folderId, ...(workspaceId && { workspaceId }) }),
 
-  delete: (id: string) =>
-    api.delete(`/api/diagrams/${id}`),
+  delete: (id: string) => api.delete(`/api/diagrams/${id}`),
 
-  duplicate: (id: string) =>
-    api.post(`/api/diagrams/${id}/duplicate`),
+  duplicate: (id: string) => api.post(`/api/diagrams/${id}/duplicate`),
 
-  toggleStar: (id: string, starred: boolean) =>
-    api.patch(`/api/diagrams/${id}/star`, { starred }),
+  toggleStar: (id: string, starred: boolean) => api.patch(`/api/diagrams/${id}/star`, { starred }),
 };

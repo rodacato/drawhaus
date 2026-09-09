@@ -74,7 +74,11 @@ export class InMemoryCommentRepository implements CommentRepository {
     };
   }
 
-  async findByDiagram(diagramId: string, sceneId?: string | null, currentUserId?: string): Promise<CommentThread[]> {
+  async findByDiagram(
+    diagramId: string,
+    sceneId?: string | null,
+    currentUserId?: string,
+  ): Promise<CommentThread[]> {
     const matching = this.threads.filter((t) => {
       if (t.diagramId !== diagramId) return false;
       if (sceneId) return t.sceneId === sceneId || t.sceneId === null;
@@ -89,7 +93,13 @@ export class InMemoryCommentRepository implements CommentRepository {
     return t ? this.toDomain(t, currentUserId) : null;
   }
 
-  async createThread(data: { diagramId: string; sceneId?: string | null; elementId: string; authorId: string; body: string }): Promise<CommentThread> {
+  async createThread(data: {
+    diagramId: string;
+    sceneId?: string | null;
+    elementId: string;
+    authorId: string;
+    body: string;
+  }): Promise<CommentThread> {
     const now = new Date();
     const record: ThreadRecord = {
       id: crypto.randomUUID(),
@@ -108,7 +118,11 @@ export class InMemoryCommentRepository implements CommentRepository {
     return this.toDomain(record, data.authorId);
   }
 
-  async addReply(data: { threadId: string; authorId: string; body: string }): Promise<CommentReply> {
+  async addReply(data: {
+    threadId: string;
+    authorId: string;
+    body: string;
+  }): Promise<CommentReply> {
     const thread = this.threads.find((t) => t.id === data.threadId);
     if (!thread) throw new Error("Thread not found");
     const reply: ReplyRecord = {

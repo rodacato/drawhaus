@@ -15,21 +15,66 @@ const metricCards = [
   {
     key: "totalUsers" as const,
     label: "Total Users",
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
     color: "text-primary",
     bg: "bg-primary/10",
   },
   {
     key: "totalDiagrams" as const,
     label: "Total Diagrams",
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></svg>,
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+        <line x1="3" y1="9" x2="21" y2="9" />
+        <line x1="9" y1="21" x2="9" y2="9" />
+      </svg>
+    ),
     color: "text-accent-coral",
     bg: "bg-accent-coral/10",
   },
   {
     key: "activeSessions" as const,
     label: "Active Sessions",
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    ),
     color: "text-success",
     bg: "bg-success/10",
   },
@@ -45,7 +90,20 @@ function ApiMetricsCards({ metrics }: { readonly metrics: Metrics }) {
         <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-violet-500/5 transition-colors group-hover:bg-violet-500/10" />
         <div className="relative z-10">
           <div className="mb-2 text-violet-600">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+              <line x1="12" y1="22.08" x2="12" y2="12" />
+            </svg>
           </div>
           <p className={ui.muted}>Diagrams via API</p>
           <div className="mt-1 flex items-baseline gap-2">
@@ -60,11 +118,24 @@ function ApiMetricsCards({ metrics }: { readonly metrics: Metrics }) {
         <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-violet-500/5 transition-colors group-hover:bg-violet-500/10" />
         <div className="relative z-10">
           <div className="mb-2 text-violet-600">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
           </div>
           <p className={ui.muted}>API Requests (24h)</p>
           <div className="mt-1 flex items-baseline gap-2">
-            <p className="text-3xl font-bold text-text-primary">{(metrics.apiRequests24h ?? 0).toLocaleString()}</p>
+            <p className="text-3xl font-bold text-text-primary">
+              {(metrics.apiRequests24h ?? 0).toLocaleString()}
+            </p>
           </div>
         </div>
       </div>
@@ -80,14 +151,19 @@ export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId
   const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {
-    adminApi.getMetrics().then((data) => setMetrics(data.metrics ?? data)).catch(() => {});
+    adminApi
+      .getMetrics()
+      .then((data) => setMetrics(data.metrics ?? data))
+      .catch(() => {});
   }, []);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-text-primary">Admin Dashboard</h1>
-        <p className={ui.subtitle}>Welcome back. Here is what is happening with your Drawhaus instance today.</p>
+        <p className={ui.subtitle}>
+          Welcome back. Here is what is happening with your Drawhaus instance today.
+        </p>
       </div>
       {metrics && (
         <div className="grid grid-cols-3 gap-4">
@@ -98,7 +174,9 @@ export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId
                 <div className={`mb-2 ${card.color}`}>{card.icon}</div>
                 <p className={ui.muted}>{card.label}</p>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <p className="text-3xl font-bold text-text-primary">{(metrics[card.key] ?? 0).toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-text-primary">
+                    {(metrics[card.key] ?? 0).toLocaleString()}
+                  </p>
                 </div>
               </div>
             </div>
@@ -107,10 +185,28 @@ export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId
       )}
       {metrics && <ApiMetricsCards metrics={metrics} />}
       <div className="grid grid-cols-2 gap-4">
-        <button onClick={() => onNavigate("admin-users")} className={`${ui.card} block text-left hover:border-primary transition-colors`} type="button">
+        <button
+          onClick={() => onNavigate("admin-users")}
+          className={`${ui.card} block text-left hover:border-primary transition-colors`}
+          type="button"
+        >
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
             </div>
             <div>
               <h2 className={ui.h2}>Users</h2>
@@ -118,10 +214,26 @@ export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId
             </div>
           </div>
         </button>
-        <button onClick={() => onNavigate("admin-site")} className={`${ui.card} block text-left hover:border-primary transition-colors`} type="button">
+        <button
+          onClick={() => onNavigate("admin-site")}
+          className={`${ui.card} block text-left hover:border-primary transition-colors`}
+          type="button"
+        >
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-coral/10 text-accent-coral">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
             </div>
             <div>
               <h2 className={ui.h2}>Site Settings</h2>
@@ -129,10 +241,27 @@ export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId
             </div>
           </div>
         </button>
-        <button onClick={() => onNavigate("admin-style")} className={`${ui.card} block text-left hover:border-primary transition-colors`} type="button">
+        <button
+          onClick={() => onNavigate("admin-style")}
+          className={`${ui.card} block text-left hover:border-primary transition-colors`}
+          type="button"
+        >
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-yellow/10 text-accent-yellow">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
             </div>
             <div>
               <h2 className={ui.h2}>Style Guide</h2>
@@ -141,7 +270,6 @@ export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId
           </div>
         </button>
       </div>
-
     </div>
   );
 }
@@ -150,14 +278,19 @@ export function AdminDashboard() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {
-    adminApi.getMetrics().then((data) => setMetrics(data.metrics ?? data)).catch(() => {});
+    adminApi
+      .getMetrics()
+      .then((data) => setMetrics(data.metrics ?? data))
+      .catch(() => {});
   }, []);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-text-primary">Admin Dashboard</h1>
-        <p className={ui.subtitle}>Welcome back. Here is what is happening with your Drawhaus instance today.</p>
+        <p className={ui.subtitle}>
+          Welcome back. Here is what is happening with your Drawhaus instance today.
+        </p>
       </div>
       {metrics && (
         <div className="grid grid-cols-3 gap-4">
@@ -168,7 +301,9 @@ export function AdminDashboard() {
                 <div className={`mb-2 ${card.color}`}>{card.icon}</div>
                 <p className={ui.muted}>{card.label}</p>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <p className="text-3xl font-bold text-text-primary">{(metrics[card.key] ?? 0).toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-text-primary">
+                    {(metrics[card.key] ?? 0).toLocaleString()}
+                  </p>
                 </div>
               </div>
             </div>
@@ -177,10 +312,27 @@ export function AdminDashboard() {
       )}
       {metrics && <ApiMetricsCards metrics={metrics} />}
       <div className="grid grid-cols-2 gap-4">
-        <Link to="/admin/users" className={`${ui.card} block hover:border-primary transition-colors`}>
+        <Link
+          to="/admin/users"
+          className={`${ui.card} block hover:border-primary transition-colors`}
+        >
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
             </div>
             <div>
               <h2 className={ui.h2}>Users</h2>
@@ -188,10 +340,25 @@ export function AdminDashboard() {
             </div>
           </div>
         </Link>
-        <Link to="/admin/settings" className={`${ui.card} block hover:border-primary transition-colors`}>
+        <Link
+          to="/admin/settings"
+          className={`${ui.card} block hover:border-primary transition-colors`}
+        >
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-coral/10 text-accent-coral">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
             </div>
             <div>
               <h2 className={ui.h2}>Site Settings</h2>
@@ -199,10 +366,26 @@ export function AdminDashboard() {
             </div>
           </div>
         </Link>
-        <Link to="/admin/style-guide" className={`${ui.card} block hover:border-primary transition-colors`}>
+        <Link
+          to="/admin/style-guide"
+          className={`${ui.card} block hover:border-primary transition-colors`}
+        >
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-yellow/10 text-accent-yellow">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
             </div>
             <div>
               <h2 className={ui.h2}>Style Guide</h2>
@@ -211,7 +394,6 @@ export function AdminDashboard() {
           </div>
         </Link>
       </div>
-
     </div>
   );
 }

@@ -7,7 +7,7 @@ test.describe("Folders", () => {
   test.beforeAll(async ({ request }) => {
     // Get the user's personal workspace
     const res = await request.get("/api/workspaces");
-    const workspaces = (await res.json()).workspaces ?? await res.json();
+    const workspaces = (await res.json()).workspaces ?? (await res.json());
     const personal = workspaces.find((w: any) => w.is_personal || w.isPersonal);
     workspaceId = personal?.id ?? workspaces[0]?.id;
   });
@@ -43,7 +43,7 @@ test.describe("Folders", () => {
     const createRes = await request.post("/api/folders", {
       data: { name: "Rename Me", workspaceId },
     });
-    const folder = (await createRes.json()).folder ?? await createRes.json();
+    const folder = (await createRes.json()).folder ?? (await createRes.json());
 
     const renameRes = await request.patch(`/api/folders/${folder.id}`, {
       data: { name: "Renamed Folder" },
@@ -59,7 +59,7 @@ test.describe("Folders", () => {
     const createRes = await request.post("/api/folders", {
       data: { name: "Delete Me Folder", workspaceId },
     });
-    const folder = (await createRes.json()).folder ?? await createRes.json();
+    const folder = (await createRes.json()).folder ?? (await createRes.json());
 
     const deleteRes = await request.delete(`/api/folders/${folder.id}`);
     expect(deleteRes.ok()).toBeTruthy();
@@ -71,7 +71,7 @@ test.describe("Folders", () => {
     const folderRes = await request.post("/api/folders", {
       data: { name: "Move Target Folder", workspaceId },
     });
-    const folder = (await folderRes.json()).folder ?? await folderRes.json();
+    const folder = (await folderRes.json()).folder ?? (await folderRes.json());
     const diagram = await createDiagram(request, "Move Me Diagram");
 
     const moveRes = await request.post(`/api/diagrams/${diagram.id}/move`, {
@@ -93,7 +93,7 @@ test.describe("Folders", () => {
     const folderRes = await request.post("/api/folders", {
       data: { name: "Filter Folder", workspaceId },
     });
-    const folder = (await folderRes.json()).folder ?? await folderRes.json();
+    const folder = (await folderRes.json()).folder ?? (await folderRes.json());
     const diagram = await createDiagram(request, "Filtered Diagram");
 
     await request.post(`/api/diagrams/${diagram.id}/move`, {

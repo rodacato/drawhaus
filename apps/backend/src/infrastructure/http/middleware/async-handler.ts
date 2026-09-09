@@ -11,7 +11,12 @@ export type AuthedRequest = Request & {
 };
 
 function isPostgresInvalidInput(error: unknown): boolean {
-  return typeof error === "object" && error !== null && "code" in error && (error as { code: string }).code === "22P02";
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code: string }).code === "22P02"
+  );
 }
 
 export function asyncRoute(

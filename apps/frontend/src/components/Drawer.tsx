@@ -11,7 +11,15 @@ interface DrawerProps {
   children: React.ReactNode;
 }
 
-export function Drawer({ open, onClose, title, subtitle, icon, width = "max-w-xl", children }: DrawerProps) {
+export function Drawer({
+  open,
+  onClose,
+  title,
+  subtitle,
+  icon,
+  width = "max-w-xl",
+  children,
+}: DrawerProps) {
   const [visible, setVisible] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -39,7 +47,9 @@ export function Drawer({ open, onClose, title, subtitle, icon, width = "max-w-xl
     if (open) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = prev; };
+      return () => {
+        document.body.style.overflow = prev;
+      };
     }
   }, [open]);
 
@@ -64,7 +74,11 @@ export function Drawer({ open, onClose, title, subtitle, icon, width = "max-w-xl
           <div className="flex shrink-0 items-center gap-3 border-b border-border px-6 py-4">
             {icon}
             <div className="min-w-0 flex-1">
-              {title && <h2 className="font-[family-name:var(--font-family-heading)] text-lg font-bold text-text-primary">{title}</h2>}
+              {title && (
+                <h2 className="font-[family-name:var(--font-family-heading)] text-lg font-bold text-text-primary">
+                  {title}
+                </h2>
+              )}
               {subtitle && <p className="truncate text-sm text-text-muted">{subtitle}</p>}
             </div>
             <button
@@ -73,14 +87,24 @@ export function Drawer({ open, onClose, title, subtitle, icon, width = "max-w-xl
               type="button"
               aria-label="Close"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
         )}
         {/* Body */}
-        <div className="flex-1 overflow-y-auto">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto">{children}</div>
       </div>
     </div>,
     document.body,

@@ -50,18 +50,14 @@ test.describe("Tags API", () => {
     expect(tag.name).toBe(`${tagName}-updated`);
   });
 
-  test("POST /api/tags/:id/assign assigns tag to diagram", async ({
-    request,
-  }) => {
+  test("POST /api/tags/:id/assign assigns tag to diagram", async ({ request }) => {
     const response = await request.post(`/api/tags/${tagId}/assign`, {
       data: { diagramId },
     });
     expect(response.ok()).toBeTruthy();
   });
 
-  test("POST /api/tags/:id/unassign removes tag from diagram", async ({
-    request,
-  }) => {
+  test("POST /api/tags/:id/unassign removes tag from diagram", async ({ request }) => {
     const response = await request.post(`/api/tags/${tagId}/unassign`, {
       data: { diagramId },
     });

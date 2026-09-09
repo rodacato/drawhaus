@@ -18,7 +18,8 @@ type TemplateRow = {
   updated_at: string;
 };
 
-const COLS = "id, creator_id, workspace_id, title, description, category, elements, app_state, thumbnail, is_built_in, usage_count, created_at, updated_at";
+const COLS =
+  "id, creator_id, workspace_id, title, description, category, elements, app_state, thumbnail, is_built_in, usage_count, created_at, updated_at";
 
 function toDomain(row: TemplateRow): Template {
   return {
@@ -98,15 +99,34 @@ export class PgTemplateRepository implements TemplateRepository {
     return toDomain(rows[0]);
   }
 
-  async update(id: string, data: Partial<Pick<Template, "title" | "description" | "category" | "thumbnail">>): Promise<Template | null> {
+  async update(
+    id: string,
+    data: Partial<Pick<Template, "title" | "description" | "category" | "thumbnail">>,
+  ): Promise<Template | null> {
     const updates: string[] = [];
     const values: unknown[] = [];
     let idx = 1;
 
-    if (data.title !== undefined) { updates.push(`title = $${idx}`); values.push(data.title); idx += 1; }
-    if (data.description !== undefined) { updates.push(`description = $${idx}`); values.push(data.description); idx += 1; }
-    if (data.category !== undefined) { updates.push(`category = $${idx}`); values.push(data.category); idx += 1; }
-    if (data.thumbnail !== undefined) { updates.push(`thumbnail = $${idx}`); values.push(data.thumbnail); idx += 1; }
+    if (data.title !== undefined) {
+      updates.push(`title = $${idx}`);
+      values.push(data.title);
+      idx += 1;
+    }
+    if (data.description !== undefined) {
+      updates.push(`description = $${idx}`);
+      values.push(data.description);
+      idx += 1;
+    }
+    if (data.category !== undefined) {
+      updates.push(`category = $${idx}`);
+      values.push(data.category);
+      idx += 1;
+    }
+    if (data.thumbnail !== undefined) {
+      updates.push(`thumbnail = $${idx}`);
+      values.push(data.thumbnail);
+      idx += 1;
+    }
 
     if (updates.length === 0) return this.findById(id);
 

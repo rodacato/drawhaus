@@ -11,9 +11,13 @@ test.describe("Workspace CRUD", () => {
   test.beforeAll(async ({ request }) => {
     const res = await request.get("/api/workspaces");
     if (!res.ok()) return;
-    const workspaces = (await res.json()).workspaces ?? await res.json();
+    const workspaces = (await res.json()).workspaces ?? (await res.json());
     for (const ws of workspaces) {
-      if (!ws.is_personal && !ws.isPersonal && /CRUD|Verify|Update|Delete Me|List Verify/i.test(ws.name)) {
+      if (
+        !ws.is_personal &&
+        !ws.isPersonal &&
+        /CRUD|Verify|Update|Delete Me|List Verify/i.test(ws.name)
+      ) {
         await request.delete(`/api/workspaces/${ws.id}`);
       }
     }
@@ -46,7 +50,7 @@ test.describe("Workspace CRUD", () => {
       data: { name: "Update Test WS" },
     });
     expect(createRes.ok()).toBeTruthy();
-    const ws = (await createRes.json()).workspace ?? await createRes.json();
+    const ws = (await createRes.json()).workspace ?? (await createRes.json());
 
     const updateRes = await request.patch(`/api/workspaces/${ws.id}`, {
       data: { name: "Updated WS Name", description: "Updated description" },
@@ -55,7 +59,7 @@ test.describe("Workspace CRUD", () => {
 
     // Verify
     const getRes = await request.get(`/api/workspaces/${ws.id}`);
-    const updated = (await getRes.json()).workspace ?? await getRes.json();
+    const updated = (await getRes.json()).workspace ?? (await getRes.json());
     expect(updated.name).toBe("Updated WS Name");
 
     await request.delete(`/api/workspaces/${ws.id}`);
@@ -66,7 +70,7 @@ test.describe("Workspace CRUD", () => {
       data: { name: "Delete Me WS" },
     });
     expect(createRes.ok()).toBeTruthy();
-    const ws = (await createRes.json()).workspace ?? await createRes.json();
+    const ws = (await createRes.json()).workspace ?? (await createRes.json());
 
     const deleteRes = await request.delete(`/api/workspaces/${ws.id}`);
     expect(deleteRes.ok()).toBeTruthy();
@@ -78,7 +82,7 @@ test.describe("Workspace CRUD", () => {
 
   test("cannot delete personal workspace", async ({ request }) => {
     const res = await request.get("/api/workspaces");
-    const workspaces = (await res.json()).workspaces ?? await res.json();
+    const workspaces = (await res.json()).workspaces ?? (await res.json());
     const personal = workspaces.find((w: any) => w.is_personal || w.isPersonal);
 
     if (!personal) {
@@ -95,10 +99,10 @@ test.describe("Workspace CRUD", () => {
       data: { name: "List Verify WS" },
     });
     expect(createRes.ok()).toBeTruthy();
-    const ws = (await createRes.json()).workspace ?? await createRes.json();
+    const ws = (await createRes.json()).workspace ?? (await createRes.json());
 
     const listRes = await request.get("/api/workspaces");
-    const workspaces = (await listRes.json()).workspaces ?? await listRes.json();
+    const workspaces = (await listRes.json()).workspaces ?? (await listRes.json());
     const found = workspaces.find((w: any) => w.id === ws.id);
     expect(found).toBeTruthy();
 

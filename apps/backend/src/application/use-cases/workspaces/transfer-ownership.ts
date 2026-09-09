@@ -12,7 +12,12 @@ export class TransferWorkspaceOwnershipUseCase {
     private readonly audit: AuditLogger,
   ) {}
 
-  async execute(workspaceId: string, actorId: string, newOwnerId: string, transferResources = false) {
+  async execute(
+    workspaceId: string,
+    actorId: string,
+    newOwnerId: string,
+    transferResources = false,
+  ) {
     const workspace = await this.workspaces.findById(workspaceId);
     if (!workspace) throw new NotFoundError("Workspace");
     if (workspace.isPersonal) throw new ForbiddenError();
@@ -31,14 +36,20 @@ export class TransferWorkspaceOwnershipUseCase {
     if (transferResources) {
       const diagrams = await this.diagrams.findByOwnerInWorkspace(actorId, workspaceId);
       if (diagrams.length > 0) {
-        await this.diagrams.transferBulkOwnership(diagrams.map((d) => d.id), newOwnerId);
+        await this.diagrams.transferBulkOwnership(
+          diagrams.map((d) => d.id),
+          newOwnerId,
+        );
         diagramCount = diagrams.length;
       }
 
       const templates = await this.templates.findByCreatorInWorkspace(actorId, workspaceId);
       const transferable = templates.filter((t) => !t.isBuiltIn);
       if (transferable.length > 0) {
-        await this.templates.transferBulkOwnership(transferable.map((t) => t.id), newOwnerId);
+        await this.templates.transferBulkOwnership(
+          transferable.map((t) => t.id),
+          newOwnerId,
+        );
         templateCount = transferable.length;
       }
     }

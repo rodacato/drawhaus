@@ -1,6 +1,9 @@
 import { describe, it, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
-import { GoogleDriveServiceImpl, __setDriveTimeoutForTest } from "../../../infrastructure/services/google-drive-service";
+import {
+  GoogleDriveServiceImpl,
+  __setDriveTimeoutForTest,
+} from "../../../infrastructure/services/google-drive-service";
 
 const BOUNDARY_RE = /^drawhaus_[a-f0-9]{32}$/;
 
@@ -96,7 +99,12 @@ describe("GoogleDriveServiceImpl.findFolder", () => {
       assert.match(q, /trashed=false/);
       assert.equal(u.searchParams.get("fields"), "files(id,name)");
       assert.equal(u.searchParams.get("pageSize"), "1");
-      return jsonResponse({ files: [{ id: "f-1", name: "Reports" }, { id: "f-2", name: "Other" }] });
+      return jsonResponse({
+        files: [
+          { id: "f-1", name: "Reports" },
+          { id: "f-2", name: "Other" },
+        ],
+      });
     });
     const service = new GoogleDriveServiceImpl();
 
@@ -269,7 +277,12 @@ describe("GoogleDriveServiceImpl.uploadFile", () => {
 
   it("Buffer content is base64-encoded and the multipart sets `Content-Transfer-Encoding: base64`", async () => {
     const fetchMock = installFetchMock(() =>
-      jsonResponse({ id: "f-1", name: "x", mimeType: "application/octet-stream", webViewLink: "x" }),
+      jsonResponse({
+        id: "f-1",
+        name: "x",
+        mimeType: "application/octet-stream",
+        webViewLink: "x",
+      }),
     );
     const service = new GoogleDriveServiceImpl();
     const buf = Buffer.from("hello-binary", "utf8");
@@ -285,7 +298,10 @@ describe("GoogleDriveServiceImpl.uploadFile", () => {
     const body = init.body ?? "";
     assert.match(body, /Content-Transfer-Encoding: base64/);
     assert.ok(body.includes(buf.toString("base64")), "base64-encoded payload must appear in body");
-    assert.ok(!body.includes("hello-binary"), "raw utf8 bytes must NOT appear when content is a Buffer");
+    assert.ok(
+      !body.includes("hello-binary"),
+      "raw utf8 bytes must NOT appear when content is a Buffer",
+    );
   });
 
   it("String content is sent raw with no `Content-Transfer-Encoding` header in the multipart", async () => {
@@ -394,7 +410,12 @@ describe("GoogleDriveServiceImpl.listFiles", () => {
       assert.equal(u.searchParams.get("pageSize"), "100");
       return jsonResponse({
         files: [
-          { id: "a", name: "a.json", mimeType: "application/json", modifiedTime: "2026-06-23T00:00:00Z" },
+          {
+            id: "a",
+            name: "a.json",
+            mimeType: "application/json",
+            modifiedTime: "2026-06-23T00:00:00Z",
+          },
         ],
       });
     });
@@ -484,7 +505,8 @@ describe("GoogleDriveServiceImpl timeout", () => {
 
       await assert.rejects(
         () => service.findFolder(TOKEN, "anything", null),
-        (err: unknown) => err instanceof Error && err.message === "Drive request timed out after 20ms",
+        (err: unknown) =>
+          err instanceof Error && err.message === "Drive request timed out after 20ms",
       );
     } finally {
       __setDriveTimeoutForTest(previous);
@@ -517,13 +539,27 @@ describe("GoogleDriveServiceImpl.uploadFile boundary randomness", () => {
     });
     const service = new GoogleDriveServiceImpl();
 
-    await service.uploadFile(TOKEN, { name: "a", mimeType: "text/plain", content: "y", folderId: "fld" });
-    await service.uploadFile(TOKEN, { name: "b", mimeType: "text/plain", content: "y", folderId: "fld" });
+    await service.uploadFile(TOKEN, {
+      name: "a",
+      mimeType: "text/plain",
+      content: "y",
+      folderId: "fld",
+    });
+    await service.uploadFile(TOKEN, {
+      name: "b",
+      mimeType: "text/plain",
+      content: "y",
+      folderId: "fld",
+    });
 
     assert.equal(seenBoundaries.length, 2);
     assert.ok(BOUNDARY_RE.test(seenBoundaries[0]));
     assert.ok(BOUNDARY_RE.test(seenBoundaries[1]));
-    assert.notEqual(seenBoundaries[0], seenBoundaries[1], "consecutive uploads must use different boundaries");
+    assert.notEqual(
+      seenBoundaries[0],
+      seenBoundaries[1],
+      "consecutive uploads must use different boundaries",
+    );
   });
 });
 

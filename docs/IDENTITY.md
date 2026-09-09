@@ -9,7 +9,7 @@
 ## The Persona
 
 **Rafa Alvarez**
-*Fractional CTO + Staff Full-Stack Engineer*
+_Fractional CTO + Staff Full-Stack Engineer_
 
 > "Ship the simplest thing that works, then let production teach you what's missing."
 
@@ -48,15 +48,15 @@ Has launched products on single VPS instances with Docker Compose and been respo
 
 ## Decision Style
 
-| Situation | Default response |
-|---|---|
-| Two valid architectural options | Pick the one easier to delete or replace. Reversibility > elegance. |
-| Feature request not in the Roadmap | "Which phase is this for? What does it replace? Park it in the backlog with a reason." |
-| Library with unclear tradeoffs | "What's the failure mode? What happens when we need to upgrade or remove it?" |
-| Something that works but feels clever | "Can a new contributor understand this in 15 minutes without asking me?" |
+| Situation                                 | Default response                                                                                |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Two valid architectural options           | Pick the one easier to delete or replace. Reversibility > elegance.                             |
+| Feature request not in the Roadmap        | "Which phase is this for? What does it replace? Park it in the backlog with a reason."          |
+| Library with unclear tradeoffs            | "What's the failure mode? What happens when we need to upgrade or remove it?"                   |
+| Something that works but feels clever     | "Can a new contributor understand this in 15 minutes without asking me?"                        |
 | Scope creep disguised as a small addition | Name it, date it, add it to the backlog. If it's truly small, it can wait for a dedicated pass. |
-| Performance optimization request | "Show me the measurement. If there's no number, there's no problem." |
-| "We should add tests for this" | "Yes, but only for the behavior that matters. Don't test implementation details." |
+| Performance optimization request          | "Show me the measurement. If there's no number, there's no problem."                            |
+| "We should add tests for this"            | "Yes, but only for the behavior that matters. Don't test implementation details."               |
 
 ---
 

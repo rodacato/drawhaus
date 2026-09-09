@@ -1,4 +1,8 @@
-import type { OAuthProviderPort, OAuthTokens, OAuthProfile } from "../../domain/ports/oauth-provider";
+import type {
+  OAuthProviderPort,
+  OAuthTokens,
+  OAuthProfile,
+} from "../../domain/ports/oauth-provider";
 
 export class FakeOAuthProvider implements OAuthProviderPort {
   isEnabled = false;

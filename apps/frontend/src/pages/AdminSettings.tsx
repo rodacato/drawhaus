@@ -20,19 +20,22 @@ export function AdminSettings() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    adminApi.getSettings().then((data) => {
-      const s = data.settings ?? data;
-      setInstanceName(s.instanceName ?? "");
-      setAdminEmail(s.adminEmail ?? "");
-      setRegistrationOpen(s.registrationOpen ?? false);
-      setMaintenanceMode(s.maintenanceMode ?? false);
-      setMaxWorkspacesPerUser(s.maxWorkspacesPerUser ?? 5);
-      setMaxMembersPerWorkspace(s.maxMembersPerWorkspace ?? 5);
-      setBackupEnabled(s.backupEnabled ?? true);
-      setBackupCron(s.backupCron ?? "0 3 * * *");
-      setBackupRetentionDays(s.backupRetentionDays ?? 7);
-      setLoaded(true);
-    }).catch(() => {});
+    adminApi
+      .getSettings()
+      .then((data) => {
+        const s = data.settings ?? data;
+        setInstanceName(s.instanceName ?? "");
+        setAdminEmail(s.adminEmail ?? "");
+        setRegistrationOpen(s.registrationOpen ?? false);
+        setMaintenanceMode(s.maintenanceMode ?? false);
+        setMaxWorkspacesPerUser(s.maxWorkspacesPerUser ?? 5);
+        setMaxMembersPerWorkspace(s.maxMembersPerWorkspace ?? 5);
+        setBackupEnabled(s.backupEnabled ?? true);
+        setBackupCron(s.backupCron ?? "0 3 * * *");
+        setBackupRetentionDays(s.backupRetentionDays ?? 7);
+        setLoaded(true);
+      })
+      .catch(() => {});
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -40,7 +43,16 @@ export function AdminSettings() {
     setPending(true);
     setStatus(null);
     try {
-      await adminApi.updateSettings({ instanceName: instanceName.trim(), registrationOpen, maintenanceMode, maxWorkspacesPerUser, maxMembersPerWorkspace, backupEnabled, backupCron: backupCron.trim(), backupRetentionDays });
+      await adminApi.updateSettings({
+        instanceName: instanceName.trim(),
+        registrationOpen,
+        maintenanceMode,
+        maxWorkspacesPerUser,
+        maxMembersPerWorkspace,
+        backupEnabled,
+        backupCron: backupCron.trim(),
+        backupRetentionDays,
+      });
       setStatus({ type: "success", message: "Settings saved" });
     } catch (err: unknown) {
       const msg = getErrorMessage(err, "Update failed");
@@ -62,8 +74,27 @@ export function AdminSettings() {
         <div className={ui.card}>
           <h2 className={ui.h2}>General</h2>
           <div className="mt-4 space-y-4">
-            <label className={ui.label}>Instance Name<input className={ui.input} type="text" value={instanceName} onChange={(e) => setInstanceName(e.target.value)} required maxLength={100} /></label>
-            <label className={ui.label}>Admin Contact Email<input className={ui.input} type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} placeholder="admin@example.com" /></label>
+            <label className={ui.label}>
+              Instance Name
+              <input
+                className={ui.input}
+                type="text"
+                value={instanceName}
+                onChange={(e) => setInstanceName(e.target.value)}
+                required
+                maxLength={100}
+              />
+            </label>
+            <label className={ui.label}>
+              Admin Contact Email
+              <input
+                className={ui.input}
+                type="email"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+                placeholder="admin@example.com"
+              />
+            </label>
           </div>
         </div>
 
@@ -91,8 +122,28 @@ export function AdminSettings() {
         <div className={ui.card}>
           <h2 className={ui.h2}>Workspace Limits</h2>
           <div className="mt-4 space-y-4">
-            <label className={ui.label}>Max Workspaces per User<input className={ui.input} type="number" min={1} max={50} value={maxWorkspacesPerUser} onChange={(e) => setMaxWorkspacesPerUser(Number(e.target.value))} /></label>
-            <label className={ui.label}>Max Members per Workspace<input className={ui.input} type="number" min={1} max={100} value={maxMembersPerWorkspace} onChange={(e) => setMaxMembersPerWorkspace(Number(e.target.value))} /></label>
+            <label className={ui.label}>
+              Max Workspaces per User
+              <input
+                className={ui.input}
+                type="number"
+                min={1}
+                max={50}
+                value={maxWorkspacesPerUser}
+                onChange={(e) => setMaxWorkspacesPerUser(Number(e.target.value))}
+              />
+            </label>
+            <label className={ui.label}>
+              Max Members per Workspace
+              <input
+                className={ui.input}
+                type="number"
+                min={1}
+                max={100}
+                value={maxMembersPerWorkspace}
+                onChange={(e) => setMaxMembersPerWorkspace(Number(e.target.value))}
+              />
+            </label>
           </div>
         </div>
 
@@ -109,20 +160,53 @@ export function AdminSettings() {
             {backupEnabled && (
               <>
                 <div className="border-t border-border" />
-                <label className={ui.label}>Cron Schedule<input className={ui.input} type="text" value={backupCron} onChange={(e) => setBackupCron(e.target.value)} placeholder="0 3 * * *" /><span className={`${ui.muted} text-xs`}>Default: 0 3 * * * (daily at 3AM UTC)</span></label>
-                <label className={ui.label}>Retention (days)<input className={ui.input} type="number" min={1} max={365} value={backupRetentionDays} onChange={(e) => setBackupRetentionDays(Number(e.target.value))} /><span className={`${ui.muted} text-xs`}>Backups older than this are deleted automatically.</span></label>
+                <label className={ui.label}>
+                  Cron Schedule
+                  <input
+                    className={ui.input}
+                    type="text"
+                    value={backupCron}
+                    onChange={(e) => setBackupCron(e.target.value)}
+                    placeholder="0 3 * * *"
+                  />
+                  <span className={`${ui.muted} text-xs`}>
+                    Default: 0 3 * * * (daily at 3AM UTC)
+                  </span>
+                </label>
+                <label className={ui.label}>
+                  Retention (days)
+                  <input
+                    className={ui.input}
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={backupRetentionDays}
+                    onChange={(e) => setBackupRetentionDays(Number(e.target.value))}
+                  />
+                  <span className={`${ui.muted} text-xs`}>
+                    Backups older than this are deleted automatically.
+                  </span>
+                </label>
               </>
             )}
           </div>
         </div>
 
-        {status && <p className={status.type === "error" ? ui.alertError : ui.alertSuccess}>{status.message}</p>}
-        <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`} disabled={pending}>{pending ? "Saving..." : "Save Changes"}</button>
+        {status && (
+          <p className={status.type === "error" ? ui.alertError : ui.alertSuccess}>
+            {status.message}
+          </p>
+        )}
+        <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`} disabled={pending}>
+          {pending ? "Saving..." : "Save Changes"}
+        </button>
       </form>
 
       <div className={ui.card}>
         <h2 className={ui.h2}>Integrations</h2>
-        <p className={`${ui.muted} mb-4`}>Manage integration API keys and secrets. Values are encrypted at rest in the database.</p>
+        <p className={`${ui.muted} mb-4`}>
+          Manage integration API keys and secrets. Values are encrypted at rest in the database.
+        </p>
         <IntegrationSecretsPanel />
       </div>
     </div>

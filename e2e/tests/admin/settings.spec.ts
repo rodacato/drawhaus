@@ -36,7 +36,7 @@ test.describe("Admin Settings", () => {
 
     // Verify
     const getRes = await adminCtx.get("/api/admin/settings");
-    const settings = (await getRes.json()).settings ?? await getRes.json();
+    const settings = (await getRes.json()).settings ?? (await getRes.json());
     expect(settings.instanceName ?? settings.instance_name).toBe("E2E Test Instance");
 
     // Restore
@@ -102,7 +102,7 @@ test.describe("Maintenance Mode", () => {
 
     // Verify setting persisted
     const getRes = await adminCtx2.get("/api/admin/settings");
-    const settings = (await getRes.json()).settings ?? await getRes.json();
+    const settings = (await getRes.json()).settings ?? (await getRes.json());
     expect(settings.maintenanceMode ?? settings.maintenance_mode).toBe(true);
   });
 
@@ -129,7 +129,7 @@ test.describe("Maintenance Mode", () => {
     expect(res.ok()).toBeTruthy();
 
     const getRes = await adminCtx2.get("/api/admin/settings");
-    const settings = (await getRes.json()).settings ?? await getRes.json();
+    const settings = (await getRes.json()).settings ?? (await getRes.json());
     expect(settings.maintenanceMode ?? settings.maintenance_mode).toBe(false);
   });
 });

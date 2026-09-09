@@ -16,13 +16,13 @@ Drawhaus follows [Semantic Versioning](https://semver.org/):
 
 ## Files Involved
 
-| File | What to update |
-|------|----------------|
-| `package.json` (root) | `"version": "X.Y.Z"` |
-| `apps/backend/package.json` | `"version": "X.Y.Z"` |
-| `apps/frontend/package.json` | `"version": "X.Y.Z"` |
-| `CHANGELOG.md` | New version section with Added/Improved/Fixed/Removed |
-| `docs/ROADMAP.md` | Mark completed items as done (if applicable) |
+| File                         | What to update                                        |
+| ---------------------------- | ----------------------------------------------------- |
+| `package.json` (root)        | `"version": "X.Y.Z"`                                  |
+| `apps/backend/package.json`  | `"version": "X.Y.Z"`                                  |
+| `apps/frontend/package.json` | `"version": "X.Y.Z"`                                  |
+| `CHANGELOG.md`               | New version section with Added/Improved/Fixed/Removed |
+| `docs/ROADMAP.md`            | Mark completed items as done (if applicable)          |
 
 ---
 
@@ -51,19 +51,24 @@ Add a new version section at the top (below the header):
 ## vX.Y.Z — Short Description (YYYY-MM)
 
 ### Added
+
 - **Feature name** — description
 
 ### Improved
+
 - **Area** — what changed
 
 ### Removed
+
 - **Feature name** — why it was removed
 
 ### Fixed
+
 - **Bug description** — what was wrong and how it was fixed
 ```
 
 **Naming convention for the version title:**
+
 - Pick 2–3 headline features separated by `&` or `,`
 - Example: `v0.10.0 — Snapshots, Editor Lock & Single-Scene (2026-03)`
 
@@ -122,6 +127,7 @@ git push origin production
 ```
 
 The GitHub Actions workflow (`.github/workflows/build-push.yml`) will:
+
 1. Build backend and frontend Docker images
 2. Push to `ghcr.io/rodacato/drawhaus-backend` and `ghcr.io/rodacato/drawhaus-frontend`
 3. Deploy both services via Kamal to the VPS
@@ -155,9 +161,9 @@ git push origin master
 
 Each release produces these images:
 
-| Image | Tags |
-|-------|------|
-| `ghcr.io/rodacato/drawhaus-backend` | `latest`, `<sha>` |
+| Image                                | Tags              |
+| ------------------------------------ | ----------------- |
+| `ghcr.io/rodacato/drawhaus-backend`  | `latest`, `<sha>` |
 | `ghcr.io/rodacato/drawhaus-frontend` | `latest`, `<sha>` |
 
 ---

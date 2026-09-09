@@ -134,8 +134,12 @@ export function App() {
           currentIndex={currentIndex}
           total={FLAT_SUPPORTED_EXAMPLES.length}
           currentExample={currentIndex >= 0 ? FLAT_SUPPORTED_EXAMPLES[currentIndex] : null}
-          onPrev={() => goToExample(currentIndex <= 0 ? FLAT_SUPPORTED_EXAMPLES.length - 1 : currentIndex - 1)}
-          onNext={() => goToExample(currentIndex < 0 ? 0 : (currentIndex + 1) % FLAT_SUPPORTED_EXAMPLES.length)}
+          onPrev={() =>
+            goToExample(currentIndex <= 0 ? FLAT_SUPPORTED_EXAMPLES.length - 1 : currentIndex - 1)
+          }
+          onNext={() =>
+            goToExample(currentIndex < 0 ? 0 : (currentIndex + 1) % FLAT_SUPPORTED_EXAMPLES.length)
+          }
         />
         <ExcalidrawCanvas elements={deferredElements} />
       </div>

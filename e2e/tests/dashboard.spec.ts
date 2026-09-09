@@ -36,9 +36,7 @@ test.describe("Dashboard", () => {
     await dashboard.waitForLoad();
 
     await dashboard.searchDiagrams("nonexistent_diagram_xyz_12345");
-    await expect(
-      page.getByText(/no diagrams match/i),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/no diagrams match/i)).toBeVisible({ timeout: 15_000 });
   });
 
   test("sidebar shows Recent and Starred sections", async ({ page }) => {

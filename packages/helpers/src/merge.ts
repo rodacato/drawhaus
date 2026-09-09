@@ -59,10 +59,7 @@ export interface ElementDelta {
  * Compute the delta between a previous and current element array.
  * Returns changed/new elements and IDs of removed elements.
  */
-export function diffElements(
-  prev: readonly unknown[],
-  current: readonly unknown[],
-): ElementDelta {
+export function diffElements(prev: readonly unknown[], current: readonly unknown[]): ElementDelta {
   const prevMap = new Map<string, ExcalidrawElement>();
   for (const el of prev) {
     const e = el as ExcalidrawElement;
@@ -170,10 +167,7 @@ export function mergeDelta(
  * Clean up arrows with bindings to deleted elements,
  * and groupIds referencing groups that no longer have enough members.
  */
-function cleanupOrphanedBindings(
-  elements: ExcalidrawElement[],
-  survivingIds: Set<string>,
-): void {
+function cleanupOrphanedBindings(elements: ExcalidrawElement[], survivingIds: Set<string>): void {
   for (const el of elements) {
     // Clean arrow bindings pointing to deleted elements
     if (el.startBinding && !survivingIds.has(el.startBinding.elementId)) {

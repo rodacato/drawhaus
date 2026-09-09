@@ -39,6 +39,7 @@ Update existing `sync-to-drive.ts` to use workspace-aware paths (`Drawhaus Backu
 ## Frontend
 
 `BackupAllButton` component in `DriveIntegrationCard` with states:
+
 - idle → confirming (count + warning) → in-progress (progress bar) → complete (summary + expandable error list)
 
 ## Files

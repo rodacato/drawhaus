@@ -31,6 +31,8 @@ describe("misc pages — smoke (render without crashing)", () => {
 
   test("WorkspaceInvite renders the invitation once it resolves", async () => {
     renderWithProviders(<WorkspaceInvite />, { route: "/invite/tok123", path: "/invite/:token" });
-    await waitFor(() => expect(screen.getByRole("heading", { name: /workspace invitation/i })).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: /workspace invitation/i })).toBeTruthy(),
+    );
   });
 });

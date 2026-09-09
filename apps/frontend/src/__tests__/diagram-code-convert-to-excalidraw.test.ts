@@ -1,13 +1,14 @@
 import { describe, test, vi } from "vitest";
 import assert from "node:assert/strict";
 
-const { mermaidParseCalls, plantumlParseCalls, convertCalls, mermaidSkeletons, plantumlSkeletons } = vi.hoisted(() => ({
-  mermaidParseCalls: [] as string[],
-  plantumlParseCalls: [] as string[],
-  convertCalls: [] as unknown[],
-  mermaidSkeletons: [{ kind: "rect", id: "r1" }],
-  plantumlSkeletons: [{ kind: "ellipse" }],
-}));
+const { mermaidParseCalls, plantumlParseCalls, convertCalls, mermaidSkeletons, plantumlSkeletons } =
+  vi.hoisted(() => ({
+    mermaidParseCalls: [] as string[],
+    plantumlParseCalls: [] as string[],
+    convertCalls: [] as unknown[],
+    mermaidSkeletons: [{ kind: "rect", id: "r1" }],
+    plantumlSkeletons: [{ kind: "ellipse" }],
+  }));
 
 vi.mock("@drawhaus/mermaid-to-excalidraw", () => ({
   parseMermaidToExcalidraw: async (code: string) => {
@@ -40,7 +41,10 @@ describe("diagram-code/convert-to-excalidraw", () => {
 
     const plantumlResult = plantumlToElements("@startuml\nAlice -> Bob: hi\n@enduml");
     assert.deepEqual(plantumlParseCalls, ["@startuml\nAlice -> Bob: hi\n@enduml"]);
-    assert.deepEqual(plantumlResult, { elements: [{ converted: "plantuml" }], diagramType: "sequence" });
+    assert.deepEqual(plantumlResult, {
+      elements: [{ converted: "plantuml" }],
+      diagramType: "sequence",
+    });
 
     assert.deepEqual(convertCalls, [mermaidSkeletons, plantumlSkeletons]);
   });

@@ -12,7 +12,9 @@ export class ToggleDriveBackupUseCase {
     if (enabled) {
       const token = await this.oauthTokens.findByUserAndProvider(userId, "google");
       if (!token?.scopes.includes("drive.file")) {
-        throw new DriveTokenError("Google Drive scope not granted. Please connect Google Drive first.");
+        throw new DriveTokenError(
+          "Google Drive scope not granted. Please connect Google Drive first.",
+        );
       }
     }
 

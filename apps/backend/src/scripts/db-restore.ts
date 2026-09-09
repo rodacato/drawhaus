@@ -9,7 +9,11 @@
  * Pass "latest" to restore the most recent backup.
  */
 
-import { restoreBackup, listBackups, getBackupConfig } from "../infrastructure/services/backup-service";
+import {
+  restoreBackup,
+  listBackups,
+  getBackupConfig,
+} from "../infrastructure/services/backup-service";
 
 async function main() {
   const arg = process.argv[2];
@@ -21,7 +25,9 @@ async function main() {
       console.error("  (none)");
     } else {
       backups.forEach((b) => {
-        console.error(`  ${b.filename}  (${(b.size / 1024).toFixed(1)} KB, ${b.createdAt.toISOString()})`);
+        console.error(
+          `  ${b.filename}  (${(b.size / 1024).toFixed(1)} KB, ${b.createdAt.toISOString()})`,
+        );
       });
     }
     process.exit(1);

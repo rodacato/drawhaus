@@ -10,8 +10,8 @@ const PADDING_X = 16;
 const PADDING_Y = 8;
 const NODE_MIN_WIDTH = 60;
 const NODE_HEIGHT = 32;
-const H_GAP = 40;         // horizontal gap between parent and child
-const V_GAP = 12;          // vertical gap between siblings
+const H_GAP = 40; // horizontal gap between parent and child
+const V_GAP = 12; // vertical gap between siblings
 
 // ── Public API ──────────────────────────────────────────────────
 
@@ -44,7 +44,16 @@ export function mapMindmapDiagram(
   if (rightChildren.length > 0) {
     const startX = rootX + rootWidth + H_GAP;
     const startY = rootY + NODE_HEIGHT / 2 - rightHeight / 2;
-    layoutChildren(rightChildren, startX, startY, "right", rootX + rootWidth, rootY + NODE_HEIGHT / 2, theme, skeletons);
+    layoutChildren(
+      rightChildren,
+      startX,
+      startY,
+      "right",
+      rootX + rootWidth,
+      rootY + NODE_HEIGHT / 2,
+      theme,
+      skeletons,
+    );
   }
 
   // Layout left children
@@ -52,7 +61,16 @@ export function mapMindmapDiagram(
     const totalLeftWidth = maxSubtreeWidth(leftChildren, 0);
     const startX = rootX - H_GAP - totalLeftWidth;
     const startY = rootY + NODE_HEIGHT / 2 - leftHeight / 2;
-    layoutChildren(leftChildren, startX, startY, "left", rootX, rootY + NODE_HEIGHT / 2, theme, skeletons);
+    layoutChildren(
+      leftChildren,
+      startX,
+      startY,
+      "left",
+      rootX,
+      rootY + NODE_HEIGHT / 2,
+      theme,
+      skeletons,
+    );
   }
 
   return skeletons;
@@ -114,11 +132,29 @@ function layoutChildren(
 
       if (side === "right") {
         const gcStartX = nodeX + childWidth + H_GAP;
-        layoutChildren(grandchildren, gcStartX, gcStartY, "right", nodeX + childWidth, nodeY + NODE_HEIGHT / 2, theme, skeletons);
+        layoutChildren(
+          grandchildren,
+          gcStartX,
+          gcStartY,
+          "right",
+          nodeX + childWidth,
+          nodeY + NODE_HEIGHT / 2,
+          theme,
+          skeletons,
+        );
       } else {
         const gcMaxW = maxSubtreeWidth(grandchildren, 0);
         const gcStartX = nodeX - H_GAP - gcMaxW;
-        layoutChildren(grandchildren, gcStartX, gcStartY, "left", nodeX, nodeY + NODE_HEIGHT / 2, theme, skeletons);
+        layoutChildren(
+          grandchildren,
+          gcStartX,
+          gcStartY,
+          "left",
+          nodeX,
+          nodeY + NODE_HEIGHT / 2,
+          theme,
+          skeletons,
+        );
       }
     }
 
@@ -186,9 +222,8 @@ function maxSubtreeWidth(children: MindmapNode[], _depth: number): number {
   let maxW = 0;
   for (const child of children) {
     const nodeW = measureNodeWidth(child.label);
-    const childrenW = child.children.length > 0
-      ? H_GAP + maxSubtreeWidth(child.children, _depth + 1)
-      : 0;
+    const childrenW =
+      child.children.length > 0 ? H_GAP + maxSubtreeWidth(child.children, _depth + 1) : 0;
     maxW = Math.max(maxW, nodeW + childrenW);
   }
   return maxW;

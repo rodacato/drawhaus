@@ -19,17 +19,17 @@ test.describe("Workspace Ownership Transfer", () => {
 
     // Get user IDs
     const ownerMe = await ownerCtx.get("/api/auth/me");
-    ownerId = ((await ownerMe.json()).user ?? await ownerMe.json()).id;
+    ownerId = ((await ownerMe.json()).user ?? (await ownerMe.json())).id;
 
     const memberMe = await memberCtx.get("/api/auth/me");
-    memberId = ((await memberMe.json()).user ?? await memberMe.json()).id;
+    memberId = ((await memberMe.json()).user ?? (await memberMe.json())).id;
 
     // Create workspace
     const wsRes = await ownerCtx.post("/api/workspaces", {
       data: { name: "Transfer Test WS" },
     });
     if (!wsRes.ok()) return;
-    workspaceId = ((await wsRes.json()).workspace ?? await wsRes.json()).id;
+    workspaceId = ((await wsRes.json()).workspace ?? (await wsRes.json())).id;
 
     // Invite member as admin and accept
     const inviteRes = await ownerCtx.post(`/api/workspaces/${workspaceId}/invite`, {
@@ -48,7 +48,7 @@ test.describe("Workspace Ownership Transfer", () => {
       data: { title: "Transfer Test Diagram", workspaceId },
     });
     if (diagRes.ok() || diagRes.status() === 201) {
-      diagramId = ((await diagRes.json()).diagram ?? await diagRes.json()).id;
+      diagramId = ((await diagRes.json()).diagram ?? (await diagRes.json())).id;
     }
   });
 

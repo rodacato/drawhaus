@@ -80,10 +80,7 @@ export function createArrow(opts: {
   const first = opts.points[0];
   const last = opts.points[opts.points.length - 1];
   // Convert absolute points to relative (from first point)
-  const relativePoints = opts.points.map((p) => [
-    p.x - first.x,
-    p.y - first.y,
-  ]);
+  const relativePoints = opts.points.map((p) => [p.x - first.x, p.y - first.y]);
 
   // Label position at midpoint of the path
   const midIdx = Math.floor(opts.points.length / 2);
@@ -163,9 +160,7 @@ export function createEllipse(opts: {
     backgroundColor: opts.backgroundColor ?? "transparent",
     strokeColor: opts.strokeColor,
     strokeStyle: opts.strokeStyle ?? "solid",
-    ...(opts.label
-      ? { label: { text: opts.label, x: opts.x, y: opts.y } }
-      : {}),
+    ...(opts.label ? { label: { text: opts.label, x: opts.x, y: opts.y } } : {}),
   };
 }
 

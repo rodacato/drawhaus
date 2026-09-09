@@ -92,20 +92,28 @@ describe("useDiagramActions", () => {
 
   describe("createFromBuiltIn", () => {
     test("forwards template elements + appState and navigates on success", async () => {
-      const createSpy = vi.spyOn(diagramsApi, "create").mockResolvedValue({ diagram: { id: "x" } } as never);
+      const createSpy = vi
+        .spyOn(diagramsApi, "create")
+        .mockResolvedValue({ diagram: { id: "x" } } as never);
       const { result, navigate } = setup({ folderId: "f1", activeWorkspaceId: "ws-9" });
 
       await act(async () => {
-        await result.current.createFromBuiltIn({ name: "Flow", elements: [1, 2], appState: { a: 1 } });
+        await result.current.createFromBuiltIn({
+          name: "Flow",
+          elements: [1, 2],
+          appState: { a: 1 },
+        });
       });
 
-      expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({
-        title: "Flow",
-        folderId: "f1",
-        workspaceId: "ws-9",
-        elements: [1, 2],
-        appState: { a: 1 },
-      }));
+      expect(createSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Flow",
+          folderId: "f1",
+          workspaceId: "ws-9",
+          elements: [1, 2],
+          appState: { a: 1 },
+        }),
+      );
       expect(navigate).toHaveBeenCalledWith("/board/x");
     });
 
@@ -121,14 +129,20 @@ describe("useDiagramActions", () => {
 
   describe("createFromTemplate", () => {
     test("calls templatesApi.use with title + folder + workspace and navigates", async () => {
-      const useSpy = vi.spyOn(templatesApi, "use").mockResolvedValue({ diagram: { id: "tpl-1", title: "T" } });
+      const useSpy = vi
+        .spyOn(templatesApi, "use")
+        .mockResolvedValue({ diagram: { id: "tpl-1", title: "T" } });
       const { result, navigate } = setup({ folderId: "f1", activeWorkspaceId: "ws-9" });
 
       await act(async () => {
         await result.current.createFromTemplate("tpl", "T");
       });
 
-      expect(useSpy).toHaveBeenCalledWith("tpl", { title: "T", folderId: "f1", workspaceId: "ws-9" });
+      expect(useSpy).toHaveBeenCalledWith("tpl", {
+        title: "T",
+        folderId: "f1",
+        workspaceId: "ws-9",
+      });
       expect(navigate).toHaveBeenCalledWith("/board/tpl-1");
     });
 
@@ -248,7 +262,9 @@ describe("useDiagramActions", () => {
 
   describe("embedDiagram", () => {
     test("creates share link, caches in localStorage, copies embed snippet, toasts", async () => {
-      const createSpy = vi.spyOn(shareApi, "create").mockResolvedValue({ shareLink: { token: "tok-1" } } as never);
+      const createSpy = vi
+        .spyOn(shareApi, "create")
+        .mockResolvedValue({ shareLink: { token: "tok-1" } } as never);
       const writeText = vi.fn().mockResolvedValue(undefined);
       Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
 
@@ -292,13 +308,15 @@ describe("useDiagramActions", () => {
         await result.current.diagramActions.onSaveAsTemplate("d1", "My Diagram");
       });
 
-      expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({
-        title: "My Diagram Template",
-        elements: [1],
-        appState: { a: 1 },
-        workspaceId: "ws-9",
-        thumbnail: "thumb",
-      }));
+      expect(createSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "My Diagram Template",
+          elements: [1],
+          appState: { a: 1 },
+          workspaceId: "ws-9",
+          thumbnail: "thumb",
+        }),
+      );
       expect(toast).toHaveBeenCalledWith("Template saved!");
     });
 
@@ -391,7 +409,9 @@ describe("useDiagramActions", () => {
     });
 
     test("toasts error on invalid excalidraw file shape", async () => {
-      const file = new File(['{"type":"not-excalidraw"}'], "bad.excalidraw", { type: "application/json" });
+      const file = new File(['{"type":"not-excalidraw"}'], "bad.excalidraw", {
+        type: "application/json",
+      });
       const { result, toast } = setup();
       await act(async () => {
         await result.current.handleImport(makeEvent(file));
@@ -400,19 +420,21 @@ describe("useDiagramActions", () => {
     });
 
     test("happy path: creates diagram from file and navigates", async () => {
-      const file = new File(
-        ['{"type":"excalidraw","elements":[1,2]}'],
-        "My Drawing.excalidraw",
-        { type: "application/json" },
-      );
-      const createSpy = vi.spyOn(diagramsApi, "create").mockResolvedValue({ diagram: { id: "imp-1" } } as never);
+      const file = new File(['{"type":"excalidraw","elements":[1,2]}'], "My Drawing.excalidraw", {
+        type: "application/json",
+      });
+      const createSpy = vi
+        .spyOn(diagramsApi, "create")
+        .mockResolvedValue({ diagram: { id: "imp-1" } } as never);
       const { result, navigate } = setup();
 
       await act(async () => {
         await result.current.handleImport(makeEvent(file));
       });
 
-      expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ title: "My Drawing", elements: [1, 2] }));
+      expect(createSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "My Drawing", elements: [1, 2] }),
+      );
       expect(navigate).toHaveBeenCalledWith("/board/imp-1");
     });
   });

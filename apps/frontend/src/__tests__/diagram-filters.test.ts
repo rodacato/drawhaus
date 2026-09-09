@@ -12,7 +12,10 @@ describe("sortByUpdated", () => {
       { id: "c", updatedAt: "2024-03-01T00:00:00Z" },
     ];
     const result = sortByUpdated(items);
-    assert.deepEqual(result.map((i) => i.id), ["b", "c", "a"]);
+    assert.deepEqual(
+      result.map((i) => i.id),
+      ["b", "c", "a"],
+    );
   });
 
   test("supports updated_at (snake_case)", () => {
@@ -38,7 +41,10 @@ describe("sortByUpdated", () => {
   });
 
   test("handles items without timestamps", () => {
-    const items = [{ id: "a", updatedAt: undefined }, { id: "b", updatedAt: undefined }];
+    const items = [
+      { id: "a", updatedAt: undefined },
+      { id: "b", updatedAt: undefined },
+    ];
     const result = sortByUpdated(items);
     assert.equal(result.length, 2);
   });
@@ -54,14 +60,14 @@ describe("filterStarred", () => {
       { id: "c", starred: true },
     ];
     const result = filterStarred(items);
-    assert.deepEqual(result.map((i) => i.id), ["a", "c"]);
+    assert.deepEqual(
+      result.map((i) => i.id),
+      ["a", "c"],
+    );
   });
 
   test("returns empty for no starred items", () => {
-    const items = [
-      { id: "a", starred: false },
-      { id: "b" },
-    ];
+    const items = [{ id: "a", starred: false }, { id: "b" }];
     assert.deepEqual(filterStarred(items), []);
   });
 

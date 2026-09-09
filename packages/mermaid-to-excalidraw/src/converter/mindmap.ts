@@ -11,11 +11,7 @@ import type {
   MermaidConfig,
   MermaidToExcalidrawResult,
 } from "../types.js";
-import type {
-  MindmapAST,
-  MindmapNode,
-  MindmapShape,
-} from "../parser/mindmap-types.js";
+import type { MindmapAST, MindmapNode, MindmapShape } from "../parser/mindmap-types.js";
 import type { MermaidTheme, ShapeStyle } from "../theme/types.js";
 import { DEFAULT_THEME } from "../theme/default.js";
 import { parseMermaidMindmap } from "../parser/mindmap.js";
@@ -65,10 +61,7 @@ export async function convertMindmap(
   };
 }
 
-export function mapMindmap(
-  ast: MindmapAST,
-  theme: MermaidTheme,
-): ExcalidrawElementSkeleton[] {
+export function mapMindmap(ast: MindmapAST, theme: MermaidTheme): ExcalidrawElementSkeleton[] {
   if (!ast.root) return [];
 
   // Phase 1: Measure all nodes
@@ -164,9 +157,7 @@ function layoutAbsolute(
   let childYTop = yTop;
   for (const child of node.children) {
     const childSubH = subtreeHeights.get(child.id)!;
-    children.push(
-      layoutAbsolute(child, childX, childYTop, depth + 1, sizes, subtreeHeights),
-    );
+    children.push(layoutAbsolute(child, childX, childYTop, depth + 1, sizes, subtreeHeights));
     childYTop += childSubH + SIBLING_GAP;
   }
 
@@ -175,11 +166,7 @@ function layoutAbsolute(
 
 // ── Rendering ───────────────────────────────────────────────────
 
-function getNodeStyle(
-  node: MindmapNode,
-  depth: number,
-  theme: MermaidTheme,
-): ShapeStyle {
+function getNodeStyle(node: MindmapNode, depth: number, theme: MermaidTheme): ShapeStyle {
   if (depth === 0) return theme.mindmapRoot;
   if (node.children.length === 0) return theme.mindmapLeaf;
   return theme.mindmapNode;
@@ -195,98 +182,112 @@ function renderNode(
 
   // Branch line from parent's right edge to this node's left edge
   if (parent) {
-    skeletons.push(createLine({
-      startX: parent.x + parent.width,
-      startY: parent.y + parent.height / 2,
-      endX: laid.x,
-      endY: laid.y + laid.height / 2,
-      strokeColor: theme.mindmapBranch.stroke,
-      strokeWidth: theme.mindmapBranch.strokeWidth,
-    }));
+    skeletons.push(
+      createLine({
+        startX: parent.x + parent.width,
+        startY: parent.y + parent.height / 2,
+        endX: laid.x,
+        endY: laid.y + laid.height / 2,
+        strokeColor: theme.mindmapBranch.stroke,
+        strokeWidth: theme.mindmapBranch.strokeWidth,
+      }),
+    );
   }
 
   // Node shape
   switch (laid.node.shape) {
     case "circle":
-      skeletons.push(createEllipse({
-        x: laid.x,
-        y: laid.y,
-        width: laid.width,
-        height: laid.height,
-        label: laid.node.label,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createEllipse({
+          x: laid.x,
+          y: laid.y,
+          width: laid.width,
+          height: laid.height,
+          label: laid.node.label,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
 
     case "hexagon":
-      skeletons.push(createDiamond({
-        x: laid.x,
-        y: laid.y,
-        width: laid.width,
-        height: laid.height,
-        label: laid.node.label,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createDiamond({
+          x: laid.x,
+          y: laid.y,
+          width: laid.width,
+          height: laid.height,
+          label: laid.node.label,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
 
     case "rounded":
     case "cloud":
-      skeletons.push(createRect({
-        x: laid.x,
-        y: laid.y,
-        width: laid.width,
-        height: laid.height,
-        label: laid.node.label,
-        roundness: 16,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createRect({
+          x: laid.x,
+          y: laid.y,
+          width: laid.width,
+          height: laid.height,
+          label: laid.node.label,
+          roundness: 16,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
 
     case "bang":
-      skeletons.push(createRect({
-        x: laid.x,
-        y: laid.y,
-        width: laid.width,
-        height: laid.height,
-        label: laid.node.label,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-        strokeWidth: 2,
-      }));
+      skeletons.push(
+        createRect({
+          x: laid.x,
+          y: laid.y,
+          width: laid.width,
+          height: laid.height,
+          label: laid.node.label,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+          strokeWidth: 2,
+        }),
+      );
       break;
 
     case "square":
-      skeletons.push(createRect({
-        x: laid.x,
-        y: laid.y,
-        width: laid.width,
-        height: laid.height,
-        label: laid.node.label,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createRect({
+          x: laid.x,
+          y: laid.y,
+          width: laid.width,
+          height: laid.height,
+          label: laid.node.label,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
 
     default:
-      skeletons.push(createRect({
-        x: laid.x,
-        y: laid.y,
-        width: laid.width,
-        height: laid.height,
-        label: laid.node.label,
-        roundness: 20,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createRect({
+          x: laid.x,
+          y: laid.y,
+          width: laid.width,
+          height: laid.height,
+          label: laid.node.label,
+          roundness: 20,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
   }
 

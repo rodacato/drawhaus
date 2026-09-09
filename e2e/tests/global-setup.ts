@@ -11,10 +11,31 @@ const TEST_USER = {
 
 /** Domain-specific users to avoid resource conflicts between test suites */
 const DOMAIN_USERS = [
-  { name: "Admin User", email: "admin@drawhaus.test", password: "admin1234", authFile: "tests/.auth/admin.json", makeAdmin: true },
-  { name: "WS CRUD User", email: "e2e-ws-crud@drawhaus.test", password: "Test1234!pass", authFile: "tests/.auth/ws-crud.json" },
-  { name: "WS Members User", email: "e2e-ws-member@drawhaus.test", password: "Test1234!pass", authFile: "tests/.auth/ws-member.json" },
-  { name: "API Tests User", email: "e2e-api@drawhaus.test", password: "Test1234!pass", authFile: "tests/.auth/api-tests.json" },
+  {
+    name: "Admin User",
+    email: "admin@drawhaus.test",
+    password: "admin1234",
+    authFile: "tests/.auth/admin.json",
+    makeAdmin: true,
+  },
+  {
+    name: "WS CRUD User",
+    email: "e2e-ws-crud@drawhaus.test",
+    password: "Test1234!pass",
+    authFile: "tests/.auth/ws-crud.json",
+  },
+  {
+    name: "WS Members User",
+    email: "e2e-ws-member@drawhaus.test",
+    password: "Test1234!pass",
+    authFile: "tests/.auth/ws-member.json",
+  },
+  {
+    name: "API Tests User",
+    email: "e2e-api@drawhaus.test",
+    password: "Test1234!pass",
+    authFile: "tests/.auth/api-tests.json",
+  },
 ];
 
 /**

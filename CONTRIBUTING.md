@@ -66,6 +66,7 @@ See [docs/WORKFLOW.md](docs/WORKFLOW.md) for the full build cycle and documentat
 ## Reporting Bugs
 
 Open an issue with:
+
 - A clear title and description.
 - Steps to reproduce the problem.
 - Expected vs. actual behavior.
@@ -74,6 +75,7 @@ Open an issue with:
 ## Suggesting Features
 
 Open an issue describing:
+
 - The problem your feature would solve.
 - Your proposed solution.
 - Any alternatives you've considered.

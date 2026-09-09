@@ -52,7 +52,10 @@ test.describe("Visual Regression", () => {
 
   test("dashboard", async ({ page }) => {
     await page.goto("/dashboard");
-    await page.getByText("Loading...").waitFor({ state: "hidden", timeout: 10_000 }).catch(() => {});
+    await page
+      .getByText("Loading...")
+      .waitFor({ state: "hidden", timeout: 10_000 })
+      .catch(() => {});
     await page.waitForLoadState("networkidle");
     await stabilizePage(page);
 
@@ -138,7 +141,10 @@ test.describe("Visual Regression", () => {
       await page.goto("http://localhost:5173/forgot-password");
       await page.waitForLoadState("networkidle");
       // Wait for the form to be visible before stabilizing
-      await page.locator('input[type="email"]').waitFor({ state: "visible", timeout: 10_000 }).catch(() => {});
+      await page
+        .locator('input[type="email"]')
+        .waitFor({ state: "visible", timeout: 10_000 })
+        .catch(() => {});
       await stabilizePage(page);
 
       const screenshot = await page.screenshot({ timeout: 60_000 });

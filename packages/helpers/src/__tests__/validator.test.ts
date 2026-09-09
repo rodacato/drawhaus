@@ -6,45 +6,53 @@ describe("validateElements", () => {
   // ── Happy paths ───────────────────────────────────────────────
 
   it("accepts valid rectangle", () => {
-    const result = validateElements([
-      { type: "rectangle", x: 0, y: 0, width: 100, height: 50 },
-    ]);
+    const result = validateElements([{ type: "rectangle", x: 0, y: 0, width: 100, height: 50 }]);
     assert.equal(result.valid, true);
     assert.equal(result.errors.length, 0);
   });
 
   it("accepts valid text", () => {
-    const result = validateElements([
-      { type: "text", x: 0, y: 0, text: "Hello" },
-    ]);
+    const result = validateElements([{ type: "text", x: 0, y: 0, text: "Hello" }]);
     assert.equal(result.valid, true);
   });
 
   it("accepts valid arrow", () => {
     const result = validateElements([
-      { type: "arrow", x: 0, y: 0, points: [[0, 0], [100, 0]] },
+      {
+        type: "arrow",
+        x: 0,
+        y: 0,
+        points: [
+          [0, 0],
+          [100, 0],
+        ],
+      },
     ]);
     assert.equal(result.valid, true);
   });
 
   it("accepts valid line", () => {
     const result = validateElements([
-      { type: "line", x: 0, y: 0, points: [[0, 0], [50, 50]] },
+      {
+        type: "line",
+        x: 0,
+        y: 0,
+        points: [
+          [0, 0],
+          [50, 50],
+        ],
+      },
     ]);
     assert.equal(result.valid, true);
   });
 
   it("accepts valid diamond", () => {
-    const result = validateElements([
-      { type: "diamond", x: 10, y: 10, width: 50, height: 50 },
-    ]);
+    const result = validateElements([{ type: "diamond", x: 10, y: 10, width: 50, height: 50 }]);
     assert.equal(result.valid, true);
   });
 
   it("accepts valid ellipse", () => {
-    const result = validateElements([
-      { type: "ellipse", x: 10, y: 10, width: 80, height: 60 },
-    ]);
+    const result = validateElements([{ type: "ellipse", x: 10, y: 10, width: 80, height: 60 }]);
     assert.equal(result.valid, true);
   });
 
@@ -65,8 +73,10 @@ describe("validateElements", () => {
     const result = validateElements([
       {
         type: "rectangle",
-        x: 100, y: 100,
-        width: 200, height: 120,
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 120,
         roundness: null,
         boundElements: null,
         link: null,
@@ -81,8 +91,10 @@ describe("validateElements", () => {
       {
         type: "rectangle",
         id: "abc123",
-        x: 100, y: 100,
-        width: 200, height: 120,
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 120,
         angle: 0,
         strokeColor: "#1e1e1e",
         backgroundColor: "#a5d8ff",
@@ -112,9 +124,7 @@ describe("validateElements", () => {
   // ── Errors: structural problems ───────────────────────────────
 
   it("rejects invalid type", () => {
-    const result = validateElements([
-      { type: "circle", x: 0, y: 0, width: 100, height: 100 },
-    ]);
+    const result = validateElements([{ type: "circle", x: 0, y: 0, width: 100, height: 100 }]);
     assert.equal(result.valid, false);
     assert.ok(result.errors[0].message.includes("Invalid enum value"));
   });
@@ -125,9 +135,7 @@ describe("validateElements", () => {
   });
 
   it("rejects missing width on shape", () => {
-    const result = validateElements([
-      { type: "rectangle", x: 0, y: 0, height: 50 },
-    ]);
+    const result = validateElements([{ type: "rectangle", x: 0, y: 0, height: 50 }]);
     assert.equal(result.valid, false);
     assert.ok(result.errors.some((e) => e.field === "width"));
   });
@@ -139,9 +147,7 @@ describe("validateElements", () => {
   });
 
   it("rejects text exceeding max length", () => {
-    const result = validateElements([
-      { type: "text", x: 0, y: 0, text: "a".repeat(3000) },
-    ]);
+    const result = validateElements([{ type: "text", x: 0, y: 0, text: "a".repeat(3000) }]);
     assert.equal(result.valid, false);
   });
 
@@ -152,16 +158,12 @@ describe("validateElements", () => {
   });
 
   it("rejects arrow with < 2 points", () => {
-    const result = validateElements([
-      { type: "arrow", x: 0, y: 0, points: [[0, 0]] },
-    ]);
+    const result = validateElements([{ type: "arrow", x: 0, y: 0, points: [[0, 0]] }]);
     assert.equal(result.valid, false);
   });
 
   it("rejects invalid point format", () => {
-    const result = validateElements([
-      { type: "arrow", x: 0, y: 0, points: [[0, 0], "bad"] },
-    ]);
+    const result = validateElements([{ type: "arrow", x: 0, y: 0, points: [[0, 0], "bad"] }]);
     assert.equal(result.valid, false);
   });
 
@@ -198,9 +200,7 @@ describe("validateElements", () => {
   });
 
   it("reports element id in errors", () => {
-    const result = validateElements([
-      { type: "rectangle", id: "my-box", x: 0, y: 0 },
-    ]);
+    const result = validateElements([{ type: "rectangle", id: "my-box", x: 0, y: 0 }]);
     assert.equal(result.valid, false);
     assert.equal(result.errors[0].elementId, "my-box");
   });
@@ -216,25 +216,19 @@ describe("validateElements", () => {
   });
 
   it("warns on zero-width shape", () => {
-    const result = validateElements([
-      { type: "rectangle", x: 0, y: 0, width: 0, height: 50 },
-    ]);
+    const result = validateElements([{ type: "rectangle", x: 0, y: 0, width: 0, height: 50 }]);
     assert.equal(result.valid, true);
     assert.ok(result.warnings.some((w) => w.field === "width"));
   });
 
   it("warns on oversized dimensions", () => {
-    const result = validateElements([
-      { type: "rectangle", x: 0, y: 0, width: 99999, height: 50 },
-    ]);
+    const result = validateElements([{ type: "rectangle", x: 0, y: 0, width: 99999, height: 50 }]);
     assert.equal(result.valid, true);
     assert.ok(result.warnings.some((w) => w.field === "width"));
   });
 
   it("warns on out-of-range fontSize", () => {
-    const result = validateElements([
-      { type: "text", x: 0, y: 0, text: "hi", fontSize: 200 },
-    ]);
+    const result = validateElements([{ type: "text", x: 0, y: 0, text: "hi", fontSize: 200 }]);
     assert.equal(result.valid, true);
     assert.ok(result.warnings.some((w) => w.field === "fontSize"));
   });
@@ -282,22 +276,40 @@ describe("validateElements", () => {
 
   it("accepts freedraw with zero width (single click)", () => {
     const result = validateElements([
-      { type: "freedraw", x: 100, y: 200, width: 0, height: 2.3, points: [[0, 0], [0, 2.3]] },
+      {
+        type: "freedraw",
+        x: 100,
+        y: 200,
+        width: 0,
+        height: 2.3,
+        points: [
+          [0, 0],
+          [0, 2.3],
+        ],
+      },
     ]);
     assert.equal(result.valid, true);
   });
 
   it("accepts freedraw with zero height", () => {
     const result = validateElements([
-      { type: "freedraw", x: 10, y: 20, width: 5, height: 0, points: [[0, 0], [5, 0]] },
+      {
+        type: "freedraw",
+        x: 10,
+        y: 20,
+        width: 5,
+        height: 0,
+        points: [
+          [0, 0],
+          [5, 0],
+        ],
+      },
     ]);
     assert.equal(result.valid, true);
   });
 
   it("accepts image elements with dimensions", () => {
-    const result = validateElements([
-      { type: "image", x: 0, y: 0, width: 200, height: 150 },
-    ]);
+    const result = validateElements([{ type: "image", x: 0, y: 0, width: 200, height: 150 }]);
     assert.equal(result.valid, true);
   });
 
@@ -369,7 +381,14 @@ describe("normalizeElements", () => {
   });
 
   it("preserves valid elements unchanged", () => {
-    const original = { type: "rectangle", x: 10, y: 20, width: 100, height: 50, strokeColor: "#1e1e1e" };
+    const original = {
+      type: "rectangle",
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 50,
+      strokeColor: "#1e1e1e",
+    };
     const result = normalizeElements([original]);
     assert.equal(result.length, 1);
     assert.equal(result[0].x, 10);
@@ -397,16 +416,12 @@ describe("normalizeElements", () => {
   // ── Text normalization ──────────────────────────────────────
 
   it("trims whitespace from text", () => {
-    const result = normalizeElements([
-      { type: "text", x: 0, y: 0, text: "  hello  " },
-    ]);
+    const result = normalizeElements([{ type: "text", x: 0, y: 0, text: "  hello  " }]);
     assert.equal(result[0].text, "hello");
   });
 
   it("collapses internal whitespace runs", () => {
-    const result = normalizeElements([
-      { type: "text", x: 0, y: 0, text: "hello    world" },
-    ]);
+    const result = normalizeElements([{ type: "text", x: 0, y: 0, text: "hello    world" }]);
     assert.equal(result[0].text, "hello world");
   });
 
@@ -429,8 +444,15 @@ describe("normalizeElements", () => {
   it("deduplicates consecutive near-identical points", () => {
     const result = normalizeElements([
       {
-        type: "arrow", x: 0, y: 0,
-        points: [[0, 0], [0, 0.1], [0, 0.2], [100, 0]],
+        type: "arrow",
+        x: 0,
+        y: 0,
+        points: [
+          [0, 0],
+          [0, 0.1],
+          [0, 0.2],
+          [100, 0],
+        ],
       },
     ]);
     const points = result[0].points as number[][];
@@ -442,8 +464,14 @@ describe("normalizeElements", () => {
   it("always keeps first and last points", () => {
     const result = normalizeElements([
       {
-        type: "line", x: 0, y: 0,
-        points: [[0, 0], [0.1, 0.1], [0.2, 0.2]],
+        type: "line",
+        x: 0,
+        y: 0,
+        points: [
+          [0, 0],
+          [0.1, 0.1],
+          [0.2, 0.2],
+        ],
       },
     ]);
     const points = result[0].points as number[][];
@@ -455,8 +483,15 @@ describe("normalizeElements", () => {
   it("preserves distinct points", () => {
     const result = normalizeElements([
       {
-        type: "arrow", x: 0, y: 0,
-        points: [[0, 0], [50, 0], [50, 100], [100, 100]],
+        type: "arrow",
+        x: 0,
+        y: 0,
+        points: [
+          [0, 0],
+          [50, 0],
+          [50, 100],
+          [100, 100],
+        ],
       },
     ]);
     const points = result[0].points as number[][];
@@ -466,8 +501,13 @@ describe("normalizeElements", () => {
   it("does not dedup when only 2 points", () => {
     const result = normalizeElements([
       {
-        type: "arrow", x: 0, y: 0,
-        points: [[0, 0], [100, 0]],
+        type: "arrow",
+        x: 0,
+        y: 0,
+        points: [
+          [0, 0],
+          [100, 0],
+        ],
       },
     ]);
     const points = result[0].points as number[][];

@@ -8,8 +8,8 @@ test.describe("Settings Tabs", () => {
     const content = await page.textContent("body");
     expect(
       content?.toLowerCase().includes("billing") ||
-      content?.toLowerCase().includes("self-hosted") ||
-      content?.toLowerCase().includes("plan"),
+        content?.toLowerCase().includes("self-hosted") ||
+        content?.toLowerCase().includes("plan"),
     ).toBeTruthy();
   });
 
@@ -19,9 +19,9 @@ test.describe("Settings Tabs", () => {
     const content = await page.textContent("body");
     expect(
       content?.toLowerCase().includes("integration") ||
-      content?.toLowerCase().includes("google") ||
-      content?.toLowerCase().includes("drive") ||
-      content?.toLowerCase().includes("connect"),
+        content?.toLowerCase().includes("google") ||
+        content?.toLowerCase().includes("drive") ||
+        content?.toLowerCase().includes("connect"),
     ).toBeTruthy();
   });
 
@@ -32,9 +32,9 @@ test.describe("Settings Tabs", () => {
     const content = await page.textContent("body");
     expect(
       content?.toLowerCase().includes("appearance") ||
-      content?.toLowerCase().includes("theme") ||
-      content?.toLowerCase().includes("dark") ||
-      content?.toLowerCase().includes("light"),
+        content?.toLowerCase().includes("theme") ||
+        content?.toLowerCase().includes("dark") ||
+        content?.toLowerCase().includes("light"),
     ).toBeTruthy();
   });
 
@@ -43,9 +43,9 @@ test.describe("Settings Tabs", () => {
     await expect(page.getByText(/appearance/i).first()).toBeVisible({ timeout: 15_000 });
 
     // Look for theme toggle/selector
-    const darkButton = page.getByRole("button", { name: /dark/i }).or(
-      page.locator('[data-theme="dark"], [value="dark"]'),
-    );
+    const darkButton = page
+      .getByRole("button", { name: /dark/i })
+      .or(page.locator('[data-theme="dark"], [value="dark"]'));
 
     if ((await darkButton.count()) > 0) {
       await darkButton.first().click();
@@ -63,9 +63,9 @@ test.describe("Settings Tabs", () => {
         );
       });
       // Restore to light
-      const lightButton = page.getByRole("button", { name: /light/i }).or(
-        page.locator('[data-theme="light"], [value="light"]'),
-      );
+      const lightButton = page
+        .getByRole("button", { name: /light/i })
+        .or(page.locator('[data-theme="light"], [value="light"]'));
       if ((await lightButton.count()) > 0) {
         await lightButton.first().click();
       }

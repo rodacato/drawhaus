@@ -19,7 +19,12 @@ export interface UseDashboardDataParams {
   toast: ToastFn;
 }
 
-export function useDashboardData({ sidebarView, folderId, searchQuery, toast }: UseDashboardDataParams) {
+export function useDashboardData({
+  sidebarView,
+  folderId,
+  searchQuery,
+  toast,
+}: UseDashboardDataParams) {
   const [diagrams, setDiagrams] = useState<Diagram[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
@@ -27,24 +32,29 @@ export function useDashboardData({ sidebarView, folderId, searchQuery, toast }: 
 
   // Workspaces
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(() => localStorage.getItem("drawhaus_workspace"));
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(() =>
+    localStorage.getItem("drawhaus_workspace"),
+  );
 
   // Load workspaces on mount
   useEffect(() => {
-    workspacesApi.list().then((res) => {
-      const ws = res.workspaces ?? [];
-      setWorkspaces(ws);
-      const saved = localStorage.getItem("drawhaus_workspace");
-      if (saved && ws.some((w) => w.id === saved)) {
-        setActiveWorkspaceId(saved);
-      } else {
-        const personal = ws.find((w) => w.isPersonal);
-        if (personal) {
-          setActiveWorkspaceId(personal.id);
-          localStorage.setItem("drawhaus_workspace", personal.id);
+    workspacesApi
+      .list()
+      .then((res) => {
+        const ws = res.workspaces ?? [];
+        setWorkspaces(ws);
+        const saved = localStorage.getItem("drawhaus_workspace");
+        if (saved && ws.some((w) => w.id === saved)) {
+          setActiveWorkspaceId(saved);
+        } else {
+          const personal = ws.find((w) => w.isPersonal);
+          if (personal) {
+            setActiveWorkspaceId(personal.id);
+            localStorage.setItem("drawhaus_workspace", personal.id);
+          }
         }
-      }
-    }).catch(() => {});
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -52,7 +62,8 @@ export function useDashboardData({ sidebarView, folderId, searchQuery, toast }: 
   }, [activeWorkspaceId]);
 
   // Load data
-  const isGlobalView = sidebarView === "recent" || sidebarView === "starred" || sidebarView === "templates";
+  const isGlobalView =
+    sidebarView === "recent" || sidebarView === "starred" || sidebarView === "templates";
 
   const loadData = useCallback(async () => {
     if (!activeWorkspaceId && !isGlobalView) return;
@@ -77,7 +88,9 @@ export function useDashboardData({ sidebarView, folderId, searchQuery, toast }: 
     setLoading(false);
   }, [folderId, searchQuery, activeWorkspaceId, isGlobalView, toast]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Derived data
   const isRecent = sidebarView === "recent";
@@ -93,22 +106,43 @@ export function useDashboardData({ sidebarView, folderId, searchQuery, toast }: 
 
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
 
-  const heading = computeHeading({ searchQuery, isRecent, isStarred, isTemplates, activeWorkspace });
+  const heading = computeHeading({
+    searchQuery,
+    isRecent,
+    isStarred,
+    isTemplates,
+    activeWorkspace,
+  });
   const subtitle = computeSubtitle({
-    searchQuery, isRecent, isStarred, isTemplates, isWorkspaceView, activeWorkspace,
+    searchQuery,
+    isRecent,
+    isStarred,
+    isTemplates,
+    isWorkspaceView,
+    activeWorkspace,
     resultCount: displayDiagrams.length,
   });
 
   return {
-    diagrams, setDiagrams,
+    diagrams,
+    setDiagrams,
     folders,
-    allTags, setAllTags,
-    workspaces, setWorkspaces,
-    activeWorkspaceId, setActiveWorkspaceId,
-    loading, loadData,
-    displayDiagrams, activeWorkspace,
-    heading, subtitle,
-    isRecent, isStarred, isTemplates, isWorkspaceView,
+    allTags,
+    setAllTags,
+    workspaces,
+    setWorkspaces,
+    activeWorkspaceId,
+    setActiveWorkspaceId,
+    loading,
+    loadData,
+    displayDiagrams,
+    activeWorkspace,
+    heading,
+    subtitle,
+    isRecent,
+    isStarred,
+    isTemplates,
+    isWorkspaceView,
   };
 }
 
@@ -120,7 +154,13 @@ interface HeadingParams {
   activeWorkspace: Workspace | undefined;
 }
 
-function computeHeading({ searchQuery, isRecent, isStarred, isTemplates, activeWorkspace }: HeadingParams): string {
+function computeHeading({
+  searchQuery,
+  isRecent,
+  isStarred,
+  isTemplates,
+  activeWorkspace,
+}: HeadingParams): string {
   if (searchQuery) return `Search: "${searchQuery}"`;
   if (isRecent) return "Recent";
   if (isStarred) return "Starred";
@@ -135,7 +175,13 @@ interface SubtitleParams extends HeadingParams {
 }
 
 function computeSubtitle({
-  searchQuery, isRecent, isStarred, isTemplates, isWorkspaceView, activeWorkspace, resultCount,
+  searchQuery,
+  isRecent,
+  isStarred,
+  isTemplates,
+  isWorkspaceView,
+  activeWorkspace,
+  resultCount,
 }: SubtitleParams): string {
   if (searchQuery) {
     const plural = resultCount !== 1 ? "s" : "";

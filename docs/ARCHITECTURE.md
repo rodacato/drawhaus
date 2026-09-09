@@ -67,26 +67,26 @@ Real-time collaboration uses Socket.IO with msgpack encoding (~30% smaller than 
 
 ## Tech Stack
 
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| Language | TypeScript (full stack) | Type safety, single language across the monorepo |
-| Runtime | Node.js | Ecosystem, Socket.IO native support |
-| Backend framework | Express | Mature, familiar, vast middleware ecosystem |
-| Real-time | Socket.IO + msgpack | Binary encoding, room model, automatic reconnection, Redis adapter for scaling |
-| Database | PostgreSQL | Proven, JSONB for Excalidraw elements, strong transaction support |
-| Cache / Pub-Sub | Redis (optional) | Rate limiting, Socket.IO adapter, snapshot deduplication. Falls back to in-memory |
-| Frontend framework | React 18 | Excalidraw is React-based — no choice here |
-| Build tool | Vite | Fast HMR, ESM-native, simple config |
-| Styling | Tailwind CSS 4 | Utility-first, rapid iteration |
-| Router | React Router v7 | Standard for React SPAs |
-| Editor | @excalidraw/excalidraw v0.18 | The whole point — best open-source drawing tool |
-| Auth | Session cookies (httpOnly, SameSite=Lax) | Simple, secure, no JWT complexity ([ADR-017]) |
-| Validation | Zod | Runtime + compile-time safety on all inputs |
-| Email | Resend | Simple API, good DX. Optional — logs to console if not configured |
-| Deployment | Kamal + Docker + GHCR | Zero-downtime deploys, self-hosted on any VPS |
-| Monorepo | npm workspaces | No extra tooling (Turborepo, Nx) — keeps it simple |
-| Migrations | node-pg-migrate | SQL-based, explicit, no ORM magic |
-| Error monitoring | Sentry | Optional, disabled if `SENTRY_DSN` not set; covers backend (`@sentry/node`) and frontend (`@sentry/react`) |
+| Layer              | Technology                               | Why                                                                                                        |
+| ------------------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Language           | TypeScript (full stack)                  | Type safety, single language across the monorepo                                                           |
+| Runtime            | Node.js                                  | Ecosystem, Socket.IO native support                                                                        |
+| Backend framework  | Express                                  | Mature, familiar, vast middleware ecosystem                                                                |
+| Real-time          | Socket.IO + msgpack                      | Binary encoding, room model, automatic reconnection, Redis adapter for scaling                             |
+| Database           | PostgreSQL                               | Proven, JSONB for Excalidraw elements, strong transaction support                                          |
+| Cache / Pub-Sub    | Redis (optional)                         | Rate limiting, Socket.IO adapter, snapshot deduplication. Falls back to in-memory                          |
+| Frontend framework | React 18                                 | Excalidraw is React-based — no choice here                                                                 |
+| Build tool         | Vite                                     | Fast HMR, ESM-native, simple config                                                                        |
+| Styling            | Tailwind CSS 4                           | Utility-first, rapid iteration                                                                             |
+| Router             | React Router v7                          | Standard for React SPAs                                                                                    |
+| Editor             | @excalidraw/excalidraw v0.18             | The whole point — best open-source drawing tool                                                            |
+| Auth               | Session cookies (httpOnly, SameSite=Lax) | Simple, secure, no JWT complexity ([ADR-017])                                                              |
+| Validation         | Zod                                      | Runtime + compile-time safety on all inputs                                                                |
+| Email              | Resend                                   | Simple API, good DX. Optional — logs to console if not configured                                          |
+| Deployment         | Kamal + Docker + GHCR                    | Zero-downtime deploys, self-hosted on any VPS                                                              |
+| Monorepo           | npm workspaces                           | No extra tooling (Turborepo, Nx) — keeps it simple                                                         |
+| Migrations         | node-pg-migrate                          | SQL-based, explicit, no ORM magic                                                                          |
+| Error monitoring   | Sentry                                   | Optional, disabled if `SENTRY_DSN` not set; covers backend (`@sentry/node`) and frontend (`@sentry/react`) |
 
 ---
 
@@ -172,54 +172,66 @@ The domain defines 28 port interfaces. Key ones:
 ```typescript
 // Repository ports — data persistence
 interface DiagramRepository {
-  create(diagram: Diagram): Promise<Diagram>
-  findById(id: string): Promise<Diagram | null>
-  findByWorkspace(workspaceId: string, options: ListOptions): Promise<Diagram[]>
-  update(id: string, fields: Partial<Diagram>): Promise<Diagram>
-  delete(id: string): Promise<void>
+  create(diagram: Diagram): Promise<Diagram>;
+  findById(id: string): Promise<Diagram | null>;
+  findByWorkspace(workspaceId: string, options: ListOptions): Promise<Diagram[]>;
+  update(id: string, fields: Partial<Diagram>): Promise<Diagram>;
+  delete(id: string): Promise<void>;
   // ...
 }
 
-interface UserRepository { /* ... */ }
-interface WorkspaceRepository { /* ... */ }
-interface SceneRepository { /* ... */ }
-interface CommentRepository { /* ... */ }
-interface SnapshotRepository { /* ... */ }
-interface SessionRepository { /* ... */ }
+interface UserRepository {
+  /* ... */
+}
+interface WorkspaceRepository {
+  /* ... */
+}
+interface SceneRepository {
+  /* ... */
+}
+interface CommentRepository {
+  /* ... */
+}
+interface SnapshotRepository {
+  /* ... */
+}
+interface SessionRepository {
+  /* ... */
+}
 
 // Service ports — external capabilities
 interface EmailService {
-  sendInvite(to: string, inviteUrl: string): Promise<void>
-  sendPasswordReset(to: string, resetUrl: string): Promise<void>
+  sendInvite(to: string, inviteUrl: string): Promise<void>;
+  sendPasswordReset(to: string, resetUrl: string): Promise<void>;
 }
 
 interface EncryptionService {
-  encrypt(plaintext: string): string
-  decrypt(ciphertext: string): string
+  encrypt(plaintext: string): string;
+  decrypt(ciphertext: string): string;
 }
 
 interface DriveService {
-  exportFile(tokens: OAuthTokens, file: DriveFile): Promise<void>
-  importFile(tokens: OAuthTokens, fileId: string): Promise<DriveFile>
+  exportFile(tokens: OAuthTokens, file: DriveFile): Promise<void>;
+  importFile(tokens: OAuthTokens, fileId: string): Promise<DriveFile>;
 }
 ```
 
 ### Adapters (implementations in `infrastructure/`)
 
-| Port | Adapter | Notes |
-|------|---------|-------|
-| DiagramRepository | `PgDiagramRepository` | PostgreSQL + JSONB for elements |
-| UserRepository | `PgUserRepository` | bcrypt password hashing |
-| SessionRepository | `PgSessionRepository` | 30-day TTL, database-backed |
-| WorkspaceRepository | `PgWorkspaceRepository` | With member role queries |
-| SceneRepository | `PgSceneRepository` | JSONB elements + app_state |
-| EmailService | `ResendEmailService` | Falls back to console.log |
-| EncryptionService | `AesEncryptionService` | AES-256-GCM, requires ENCRYPTION_KEY |
-| DriveService | `GoogleDriveService` | OAuth token refresh handled separately |
-| MetricsRepository | `PgMetricsRepository` | Aggregate counts for admin metrics (keeps SQL out of the use case) |
-| WorkspaceInvitationRepository | `PgWorkspaceInvitationRepository` | Workspace invite tokens — create / resolve / accept |
-| OAuthProviderPort | `GitHubOAuthProvider`, `GoogleOAuthProvider` | Provider HTTP (token exchange + profile) behind a port; use cases stay HTTP-free |
-| TokenRefresherPort | `GoogleTokenRefresher` | Refreshes Drive access tokens; injected into Drive use cases |
+| Port                          | Adapter                                      | Notes                                                                            |
+| ----------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------- |
+| DiagramRepository             | `PgDiagramRepository`                        | PostgreSQL + JSONB for elements                                                  |
+| UserRepository                | `PgUserRepository`                           | bcrypt password hashing                                                          |
+| SessionRepository             | `PgSessionRepository`                        | 30-day TTL, database-backed                                                      |
+| WorkspaceRepository           | `PgWorkspaceRepository`                      | With member role queries                                                         |
+| SceneRepository               | `PgSceneRepository`                          | JSONB elements + app_state                                                       |
+| EmailService                  | `ResendEmailService`                         | Falls back to console.log                                                        |
+| EncryptionService             | `AesEncryptionService`                       | AES-256-GCM, requires ENCRYPTION_KEY                                             |
+| DriveService                  | `GoogleDriveService`                         | OAuth token refresh handled separately                                           |
+| MetricsRepository             | `PgMetricsRepository`                        | Aggregate counts for admin metrics (keeps SQL out of the use case)               |
+| WorkspaceInvitationRepository | `PgWorkspaceInvitationRepository`            | Workspace invite tokens — create / resolve / accept                              |
+| OAuthProviderPort             | `GitHubOAuthProvider`, `GoogleOAuthProvider` | Provider HTTP (token exchange + profile) behind a port; use cases stay HTTP-free |
+| TokenRefresherPort            | `GoogleTokenRefresher`                       | Refreshes Drive access tokens; injected into Drive use cases                     |
 
 ---
 
@@ -245,11 +257,13 @@ class CreateDiagram {
 ```
 
 Use cases do NOT contain:
+
 - HTTP/Express concerns (that's routes)
 - SQL queries (that's repositories)
 - Socket.IO events (that's socket handlers)
 
 Use cases DO contain:
+
 - Authorization checks (`requireAccess()`)
 - Business rule enforcement
 - Orchestration of multiple repositories/services
@@ -338,6 +352,7 @@ Subsequent requests:
 ```
 
 **OAuth flow** (Google / GitHub):
+
 1. Redirect to provider consent screen
 2. Callback exchanges code for tokens
 3. Tokens encrypted with AES-256-GCM, stored in `oauth_tokens` table
@@ -348,13 +363,14 @@ Subsequent requests:
 
 ### Role-Based Access Control
 
-| Scope | Roles | Notes |
-|-------|-------|-------|
-| System | `user`, `admin` | Admin: manage users, metrics, site settings |
-| Workspace | `owner`, `admin`, `editor`, `viewer` | Inherited by all diagrams in workspace |
-| Share link | `editor`, `viewer` | Guest access with optional expiration |
+| Scope      | Roles                                | Notes                                       |
+| ---------- | ------------------------------------ | ------------------------------------------- |
+| System     | `user`, `admin`                      | Admin: manage users, metrics, site settings |
+| Workspace  | `owner`, `admin`, `editor`, `viewer` | Inherited by all diagrams in workspace      |
+| Share link | `editor`, `viewer`                   | Guest access with optional expiration       |
 
 **Access resolution order:**
+
 1. Diagram owner → full access
 2. Workspace member → use workspace role
 3. Share link holder → use share role
@@ -381,13 +397,13 @@ Subsequent requests:
 
 ### Throttling
 
-| Event | Rate | Notes |
-|-------|------|-------|
-| Scene updates | 50ms (100ms if >200 elements) | Adaptive throttling |
-| Cursors | 30ms | Volatile — acceptable loss |
-| Viewports | 100ms | Volatile — acceptable loss |
-| Save to DB | 1200ms debounce | REST fallback if socket disconnects |
-| Comments | 10 req/s | Standard rate limit |
+| Event         | Rate                          | Notes                               |
+| ------------- | ----------------------------- | ----------------------------------- |
+| Scene updates | 50ms (100ms if >200 elements) | Adaptive throttling                 |
+| Cursors       | 30ms                          | Volatile — acceptable loss          |
+| Viewports     | 100ms                         | Volatile — acceptable loss          |
+| Save to DB    | 1200ms debounce               | REST fallback if socket disconnects |
+| Comments      | 10 req/s                      | Standard rate limit                 |
 
 ---
 
@@ -397,26 +413,26 @@ Subsequent requests:
 
 Shared by backend, frontend, and MCP server. Core exports:
 
-| Export | Purpose |
-|--------|---------|
+| Export                                         | Purpose                                            |
+| ---------------------------------------------- | -------------------------------------------------- |
 | `createRect`, `createText`, `createArrow`, ... | Element builders for programmatic diagram creation |
-| `layoutGraph({ nodes, edges, direction })` | Dagre-based automatic layout |
-| `mergeElements`, `mergeDelta`, `diffElements` | Version-based conflict resolution |
-| `validateElements`, `normalizeElements` | Zod-based Excalidraw element validation |
-| `EXCALIDRAW_SPEC`, `getSpecForPrompt()` | Curated spec for AI agents |
-| `DIAGRAM_STYLES` | Bauhaus design system (colors, fonts) |
+| `layoutGraph({ nodes, edges, direction })`     | Dagre-based automatic layout                       |
+| `mergeElements`, `mergeDelta`, `diffElements`  | Version-based conflict resolution                  |
+| `validateElements`, `normalizeElements`        | Zod-based Excalidraw element validation            |
+| `EXCALIDRAW_SPEC`, `getSpecForPrompt()`        | Curated spec for AI agents                         |
+| `DIAGRAM_STYLES`                               | Bauhaus design system (colors, fonts)              |
 
 ### @drawhaus/mcp
 
 MCP server for AI agents (Claude Code, Cursor, VS Code):
 
-| Tool | Description |
-|------|-------------|
-| `create_diagram` | Generate diagram from description or elements array |
-| `list_diagrams` | Browse workspace diagrams |
-| `get_diagram` | Read elements + metadata |
-| `update_diagram` | Modify existing diagram |
-| `validate_elements` | Check against Excalidraw spec |
+| Tool                | Description                                         |
+| ------------------- | --------------------------------------------------- |
+| `create_diagram`    | Generate diagram from description or elements array |
+| `list_diagrams`     | Browse workspace diagrams                           |
+| `get_diagram`       | Read elements + metadata                            |
+| `update_diagram`    | Modify existing diagram                             |
+| `validate_elements` | Check against Excalidraw spec                       |
 
 ### Diagram-as-Code Converters
 
@@ -429,15 +445,15 @@ Both used by the frontend's Live Import feature and available as standalone pack
 
 ## External Dependencies
 
-| Dependency | Purpose | Criticality | Failure Mode |
-|-----------|---------|-------------|-------------|
-| PostgreSQL | Primary data store | **Critical** | App won't start |
-| Redis | Socket adapter, rate limiting, dedup | Low | Falls back to in-memory |
-| Google OAuth | Login + Drive integration | Low | Users use email/password instead |
-| GitHub OAuth | Login | Low | Users use email/password instead |
-| Google Drive | Export/import/auto-backup | Low | Feature disabled gracefully |
-| Resend | Email invites + password reset | Low | Logs to console |
-| Sentry | Error monitoring (backend + frontend) | None | No error reporting |
+| Dependency   | Purpose                               | Criticality  | Failure Mode                     |
+| ------------ | ------------------------------------- | ------------ | -------------------------------- |
+| PostgreSQL   | Primary data store                    | **Critical** | App won't start                  |
+| Redis        | Socket adapter, rate limiting, dedup  | Low          | Falls back to in-memory          |
+| Google OAuth | Login + Drive integration             | Low          | Users use email/password instead |
+| GitHub OAuth | Login                                 | Low          | Users use email/password instead |
+| Google Drive | Export/import/auto-backup             | Low          | Feature disabled gracefully      |
+| Resend       | Email invites + password reset        | Low          | Logs to console                  |
+| Sentry       | Error monitoring (backend + frontend) | None         | No error reporting               |
 
 ---
 
@@ -502,18 +518,18 @@ yourdomain.com              api.yourdomain.com
 
 ## Security Summary
 
-| Concern | Approach |
-|---------|----------|
-| Authentication | Session cookies, HttpOnly, SameSite=Lax, 30-day TTL |
-| Password storage | bcrypt hashing |
-| CSRF | Not needed — SameSite=Lax + CORS origin lock ([ADR-017]) |
-| Input validation | Zod schemas on all routes |
-| Authorization | RBAC with workspace roles + share link roles |
-| Secret storage | AES-256-GCM encryption for integration secrets in DB |
-| Rate limiting | Per-bucket limits (auth: 5/15min, API: 100/15min, sockets: 30-60/s) |
-| Headers | Helmet (CSP, HSTS, X-Frame-Options) |
-| Error monitoring | Sentry (optional) |
-| Audit logging | `audit-logger` service for admin-visible events |
+| Concern          | Approach                                                            |
+| ---------------- | ------------------------------------------------------------------- |
+| Authentication   | Session cookies, HttpOnly, SameSite=Lax, 30-day TTL                 |
+| Password storage | bcrypt hashing                                                      |
+| CSRF             | Not needed — SameSite=Lax + CORS origin lock ([ADR-017])            |
+| Input validation | Zod schemas on all routes                                           |
+| Authorization    | RBAC with workspace roles + share link roles                        |
+| Secret storage   | AES-256-GCM encryption for integration secrets in DB                |
+| Rate limiting    | Per-bucket limits (auth: 5/15min, API: 100/15min, sockets: 30-60/s) |
+| Headers          | Helmet (CSP, HSTS, X-Frame-Options)                                 |
+| Error monitoring | Sentry (optional)                                                   |
+| Audit logging    | `audit-logger` service for admin-visible events                     |
 
 ---
 

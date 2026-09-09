@@ -78,8 +78,12 @@ vi.mock("@/components/ApiKeysSettings", () => ({
   ApiKeysSettings: () => <div data-testid="api-keys-settings" />,
 }));
 vi.mock("@/pages/AdminUsers", () => ({ AdminUsers: () => <div data-testid="admin-users" /> }));
-vi.mock("@/pages/AdminSettings", () => ({ AdminSettings: () => <div data-testid="admin-settings" /> }));
-vi.mock("@/pages/AdminStyleGuide", () => ({ AdminStyleGuide: () => <div data-testid="admin-style" /> }));
+vi.mock("@/pages/AdminSettings", () => ({
+  AdminSettings: () => <div data-testid="admin-settings" />,
+}));
+vi.mock("@/pages/AdminStyleGuide", () => ({
+  AdminStyleGuide: () => <div data-testid="admin-style" />,
+}));
 vi.mock("@/pages/AdminDashboard", () => ({
   AdminOverview: () => <div data-testid="admin-overview" />,
 }));
@@ -206,14 +210,19 @@ describe("Settings page", () => {
     await user.type(name, "  Adrian  ");
     await user.click(screen.getByRole("button", { name: /Save Profile/ }));
     await waitFor(() =>
-      expect(authApi.updateProfile).toHaveBeenCalledWith({ name: "Adrian", email: "me@example.com" }),
+      expect(authApi.updateProfile).toHaveBeenCalledWith({
+        name: "Adrian",
+        email: "me@example.com",
+      }),
     );
     expect(await screen.findByText("Profile updated")).toBeTruthy();
     expect(refreshUserFn).toHaveBeenCalled();
   });
 
   test("Profile: API error message is surfaced", async () => {
-    vi.mocked(authApi.updateProfile).mockRejectedValue({ response: { data: { error: "Email taken" } } });
+    vi.mocked(authApi.updateProfile).mockRejectedValue({
+      response: { data: { error: "Email taken" } },
+    });
     const user = userEvent.setup();
     renderSettings();
     await user.click(screen.getByRole("button", { name: /Save Profile/ }));
@@ -249,13 +258,17 @@ describe("Settings page", () => {
     await user.type(screen.getByLabelText("New Password"), "new-password-1");
     await user.type(screen.getByLabelText("Confirm New Password"), "new-password-1");
     await user.click(screen.getByRole("button", { name: /Update Password/ }));
-    await waitFor(() => expect(authApi.changePassword).toHaveBeenCalledWith("current-pw", "new-password-1"));
+    await waitFor(() =>
+      expect(authApi.changePassword).toHaveBeenCalledWith("current-pw", "new-password-1"),
+    );
     expect(await screen.findByText("Password changed")).toBeTruthy();
     expect((screen.getByLabelText("Current Password") as HTMLInputElement).value).toBe("");
   });
 
   test("Password: Unauthorized => 'Current password is incorrect'", async () => {
-    vi.mocked(authApi.changePassword).mockRejectedValue({ response: { data: { error: "Unauthorized" } } });
+    vi.mocked(authApi.changePassword).mockRejectedValue({
+      response: { data: { error: "Unauthorized" } },
+    });
     const user = userEvent.setup();
     renderSettings(["/settings?tab=security"]);
     await user.type(screen.getByLabelText("Current Password"), "wrong");

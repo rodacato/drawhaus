@@ -15,13 +15,16 @@ export function WorkspaceInvite() {
 
   useEffect(() => {
     if (!token) return;
-    workspacesApi.resolveInvite(token)
+    workspacesApi
+      .resolveInvite(token)
       .then((data) => {
         setWorkspaceName(data.workspaceName);
         setRole(data.role);
       })
       .catch((err) => {
-        setError(err.response?.status === 410 ? "This invitation has expired." : "Invitation not found.");
+        setError(
+          err.response?.status === 410 ? "This invitation has expired." : "Invitation not found.",
+        );
       })
       .finally(() => setLoading(false));
   }, [token]);
@@ -44,7 +47,11 @@ export function WorkspaceInvite() {
   }
 
   if (loading) {
-    return <div className="flex h-screen items-center justify-center bg-surface text-sm text-text-muted">Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-surface text-sm text-text-muted">
+        Loading...
+      </div>
+    );
   }
 
   const acceptLabel = user ? "Accept Invitation" : "Log in to Accept";
@@ -56,7 +63,11 @@ export function WorkspaceInvite() {
           <>
             <h1 className="mb-2 text-xl font-bold text-text-primary">Oops</h1>
             <p className="mb-6 text-text-secondary">{error}</p>
-            <button onClick={() => navigate("/dashboard")} className="rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-white" type="button">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-white"
+              type="button"
+            >
               Go to Dashboard
             </button>
           </>
@@ -64,12 +75,21 @@ export function WorkspaceInvite() {
           <>
             <h1 className="mb-2 text-xl font-bold text-text-primary">Workspace Invitation</h1>
             <p className="mb-6 text-text-secondary">
-              You've been invited to join <strong className="text-text-primary">{workspaceName}</strong> as <strong className="text-text-primary capitalize">{role}</strong>.
+              You've been invited to join{" "}
+              <strong className="text-text-primary">{workspaceName}</strong> as{" "}
+              <strong className="text-text-primary capitalize">{role}</strong>.
             </p>
             {!user && (
-              <p className="mb-4 text-sm text-text-muted">You'll need to log in or create an account to accept.</p>
+              <p className="mb-4 text-sm text-text-muted">
+                You'll need to log in or create an account to accept.
+              </p>
             )}
-            <button onClick={handleAccept} disabled={accepting} className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover" type="button">
+            <button
+              onClick={handleAccept}
+              disabled={accepting}
+              className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover"
+              type="button"
+            >
               {accepting ? "Accepting..." : acceptLabel}
             </button>
           </>

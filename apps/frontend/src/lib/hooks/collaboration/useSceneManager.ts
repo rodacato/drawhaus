@@ -9,7 +9,8 @@ let _restoreElements: ((elements: unknown[], localElements: null) => unknown[]) 
 const getRestoreElements = async () => {
   if (!_restoreElements) {
     const mod = await import("@excalidraw/excalidraw");
-    _restoreElements = (mod as unknown as { restoreElements: typeof _restoreElements }).restoreElements!;
+    _restoreElements = (mod as unknown as { restoreElements: typeof _restoreElements })
+      .restoreElements!;
   }
   return _restoreElements;
 };
@@ -42,22 +43,37 @@ export function useSceneManager({
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
 
   /* ─── sync activeSceneIdRef ─── */
-  useEffect(() => { activeSceneIdRef.current = activeSceneId; }, [activeSceneId]);
+  useEffect(() => {
+    activeSceneIdRef.current = activeSceneId;
+  }, [activeSceneId]);
 
   /* ─── socket event listeners for scene data ─── */
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket) return;
 
-    const releaseRemoteFlag = () => { setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0); };
+    const releaseRemoteFlag = () => {
+      setTimeout(() => {
+        applyingRemoteCounter.current -= 1;
+      }, 0);
+    };
 
-    const handleSceneFromDb = ({ elements, activeSceneId: sceneId }: { elements: unknown[]; activeSceneId?: string | null }) => {
+    const handleSceneFromDb = ({
+      elements,
+      activeSceneId: sceneId,
+    }: {
+      elements: unknown[];
+      activeSceneId?: string | null;
+    }) => {
       if (sceneId) setActiveSceneId(sceneId);
 
       // Normalise elements — DB rows may lack Excalidraw-internal fields
       // (seed, version, opacity …) which causes updateScene to render blanks.
       const apply = (els: unknown[]) => {
-        if (!excalidrawApiRef.current) { pendingSceneRef.current = { elements: els }; return; }
+        if (!excalidrawApiRef.current) {
+          pendingSceneRef.current = { elements: els };
+          return;
+        }
         applyingRemoteCounter.current += 1;
         excalidrawApiRef.current.updateScene({ elements: els });
         releaseRemoteFlag();
@@ -68,7 +84,13 @@ export function useSceneManager({
         .catch(() => apply(elements)); // fallback: apply raw if import fails
     };
 
-    const handleSceneUpdated = ({ fromSocketId, elements: remoteElements }: { fromSocketId: string; elements: unknown[] }) => {
+    const handleSceneUpdated = ({
+      fromSocketId,
+      elements: remoteElements,
+    }: {
+      fromSocketId: string;
+      elements: unknown[];
+    }) => {
       if (fromSocketId === socket.id) return;
       const localElements = excalidrawApiRef.current?.getSceneElements?.() ?? [];
       const merged = mergeElements(localElements, remoteElements);
@@ -77,10 +99,24 @@ export function useSceneManager({
       releaseRemoteFlag();
     };
 
-    const handleSceneDeltaReceived = ({ fromSocketId, fromUserId, changed, removedIds }: { fromSocketId: string; fromUserId: string; changed: unknown[]; removedIds: string[] }) => {
+    const handleSceneDeltaReceived = ({
+      fromSocketId,
+      fromUserId,
+      changed,
+      removedIds,
+    }: {
+      fromSocketId: string;
+      fromUserId: string;
+      changed: unknown[];
+      removedIds: string[];
+    }) => {
       if (fromSocketId === socket.id) return;
       const localElements = excalidrawApiRef.current?.getSceneElements?.() ?? [];
-      const { elements: merged, conflictIds, deletedIds } = mergeDelta(localElements, changed, removedIds);
+      const {
+        elements: merged,
+        conflictIds,
+        deletedIds,
+      } = mergeDelta(localElements, changed, removedIds);
       applyingRemoteCounter.current += 1;
       excalidrawApiRef.current?.updateScene({ elements: merged });
       releaseRemoteFlag();

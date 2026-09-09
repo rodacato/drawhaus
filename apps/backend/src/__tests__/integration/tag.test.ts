@@ -59,40 +59,75 @@ function createApp() {
   const invitations = new InMemoryInvitationRepository();
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
-  app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
-    login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
-    logout: new LogoutUseCase(sessions),
-    getCurrentUser,
-    updateProfile: new UpdateProfileUseCase(users),
-    changePassword: new ChangePasswordUseCase(users, hasher),
-    acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
-    forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
-    resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
-  }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register: new RegisterUseCase(
+          users,
+          sessions,
+          hasher,
+          new InMemorySiteSettingsRepository(),
+        ),
+        login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
+        logout: new LogoutUseCase(sessions),
+        getCurrentUser,
+        updateProfile: new UpdateProfileUseCase(users),
+        changePassword: new ChangePasswordUseCase(users, hasher),
+        acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
+        forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
+        resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
+        deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
+        googleAuth: new GoogleAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        githubAuth: new GitHubAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        unlinkOAuth: new UnlinkOAuthUseCase(
+          users,
+          new InMemoryOAuthTokenRepository(),
+          new InMemoryDriveBackupRepository(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
-  app.use("/api/tags", createTagRoutes({
-    create: new CreateTagUseCase(tags),
-    list: new ListTagsUseCase(tags),
-    update: new UpdateTagUseCase(tags),
-    delete: new DeleteTagUseCase(tags),
-    assign: new AssignTagUseCase(tags, diagrams),
-    unassign: new UnassignTagUseCase(tags, diagrams),
-  }, requireAuth));
+  app.use(
+    "/api/tags",
+    createTagRoutes(
+      {
+        create: new CreateTagUseCase(tags),
+        list: new ListTagsUseCase(tags),
+        update: new UpdateTagUseCase(tags),
+        delete: new DeleteTagUseCase(tags),
+        assign: new AssignTagUseCase(tags, diagrams),
+        unassign: new UnassignTagUseCase(tags, diagrams),
+      },
+      requireAuth,
+    ),
+  );
 
   return app;
 }
 
 async function registerAndGetUser(app: express.Express, email: string) {
-  const res = await request(app).post("/api/auth/register").send({
-    email,
-    name: email.split("@")[0],
-    password: "password123",
-  });
+  const res = await request(app)
+    .post("/api/auth/register")
+    .send({
+      email,
+      name: email.split("@")[0],
+      password: "password123",
+    });
   const cookie = res.headers["set-cookie"][0].split(";")[0];
   return { cookie, userId: res.body.user.id as string };
 }
@@ -106,10 +141,7 @@ test("POST /api/tags creates a tag with default color", async () => {
   const app = createApp();
   const { cookie } = await registerAndGetUser(app, "tag1@example.com");
 
-  const res = await request(app)
-    .post("/api/tags")
-    .set("Cookie", cookie)
-    .send({ name: "Urgent" });
+  const res = await request(app).post("/api/tags").set("Cookie", cookie).send({ name: "Urgent" });
 
   assert.equal(res.status, 201);
   assert.equal(res.body.tag.name, "Urgent");
@@ -180,16 +212,10 @@ test("PATCH /api/tags/:id rejects empty body with 400", async () => {
   const app = createApp();
   const { cookie } = await registerAndGetUser(app, "tag6@example.com");
 
-  const create = await request(app)
-    .post("/api/tags")
-    .set("Cookie", cookie)
-    .send({ name: "X" });
+  const create = await request(app).post("/api/tags").set("Cookie", cookie).send({ name: "X" });
   const tagId = create.body.tag.id as string;
 
-  const res = await request(app)
-    .patch(`/api/tags/${tagId}`)
-    .set("Cookie", cookie)
-    .send({});
+  const res = await request(app).patch(`/api/tags/${tagId}`).set("Cookie", cookie).send({});
 
   assert.equal(res.status, 400);
 });
@@ -198,10 +224,7 @@ test("DELETE /api/tags/:id removes the tag", async () => {
   const app = createApp();
   const { cookie } = await registerAndGetUser(app, "tag7@example.com");
 
-  const create = await request(app)
-    .post("/api/tags")
-    .set("Cookie", cookie)
-    .send({ name: "Trash" });
+  const create = await request(app).post("/api/tags").set("Cookie", cookie).send({ name: "Trash" });
   const tagId = create.body.tag.id as string;
 
   const res = await request(app).delete(`/api/tags/${tagId}`).set("Cookie", cookie);
@@ -258,7 +281,10 @@ test("POST /api/tags/:id/assign returns 404 when tag does not belong to user", a
   const { cookie: aliceCookie } = await registerAndGetUser(app, "ta1@example.com");
   const { cookie: bobCookie, userId: bobId } = await registerAndGetUser(app, "tb1@example.com");
 
-  const tagRes = await request(app).post("/api/tags").set("Cookie", aliceCookie).send({ name: "Alices" });
+  const tagRes = await request(app)
+    .post("/api/tags")
+    .set("Cookie", aliceCookie)
+    .send({ name: "Alices" });
   const tagId = tagRes.body.tag.id as string;
 
   const bobDiagram = await diagrams.create({ ownerId: bobId, title: "Bobs" });
@@ -309,10 +335,7 @@ test("POST /api/tags rejects empty name with 400", async () => {
   const app = createApp();
   const { cookie } = await registerAndGetUser(app, "tagvname@example.com");
 
-  const res = await request(app)
-    .post("/api/tags")
-    .set("Cookie", cookie)
-    .send({ name: "" });
+  const res = await request(app).post("/api/tags").set("Cookie", cookie).send({ name: "" });
 
   assert.equal(res.status, 400);
 });

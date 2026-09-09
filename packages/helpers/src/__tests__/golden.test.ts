@@ -55,7 +55,10 @@ describe("golden file: db schema diagram", () => {
       const tables = [
         { name: "users", columns: ["id: uuid PK", "name: text", "email: text"] },
         { name: "orders", columns: ["id: uuid PK", "user_id: uuid FK", "total: numeric"] },
-        { name: "items", columns: ["id: uuid PK", "order_id: uuid FK", "product: text", "qty: int"] },
+        {
+          name: "items",
+          columns: ["id: uuid PK", "order_id: uuid FK", "product: text", "qty: int"],
+        },
       ];
 
       const CHAR_WIDTH = 8.4;
@@ -67,10 +70,7 @@ describe("golden file: db schema diagram", () => {
       // Measure tables
       const measured = tables.map((t) => {
         const allLines = [t.name, ...t.columns];
-        const width = Math.max(
-          ...allLines.map((l) => l.length * CHAR_WIDTH + PADDING_X * 2),
-          140,
-        );
+        const width = Math.max(...allLines.map((l) => l.length * CHAR_WIDTH + PADDING_X * 2), 140);
         const height = HEADER_HEIGHT + t.columns.length * ROW_HEIGHT + PADDING_Y * 2;
         return { ...t, width, height };
       });
@@ -215,8 +215,18 @@ describe("golden file: class diagram", () => {
 
     function generateClassDiagram() {
       const classes = [
-        { name: "Animal", kind: "abstract" as const, attrs: ["name: string", "age: number"], methods: ["speak(): void"] },
-        { name: "Dog", kind: "class" as const, attrs: ["breed: string"], methods: ["fetch(): void", "bark(): void"] },
+        {
+          name: "Animal",
+          kind: "abstract" as const,
+          attrs: ["name: string", "age: number"],
+          methods: ["speak(): void"],
+        },
+        {
+          name: "Dog",
+          kind: "class" as const,
+          attrs: ["breed: string"],
+          methods: ["fetch(): void", "bark(): void"],
+        },
       ];
 
       const CHAR_WIDTH = 8.4;
@@ -229,7 +239,8 @@ describe("golden file: class diagram", () => {
       const measured = classes.map((c) => {
         const allLines = [c.name, ...c.attrs, ...c.methods];
         const width = Math.max(...allLines.map((l) => l.length * CHAR_WIDTH + PADDING_X * 2), 160);
-        const height = HEADER_H + c.attrs.length * ROW_H + SEP_H + c.methods.length * ROW_H + PADDING_Y * 2;
+        const height =
+          HEADER_H + c.attrs.length * ROW_H + SEP_H + c.methods.length * ROW_H + PADDING_Y * 2;
         return { ...c, width, height };
       });
 

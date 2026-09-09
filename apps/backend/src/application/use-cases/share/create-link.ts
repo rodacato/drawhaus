@@ -22,7 +22,9 @@ export class CreateShareLinkUseCase {
 
     const existing = await this.shares.findByDiagram(input.diagramId);
     if (existing.length >= MAX_LINKS_PER_DIAGRAM) {
-      throw new ConflictError(`Maximum of ${MAX_LINKS_PER_DIAGRAM} share links per diagram reached. Delete unused links first.`);
+      throw new ConflictError(
+        `Maximum of ${MAX_LINKS_PER_DIAGRAM} share links per diagram reached. Delete unused links first.`,
+      );
     }
 
     const expiresAt = input.expiresInHours

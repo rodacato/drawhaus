@@ -15,7 +15,8 @@ type SettingsRow = {
   backup_retention_days: number;
 };
 
-const COLS = "registration_open, instance_name, maintenance_mode, max_workspaces_per_user, max_members_per_workspace, setup_completed, setup_skipped_integrations, backup_enabled, backup_cron, backup_retention_days";
+const COLS =
+  "registration_open, instance_name, maintenance_mode, max_workspaces_per_user, max_members_per_workspace, setup_completed, setup_skipped_integrations, backup_enabled, backup_cron, backup_retention_days";
 
 const DEFAULTS: SiteSettings = {
   registrationOpen: true,

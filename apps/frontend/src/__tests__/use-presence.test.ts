@@ -48,7 +48,9 @@ function renderPresence(opts: RenderOpts) {
   const excalidrawApiRef = makeRef(api);
   const applyingRemoteCounter = makeRef(0);
   const followingUserIdRef = makeRef<string | null>(null);
-  const followedViewportRef = makeRef<{ scrollX: number; scrollY: number; zoom: number } | null>(null);
+  const followedViewportRef = makeRef<{ scrollX: number; scrollY: number; zoom: number } | null>(
+    null,
+  );
 
   return {
     api,
@@ -75,7 +77,9 @@ describe("usePresence", () => {
 
   beforeEach(() => {
     installRafStub();
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
+    vi.useFakeTimers({
+      toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"],
+    });
     socket = createMockSocket({ id: "self-sock" });
   });
 
@@ -114,7 +118,9 @@ describe("usePresence", () => {
     act(() => {
       triggerSocketEvent(socket, "cursor-moved", { userId: "u2", name: "B", x: 10, y: 20 });
     });
-    act(() => { flushRaf(); });
+    act(() => {
+      flushRaf();
+    });
     expect(result.current.cursors["u2"]).toMatchObject({ name: "B", x: 10, y: 20 });
   });
 
@@ -123,12 +129,16 @@ describe("usePresence", () => {
     act(() => {
       triggerSocketEvent(socket, "cursor-moved", { userId: "u2", name: "B", x: 1, y: 1 });
     });
-    act(() => { flushRaf(); });
+    act(() => {
+      flushRaf();
+    });
     expect(result.current.cursors["u2"]).toBeDefined();
     act(() => {
       triggerSocketEvent(socket, "cursor-left", { userId: "u2" });
     });
-    act(() => { flushRaf(); });
+    act(() => {
+      flushRaf();
+    });
     expect(result.current.cursors["u2"]).toBeUndefined();
   });
 
@@ -137,21 +147,35 @@ describe("usePresence", () => {
     act(() => {
       triggerSocketEvent(socket, "cursor-moved", { userId: "u2", name: "B", x: 0, y: 0 });
     });
-    act(() => { flushRaf(); });
+    act(() => {
+      flushRaf();
+    });
     expect(result.current.cursors["u2"]).toBeDefined();
-    act(() => { vi.advanceTimersByTime(6000); });
-    act(() => { flushRaf(); });
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
+    act(() => {
+      flushRaf();
+    });
     expect(result.current.cursors["u2"]).toBeUndefined();
   });
 
   test("onPointerMove throttles cursor-move emissions", () => {
     const { result } = renderPresence({ socket });
-    act(() => { result.current.onPointerMove({ clientX: 1, clientY: 1 }); });
-    act(() => { result.current.onPointerMove({ clientX: 2, clientY: 2 }); });
+    act(() => {
+      result.current.onPointerMove({ clientX: 1, clientY: 1 });
+    });
+    act(() => {
+      result.current.onPointerMove({ clientX: 2, clientY: 2 });
+    });
     const moves = socket.emit.mock.calls.filter((c) => c[0] === "cursor-move");
     expect(moves.length).toBe(1);
-    act(() => { vi.advanceTimersByTime(50); });
-    act(() => { result.current.onPointerMove({ clientX: 3, clientY: 3 }); });
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
+    act(() => {
+      result.current.onPointerMove({ clientX: 3, clientY: 3 });
+    });
     const movesAfter = socket.emit.mock.calls.filter((c) => c[0] === "cursor-move");
     expect(movesAfter.length).toBe(2);
   });
@@ -163,10 +187,17 @@ describe("usePresence", () => {
       triggerSocketEvent(socket, "room-presence", { users: [{ userId: "u-target", name: "T" }] });
     });
     followedViewportRef.current = { scrollX: 1, scrollY: 2, zoom: 1 };
-    act(() => { result.current.setFollowingUserId("u-target"); });
+    act(() => {
+      result.current.setFollowingUserId("u-target");
+    });
     expect(result.current.followingUserId).toBe("u-target");
-    expect(socket.emit).toHaveBeenCalledWith("request-viewport", { roomId: "diag-1", targetUserId: "u-target" });
-    act(() => { result.current.setFollowingUserId(null); });
+    expect(socket.emit).toHaveBeenCalledWith("request-viewport", {
+      roomId: "diag-1",
+      targetUserId: "u-target",
+    });
+    act(() => {
+      result.current.setFollowingUserId(null);
+    });
     expect(result.current.followingUserId).toBeNull();
     expect(followedViewportRef.current).toBeNull();
   });
@@ -176,7 +207,9 @@ describe("usePresence", () => {
     act(() => {
       triggerSocketEvent(socket, "room-presence", { users: [{ userId: "u-target", name: "T" }] });
     });
-    act(() => { result.current.setFollowingUserId("u-target"); });
+    act(() => {
+      result.current.setFollowingUserId("u-target");
+    });
     expect(result.current.followingUserId).toBe("u-target");
     act(() => {
       triggerSocketEvent(socket, "room-presence", { users: [] });
@@ -189,23 +222,41 @@ describe("usePresence", () => {
     act(() => {
       triggerSocketEvent(socket, "room-presence", { users: [{ userId: "u-target", name: "T" }] });
     });
-    act(() => { result.current.setFollowingUserId("u-target"); });
     act(() => {
-      triggerSocketEvent(socket, "viewport-updated", { userId: "OTHER", scrollX: 9, scrollY: 9, zoom: 2 });
+      result.current.setFollowingUserId("u-target");
+    });
+    act(() => {
+      triggerSocketEvent(socket, "viewport-updated", {
+        userId: "OTHER",
+        scrollX: 9,
+        scrollY: 9,
+        zoom: 2,
+      });
     });
     expect(api.updateScene).not.toHaveBeenCalled();
     act(() => {
-      triggerSocketEvent(socket, "viewport-updated", { userId: "u-target", scrollX: 100, scrollY: 200, zoom: 2 });
+      triggerSocketEvent(socket, "viewport-updated", {
+        userId: "u-target",
+        scrollX: 100,
+        scrollY: 200,
+        zoom: 2,
+      });
     });
     expect(api.updateScene).toHaveBeenCalled();
-    act(() => { vi.advanceTimersByTime(1); });
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(applyingRemoteCounter.current).toBe(0);
   });
 
   test("provide-viewport responds with current viewport-update", () => {
-    const api = createExcalidrawApiStub({ appState: { scrollX: 5, scrollY: 7, zoom: { value: 1.5 } } });
+    const api = createExcalidrawApiStub({
+      appState: { scrollX: 5, scrollY: 7, zoom: { value: 1.5 } },
+    });
     renderPresence({ socket, api });
-    act(() => { triggerSocketEvent(socket, "provide-viewport", {}); });
+    act(() => {
+      triggerSocketEvent(socket, "provide-viewport", {});
+    });
     expect(socket.emit).toHaveBeenCalledWith(
       "viewport-update",
       expect.objectContaining({ roomId: "diag-1", scrollX: 5, scrollY: 7, zoom: 1.5 }),
@@ -214,15 +265,21 @@ describe("usePresence", () => {
 
   test("hand-raised / hand-lowered update raisedHands set", () => {
     const { result } = renderPresence({ socket });
-    act(() => { triggerSocketEvent(socket, "hand-raised", { userId: "u3" }); });
+    act(() => {
+      triggerSocketEvent(socket, "hand-raised", { userId: "u3" });
+    });
     expect(result.current.raisedHands.has("u3")).toBe(true);
-    act(() => { triggerSocketEvent(socket, "hand-lowered", { userId: "u3" }); });
+    act(() => {
+      triggerSocketEvent(socket, "hand-lowered", { userId: "u3" });
+    });
     expect(result.current.raisedHands.has("u3")).toBe(false);
   });
 
   test("raiseHand emits, marks self in raisedHands, sets isHandRaised=true", () => {
     const { result } = renderPresence({ socket, selfUserId: "me" });
-    act(() => { result.current.raiseHand(); });
+    act(() => {
+      result.current.raiseHand();
+    });
     expect(socket.emit).toHaveBeenCalledWith("raise-hand", { roomId: "diag-1" });
     expect(result.current.isHandRaised).toBe(true);
     expect(result.current.raisedHands.has("me")).toBe(true);
@@ -230,8 +287,12 @@ describe("usePresence", () => {
 
   test("lowerHand emits and unsets isHandRaised", () => {
     const { result } = renderPresence({ socket, selfUserId: "me" });
-    act(() => { result.current.raiseHand(); });
-    act(() => { result.current.lowerHand(); });
+    act(() => {
+      result.current.raiseHand();
+    });
+    act(() => {
+      result.current.lowerHand();
+    });
     expect(socket.emit).toHaveBeenCalledWith("lower-hand", { roomId: "diag-1" });
     expect(result.current.isHandRaised).toBe(false);
     expect(result.current.raisedHands.has("me")).toBe(false);
@@ -239,8 +300,12 @@ describe("usePresence", () => {
 
   test("raised hands are dropped when their user leaves presence", () => {
     const { result } = renderPresence({ socket });
-    act(() => { triggerSocketEvent(socket, "hand-raised", { userId: "ghost" }); });
-    act(() => { triggerSocketEvent(socket, "room-presence", { users: [] }); });
+    act(() => {
+      triggerSocketEvent(socket, "hand-raised", { userId: "ghost" });
+    });
+    act(() => {
+      triggerSocketEvent(socket, "room-presence", { users: [] });
+    });
     expect(result.current.raisedHands.has("ghost")).toBe(false);
   });
 });

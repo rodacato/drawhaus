@@ -38,7 +38,12 @@ function createApp() {
   sessions = new InMemorySessionRepository(() => users.store);
   const hasher = new FakeHasher();
 
-  const register = new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository());
+  const register = new RegisterUseCase(
+    users,
+    sessions,
+    hasher,
+    new InMemorySiteSettingsRepository(),
+  );
   const audit = new NoopAuditLogger();
   const login = new LoginUseCase(users, sessions, hasher, audit);
   const logout = new LogoutUseCase(sessions);
@@ -51,16 +56,57 @@ function createApp() {
   const acceptInvite = new AcceptInviteUseCase(users, sessions, invitations, hasher);
   const forgotPassword = new ForgotPasswordUseCase(users, passwordResets, emailService);
   const resetPassword = new ResetPasswordUseCase(users, sessions, passwordResets, hasher);
-  const deleteAccount = new DeleteAccountUseCase(users, hasher, audit, new InMemoryWorkspaceRepository());
+  const deleteAccount = new DeleteAccountUseCase(
+    users,
+    hasher,
+    audit,
+    new InMemoryWorkspaceRepository(),
+  );
   const oauthTokens = new InMemoryOAuthTokenRepository();
-  const googleAuth = new GoogleAuthUseCase(users, sessions, oauthTokens, new InMemorySiteSettingsRepository(), new FakeOAuthProvider());
-  const githubAuth = new GitHubAuthUseCase(users, sessions, oauthTokens, new InMemorySiteSettingsRepository(), new FakeOAuthProvider());
-  const unlinkOAuth = new UnlinkOAuthUseCase(users, oauthTokens, new InMemoryDriveBackupRepository());
+  const googleAuth = new GoogleAuthUseCase(
+    users,
+    sessions,
+    oauthTokens,
+    new InMemorySiteSettingsRepository(),
+    new FakeOAuthProvider(),
+  );
+  const githubAuth = new GitHubAuthUseCase(
+    users,
+    sessions,
+    oauthTokens,
+    new InMemorySiteSettingsRepository(),
+    new FakeOAuthProvider(),
+  );
+  const unlinkOAuth = new UnlinkOAuthUseCase(
+    users,
+    oauthTokens,
+    new InMemoryDriveBackupRepository(),
+  );
   const requireAuth = createRequireAuth(getCurrentUser);
 
   const app = express();
   app.use(express.json());
-  app.use("/api/auth", createAuthRoutes({ register, login, logout, getCurrentUser, updateProfile, changePassword, acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth, githubAuth, unlinkOAuth }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register,
+        login,
+        logout,
+        getCurrentUser,
+        updateProfile,
+        changePassword,
+        acceptInvite,
+        forgotPassword,
+        resetPassword,
+        deleteAccount,
+        googleAuth,
+        githubAuth,
+        unlinkOAuth,
+      },
+      requireAuth,
+    ),
+  );
   return app;
 }
 
@@ -197,10 +243,7 @@ test("update profile rejects empty body", async () => {
   });
 
   const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
-  const res = await request(app)
-    .patch("/api/auth/me")
-    .set("Cookie", cookie)
-    .send({});
+  const res = await request(app).patch("/api/auth/me").set("Cookie", cookie).send({});
 
   assert.equal(res.status, 400);
 });
@@ -314,9 +357,7 @@ test("GitHub OAuth returns 404 when not configured", async () => {
 
 test("Google callback redirects to error on invalid state", async () => {
   const app = createApp();
-  const res = await request(app)
-    .get("/api/auth/google/callback?code=test&state=bad")
-    .redirects(0);
+  const res = await request(app).get("/api/auth/google/callback?code=test&state=bad").redirects(0);
 
   assert.equal(res.status, 302);
   assert.ok(res.headers.location.includes("login?error=oauth_failed"));
@@ -324,9 +365,7 @@ test("Google callback redirects to error on invalid state", async () => {
 
 test("GitHub callback redirects to error on invalid state", async () => {
   const app = createApp();
-  const res = await request(app)
-    .get("/api/auth/github/callback?code=test&state=bad")
-    .redirects(0);
+  const res = await request(app).get("/api/auth/github/callback?code=test&state=bad").redirects(0);
 
   assert.equal(res.status, 302);
   assert.ok(res.headers.location.includes("login?error=oauth_failed"));
@@ -341,10 +380,7 @@ test("link GitHub returns 404 when not configured", async () => {
   });
 
   const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
-  const res = await request(app)
-    .get("/api/auth/link/github")
-    .set("Cookie", cookie)
-    .redirects(0);
+  const res = await request(app).get("/api/auth/link/github").set("Cookie", cookie).redirects(0);
 
   assert.equal(res.status, 404);
 });
@@ -358,10 +394,7 @@ test("link Google returns 404 when not configured", async () => {
   });
 
   const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
-  const res = await request(app)
-    .get("/api/auth/link/google")
-    .set("Cookie", cookie)
-    .redirects(0);
+  const res = await request(app).get("/api/auth/link/google").set("Cookie", cookie).redirects(0);
 
   assert.equal(res.status, 404);
 });
@@ -375,9 +408,7 @@ test("unlink invalid provider returns 400", async () => {
   });
 
   const cookie = registerRes.headers["set-cookie"][0].split(";")[0];
-  const res = await request(app)
-    .delete("/api/auth/link/invalid")
-    .set("Cookie", cookie);
+  const res = await request(app).delete("/api/auth/link/invalid").set("Cookie", cookie);
 
   assert.equal(res.status, 400);
 });
@@ -385,9 +416,7 @@ test("unlink invalid provider returns 400", async () => {
 test("protected routes reject unauthenticated requests", async () => {
   const app = createApp();
 
-  const patchMe = await request(app)
-    .patch("/api/auth/me")
-    .send({ name: "Nope" });
+  const patchMe = await request(app).patch("/api/auth/me").send({ name: "Nope" });
   assert.equal(patchMe.status, 401);
 
   const changePass = await request(app)
@@ -395,8 +424,6 @@ test("protected routes reject unauthenticated requests", async () => {
     .send({ currentPassword: "x", newPassword: "newpass1234" });
   assert.equal(changePass.status, 401);
 
-  const deleteAcc = await request(app)
-    .delete("/api/auth/account")
-    .send({ password: "x" });
+  const deleteAcc = await request(app).delete("/api/auth/account").send({ password: "x" });
   assert.equal(deleteAcc.status, 401);
 });

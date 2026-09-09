@@ -14,7 +14,10 @@ vi.mock("@excalidraw/excalidraw", () => ({
     (els as { id: string }[]).map((e) => ({ ...e, _restored: true })),
 }));
 
-import { useSceneManager, type UseSceneManagerParams } from "../lib/hooks/collaboration/useSceneManager";
+import {
+  useSceneManager,
+  type UseSceneManagerParams,
+} from "../lib/hooks/collaboration/useSceneManager";
 
 type OnConflict = NonNullable<UseSceneManagerParams["onConflict"]>;
 type OnRemoteDelete = NonNullable<UseSceneManagerParams["onRemoteDelete"]>;
@@ -80,7 +83,8 @@ describe("useSceneManager", () => {
     await waitFor(() => expect(result.current.activeSceneId).toBe("scene-x"));
     expect(activeSceneIdRef.current).toBe("scene-x");
     await waitFor(() => expect(apiRef.current!.updateScene).toHaveBeenCalled());
-    const arg = (apiRef.current!.updateScene as unknown as { mock: { calls: unknown[][] } }).mock.calls[0][0] as { elements: { _restored?: boolean }[] };
+    const arg = (apiRef.current!.updateScene as unknown as { mock: { calls: unknown[][] } }).mock
+      .calls[0][0] as { elements: { _restored?: boolean }[] };
     expect(arg.elements[0]._restored).toBe(true);
   });
 
@@ -100,7 +104,10 @@ describe("useSceneManager", () => {
     const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });
     const { apiRef } = renderScene({ socket, api });
     act(() => {
-      triggerSocketEvent(socket, "scene-updated", { fromSocketId: socket.id, elements: [{ id: "x", version: 2 }] });
+      triggerSocketEvent(socket, "scene-updated", {
+        fromSocketId: socket.id,
+        elements: [{ id: "x", version: 2 }],
+      });
     });
     expect(apiRef.current!.updateScene).not.toHaveBeenCalled();
   });
@@ -143,7 +150,12 @@ describe("useSceneManager", () => {
 
   test("scene-delta-received fires onRemoteDelete with deleted IDs", () => {
     const onRemoteDelete = vi.fn<OnRemoteDelete>();
-    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }, { id: "b", version: 1 }] });
+    const api = createExcalidrawApiStub({
+      elements: [
+        { id: "a", version: 1 },
+        { id: "b", version: 1 },
+      ],
+    });
     renderScene({ socket, api, onRemoteDelete });
 
     act(() => {

@@ -6,10 +6,7 @@ import { parse as parseComponentGrammar } from "./grammar/component.js";
 import { parse as parseDeploymentGrammar } from "./grammar/deployment.js";
 import { parse as parseSequenceGrammar } from "./grammar/sequence.js";
 import { parse as parseMindmapGrammar } from "./grammar/mindmap.js";
-import type {
-  DiagramAST,
-  DiagramType,
-} from "./types.js";
+import type { DiagramAST, DiagramType } from "./types.js";
 import { PlantUMLParseError, PlantUMLUnsupportedError } from "./types.js";
 
 export { PlantUMLParseError, PlantUMLUnsupportedError } from "./types.js";
@@ -56,8 +53,7 @@ const DETECTION_RULES: DetectionRule[] = [
   // Mindmap: @startmindmap is 100% unambiguous — must be first
   {
     type: "mindmap",
-    test: (_s, lower) =>
-      lower.includes("@startmindmap"),
+    test: (_s, lower) => lower.includes("@startmindmap"),
     fallbacks: [],
   },
 
@@ -71,17 +67,14 @@ const DETECTION_RULES: DetectionRule[] = [
   // State: explicit state keyword or [*] pseudo-state
   {
     type: "state",
-    test: (stripped, lower) =>
-      /^\s*state\s+/m.test(lower) ||
-      stripped.includes("[*]"),
+    test: (stripped, lower) => /^\s*state\s+/m.test(lower) || stripped.includes("[*]"),
     fallbacks: ["class"],
   },
 
   // Deployment: deployment-specific node kinds (artifact, storage, queue, etc.)
   {
     type: "deployment",
-    test: (_s, lower) =>
-      /^\s*(artifact|storage|queue|stack|person|agent|card)\s+/m.test(lower),
+    test: (_s, lower) => /^\s*(artifact|storage|queue|stack|person|agent|card)\s+/m.test(lower),
     fallbacks: ["component"],
   },
 
@@ -91,8 +84,7 @@ const DETECTION_RULES: DetectionRule[] = [
     test: (stripped, lower) =>
       /\[[\w\s]+\]/.test(stripped) ||
       lower.includes("component ") ||
-      (/^\s*(package|cloud|database|folder|frame)\s+/m.test(lower) &&
-        stripped.includes("{")),
+      (/^\s*(package|cloud|database|folder|frame)\s+/m.test(lower) && stripped.includes("{")),
     fallbacks: ["deployment", "class"],
   },
 
@@ -134,8 +126,9 @@ const DETECTION_RULES: DetectionRule[] = [
   {
     type: "class",
     test: (stripped) => {
-      const hasClassArrows =
-        /(<\|--|--\|>|\.\.\|>|<\|\.\.|(\*--)|(-{2}\*)|o--|--o)/m.test(stripped);
+      const hasClassArrows = /(<\|--|--\|>|\.\.\|>|<\|\.\.|(\*--)|(-{2}\*)|o--|--o)/m.test(
+        stripped,
+      );
       const hasInlineMembers = /^\s*\w+\s+:\s+\w+/m.test(stripped);
       return hasClassArrows || hasInlineMembers;
     },
@@ -145,8 +138,7 @@ const DETECTION_RULES: DetectionRule[] = [
   // Object: line-start "object" or "map" keyword
   {
     type: "object",
-    test: (_s, lower) =>
-      /^\s*object\s+/m.test(lower) || /^\s*map\s+/m.test(lower),
+    test: (_s, lower) => /^\s*object\s+/m.test(lower) || /^\s*map\s+/m.test(lower),
     fallbacks: ["class"],
   },
 
@@ -161,9 +153,7 @@ const DETECTION_RULES: DetectionRule[] = [
   {
     type: "activity",
     test: (stripped, lower) =>
-      /^\s*:.*;\s*$/m.test(stripped) ||
-      /^\s*start\s*$/m.test(lower) ||
-      /^\s*stop\s*$/m.test(lower),
+      /^\s*:.*;\s*$/m.test(stripped) || /^\s*start\s*$/m.test(lower) || /^\s*stop\s*$/m.test(lower),
     fallbacks: [],
   },
 ];
@@ -239,10 +229,7 @@ export function parsePlantUML(code: string): DiagramAST {
 
 // ── Helpers ──────────────────────────────────────────────────────
 
-function parseWithPeggy(
-  grammarParse: (input: string) => unknown,
-  code: string,
-): DiagramAST {
+function parseWithPeggy(grammarParse: (input: string) => unknown, code: string): DiagramAST {
   try {
     return grammarParse(code) as DiagramAST;
   } catch (err: unknown) {
@@ -273,10 +260,5 @@ interface PeggyError {
 }
 
 function isPeggyError(err: unknown): err is PeggyError {
-  return (
-    err !== null &&
-    typeof err === "object" &&
-    "location" in err &&
-    "message" in err
-  );
+  return err !== null && typeof err === "object" && "location" in err && "message" in err;
 }

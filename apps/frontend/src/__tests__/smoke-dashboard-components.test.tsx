@@ -7,7 +7,13 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import { DriveImportModal } from "../components/DriveImportModal";
 import type { Diagram } from "../lib/hooks/useDashboardData";
 
-const diagram = { id: "d1", title: "My Diagram", folderId: null, thumbnail: null, tags: [] } as unknown as Diagram;
+const diagram = {
+  id: "d1",
+  title: "My Diagram",
+  folderId: null,
+  thumbnail: null,
+  tags: [],
+} as unknown as Diagram;
 
 describe("DiagramCard — smoke", () => {
   test("renders the diagram title", () => {
@@ -54,8 +60,12 @@ describe("DiagramListRow — smoke", () => {
 });
 
 describe("ErrorBoundary — smoke", () => {
-  function Boom(): never { throw new Error("boom"); }
-  function Fallback() { return <div>FALLBACK</div>; }
+  function Boom(): never {
+    throw new Error("boom");
+  }
+  function Fallback() {
+    return <div>FALLBACK</div>;
+  }
 
   test("renders the fallback when a child throws", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -70,7 +80,9 @@ describe("ErrorBoundary — smoke", () => {
 
 describe("DriveImportModal — smoke", () => {
   test("renders nothing while closed", () => {
-    const { container } = render(<DriveImportModal open={false} onClose={vi.fn()} onImported={vi.fn()} />);
+    const { container } = render(
+      <DriveImportModal open={false} onClose={vi.fn()} onImported={vi.fn()} />,
+    );
     expect(container.firstChild).toBeNull();
   });
 });

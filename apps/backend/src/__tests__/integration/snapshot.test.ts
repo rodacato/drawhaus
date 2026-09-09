@@ -62,45 +62,83 @@ function createApp() {
   const invitations = new InMemoryInvitationRepository();
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
-  app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
-    login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
-    logout: new LogoutUseCase(sessions),
-    getCurrentUser,
-    updateProfile: new UpdateProfileUseCase(users),
-    changePassword: new ChangePasswordUseCase(users, hasher),
-    acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
-    forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
-    resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
-  }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register: new RegisterUseCase(
+          users,
+          sessions,
+          hasher,
+          new InMemorySiteSettingsRepository(),
+        ),
+        login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
+        logout: new LogoutUseCase(sessions),
+        getCurrentUser,
+        updateProfile: new UpdateProfileUseCase(users),
+        changePassword: new ChangePasswordUseCase(users, hasher),
+        acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
+        forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
+        resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
+        deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
+        googleAuth: new GoogleAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        githubAuth: new GitHubAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        unlinkOAuth: new UnlinkOAuthUseCase(
+          users,
+          new InMemoryOAuthTokenRepository(),
+          new InMemoryDriveBackupRepository(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
-  app.use("/api/diagrams/:diagramId/snapshots", createSnapshotRoutes({
-    create: new CreateSnapshotUseCase(snapshots, scenes, diagrams),
-    list: new ListSnapshotsUseCase(snapshots, diagrams),
-    get: new GetSnapshotUseCase(snapshots, diagrams),
-    restore: new RestoreSnapshotUseCase(snapshots, scenes, diagrams),
-    rename: new RenameSnapshotUseCase(snapshots, diagrams),
-    delete: new DeleteSnapshotUseCase(snapshots, diagrams),
-  }, requireAuth));
+  app.use(
+    "/api/diagrams/:diagramId/snapshots",
+    createSnapshotRoutes(
+      {
+        create: new CreateSnapshotUseCase(snapshots, scenes, diagrams),
+        list: new ListSnapshotsUseCase(snapshots, diagrams),
+        get: new GetSnapshotUseCase(snapshots, diagrams),
+        restore: new RestoreSnapshotUseCase(snapshots, scenes, diagrams),
+        rename: new RenameSnapshotUseCase(snapshots, diagrams),
+        delete: new DeleteSnapshotUseCase(snapshots, diagrams),
+      },
+      requireAuth,
+    ),
+  );
 
   return app;
 }
 
 async function registerAndGetUser(app: express.Express, email: string) {
-  const res = await request(app).post("/api/auth/register").send({
-    email,
-    name: email.split("@")[0],
-    password: "password123",
-  });
+  const res = await request(app)
+    .post("/api/auth/register")
+    .send({
+      email,
+      name: email.split("@")[0],
+      password: "password123",
+    });
   const cookie = res.headers["set-cookie"][0].split(";")[0];
   return { cookie, userId: res.body.user.id as string };
 }
 
-async function seedDiagramWithScene(ownerId: string, opts?: { elements?: unknown[]; appState?: Record<string, unknown> }) {
+async function seedDiagramWithScene(
+  ownerId: string,
+  opts?: { elements?: unknown[]; appState?: Record<string, unknown> },
+) {
   const diagram = await diagrams.create({ ownerId, title: "Snap Test" });
   const scene = await scenes.create({
     diagramId: diagram.id,
@@ -224,9 +262,7 @@ test("GET list returns snapshots as metadata (no elements/appState) ordered newe
     .set("Cookie", cookie)
     .send({ name: "Second" });
 
-  const res = await request(app)
-    .get(`/api/diagrams/${diagram.id}/snapshots`)
-    .set("Cookie", cookie);
+  const res = await request(app).get(`/api/diagrams/${diagram.id}/snapshots`).set("Cookie", cookie);
 
   assert.equal(res.status, 200);
   assert.equal(res.body.snapshots.length, 2);
@@ -246,10 +282,16 @@ test("GET list returns 401 without auth", async () => {
 
 test("GET list returns 404 when the user has no access to the diagram", async () => {
   const app = createApp();
-  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(app, "snap-list-owner@example.com");
+  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(
+    app,
+    "snap-list-owner@example.com",
+  );
   const { cookie: outsiderCookie } = await registerAndGetUser(app, "snap-list-out@example.com");
   const { diagram } = await seedDiagramWithScene(ownerId);
-  await request(app).post(`/api/diagrams/${diagram.id}/snapshots`).set("Cookie", ownerCookie).send({});
+  await request(app)
+    .post(`/api/diagrams/${diagram.id}/snapshots`)
+    .set("Cookie", ownerCookie)
+    .send({});
 
   const res = await request(app)
     .get(`/api/diagrams/${diagram.id}/snapshots`)
@@ -259,11 +301,20 @@ test("GET list returns 404 when the user has no access to the diagram", async ()
 
 test("GET list allows viewer-role access", async () => {
   const app = createApp();
-  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(app, "snap-vlistown@example.com");
-  const { cookie: viewerCookie, userId: viewerId } = await registerAndGetUser(app, "snap-vlist@example.com");
+  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(
+    app,
+    "snap-vlistown@example.com",
+  );
+  const { cookie: viewerCookie, userId: viewerId } = await registerAndGetUser(
+    app,
+    "snap-vlist@example.com",
+  );
   const { diagram } = await seedDiagramWithScene(ownerId);
   diagrams.members.push({ diagramId: diagram.id, userId: viewerId, role: "viewer" });
-  await request(app).post(`/api/diagrams/${diagram.id}/snapshots`).set("Cookie", ownerCookie).send({ name: "Owner snap" });
+  await request(app)
+    .post(`/api/diagrams/${diagram.id}/snapshots`)
+    .set("Cookie", ownerCookie)
+    .send({ name: "Owner snap" });
 
   const res = await request(app)
     .get(`/api/diagrams/${diagram.id}/snapshots`)
@@ -312,7 +363,10 @@ test("GET single snapshot returns 404 when snapshot does not exist", async () =>
 
 test("GET single snapshot returns 404 when user lacks access to its diagram", async () => {
   const app = createApp();
-  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(app, "snap-getown@example.com");
+  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(
+    app,
+    "snap-getown@example.com",
+  );
   const { cookie: outsiderCookie } = await registerAndGetUser(app, "snap-getout@example.com");
   const { diagram } = await seedDiagramWithScene(ownerId);
   const createRes = await request(app)
@@ -369,8 +423,14 @@ test("POST restore mutates the underlying scene back to the snapshot contents", 
 
 test("POST restore returns 403 when caller is a viewer", async () => {
   const app = createApp();
-  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(app, "snap-rstown@example.com");
-  const { cookie: viewerCookie, userId: viewerId } = await registerAndGetUser(app, "snap-rstview@example.com");
+  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(
+    app,
+    "snap-rstown@example.com",
+  );
+  const { cookie: viewerCookie, userId: viewerId } = await registerAndGetUser(
+    app,
+    "snap-rstview@example.com",
+  );
   const { diagram } = await seedDiagramWithScene(ownerId);
   diagrams.members.push({ diagramId: diagram.id, userId: viewerId, role: "viewer" });
   const createRes = await request(app)
@@ -460,8 +520,14 @@ test("PATCH returns 400 when name is missing (schema requires nullable, not opti
 
 test("PATCH returns 403 when caller is a viewer", async () => {
   const app = createApp();
-  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(app, "snap-renown@example.com");
-  const { cookie: viewerCookie, userId: viewerId } = await registerAndGetUser(app, "snap-renview@example.com");
+  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(
+    app,
+    "snap-renown@example.com",
+  );
+  const { cookie: viewerCookie, userId: viewerId } = await registerAndGetUser(
+    app,
+    "snap-renview@example.com",
+  );
   const { diagram } = await seedDiagramWithScene(ownerId);
   diagrams.members.push({ diagramId: diagram.id, userId: viewerId, role: "viewer" });
   const createRes = await request(app)
@@ -496,7 +562,10 @@ test("DELETE removes the snapshot (hard delete)", async () => {
 
   assert.equal(res.status, 200);
   assert.equal(res.body.success, true);
-  assert.equal(snapshots.store.find((s) => s.id === snapshotId), undefined);
+  assert.equal(
+    snapshots.store.find((s) => s.id === snapshotId),
+    undefined,
+  );
 
   const listRes = await request(app)
     .get(`/api/diagrams/${diagram.id}/snapshots`)
@@ -518,8 +587,14 @@ test("DELETE returns 404 when snapshot does not exist", async () => {
 
 test("DELETE returns 403 when caller is a viewer", async () => {
   const app = createApp();
-  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(app, "snap-delown@example.com");
-  const { cookie: viewerCookie, userId: viewerId } = await registerAndGetUser(app, "snap-delview@example.com");
+  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(
+    app,
+    "snap-delown@example.com",
+  );
+  const { cookie: viewerCookie, userId: viewerId } = await registerAndGetUser(
+    app,
+    "snap-delview@example.com",
+  );
   const { diagram } = await seedDiagramWithScene(ownerId);
   diagrams.members.push({ diagramId: diagram.id, userId: viewerId, role: "viewer" });
   const createRes = await request(app)
@@ -533,5 +608,8 @@ test("DELETE returns 403 when caller is a viewer", async () => {
     .set("Cookie", viewerCookie);
 
   assert.equal(res.status, 403);
-  assert.ok(snapshots.store.find((s) => s.id === snapshotId), "snapshot should still exist");
+  assert.ok(
+    snapshots.store.find((s) => s.id === snapshotId),
+    "snapshot should still exist",
+  );
 });

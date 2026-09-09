@@ -22,7 +22,9 @@ describe("ConnectionBadge — smoke", () => {
     expect(screen.getByText("boom")).toBeTruthy();
   });
   test("renders nothing when connected", () => {
-    const { container } = render(<ConnectionBadge connectionState="connected" connectionError={null} />);
+    const { container } = render(
+      <ConnectionBadge connectionState="connected" connectionError={null} />,
+    );
     expect(container.firstChild).toBeNull();
   });
 });

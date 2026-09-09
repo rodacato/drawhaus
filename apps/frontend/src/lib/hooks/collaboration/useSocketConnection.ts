@@ -40,19 +40,67 @@ export function useSocketConnection({
       if (joinMode.type === "authenticated") {
         socket.emit("join-room", { roomId: joinMode.roomId });
       } else {
-        socket.emit("join-room-guest", { shareToken: joinMode.shareToken, guestName: joinMode.guestName });
+        socket.emit("join-room-guest", {
+          shareToken: joinMode.shareToken,
+          guestName: joinMode.guestName,
+        });
       }
     }
 
-    socket.on("connect", () => { if (cancelled) { return; } setConnectionState("connected"); setConnectionError(null); joinRoom(); });
-    socket.on("connect_error", (err) => { if (cancelled) { return; } console.warn("Socket connect_error:", err.message); setConnectionState("error"); setConnectionError(err.message); });
-    socket.on("disconnect", (reason) => { if (cancelled) { return; } console.warn("Socket disconnected:", reason); setConnectionState("disconnected"); });
-    socket.on("room-error", ({ message }: { message: string }) => { if (cancelled) { return; } console.warn("Room error:", message); setConnectionError(message); setConnectionState("error"); });
+    socket.on("connect", () => {
+      if (cancelled) {
+        return;
+      }
+      setConnectionState("connected");
+      setConnectionError(null);
+      joinRoom();
+    });
+    socket.on("connect_error", (err) => {
+      if (cancelled) {
+        return;
+      }
+      console.warn("Socket connect_error:", err.message);
+      setConnectionState("error");
+      setConnectionError(err.message);
+    });
+    socket.on("disconnect", (reason) => {
+      if (cancelled) {
+        return;
+      }
+      console.warn("Socket disconnected:", reason);
+      setConnectionState("disconnected");
+    });
+    socket.on("room-error", ({ message }: { message: string }) => {
+      if (cancelled) {
+        return;
+      }
+      console.warn("Room error:", message);
+      setConnectionError(message);
+      setConnectionState("error");
+    });
 
     // Reconnection handlers — re-join room after reconnect
-    socket.io.on("reconnect_attempt", () => { if (cancelled) { return; } setConnectionState("connecting"); });
-    socket.io.on("reconnect", () => { if (cancelled) { return; } setConnectionState("connected"); setConnectionError(null); joinRoom(); });
-    socket.io.on("reconnect_failed", () => { if (cancelled) { return; } setConnectionState("error"); setConnectionError("No se pudo reconectar al servidor"); });
+    socket.io.on("reconnect_attempt", () => {
+      if (cancelled) {
+        return;
+      }
+      setConnectionState("connecting");
+    });
+    socket.io.on("reconnect", () => {
+      if (cancelled) {
+        return;
+      }
+      setConnectionState("connected");
+      setConnectionError(null);
+      joinRoom();
+    });
+    socket.io.on("reconnect_failed", () => {
+      if (cancelled) {
+        return;
+      }
+      setConnectionState("error");
+      setConnectionError("No se pudo reconectar al servidor");
+    });
 
     socket.on("room-joined", ({ role, userId }: { role?: string; userId?: string }) => {
       if (cancelled) return;

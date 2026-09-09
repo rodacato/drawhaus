@@ -45,7 +45,9 @@ describe("useCanvasPrefs", () => {
 
   test("updatePrefs still updates state when persistence throws (quota)", () => {
     const { result } = renderHook(() => useCanvasPrefs());
-    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("quota"); });
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("quota");
+    });
 
     act(() => result.current.updatePrefs({ viewBackgroundColor: "#000000" }));
 

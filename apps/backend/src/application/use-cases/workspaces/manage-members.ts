@@ -26,7 +26,12 @@ export class AddWorkspaceMemberUseCase {
     }
 
     await this.workspaces.addMember(workspaceId, targetUserId, role);
-    this.audit.log({ actor: actorId, action: "workspace.add_member", target: targetUserId, meta: { workspaceId, role } });
+    this.audit.log({
+      actor: actorId,
+      action: "workspace.add_member",
+      target: targetUserId,
+      meta: { workspaceId, role },
+    });
   }
 }
 

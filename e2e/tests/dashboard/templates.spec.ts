@@ -38,7 +38,9 @@ test.describe("Dashboard — My Templates", () => {
     await page.waitForTimeout(2000);
 
     await page.locator("nav").getByText("My Templates").first().click({ force: true });
-    await expect(page.locator("main h2").first()).toContainText("My Templates", { timeout: 10_000 });
+    await expect(page.locator("main h2").first()).toContainText("My Templates", {
+      timeout: 10_000,
+    });
   });
 
   test("displays template cards in the grid", async ({ page }) => {

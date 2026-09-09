@@ -10,12 +10,16 @@ export class InMemoryDriveBackupRepository implements DriveBackupRepository {
     return this.settings.get(userId) ?? null;
   }
 
-  async upsertSettings(userId: string, data: { enabled: boolean; rootFolderId?: string | null }): Promise<DriveBackupSettings> {
+  async upsertSettings(
+    userId: string,
+    data: { enabled: boolean; rootFolderId?: string | null },
+  ): Promise<DriveBackupSettings> {
     const existing = this.settings.get(userId);
     const next: DriveBackupSettings = {
       userId,
       enabled: data.enabled,
-      rootFolderId: data.rootFolderId !== undefined ? data.rootFolderId : existing?.rootFolderId ?? null,
+      rootFolderId:
+        data.rootFolderId !== undefined ? data.rootFolderId : (existing?.rootFolderId ?? null),
       createdAt: existing?.createdAt ?? new Date(),
       updatedAt: new Date(),
     };
@@ -28,10 +32,16 @@ export class InMemoryDriveBackupRepository implements DriveBackupRepository {
     this.mappings = this.mappings.filter((m) => m.userId !== userId);
   }
 
-  async getFileMapping(userId: string, diagramId: string, sceneId: string | null): Promise<DriveFileMapping | null> {
-    return this.mappings.find(
-      (m) => m.userId === userId && m.diagramId === diagramId && m.sceneId === sceneId,
-    ) ?? null;
+  async getFileMapping(
+    userId: string,
+    diagramId: string,
+    sceneId: string | null,
+  ): Promise<DriveFileMapping | null> {
+    return (
+      this.mappings.find(
+        (m) => m.userId === userId && m.diagramId === diagramId && m.sceneId === sceneId,
+      ) ?? null
+    );
   }
 
   async upsertFileMapping(data: {
@@ -42,7 +52,8 @@ export class InMemoryDriveBackupRepository implements DriveBackupRepository {
     driveFolderId: string;
   }): Promise<DriveFileMapping> {
     const existing = this.mappings.find(
-      (m) => m.userId === data.userId && m.diagramId === data.diagramId && m.sceneId === data.sceneId,
+      (m) =>
+        m.userId === data.userId && m.diagramId === data.diagramId && m.sceneId === data.sceneId,
     );
     if (existing) {
       existing.driveFileId = data.driveFileId;
@@ -60,6 +71,8 @@ export class InMemoryDriveBackupRepository implements DriveBackupRepository {
   }
 
   async deleteFileMappings(userId: string, diagramId: string): Promise<void> {
-    this.mappings = this.mappings.filter((m) => !(m.userId === userId && m.diagramId === diagramId));
+    this.mappings = this.mappings.filter(
+      (m) => !(m.userId === userId && m.diagramId === diagramId),
+    );
   }
 }

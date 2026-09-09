@@ -1,4 +1,9 @@
-import type { DriveFile, DriveFolder, DriveFileListItem, GoogleDriveService } from "../../domain/ports/google-drive-service";
+import type {
+  DriveFile,
+  DriveFolder,
+  DriveFileListItem,
+  GoogleDriveService,
+} from "../../domain/ports/google-drive-service";
 
 export class FakeGoogleDriveService implements GoogleDriveService {
   uploads: { name: string; mimeType: string; folderId: string }[] = [];
@@ -9,7 +14,11 @@ export class FakeGoogleDriveService implements GoogleDriveService {
     return { id: `folder-${name}`, name };
   }
 
-  async findFolder(_token: string, _name: string, _parentId: string | null): Promise<DriveFolder | null> {
+  async findFolder(
+    _token: string,
+    _name: string,
+    _parentId: string | null,
+  ): Promise<DriveFolder | null> {
     return null;
   }
 
@@ -17,13 +26,16 @@ export class FakeGoogleDriveService implements GoogleDriveService {
     return { id: `folder-${name}`, name };
   }
 
-  async uploadFile(_token: string, data: {
-    name: string;
-    mimeType: string;
-    content: Buffer | string;
-    folderId: string;
-    existingFileId?: string;
-  }): Promise<DriveFile> {
+  async uploadFile(
+    _token: string,
+    data: {
+      name: string;
+      mimeType: string;
+      content: Buffer | string;
+      folderId: string;
+      existingFileId?: string;
+    },
+  ): Promise<DriveFile> {
     this.uploads.push({ name: data.name, mimeType: data.mimeType, folderId: data.folderId });
     return {
       id: data.existingFileId ?? `file-${this.uploads.length}`,

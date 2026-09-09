@@ -1,8 +1,5 @@
 import type { ExcalidrawElementSkeleton } from "../types.js";
-import type {
-  UseCaseDiagramAST,
-  UseCaseRelationType,
-} from "../parser/types.js";
+import type { UseCaseDiagramAST, UseCaseRelationType } from "../parser/types.js";
 import type { DiagramTheme } from "../theme/types.js";
 import { createRect, createText, createArrow, createEllipse } from "../elements.js";
 import {
@@ -93,9 +90,7 @@ export function mapUseCaseDiagram(
       .filter((uc) => uc.boundary === boundary.name)
       .map((uc) => uc.name);
 
-    const childBoxes = childNames
-      .map((name) => layout.nodes.get(name))
-      .filter(Boolean) as Box[];
+    const childBoxes = childNames.map((name) => layout.nodes.get(name)).filter(Boolean) as Box[];
 
     if (childBoxes.length > 0) {
       const bounds = getBoundingBox(childBoxes);
@@ -194,8 +189,9 @@ export function mapUseCaseDiagram(
     if (!sourcePos || !targetPos) continue;
 
     const edgePoints = layout.edges.get(`rel_${i}`);
-    const { startArrowhead, endArrowhead, strokeStyle, isDependency } =
-      getArrowStyle(rel.relationType);
+    const { startArrowhead, endArrowhead, strokeStyle, isDependency } = getArrowStyle(
+      rel.relationType,
+    );
 
     const arrowTheme = isDependency ? theme.dependencyArrow : theme.arrow;
 
@@ -233,16 +229,41 @@ function getArrowStyle(relationType: UseCaseRelationType): {
 } {
   switch (relationType) {
     case "directed":
-      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: "arrow",
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "include":
-      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "dashed", isDependency: true };
+      return {
+        startArrowhead: null,
+        endArrowhead: "arrow",
+        strokeStyle: "dashed",
+        isDependency: true,
+      };
     case "extend":
-      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "dashed", isDependency: true };
+      return {
+        startArrowhead: null,
+        endArrowhead: "arrow",
+        strokeStyle: "dashed",
+        isDependency: true,
+      };
     case "inheritance":
-      return { startArrowhead: null, endArrowhead: "triangle", strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: "triangle",
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "association":
     default:
-      return { startArrowhead: null, endArrowhead: null, strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: null,
+        strokeStyle: "solid",
+        isDependency: false,
+      };
   }
 }
 

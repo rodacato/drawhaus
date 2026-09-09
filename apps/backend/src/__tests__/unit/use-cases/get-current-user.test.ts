@@ -15,7 +15,11 @@ function setup() {
 describe("GetCurrentUserUseCase", () => {
   it("returns the auth user when the session token resolves to a user", async () => {
     const { users, sessions, useCase } = setup();
-    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_pw" });
+    const user = await users.create({
+      email: "u@example.com",
+      name: "U",
+      passwordHash: "hashed_pw",
+    });
     const session = await sessions.create(user.id);
 
     const result = await useCase.execute(session.token);

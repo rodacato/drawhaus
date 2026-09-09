@@ -7,8 +7,7 @@ export type Tag = {
 };
 
 export const tagsApi = {
-  list: () =>
-    api.get("/api/tags") as Promise<{ tags: Tag[] }>,
+  list: () => api.get("/api/tags") as Promise<{ tags: Tag[] }>,
 
   create: (name: string, color?: string) =>
     api.post("/api/tags", { name, color }) as Promise<{ tag: Tag }>,
@@ -16,8 +15,7 @@ export const tagsApi = {
   update: (id: string, data: { name?: string; color?: string }) =>
     api.patch(`/api/tags/${id}`, data) as Promise<{ tag: Tag }>,
 
-  delete: (id: string) =>
-    api.delete(`/api/tags/${id}`),
+  delete: (id: string) => api.delete(`/api/tags/${id}`),
 
   assign: (tagId: string, diagramId: string) =>
     api.post(`/api/tags/${tagId}/assign`, { diagramId }),

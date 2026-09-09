@@ -26,9 +26,7 @@
       "version": 42,
       "versionNonce": 987654321,
       "isDeleted": false,
-      "boundElements": [
-        { "id": "arrow-fk-1", "type": "arrow" }
-      ],
+      "boundElements": [{ "id": "arrow-fk-1", "type": "arrow" }],
       "updated": 1710000000000,
       "link": null,
       "locked": false
@@ -130,9 +128,7 @@
       "version": 30,
       "versionNonce": 666666666,
       "isDeleted": false,
-      "boundElements": [
-        { "id": "arrow-fk-1", "type": "arrow" }
-      ],
+      "boundElements": [{ "id": "arrow-fk-1", "type": "arrow" }],
       "updated": 1710000000000,
       "link": null,
       "locked": false
@@ -164,7 +160,10 @@
       "updated": 1710000000000,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [150, 0]],
+      "points": [
+        [0, 0],
+        [150, 0]
+      ],
       "lastCommittedPoint": null,
       "startBinding": {
         "elementId": "rect-users",
@@ -209,7 +208,10 @@
       "updated": 1710000000000,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [200, 0]],
+      "points": [
+        [0, 0],
+        [200, 0]
+      ],
       "lastCommittedPoint": null,
       "startBinding": null,
       "endBinding": null,

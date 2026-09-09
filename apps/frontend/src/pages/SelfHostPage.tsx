@@ -2,7 +2,7 @@ import { useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 
 const AnimatedBackground = lazy(() =>
-  import("@/components/AnimatedBackground").then((m) => ({ default: m.AnimatedBackground }))
+  import("@/components/AnimatedBackground").then((m) => ({ default: m.AnimatedBackground })),
 );
 
 const GITHUB_URL = "https://github.com/rodacato/drawhaus";
@@ -51,14 +51,30 @@ export function SelfHostPage() {
           </Link>
 
           <div className="hidden items-center gap-6 text-sm text-text-secondary sm:flex">
-            <Link to="/" className="transition hover:text-text-primary">Home</Link>
-            <Link to="/#features" className="transition hover:text-text-primary">Features</Link>
-            <Link to="/#faq" className="transition hover:text-text-primary">FAQ</Link>
-            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-text-primary">GitHub</a>
+            <Link to="/" className="transition hover:text-text-primary">
+              Home
+            </Link>
+            <Link to="/#features" className="transition hover:text-text-primary">
+              Features
+            </Link>
+            <Link to="/#faq" className="transition hover:text-text-primary">
+              FAQ
+            </Link>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition hover:text-text-primary"
+            >
+              GitHub
+            </a>
           </div>
 
           <div className="flex items-center gap-3">
-            <Link to="/login" className="rounded-lg px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-raised hover:text-text-primary">
+            <Link
+              to="/login"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-text-secondary transition hover:bg-surface-raised hover:text-text-primary"
+            >
               Sign In
             </Link>
           </div>
@@ -72,14 +88,17 @@ export function SelfHostPage() {
           Self-Host Drawhaus
         </h1>
         <p className="mx-auto mt-4 max-w-lg text-lg text-text-secondary">
-          Deploy on your own server in minutes. Free, open source, no external dependencies required.
+          Deploy on your own server in minutes. Free, open source, no external dependencies
+          required.
         </p>
       </section>
 
       {/* Requirements */}
       <section className="mx-auto max-w-3xl px-6 pb-16">
         <div className="rounded-xl border border-border bg-surface-raised p-6">
-          <h3 className="font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">Requirements</h3>
+          <h3 className="font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">
+            Requirements
+          </h3>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <div>
               <p className="font-semibold">Docker 24+</p>
@@ -106,28 +125,38 @@ export function SelfHostPage() {
 
         <div className="mt-8 space-y-6">
           <div>
-            <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">1. Clone and configure</h3>
+            <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">
+              1. Clone and configure
+            </h3>
             <CodeBlock>{`git clone ${GITHUB_URL}.git
 cd drawhaus
 cp .env.example .env`}</CodeBlock>
           </div>
 
           <div>
-            <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">2. Start everything</h3>
+            <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">
+              2. Start everything
+            </h3>
             <CodeBlock>{`docker compose up`}</CodeBlock>
           </div>
 
           <div>
-            <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">3. Open the app</h3>
+            <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">
+              3. Open the app
+            </h3>
             <div className="rounded-xl border border-border bg-surface-raised p-6">
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-text-secondary">Frontend</span>
-                  <code className="rounded bg-surface px-2 py-1 text-primary">http://localhost:5173</code>
+                  <code className="rounded bg-surface px-2 py-1 text-primary">
+                    http://localhost:5173
+                  </code>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-text-secondary">Backend</span>
-                  <code className="rounded bg-surface px-2 py-1 text-primary">http://localhost:4300</code>
+                  <code className="rounded bg-surface px-2 py-1 text-primary">
+                    http://localhost:4300
+                  </code>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-text-secondary">PostgreSQL</span>
@@ -138,7 +167,10 @@ cp .env.example .env`}</CodeBlock>
           </div>
 
           <p className="text-sm text-text-secondary">
-            The first time you open the app, a setup wizard guides you through creating your admin account — no <code className="rounded bg-surface-raised px-1.5 py-0.5 text-xs">.env</code> editing required.
+            The first time you open the app, a setup wizard guides you through creating your admin
+            account — no{" "}
+            <code className="rounded bg-surface-raised px-1.5 py-0.5 text-xs">.env</code> editing
+            required.
           </p>
         </div>
       </section>
@@ -148,12 +180,15 @@ cp .env.example .env`}</CodeBlock>
         <div className="mx-auto max-w-3xl px-6">
           <h2 className="font-sora text-2xl font-bold tracking-tight">Production Deployment</h2>
           <p className="mt-2 text-text-secondary">
-            Drawhaus deploys to any VPS with Docker via Kamal. Both frontend (nginx) and backend (Express) run on the same server.
+            Drawhaus deploys to any VPS with Docker via Kamal. Both frontend (nginx) and backend
+            (Express) run on the same server.
           </p>
 
           <div className="mt-8 space-y-6">
             <div>
-              <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">Architecture</h3>
+              <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">
+                Architecture
+              </h3>
               <CodeBlock>{`yourdomain.com         api.yourdomain.com
       │                       │
       ▼                       ▼
@@ -169,16 +204,29 @@ cp .env.example .env`}</CodeBlock>
             </div>
 
             <div>
-              <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">Prerequisites</h3>
+              <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">
+                Prerequisites
+              </h3>
               <ul className="space-y-2 text-text-secondary">
-                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />A VPS or dedicated server with Docker installed</li>
-                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />A domain name pointed to your server</li>
-                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />A GitHub account (for container registry)</li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />A VPS or dedicated server
+                  with Docker installed
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />A domain name pointed to
+                  your server
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />A GitHub account (for
+                  container registry)
+                </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">Deploy</h3>
+              <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">
+                Deploy
+              </h3>
               <CodeBlock>{`# First-time setup
 kamal setup -c config/deploy.backend.yml
 kamal setup -c config/deploy.frontend.yml
@@ -188,7 +236,9 @@ git push origin master:production`}</CodeBlock>
             </div>
 
             <div>
-              <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">Essential environment variables</h3>
+              <h3 className="mb-3 font-sora text-sm font-semibold uppercase tracking-wide text-text-muted">
+                Essential environment variables
+              </h3>
               <div className="overflow-x-auto rounded-xl border border-border bg-surface p-4">
                 <table className="w-full text-sm">
                   <thead>
@@ -218,7 +268,8 @@ git push origin master:production`}</CodeBlock>
                 </table>
               </div>
               <p className="mt-3 text-sm text-text-muted">
-                Google OAuth, Resend email, and other integrations are optional — configure them from the admin panel after deployment.
+                Google OAuth, Resend email, and other integrations are optional — configure them
+                from the admin panel after deployment.
               </p>
             </div>
           </div>
@@ -231,8 +282,19 @@ git push origin master:production`}</CodeBlock>
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
             >
               Full Deploy Guide
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
               </svg>
             </a>
             <a
@@ -253,9 +315,16 @@ git push origin master:production`}</CodeBlock>
           <p className="text-sm text-text-muted">Powered by open source</p>
           <p className="max-w-md text-text-secondary">
             Drawhaus is built on top of{" "}
-            <a href={EXCALIDRAW_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
+            <a
+              href={EXCALIDRAW_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary hover:underline"
+            >
               Excalidraw
-            </a>, the incredible open-source whiteboard. Huge thanks to the Excalidraw team and community.
+            </a>
+            , the incredible open-source whiteboard. Huge thanks to the Excalidraw team and
+            community.
           </p>
           <a
             href={EXCALIDRAW_GITHUB}
@@ -263,7 +332,9 @@ git push origin master:production`}</CodeBlock>
             rel="noopener noreferrer"
             className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition hover:text-text-primary"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+            </svg>
             excalidraw/excalidraw
           </a>
         </div>
@@ -278,10 +349,23 @@ git push origin master:production`}</CodeBlock>
           </Link>
 
           <div className="flex flex-wrap items-center gap-6 text-sm text-text-secondary">
-            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="transition hover:text-text-primary">GitHub</a>
-            <Link to="/" className="transition hover:text-text-primary">Home</Link>
-            <Link to="/privacy" className="transition hover:text-text-primary">Privacy</Link>
-            <Link to="/terms" className="transition hover:text-text-primary">Terms</Link>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition hover:text-text-primary"
+            >
+              GitHub
+            </a>
+            <Link to="/" className="transition hover:text-text-primary">
+              Home
+            </Link>
+            <Link to="/privacy" className="transition hover:text-text-primary">
+              Privacy
+            </Link>
+            <Link to="/terms" className="transition hover:text-text-primary">
+              Terms
+            </Link>
           </div>
 
           <p className="text-xs text-text-muted">

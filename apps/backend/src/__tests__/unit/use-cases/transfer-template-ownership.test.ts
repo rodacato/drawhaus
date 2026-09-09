@@ -19,7 +19,15 @@ describe("TransferTemplateOwnershipUseCase", () => {
     const { templates, workspaces, useCase } = setup();
     const ws = await workspaces.create({ name: "Team", ownerId: "owner-1" });
     await workspaces.addMember(ws.id, "member-2", "editor");
-    const t = await templates.create({ creatorId: "owner-1", workspaceId: ws.id, title: "T1", description: "", category: "general", elements: [], appState: {} });
+    const t = await templates.create({
+      creatorId: "owner-1",
+      workspaceId: ws.id,
+      title: "T1",
+      description: "",
+      category: "general",
+      elements: [],
+      appState: {},
+    });
 
     await useCase.execute([t.id], "owner-1", "member-2");
 
@@ -28,7 +36,14 @@ describe("TransferTemplateOwnershipUseCase", () => {
 
   it("non-creator cannot transfer", async () => {
     const { templates, useCase } = setup();
-    const t = await templates.create({ creatorId: "owner-1", title: "T1", description: "", category: "general", elements: [], appState: {} });
+    const t = await templates.create({
+      creatorId: "owner-1",
+      title: "T1",
+      description: "",
+      category: "general",
+      elements: [],
+      appState: {},
+    });
 
     await assert.rejects(
       () => useCase.execute([t.id], "other-user", "someone"),
@@ -38,7 +53,14 @@ describe("TransferTemplateOwnershipUseCase", () => {
 
   it("cannot transfer built-in template", async () => {
     const { templates, useCase } = setup();
-    const t = await templates.create({ creatorId: "owner-1", title: "Built-in", description: "", category: "general", elements: [], appState: {} });
+    const t = await templates.create({
+      creatorId: "owner-1",
+      title: "Built-in",
+      description: "",
+      category: "general",
+      elements: [],
+      appState: {},
+    });
     // Manually set isBuiltIn
     t.isBuiltIn = true;
 
@@ -50,7 +72,14 @@ describe("TransferTemplateOwnershipUseCase", () => {
 
   it("cannot transfer to self", async () => {
     const { templates, useCase } = setup();
-    const t = await templates.create({ creatorId: "owner-1", title: "T1", description: "", category: "general", elements: [], appState: {} });
+    const t = await templates.create({
+      creatorId: "owner-1",
+      title: "T1",
+      description: "",
+      category: "general",
+      elements: [],
+      appState: {},
+    });
 
     await assert.rejects(
       () => useCase.execute([t.id], "owner-1", "owner-1"),
@@ -70,7 +99,15 @@ describe("TransferTemplateOwnershipUseCase", () => {
   it("new creator must be workspace member if template has workspace", async () => {
     const { templates, workspaces, useCase } = setup();
     const ws = await workspaces.create({ name: "Team", ownerId: "owner-1" });
-    const t = await templates.create({ creatorId: "owner-1", workspaceId: ws.id, title: "T1", description: "", category: "general", elements: [], appState: {} });
+    const t = await templates.create({
+      creatorId: "owner-1",
+      workspaceId: ws.id,
+      title: "T1",
+      description: "",
+      category: "general",
+      elements: [],
+      appState: {},
+    });
 
     await assert.rejects(
       () => useCase.execute([t.id], "owner-1", "outsider"),

@@ -22,16 +22,25 @@ export const snapshotsApi = {
     api.get(`/api/diagrams/${diagramId}/snapshots`) as Promise<{ snapshots: SnapshotMeta[] }>,
 
   get: (diagramId: string, snapshotId: string) =>
-    api.get(`/api/diagrams/${diagramId}/snapshots/${snapshotId}`) as Promise<{ snapshot: SnapshotFull }>,
+    api.get(`/api/diagrams/${diagramId}/snapshots/${snapshotId}`) as Promise<{
+      snapshot: SnapshotFull;
+    }>,
 
   create: (diagramId: string, name?: string) =>
-    api.post(`/api/diagrams/${diagramId}/snapshots`, { name }) as Promise<{ snapshot: SnapshotMeta }>,
+    api.post(`/api/diagrams/${diagramId}/snapshots`, { name }) as Promise<{
+      snapshot: SnapshotMeta;
+    }>,
 
   restore: (diagramId: string, snapshotId: string) =>
-    api.post(`/api/diagrams/${diagramId}/snapshots/${snapshotId}/restore`) as Promise<{ success: boolean; diagramId: string }>,
+    api.post(`/api/diagrams/${diagramId}/snapshots/${snapshotId}/restore`) as Promise<{
+      success: boolean;
+      diagramId: string;
+    }>,
 
   rename: (diagramId: string, snapshotId: string, name: string | null) =>
-    api.patch(`/api/diagrams/${diagramId}/snapshots/${snapshotId}`, { name }) as Promise<{ snapshot: SnapshotMeta }>,
+    api.patch(`/api/diagrams/${diagramId}/snapshots/${snapshotId}`, { name }) as Promise<{
+      snapshot: SnapshotMeta;
+    }>,
 
   delete: (diagramId: string, snapshotId: string) =>
     api.delete(`/api/diagrams/${diagramId}/snapshots/${snapshotId}`),

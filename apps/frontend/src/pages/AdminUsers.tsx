@@ -17,12 +17,17 @@ function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void
   const [role, setRole] = useState("user");
 
   useEffect(() => {
-    if (!open) { setStatus(null); setRole("user"); }
+    if (!open) {
+      setStatus(null);
+      setRole("user");
+    }
   }, [open]);
 
   useEffect(() => {
     if (!open) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [open, onClose]);
@@ -51,29 +56,54 @@ function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <button type="button" aria-label="Close" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <button
+        type="button"
+        aria-label="Close"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div className={`${ui.card} relative z-10 w-full max-w-md space-y-5 shadow-2xl`}>
         <div className="flex items-center justify-between">
           <h2 className={ui.h2}>Invite User</h2>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 text-text-muted hover:text-text-primary transition-colors">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1 text-text-muted hover:text-text-primary transition-colors"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 
-        <p className={ui.muted}>Send an invitation email. This link works even when public registration is disabled.</p>
+        <p className={ui.muted}>
+          Send an invitation email. This link works even when public registration is disabled.
+        </p>
 
         <form className="space-y-4" onSubmit={onSubmit}>
           <label className={ui.label}>
             <span>Email address</span>
-            <input className={ui.input} type="email" name="email" placeholder="colleague@company.com" required />
+            <input
+              className={ui.input}
+              type="email"
+              name="email"
+              placeholder="colleague@company.com"
+              required
+            />
           </label>
           <label className={ui.label}>
             <span>Role</span>
-            <select
-              className={ui.input}
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
+            <select className={ui.input} value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
@@ -90,7 +120,19 @@ function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void
               Cancel
             </button>
             <button type="submit" disabled={pending} className={`${ui.btn} ${ui.btnPrimary} gap-2`}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13" /><path d="M22 2l-7 20-4-9-9-4 20-7z" /></svg>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 2L11 13" />
+                <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+              </svg>
               {pending ? "Sending..." : "Send Invitation"}
             </button>
           </div>
@@ -101,7 +143,14 @@ function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void
   );
 }
 
-type AdminUser = { id: string; email: string; name: string; role: "user" | "admin"; disabled: boolean; createdAt: string };
+type AdminUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: "user" | "admin";
+  disabled: boolean;
+  createdAt: string;
+};
 
 const roleBadgeColors: Record<string, string> = {
   admin: "bg-primary/10 text-primary ring-primary/20",
@@ -120,7 +169,10 @@ export function AdminUsers() {
   const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
-    adminApi.listUsers().then((data) => setUsers(data.users ?? [])).catch(() => {});
+    adminApi
+      .listUsers()
+      .then((data) => setUsers(data.users ?? []))
+      .catch(() => {});
   }, []);
 
   async function updateUser(id: string, data: { role?: string; disabled?: boolean }) {
@@ -164,8 +216,24 @@ export function AdminUsers() {
           <h1 className={ui.h1}>User Management</h1>
           <p className={ui.subtitle}>Manage user roles and access.</p>
         </div>
-        <button type="button" className={`${ui.btn} ${ui.btnPrimary} gap-2`} onClick={() => setInviteOpen(true)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+        <button
+          type="button"
+          className={`${ui.btn} ${ui.btnPrimary} gap-2`}
+          onClick={() => setInviteOpen(true)}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
           Invite User
         </button>
       </div>
@@ -199,13 +267,17 @@ export function AdminUsers() {
                           </div>
                           <span className="font-medium text-text-primary">
                             {user.name}
-                            {isSelf && <span className="ml-1.5 text-xs text-text-muted">(you)</span>}
+                            {isSelf && (
+                              <span className="ml-1.5 text-xs text-text-muted">(you)</span>
+                            )}
                           </span>
                         </div>
                       </td>
                       <td className="py-3 pr-4 text-text-secondary">{user.email}</td>
                       <td className="py-3 pr-4">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ring-1 ring-inset ${badgeColor}`}>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ring-1 ring-inset ${badgeColor}`}
+                        >
                           {user.role}
                         </span>
                       </td>
@@ -240,7 +312,21 @@ export function AdminUsers() {
                               className="rounded-lg p-1.5 text-text-muted hover:bg-red-50 hover:text-red-600 transition-colors"
                               onClick={() => handleDeleteUser(user)}
                             >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                <line x1="10" y1="11" x2="10" y2="17" />
+                                <line x1="14" y1="11" x2="14" y2="17" />
+                              </svg>
                             </button>
                           )}
                         </div>

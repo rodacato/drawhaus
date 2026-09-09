@@ -7,20 +7,23 @@ All notable changes to Drawhaus are documented here.
 ## Unreleased
 
 ### Added
+
 - **Prettier adopted as the repo's formatter.** The devcontainer already shipped `esbenp.prettier-vscode` while the repo had no Prettier dependency, config, or `.editorconfig`, so enabling format-on-save would have reformatted files against defaults nobody had chosen. Adds `prettier` at the root with `.prettierrc.json` (`printWidth: 100`, chosen to match the existing code — p90 line length is 78 — so the reformat stays minimal) and `.prettierignore`, plus `format` / `format:check` scripts. `eslint-config-prettier` is appended to both `eslint.config.mjs` files so ESLint stops asserting stylistic rules Prettier now owns. The devcontainer gains `editor.formatOnSave` with Prettier as the default formatter and `source.fixAll.eslint` on save. Applied across the repo in a separate commit (451 files).
 - **Prometheus metrics via `prom-client`** (opt-in). With `METRICS_ENABLED=true` the backend exposes `GET /metrics` with `collectDefaultMetrics()` (process memory / GC / event-loop lag), an `http_request_duration_seconds` histogram labelled by `method` / matched-`route` / `status_code` (label cardinality bounded by using the route pattern, never the raw URL), and a `drawhaus_active_collaborators` gauge tracking live Socket.IO collaboration clients — the product's core value and main load driver. `/metrics` rides the public hostname (same `PORT`, behind kamal-proxy/Cloudflare) gated by a bearer token (`METRICS_TOKEN`), so a self-hosted Prometheus scrapes it like any external service and the setup survives a host migration with no network rewiring; in production the token is required (no token → 404, never unauthenticated exposure). Disabled by default — left off there's no endpoint and no instrumentation overhead. Adds `prom-client@^15.1.3`.
 - **Node.js 24 (current LTS) unified across the toolchain.** Adds `.nvmrc=24` at the repo root; bumps `.devcontainer/devcontainer.json` and all three GitHub Actions workflows (`ci.yml`, `quality.yml`, `publish-mcp.yml`) from `node-version: 22` → `24`; adds `"engines": { "node": ">=24" }` to the root `package.json`, `apps/{backend,frontend}/package.json`, and all four `packages/*/package.json` (previously `>=18`). Application Dockerfiles (`apps/backend/Dockerfile`, `apps/frontend/Dockerfile`) were already on `node:24-slim` — no change there. The Dependabot PRs proposing Node 26 are deferred until Node 26 becomes Active LTS in October 2026.
 - **`drawhaus-frontend` SonarQube project** scanned by `quality.yml` (`workflow_dispatch`). Adds `apps/frontend/sonar-project.properties` and a `Scan frontend` step alongside the existing backend scan. Frontend uses `sonar.javascript.skipTypechecking=true` and `sonar.javascript.node.maxspace=8192` to dodge the type-aware OOM caused by three.js/excalidraw/dagre type graphs — trading type-aware rules for a scan that completes. Packages remain unscanned for the same reason.
 
 ### Fixed
+
 - **`pg` pool now bounds connection attempts, unhanging CI.** `new Pool()` was created without `connectionTimeoutMillis`, so an unreachable database host never settles the connect promise and its handles keep the Node process alive. In CI the backend suite finishes its tests and then sits there: run #147 reported every test green and still burned the job's 20-minute timeout, killed with `Terminate orphan process: npm run test`. It is intermittent because it depends on how the runner's DNS fails — a fast `ENOTFOUND` is harmless, a hanging resolver is not, which is why neighbouring PRs passed the same step in 22 seconds. Now 1s under `NODE_ENV=test`, 10s otherwise; the same gap would hang a production request waiting for a connection.
 - **Docker image builds restored — deploys had been broken since 2026-06-27.** Two independent faults, both invisible to CI because `ci.yml` builds no images; the Dockerfiles are only exercised by `build-push.yml` on a push to `production`. The last successful deploy was 2026-06-24 and the next attempt failed the same day `packages/tsconfig.base.json` landed (`570f097`).
   - Neither Dockerfile copied `packages/tsconfig.base.json`, which all four `packages/*/tsconfig.json` extend, so the first `tsc` in the builder died with `TS5083: Cannot read file '/app/packages/tsconfig.base.json'`. Both images are affected, not just the backend.
   - `apps/frontend/Dockerfile` ran `rm package-lock.json && npm install`, building the image from a dependency tree nobody had tested. Without the lockfile npm installs TypeScript 6.0.3 at the root to satisfy `@typescript-eslint@8.70`'s peer range (`>=4.8.4 <6.1.0`); `apps/*` keep their own nested 5.9.3, but `tsup` is hoisted to the root and resolves TypeScript from there, so the dts build failed with `TS5101: Option 'baseUrl' is deprecated`. Switched to `npm ci`; the npm/cli#4828 optional-deps bug that motivated the fresh install no longer reproduces on npm 11 / Node 24, and both images now build clean from scratch.
 
 ### Security
+
 - **`normalizeText`'s actual ReDoS fixed** (`js/polynomial-redos`). #146 rewrote the `/\s{2,}/g` collapse in this function, but CodeQL's alert pointed at the chain's trailing `.replace(/^\n+|\n+$/g, "")` — an anchored alternation scanned globally, quadratic on input with many newlines. The chain now trims blank entries off the already-split line array, so no anchored regex runs over untrusted text. Behaviour is unchanged, verified across ten inputs and pinned with two more tests.
-- **Three CodeQL regex findings fixed.** `sanitizeElements` used `/<[^>]*>/g` in a single pass: the ambiguous character class made it a polynomial-ReDoS target, and one pass is reversible — `<<a>script>alert(1)<</a>script>` came out as `script>alert(1)script>`, and merely tightening the class would have rebuilt a live `<script>`. It now uses `/<[^<>]*>/g` and repeats to a fixed point. `normalizeText` in `@drawhaus/helpers` collapsed whitespace with `/\s{2,}/g` (polynomial ReDoS) and now splits on `/\s+/`; one behaviour change, a lone tab is now collapsed to a space, which is what the function documents. `parseNodeContent` in the mindmap parser stripped regex anchors with `source.replace("^", "")`, which removes the *first* caret in the string — for a pattern like `\w+[^,]+$` that is the negated class's caret, silently inverting it. Anchored replacements (`/^\^/`, `/\$$/`) are used instead; no current shape pattern was affected, so this one is preventive.
+- **Three CodeQL regex findings fixed.** `sanitizeElements` used `/<[^>]*>/g` in a single pass: the ambiguous character class made it a polynomial-ReDoS target, and one pass is reversible — `<<a>script>alert(1)<</a>script>` came out as `script>alert(1)script>`, and merely tightening the class would have rebuilt a live `<script>`. It now uses `/<[^<>]*>/g` and repeats to a fixed point. `normalizeText` in `@drawhaus/helpers` collapsed whitespace with `/\s{2,}/g` (polynomial ReDoS) and now splits on `/\s+/`; one behaviour change, a lone tab is now collapsed to a space, which is what the function documents. `parseNodeContent` in the mindmap parser stripped regex anchors with `source.replace("^", "")`, which removes the _first_ caret in the string — for a pattern like `\w+[^,]+$` that is the negated class's caret, silently inverting it. Anchored replacements (`/^\^/`, `/\$$/`) are used instead; no current shape pattern was affected, so this one is preventive.
 - **`@excalidraw/mermaid-to-excalidraw` upgraded 1.1.4 → 2.2.2**, collapsing two overlapping Dependabot PRs into one change. v1 depended on `mermaid@^10`, so the tree carried a second, older Mermaid copy (10.9.4) that pulled `dompurify@3.1.6`; v2 depends on `mermaid@^11.12.1`, which dedupes against the workspace's own 11.17.2 and removes both. `npm audit` drops from 16 to 14 findings (the `dompurify` and `mermaid` advisories are gone) and the install sheds 49 packages. Declared ranges bumped alongside: `mermaid` `^11.15.0` → `^11.16.1`, `dompurify` `^3.3.3` → `^3.4.13`. `parseMermaidToExcalidraw` keeps its signature in v2, so the fallback path in `packages/mermaid-to-excalidraw` needed no code change.
 - **Admin use cases now self-authorize** (defense-in-depth). `AdminDeleteUserUseCase` / `AdminUpdateUserUseCase` load the actor and assert `role === "admin"` instead of trusting route middleware alone — a single missing route guard no longer escalates to user management.
 - **Path params validated at the HTTP edge.** `validateParams` (UUID schema) extended from 3 route files to every id-bearing one (`comment`, `snapshot`, `tag`, `folder`, `template`, `api-key`, `share`, `workspace`); malformed ids previously only failed closed via a Postgres `22P02` catch. Opaque share/invite tokens are validated as non-empty strings, not forced to UUID.
@@ -29,6 +32,7 @@ All notable changes to Drawhaus are documented here.
 - **Workflow permissions tightened** (CodeQL `actions/missing-workflow-permissions`). `ci.yml` and `quality.yml` now declare `permissions: contents: read` at workflow level; matches the existing convention in `build-push.yml` and `publish-mcp.yml`.
 
 ### Changed
+
 - **`eslint-plugin-sonarjs` adopted and the easy backlog cleared.** The plugin rides `npm run lint` (SonarQube server stays the quality-gate source of truth) with firing rules parked at `off` and ratcheted on as their backlog is cleared. This pass re-enabled 11 rules across both workspaces: backend `prefer-regexp-exec`, `no-alphabetical-sort`, `deprecation` (Zod `ZodIssue` → `ZodError["issues"]`), `no-nested-template-literals`, `no-misleading-array-reverse`, `no-nested-conditional`; frontend `no-nested-conditional`, `no-all-duplicated-branches`, `no-duplicated-branches`, `no-trivial-assertions`, `no-nested-functions`. Still parked: backend `super-linear-regex` (real ReDoS hotspot — needs a careful fix) and frontend `prefer-specific-assertions` (18-finding backlog).
 - **Raw SQL removed from the application layer** (Clean Architecture). `GetMetricsUseCase`, `InviteToWorkspaceUseCase`, `AcceptWorkspaceInviteUseCase`, and the `GET /workspaces/invite/:token` route handler queried Postgres directly; the SQL now lives behind two new ports — `MetricsRepository` and `WorkspaceInvitationRepository` (+ `Pg*` adapters) — fronted by a new `ResolveWorkspaceInviteUseCase`. Endpoint contract unchanged (`{ workspaceName, role, email }`; 404 used/not-found, 410 expired preserved).
 - **OAuth and Drive HTTP extracted behind ports.** `GitHubAuthUseCase` / `GoogleAuthUseCase` no longer `fetch()` provider APIs directly — the HTTP moves to `GitHubOAuthProvider` / `GoogleOAuthProvider` adapters behind a new `OAuthProviderPort`; the four Drive use cases depend on a new `TokenRefresherPort` instead of the concrete refresher class. Use cases are now pure orchestration.
@@ -42,6 +46,7 @@ All notable changes to Drawhaus are documented here.
 - **Deploy env vars split into `vars` vs `secrets` in the GitHub `production` environment**. Repo-level secrets are now limited to `SSH_PRIVATE_KEY` and `DOCKERHUB_TOKEN`; everything else lives in the environment. Adds `SENTRY_*`, `VITE_SENTRY_*`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
 
 ### Removed
+
 - **`dompurify` and `@types/dompurify` dropped from `apps/frontend`.** Neither was imported anywhere in the frontend — the declared `^3.3.3` range mirrored what `mermaid` already depends on, and `@types/dompurify` is a deprecated stub (DOMPurify has shipped its own types since 3.2). Removing them changes nothing at runtime: `dompurify` stays at 3.4.15 in the tree via `mermaid@11.17.2` (`^3.3.3`), and `npm audit` is unchanged at 14 findings.
 - `@honeybadger-io/js` dependency and the `HONEYBADGER_API_KEY` env var.
 
@@ -50,6 +55,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.12.0 — Concurrent Editing & Redis Shared State (2026-03)
 
 ### Added
+
 - **Concurrent multi-user editing** — multiple users can edit the same diagram simultaneously ([ADR-022](docs/adr/022-concurrent-editing-over-lock.md)). Replaces the single-editor global lock
 - **Delta updates** — `scene-delta` socket event sends only changed/removed elements instead of full state (~80% payload reduction)
 - **Server-side merge** — `save-scene` uses `SELECT ... FOR UPDATE` transactions to merge elements by version, preventing data loss on concurrent saves
@@ -63,6 +69,7 @@ All notable changes to Drawhaus are documented here.
 - **Security validation** — server rejects deltas that remove >50% of elements or have version jumps >100k
 
 ### Changed
+
 - `EditLockOverlay` replaced by simplified `CollaborationBadge` (raise hand only)
 - `useSaveManager` emits `scene-delta` instead of `scene-update` for incremental changes
 - `SaveSceneUseCase` uses `updateSceneMerged` (PostgreSQL transaction) instead of direct overwrite
@@ -70,6 +77,7 @@ All notable changes to Drawhaus are documented here.
 - Snapshot interval tracking uses `SET NX EX` in Redis for cross-instance dedup, falls back to in-memory `Map`
 
 ### Removed
+
 - `EditLockStore` — global lock replaced by concurrent editing with element-level merge
 - Lock countdown timer, queue position UI, and "Pedir turno" CTA
 
@@ -78,6 +86,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.11.0 — Public API, MCP Server & GitHub OAuth (2026-03)
 
 ### Added
+
 - **GitHub OAuth** — sign up and log in with GitHub. Automatic account linking by email prevents duplicate accounts across Google, GitHub, and email/password
 - **Connected Accounts** — Settings → Security now shows linked OAuth providers with Connect/Disconnect buttons. Cannot disconnect the last sign-in method
 - **OAuth account linking** — `GET /api/auth/link/google`, `GET /api/auth/link/github` to link accounts from settings; `DELETE /api/auth/link/:provider` to unlink
@@ -116,6 +125,7 @@ All notable changes to Drawhaus are documented here.
 - **Custom Mermaid converter in frontend** — frontend now uses `@drawhaus/mermaid-to-excalidraw` with custom converters for flowchart, sequence, class, state, ER, and mindmap diagrams
 
 ### Changed
+
 - **Frontend PlantUML converter** — layout engine and arrow routing now imported from `@drawhaus/helpers` shared package
 - **MCP `create_diagram` / `update_diagram`** — validate elements before sending to API, return descriptive errors
 
@@ -124,6 +134,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.10.0 — Snapshots, Editor Lock & Single-Scene (2026-03)
 
 ### Added
+
 - **Persistent snapshot system** — auto-triggered snapshots (on save, on join, periodically) with full REST API for listing, creating, restoring, renaming, and deleting snapshots
 - **Snapshot panel UI** — sidebar panel to browse, preview, restore, and rename snapshots with offline recovery support
 - **Snapshot preview modal** — visual preview with restore and rename actions directly from the modal
@@ -137,15 +148,18 @@ All notable changes to Drawhaus are documented here.
 - **Gitleaks pre-commit hook** — prevents accidental secret commits
 
 ### Improved
+
 - **Collaboration stability** — stabilized follow mode, reduced jank, locked viewport/editing while following
 - **Canvas data loading** — server data prioritized over stale localStorage cache; first scene data loaded in initial API response to prevent visual jump
 - **Collaboration merge** — preserved element order during real-time merge
 - **Socket reconnection** — automatic reconnection with room re-join on recovery; grace period for reconnection added
 
 ### Removed
+
 - **Multi-scene support** — removed scene tabs, multi-scene API endpoints, and related UI in favor of single-scene diagrams
 
 ### Fixed
+
 - **Edit lock UX** — canvas starts in view-only mode until lock is confirmed; pan/zoom allowed when another user holds the lock; hidden redundant "Tienes el control" bubble for self lock; guarded socket callbacks against React Strict Mode cleanup
 - **Snapshot noise** — content hash deduplication, cross-trigger dedup, 5-minute grace period before offline snapshots
 - **Preview modal** — prevented preview modal from closing the sidebar on restore
@@ -157,6 +171,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.9.0 — Templates, Diagram as Code & Self-Hosted Frontend (2026-03)
 
 ### Added
+
 - **Self-hosted frontend deployment** — frontend deploys as a Kamal service (nginx container) alongside the backend on the same server, removing the dependency on Cloudflare Pages. Both services deploy sequentially via GitHub Actions with the backend health check as a gate
 - **Frontend production Dockerfile** — multi-stage build with nginx serving the SPA, gzip compression, and immutable cache headers for Vite hashed assets
 - **PlantUML class diagram import** — parse PlantUML class diagrams and convert to editable Excalidraw elements on the canvas
@@ -179,11 +194,13 @@ All notable changes to Drawhaus are documented here.
 - **Docker-in-Docker devcontainer feature** — enables running Kamal deploy commands from the devcontainer
 
 ### Improved
+
 - **Landing page redesign** — stacked screenshots showing code import + template picker in the Developer section; realistic screenshots with populated dashboards and thumbnails
 - **Marketing screenshots** — automated Playwright script generates 7 screenshots (hero, dashboard, admin, code-import, templates, share, collab) with demo data, fake cursors, and proper auth contexts
 - **Excalidraw UI cleanup** — hidden redundant canvas actions (library, export, save-as-image, load scene, save-to-file)
 
 ### Fixed
+
 - **Cookie `sameSite` policy** — production cookies now use `sameSite: "lax"` (more secure) for same-origin deployments; `"none"` is only used when `COOKIE_DOMAIN` is set (cross-subdomain setups)
 - **SceneTabBar restored** — floating tab bar for scene switching was accidentally removed in a prior refactor; now back at bottom-left of canvas
 - **Template listing bug** — `findByCreator()` excluded workspace-associated templates due to `AND workspace_id IS NULL` filter; templates now visible regardless of workspace association
@@ -194,6 +211,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.8.0 — Security, Testing & Architecture (2026-03)
 
 ### Added
+
 - **Maintenance mode** for site-wide access control during deployments
 - **Security headers** via Helmet (X-Frame-Options, HSTS, X-Content-Type-Options, CSP)
 - **Rate limiting** on auth endpoints (5 req/min) and general API (20 req/min) via `express-rate-limit`
@@ -215,6 +233,7 @@ All notable changes to Drawhaus are documented here.
 - **LICENSE**, **CONTRIBUTING**, and **SECURITY** documentation files
 
 ### Improved
+
 - **Backend architecture**: extracted composition root into separate repositories, services, and use-cases modules
 - **Validation**: extracted `validate()` middleware, deduplicated Zod schema parsing across 11 route files
 - **Authorization**: extracted `requireAccess` helpers, deduplicated permission checks across 21 use cases
@@ -228,11 +247,13 @@ All notable changes to Drawhaus are documented here.
 - E2E test isolation: unique test users per domain to eliminate flakiness
 
 ### Fixed
+
 - **Security**: Drive GraphQL injection, folder authorization bypass, cookie deduplication
 - Stabilized e2e tests and hardened setup flow
 - Resolved e2e test timing issues and improved test resilience
 
 ### Environment Variables (new)
+
 - `ENCRYPTION_KEY` — 32-byte hex key for encrypting integration secrets
 - `REDIS_URL` — Redis connection string for Socket.IO scaling
 - `BACKUP_PATH` — Backup storage directory (default: `/data/backups`)
@@ -243,6 +264,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.7.0 — Workspaces, Drive & Dashboard Overhaul (2026-03)
 
 ### Added
+
 - **Google Drive integration**: OAuth scope upgrade, export/import diagrams to/from Drive, auto-backup on save, integrations tab with sync badge
 - **Google OAuth login** with account linking
 - **Multi-tenant workspaces**: personal workspace per user, workspace CRUD (name, description, color, icon), roles (admin/editor/viewer), member invites with email accept flow
@@ -263,6 +285,7 @@ All notable changes to Drawhaus are documented here.
 - **Style guide**: documented Toast, ConfirmDialog, Drawer, Theme Toggle, Color Picker, Connection Badges with categorized TOC
 
 ### Improved
+
 - Replaced all `window.confirm()` and `window.alert()` with polished UI dialogs
 - Success/error feedback on all destructive actions across Dashboard, WorkspaceSettings, and AdminUsers
 - Refactored Dashboard.tsx into reusable components: DashboardSidebar, WorkspaceToolbar, WorkspaceView, GeneralView, FolderSection, DiagramGrid, NewDiagramCard
@@ -271,6 +294,7 @@ All notable changes to Drawhaus are documented here.
 - Added `.env.example` and wired docker-compose to use `.env`
 
 ### Fixed
+
 - Google OAuth secrets missing from Kamal deploy config
 - Unhandled errors not reported to Honeybadger from async route handlers
 - ESLint errors and warnings cleanup
@@ -281,6 +305,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.6.0 — Design Stitch & Polish (2026-03)
 
 ### Added
+
 - Dark/light theme toggle with persistent ThemeContext
 - Full UI redesign for auth pages, settings, admin panel, dashboard, and board toolbar
 - Landing page: hero section, features grid, CTA, footer with branding
@@ -298,12 +323,14 @@ All notable changes to Drawhaus are documented here.
 - Honeybadger error monitoring integration
 
 ### Improved
+
 - WebSocket performance: msgpack binary encoding, adaptive throttle, compression
 - Frontend audit: extracted components, deduplicated code, optimized renders
 - Share links: enforced max 20 per diagram, removed invalid commenter role
 - Sidebar: consolidated admin link into settings, added logout button
 
 ### Fixed
+
 - Scene switching content loss and cross-scene save race condition
 - Auth redirect loop and user data unwrapping
 - DB migration order for scene_id indexes
@@ -314,6 +341,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.5.0 — Vite Migration (2026-02)
 
 ### Added
+
 - Vite + React Router SPA replacing Next.js
 - Axios API layer with typed endpoint modules and 401 interceptor
 - Backend CORS support with cross-origin cookie handling
@@ -321,6 +349,7 @@ All notable changes to Drawhaus are documented here.
 - `COOKIE_DOMAIN` env var for subdomain cookie sharing
 
 ### Removed
+
 - Next.js and all related dependencies (`next`, `eslint-config-next`)
 - Next.js App Router directory (`frontend/app/`)
 - Frontend Docker production stage (now static-hosted)
@@ -330,6 +359,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.4.0 — Team Experience (2026-02)
 
 ### Added
+
 - Folders: flat folder structure with sidebar navigation
 - Full-text search on diagram titles
 - Multi-scene support: tab bar, per-scene collaboration, scene switching
@@ -338,6 +368,7 @@ All notable changes to Drawhaus are documented here.
 - Comments UI: panel, element indicators, real-time updates
 
 ### Fixed
+
 - Scene switching loses content and cross-scene save race condition
 
 ---
@@ -345,6 +376,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.3.0 — Table Stakes (2026-01)
 
 ### Added
+
 - Export to PNG/SVG via Excalidraw APIs
 - Import `.excalidraw` JSON files
 - Read-only embed links (`/embed/:token`)
@@ -358,6 +390,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.2.0 — Collaboration & Deployment (2026-01)
 
 ### Added
+
 - Real-time collaboration via Socket.IO with room lifecycle
 - Live presence: cursors, user list, viewport follow
 - Share links with roles (editor/viewer) and expiration
@@ -369,6 +402,7 @@ All notable changes to Drawhaus are documented here.
 - DevContainer setup with PostgreSQL
 
 ### Fixed
+
 - Element-level merge to prevent rollbacks
 - Guest scene loading and appState sync issues
 
@@ -377,6 +411,7 @@ All notable changes to Drawhaus are documented here.
 ## v0.1.0 — MVP (2025-12)
 
 ### Added
+
 - Full Excalidraw editor integration
 - Auth: register, login, logout with cookie sessions
 - Diagram CRUD with JSONB storage and access control

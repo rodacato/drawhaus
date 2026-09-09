@@ -14,20 +14,20 @@ This workflow is tool-agnostic — it works with Claude Code, Cursor, Windsurf, 
 
 ## Documentation Map
 
-| Document | Location | Purpose | When to read |
-|----------|----------|---------|-------------|
-| **CLAUDE.md** | `/CLAUDE.md` | Agent instructions, commands, conventions | Auto-loaded by Claude Code on every conversation |
-| **AGENTS.md** | `/AGENTS.md` | AI agent behavior rules, identity, expert panel | Auto-loaded or referenced by any AI tool |
-| **VISION.md** | `docs/VISION.md` | Product vision, architecture principles, competitive positioning | When making scope or direction decisions |
-| **IDENTITY.md** | `docs/IDENTITY.md` | Build persona, decision style, quality bar | When calibrating agent responses to project standards |
-| **EXPERTS.md** | `docs/EXPERTS.md` | Virtual advisory board — 6 expert personas | When facing tradeoffs or cross-cutting decisions |
-| **ROADMAP.md** | `docs/ROADMAP.md` | What's built, what's next, backlog, decision log | Before starting any new feature work |
-| **BRANDING.md** | `docs/BRANDING.md` | Colors, typography, logo, UI patterns | When building or modifying UI components |
-| **CHANGELOG.md** | `/CHANGELOG.md` | Full version history | When writing release notes or checking what shipped |
-| **ADRs** | `docs/adr/` | Architecture Decision Records with context and consequences | When revisiting past decisions or making new architectural choices |
-| **Specs** | `docs/specs/` | Feature implementation blueprints | Before building a roadmap feature |
-| **Guides** | `docs/guides/` | Operational guides (deploy, release) | When deploying or cutting a release |
-| **API docs** | `docs/api/` | OpenAPI 3.1 spec + Redocly config | When modifying `/v1/` public API endpoints |
+| Document         | Location           | Purpose                                                          | When to read                                                       |
+| ---------------- | ------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **CLAUDE.md**    | `/CLAUDE.md`       | Agent instructions, commands, conventions                        | Auto-loaded by Claude Code on every conversation                   |
+| **AGENTS.md**    | `/AGENTS.md`       | AI agent behavior rules, identity, expert panel                  | Auto-loaded or referenced by any AI tool                           |
+| **VISION.md**    | `docs/VISION.md`   | Product vision, architecture principles, competitive positioning | When making scope or direction decisions                           |
+| **IDENTITY.md**  | `docs/IDENTITY.md` | Build persona, decision style, quality bar                       | When calibrating agent responses to project standards              |
+| **EXPERTS.md**   | `docs/EXPERTS.md`  | Virtual advisory board — 6 expert personas                       | When facing tradeoffs or cross-cutting decisions                   |
+| **ROADMAP.md**   | `docs/ROADMAP.md`  | What's built, what's next, backlog, decision log                 | Before starting any new feature work                               |
+| **BRANDING.md**  | `docs/BRANDING.md` | Colors, typography, logo, UI patterns                            | When building or modifying UI components                           |
+| **CHANGELOG.md** | `/CHANGELOG.md`    | Full version history                                             | When writing release notes or checking what shipped                |
+| **ADRs**         | `docs/adr/`        | Architecture Decision Records with context and consequences      | When revisiting past decisions or making new architectural choices |
+| **Specs**        | `docs/specs/`      | Feature implementation blueprints                                | Before building a roadmap feature                                  |
+| **Guides**       | `docs/guides/`     | Operational guides (deploy, release)                             | When deploying or cutting a release                                |
+| **API docs**     | `docs/api/`        | OpenAPI 3.1 spec + Redocly config                                | When modifying `/v1/` public API endpoints                         |
 
 ---
 
@@ -83,8 +83,11 @@ Format:
 **Date:** YYYY-MM-DD
 
 ## Context
+
 ## Decision
+
 ## Alternatives Considered
+
 ## Consequences
 ```
 
@@ -109,15 +112,15 @@ The Decision Log in `docs/ROADMAP.md` serves as an executive summary. ADRs hold 
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-| Prefix | When |
-|--------|------|
-| `feat:` | New feature or capability |
-| `fix:` | Bug fix |
-| `docs:` | Documentation only |
-| `chore:` | Tooling, config, infrastructure |
+| Prefix      | When                                              |
+| ----------- | ------------------------------------------------- |
+| `feat:`     | New feature or capability                         |
+| `fix:`      | Bug fix                                           |
+| `docs:`     | Documentation only                                |
+| `chore:`    | Tooling, config, infrastructure                   |
 | `refactor:` | Code change that doesn't add features or fix bugs |
-| `test:` | Adding or updating tests |
-| `release:` | Version bump commit |
+| `test:`     | Adding or updating tests                          |
+| `release:`  | Version bump commit                               |
 
 ---
 
@@ -136,6 +139,7 @@ When making changes, update corresponding docs **in the same commit**:
 ## Quick Reference: Prompts That Work
 
 ### For specs
+
 ```
 "Write a spec for [feature]. Include scope, technical approach,
 file-by-file plan, and verification steps.
@@ -143,12 +147,14 @@ Reference the architecture from CLAUDE.md."
 ```
 
 ### For implementation
+
 ```
 "Implement the spec at docs/specs/[feature].md.
 Follow the spec exactly. Start with [component]."
 ```
 
 ### For architecture decisions
+
 ```
 "I need to decide between [A] and [B] for [purpose].
 Act as the [relevant expert] and give me tradeoffs.
@@ -156,12 +162,14 @@ Then write an ADR documenting the decision."
 ```
 
 ### For expert panel consultation
+
 ```
 "Convene [Expert 1] and [Expert 2] to review [design/decision].
 I want both perspectives before deciding."
 ```
 
 ### For releases
+
 ```
 "Prepare a release for v[X.Y.Z]. Follow docs/guides/releasing.md.
 Update CHANGELOG, ROADMAP, and package.json versions."

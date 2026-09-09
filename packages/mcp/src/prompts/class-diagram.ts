@@ -6,7 +6,11 @@ export function registerClassDiagramPrompt(server: McpServer) {
   server.prompt(
     "class_diagram",
     "Generate a class diagram from class definitions. Provide class names or paste source code.",
-    { classes: z.string().describe("Comma-separated class names, or paste source code with class definitions") },
+    {
+      classes: z
+        .string()
+        .describe("Comma-separated class names, or paste source code with class definitions"),
+    },
     ({ classes }) => ({
       messages: [
         {

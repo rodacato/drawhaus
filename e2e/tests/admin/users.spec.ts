@@ -25,7 +25,7 @@ test.describe("Admin Users", () => {
 
   test("user list contains expected users", async () => {
     const res = await adminCtx.get("/api/admin/users");
-    const users = (await res.json()).users ?? await res.json();
+    const users = (await res.json()).users ?? (await res.json());
     const admin = users.find((u: any) => u.email === ADMIN_USER.email);
     expect(admin).toBeTruthy();
     expect(admin.role).toBe("admin");
@@ -33,7 +33,7 @@ test.describe("Admin Users", () => {
 
   test("can update user role", async () => {
     const res = await adminCtx.get("/api/admin/users");
-    const users = (await res.json()).users ?? await res.json();
+    const users = (await res.json()).users ?? (await res.json());
     const testUser = users.find((u: any) => u.email === "e2e@drawhaus.test");
     if (!testUser) {
       test.skip(true, "Test user not found");

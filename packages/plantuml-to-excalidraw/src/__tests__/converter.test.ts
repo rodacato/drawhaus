@@ -52,13 +52,20 @@ class User {
 @enduml`;
     const result = parsePlantUMLToExcalidraw(code);
 
-    const texts = result.elements
-      .filter((e) => e.type === "text")
-      .map((e) => e.text as string);
+    const texts = result.elements.filter((e) => e.type === "text").map((e) => e.text as string);
 
-    assert.ok(texts.some((t) => t.includes("User")), "should have class name");
-    assert.ok(texts.some((t) => t.includes("name")), "should have attribute");
-    assert.ok(texts.some((t) => t.includes("getName")), "should have method");
+    assert.ok(
+      texts.some((t) => t.includes("User")),
+      "should have class name",
+    );
+    assert.ok(
+      texts.some((t) => t.includes("name")),
+      "should have attribute",
+    );
+    assert.ok(
+      texts.some((t) => t.includes("getName")),
+      "should have method",
+    );
   });
 
   test("renders interface with dashed border style", () => {
@@ -74,9 +81,7 @@ class User {
     const code = "@startuml\nenum Color {\n  RED\n  GREEN\n  BLUE\n}\n@enduml";
     const result = parsePlantUMLToExcalidraw(code);
 
-    const texts = result.elements
-      .filter((e) => e.type === "text")
-      .map((e) => e.text as string);
+    const texts = result.elements.filter((e) => e.type === "text").map((e) => e.text as string);
 
     assert.ok(texts.some((t) => t.includes("«enumeration»")));
     assert.ok(texts.some((t) => t === "RED"));
@@ -122,8 +127,7 @@ Car *-- Engine
     assert.equal(arrows.length, 1);
     // composition: diamond on one end
     const arrow = arrows[0];
-    const hasDiamond =
-      arrow.startArrowhead === "diamond" || arrow.endArrowhead === "diamond";
+    const hasDiamond = arrow.startArrowhead === "diamond" || arrow.endArrowhead === "diamond";
     assert.ok(hasDiamond, "composition should have a diamond arrowhead");
   });
 
@@ -264,7 +268,7 @@ describe("parsePlantUMLToExcalidraw - use case diagrams", () => {
   });
 
   test("include relation has dashed style and label", () => {
-    const code = '@startuml\nusecase Login\nusecase Auth\nLogin ..> Auth : <<include>>\n@enduml';
+    const code = "@startuml\nusecase Login\nusecase Auth\nLogin ..> Auth : <<include>>\n@enduml";
     const result = parsePlantUMLToExcalidraw(code);
 
     const arrows = result.elements.filter((e) => e.type === "arrow");
@@ -393,7 +397,9 @@ Active --> [*]
 
     // The first rect should be the composite (largest)
     const largest = rects.reduce((a, b) =>
-      ((a.width as number) * (a.height as number)) > ((b.width as number) * (b.height as number)) ? a : b
+      (a.width as number) * (a.height as number) > (b.width as number) * (b.height as number)
+        ? a
+        : b,
     );
     assert.ok((largest.width as number) > 200, "composite state should be large");
 
@@ -479,8 +485,7 @@ package "API" {
 
     const rects = result.elements.filter((e) => e.type === "rectangle");
     const largest = rects.reduce((a, b) =>
-      (a.width as number) * (a.height as number) >
-      (b.width as number) * (b.height as number)
+      (a.width as number) * (a.height as number) > (b.width as number) * (b.height as number)
         ? a
         : b,
     );
@@ -508,9 +513,7 @@ package "API" {
     const result = parsePlantUMLToExcalidraw(code);
 
     const arrows = result.elements.filter((e) => e.type === "arrow");
-    const labeled = arrows.find(
-      (a) => a.label && (a.label as any).text === "JDBC",
-    );
+    const labeled = arrows.find((a) => a.label && (a.label as any).text === "JDBC");
     assert.ok(labeled, "should have arrow with label");
   });
 
@@ -614,9 +617,7 @@ app --> db : JDBC
     const result = parsePlantUMLToExcalidraw(code);
 
     const arrows = result.elements.filter((e) => e.type === "arrow");
-    const labeled = arrows.find(
-      (a) => a.label && (a.label as any).text === "JDBC",
-    );
+    const labeled = arrows.find((a) => a.label && (a.label as any).text === "JDBC");
     assert.ok(labeled, "should have arrow with label");
   });
 

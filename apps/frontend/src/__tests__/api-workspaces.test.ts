@@ -13,7 +13,9 @@ describe("workspacesApi", () => {
   });
 
   test("get fetches workspace by id", async () => {
-    const stub = vi.spyOn(api, "get").mockResolvedValue({ workspace: {}, role: "admin", members: [] });
+    const stub = vi
+      .spyOn(api, "get")
+      .mockResolvedValue({ workspace: {}, role: "admin", members: [] });
     await workspacesApi.get("w1");
     assert.deepEqual(stub.mock.calls[0], ["/api/workspaces/w1"]);
   });
@@ -60,10 +62,7 @@ describe("workspacesApi", () => {
   test("updateMemberRole patches role", async () => {
     const stub = vi.spyOn(api, "patch").mockResolvedValue({});
     await workspacesApi.updateMemberRole("w1", "u1", "viewer");
-    assert.deepEqual(stub.mock.calls[0], [
-      "/api/workspaces/w1/members/u1",
-      { role: "viewer" },
-    ]);
+    assert.deepEqual(stub.mock.calls[0], ["/api/workspaces/w1/members/u1", { role: "viewer" }]);
   });
 
   test("removeMember deletes member", async () => {
@@ -79,13 +78,17 @@ describe("workspacesApi", () => {
   });
 
   test("resolveInvite fetches invite by token", async () => {
-    const stub = vi.spyOn(api, "get").mockResolvedValue({ workspaceName: "T", role: "editor", email: "a@b.com" });
+    const stub = vi
+      .spyOn(api, "get")
+      .mockResolvedValue({ workspaceName: "T", role: "editor", email: "a@b.com" });
     await workspacesApi.resolveInvite("tok");
     assert.deepEqual(stub.mock.calls[0], ["/api/workspaces/invite/tok"]);
   });
 
   test("transferOwnership posts newOwnerId+transferResources", async () => {
-    const stub = vi.spyOn(api, "post").mockResolvedValue({ success: true, diagramCount: 0, templateCount: 0 });
+    const stub = vi
+      .spyOn(api, "post")
+      .mockResolvedValue({ success: true, diagramCount: 0, templateCount: 0 });
     await workspacesApi.transferOwnership("w1", "u2", true);
     assert.deepEqual(stub.mock.calls[0], [
       "/api/workspaces/w1/transfer-ownership",

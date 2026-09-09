@@ -9,7 +9,9 @@ export class ResolveWorkspaceInviteUseCase {
     private readonly invitations: WorkspaceInvitationRepository,
   ) {}
 
-  async execute(token: string): Promise<{ workspaceName: string; role: WorkspaceRole; email: string }> {
+  async execute(
+    token: string,
+  ): Promise<{ workspaceName: string; role: WorkspaceRole; email: string }> {
     const invite = await this.invitations.findByToken(token);
     if (!invite || invite.usedAt) throw new NotFoundError("Invitation");
     if (invite.expiresAt < new Date()) throw new ExpiredError("Invitation");

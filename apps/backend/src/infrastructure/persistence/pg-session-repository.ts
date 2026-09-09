@@ -26,10 +26,11 @@ export class PgSessionRepository implements SessionRepository {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + config.sessionTtlDays);
 
-    await pool.query(
-      "INSERT INTO sessions (id, user_id, expires_at) VALUES ($1, $2, $3)",
-      [token, userId, expiresAt.toISOString()],
-    );
+    await pool.query("INSERT INTO sessions (id, user_id, expires_at) VALUES ($1, $2, $3)", [
+      token,
+      userId,
+      expiresAt.toISOString(),
+    ]);
 
     return { token, userId, expiresAt };
   }

@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { loginAsUser, ADMIN_USER, WS_MEMBER_USER, unauthenticatedContext } from "../../fixtures/multi-user.fixture";
+import {
+  loginAsUser,
+  ADMIN_USER,
+  WS_MEMBER_USER,
+  unauthenticatedContext,
+} from "../../fixtures/multi-user.fixture";
 
 const BASE_URL = "http://localhost:5173";
 

@@ -9,11 +9,14 @@ export function AuthLayout() {
 
   useEffect(() => {
     if (!loading && !user) {
-      authApi.getSetupStatus().then(({ needsSetup }) => {
-        setNeedsSetup(needsSetup);
-      }).catch(() => {
-        setNeedsSetup(false);
-      });
+      authApi
+        .getSetupStatus()
+        .then(({ needsSetup }) => {
+          setNeedsSetup(needsSetup);
+        })
+        .catch(() => {
+          setNeedsSetup(false);
+        });
     }
   }, [loading, user]);
 

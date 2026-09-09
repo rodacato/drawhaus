@@ -49,7 +49,9 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
   }
 
   async findByUser(userId: string): Promise<Workspace[]> {
-    const qualifiedCols = COLS.split(", ").map((c) => `w.${c}`).join(", ");
+    const qualifiedCols = COLS.split(", ")
+      .map((c) => `w.${c}`)
+      .join(", ");
     const { rows } = await pool.query<WorkspaceRow>(
       `SELECT DISTINCT ${qualifiedCols}
        FROM workspaces w
@@ -69,13 +71,27 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
     return rows[0] ? toDomain(rows[0]) : null;
   }
 
-  async create(data: { name: string; description?: string; ownerId: string; isPersonal?: boolean; color?: string; icon?: string }): Promise<Workspace> {
+  async create(data: {
+    name: string;
+    description?: string;
+    ownerId: string;
+    isPersonal?: boolean;
+    color?: string;
+    icon?: string;
+  }): Promise<Workspace> {
     return withTransaction(async (client) => {
       const { rows } = await client.query<WorkspaceRow>(
         `INSERT INTO workspaces (name, description, owner_id, is_personal, color, icon)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING ${COLS}`,
-        [data.name, data.description ?? "", data.ownerId, data.isPersonal ?? false, data.color ?? "#6366f1", data.icon ?? ""],
+        [
+          data.name,
+          data.description ?? "",
+          data.ownerId,
+          data.isPersonal ?? false,
+          data.color ?? "#6366f1",
+          data.icon ?? "",
+        ],
       );
       const workspace = toDomain(rows[0]);
 
@@ -89,15 +105,34 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
     });
   }
 
-  async update(id: string, data: Partial<Pick<Workspace, "name" | "description" | "color" | "icon">>): Promise<Workspace | null> {
+  async update(
+    id: string,
+    data: Partial<Pick<Workspace, "name" | "description" | "color" | "icon">>,
+  ): Promise<Workspace | null> {
     const updates: string[] = [];
     const values: unknown[] = [];
     let index = 1;
 
-    if (data.name !== undefined) { updates.push(`name = $${index}`); values.push(data.name); index += 1; }
-    if (data.description !== undefined) { updates.push(`description = $${index}`); values.push(data.description); index += 1; }
-    if (data.color !== undefined) { updates.push(`color = $${index}`); values.push(data.color); index += 1; }
-    if (data.icon !== undefined) { updates.push(`icon = $${index}`); values.push(data.icon); index += 1; }
+    if (data.name !== undefined) {
+      updates.push(`name = $${index}`);
+      values.push(data.name);
+      index += 1;
+    }
+    if (data.description !== undefined) {
+      updates.push(`description = $${index}`);
+      values.push(data.description);
+      index += 1;
+    }
+    if (data.color !== undefined) {
+      updates.push(`color = $${index}`);
+      values.push(data.color);
+      index += 1;
+    }
+    if (data.icon !== undefined) {
+      updates.push(`icon = $${index}`);
+      values.push(data.icon);
+      index += 1;
+    }
 
     if (updates.length === 0) return this.findById(id);
 
@@ -124,7 +159,9 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
     return rows[0]?.role ?? null;
   }
 
-  async findMembers(workspaceId: string): Promise<(WorkspaceMember & { userName: string; userEmail: string })[]> {
+  async findMembers(
+    workspaceId: string,
+  ): Promise<(WorkspaceMember & { userName: string; userEmail: string })[]> {
     const { rows } = await pool.query<MemberRow>(
       `SELECT wm.workspace_id, wm.user_id, wm.role, wm.added_at, u.name AS user_name, u.email AS user_email
        FROM workspace_members wm
@@ -160,10 +197,10 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
   }
 
   async removeMember(workspaceId: string, userId: string): Promise<void> {
-    await pool.query(
-      `DELETE FROM workspace_members WHERE workspace_id = $1 AND user_id = $2`,
-      [workspaceId, userId],
-    );
+    await pool.query(`DELETE FROM workspace_members WHERE workspace_id = $1 AND user_id = $2`, [
+      workspaceId,
+      userId,
+    ]);
   }
 
   async countByOwner(userId: string): Promise<number> {
@@ -192,10 +229,10 @@ export class PgWorkspaceRepository implements WorkspaceRepository {
       const oldOwnerId = wsRows[0]?.owner_id;
 
       // Transfer ownership
-      await client.query(
-        `UPDATE workspaces SET owner_id = $1, updated_at = now() WHERE id = $2`,
-        [newOwnerId, workspaceId],
-      );
+      await client.query(`UPDATE workspaces SET owner_id = $1, updated_at = now() WHERE id = $2`, [
+        newOwnerId,
+        workspaceId,
+      ]);
 
       // Ensure new owner is admin
       await client.query(

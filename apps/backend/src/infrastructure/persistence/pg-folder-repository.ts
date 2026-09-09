@@ -47,7 +47,11 @@ export class PgFolderRepository implements FolderRepository {
     return rows.map(toDomain);
   }
 
-  async create(data: { ownerId: string; workspaceId?: string | null; name: string }): Promise<Folder> {
+  async create(data: {
+    ownerId: string;
+    workspaceId?: string | null;
+    name: string;
+  }): Promise<Folder> {
     const { rows } = await pool.query<FolderRow>(
       `INSERT INTO folders (owner_id, workspace_id, name)
        VALUES ($1, $2, $3)

@@ -43,9 +43,11 @@ test.describe("Disabled User", () => {
   test.afterAll(async () => {
     // Re-enable and clean up
     if (tempUserId) {
-      await adminCtx.patch(`/api/admin/users/${tempUserId}`, {
-        data: { disabled: false },
-      }).catch(() => {});
+      await adminCtx
+        .patch(`/api/admin/users/${tempUserId}`, {
+          data: { disabled: false },
+        })
+        .catch(() => {});
       await adminCtx.delete(`/api/admin/users/${tempUserId}`).catch(() => {});
     }
     await adminCtx?.dispose();

@@ -37,9 +37,7 @@ test.describe("User Profile Settings", () => {
     expect(restore.ok()).toBeTruthy();
   });
 
-  test("PATCH /api/auth/me with empty name is rejected", async ({
-    request,
-  }) => {
+  test("PATCH /api/auth/me with empty name is rejected", async ({ request }) => {
     const response = await request.patch("/api/auth/me", {
       data: { name: "" },
     });

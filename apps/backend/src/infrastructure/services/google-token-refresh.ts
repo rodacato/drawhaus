@@ -41,7 +41,11 @@ export class GoogleTokenRefresher implements TokenRefresherPort {
       throw new Error(`Token refresh failed: ${body}`);
     }
 
-    const data = (await response.json()) as { access_token: string; expires_in: number; refresh_token?: string };
+    const data = (await response.json()) as {
+      access_token: string;
+      expires_in: number;
+      refresh_token?: string;
+    };
     const expiresAt = new Date(Date.now() + data.expires_in * 1000);
 
     await this.oauthTokens.upsert({

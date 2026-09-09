@@ -4,7 +4,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
 import { useConfirm } from "@/components/ConfirmDialog";
 
-const COLORS = ["#6366f1", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#64748b"];
+const COLORS = [
+  "#6366f1",
+  "#0ea5e9",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+  "#f97316",
+  "#64748b",
+];
 
 interface WorkspaceSettingsContentProps {
   readonly workspaceId: string;
@@ -13,7 +24,12 @@ interface WorkspaceSettingsContentProps {
   readonly onStatusMessage?: (msg: string) => void;
 }
 
-export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpdated, onStatusMessage }: WorkspaceSettingsContentProps) {
+export function WorkspaceSettingsContent({
+  workspaceId,
+  onClose,
+  onWorkspaceUpdated,
+  onStatusMessage,
+}: WorkspaceSettingsContentProps) {
   const { user } = useAuth();
   const toast = useToast();
   const confirm = useConfirm();
@@ -57,18 +73,27 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
     setLoading(false);
   }, [workspaceId, onClose]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   async function handleSave() {
     if (!name.trim()) return;
     setSaving(true);
     try {
-      const res = await workspacesApi.update(workspaceId, { name: name.trim(), description: description.trim(), color, icon });
+      const res = await workspacesApi.update(workspaceId, {
+        name: name.trim(),
+        description: description.trim(),
+        color,
+        icon,
+      });
       setWorkspace(res.workspace);
       onWorkspaceUpdated?.();
       onStatusMessage?.("Workspace updated");
       onClose();
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
     setSaving(false);
   }
 
@@ -92,7 +117,9 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
     try {
       await workspacesApi.updateMemberRole(workspaceId, userId, newRole);
       loadData();
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   async function handleRemoveMember(userId: string) {
@@ -111,7 +138,9 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
       await workspacesApi.removeMember(workspaceId, userId);
       toast(isSelf ? "You left the workspace" : "Member removed");
       loadData();
-    } catch { toast("Failed to remove member.", "error"); }
+    } catch {
+      toast("Failed to remove member.", "error");
+    }
   }
 
   async function handleTransferOwnership() {
@@ -126,15 +155,23 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
     if (!ok) return;
     setTransferring(true);
     try {
-      const result = await workspacesApi.transferOwnership(workspaceId, transferTarget, transferResources);
+      const result = await workspacesApi.transferOwnership(
+        workspaceId,
+        transferTarget,
+        transferResources,
+      );
       const parts = ["Ownership transferred"];
-      if (result.diagramCount > 0) parts.push(`${result.diagramCount} diagram${result.diagramCount !== 1 ? "s" : ""}`);
-      if (result.templateCount > 0) parts.push(`${result.templateCount} template${result.templateCount !== 1 ? "s" : ""}`);
+      if (result.diagramCount > 0)
+        parts.push(`${result.diagramCount} diagram${result.diagramCount !== 1 ? "s" : ""}`);
+      if (result.templateCount > 0)
+        parts.push(`${result.templateCount} template${result.templateCount !== 1 ? "s" : ""}`);
       toast(parts.join(", "));
       setShowTransfer(false);
       onWorkspaceUpdated?.();
       loadData();
-    } catch { toast("Failed to transfer ownership.", "error"); }
+    } catch {
+      toast("Failed to transfer ownership.", "error");
+    }
     setTransferring(false);
   }
 
@@ -152,11 +189,17 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
       toast("Workspace deleted");
       onWorkspaceUpdated?.();
       onClose();
-    } catch { toast("Failed to delete workspace.", "error"); }
+    } catch {
+      toast("Failed to delete workspace.", "error");
+    }
   }
 
   if (loading) {
-    return <div className="flex h-48 items-center justify-center text-sm text-text-muted">Loading...</div>;
+    return (
+      <div className="flex h-48 items-center justify-center text-sm text-text-muted">
+        Loading...
+      </div>
+    );
   }
   if (!workspace) return null;
 
@@ -169,7 +212,12 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
         <h2 className="mb-4 text-lg font-semibold text-text-primary">Workspace Identity</h2>
         <div className="space-y-4">
           <div>
-            <label htmlFor="workspace-name" className="mb-1 block text-sm font-medium text-text-secondary">Name</label>
+            <label
+              htmlFor="workspace-name"
+              className="mb-1 block text-sm font-medium text-text-secondary"
+            >
+              Name
+            </label>
             <input
               id="workspace-name"
               className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary/20"
@@ -179,7 +227,12 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
             />
           </div>
           <div>
-            <label htmlFor="workspace-description" className="mb-1 block text-sm font-medium text-text-secondary">Description</label>
+            <label
+              htmlFor="workspace-description"
+              className="mb-1 block text-sm font-medium text-text-secondary"
+            >
+              Description
+            </label>
             <textarea
               id="workspace-description"
               className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary/20"
@@ -191,7 +244,12 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
             />
           </div>
           <div>
-            <label htmlFor="workspace-icon" className="mb-2 block text-sm font-medium text-text-secondary">Icon (emoji)</label>
+            <label
+              htmlFor="workspace-icon"
+              className="mb-2 block text-sm font-medium text-text-secondary"
+            >
+              Icon (emoji)
+            </label>
             <input
               id="workspace-icon"
               className="w-20 rounded-lg border border-border bg-surface px-3 py-2 text-center text-lg outline-none focus:ring-2 focus:ring-primary/20"
@@ -202,7 +260,12 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
             />
           </div>
           <div>
-            <span id="workspace-color-label" className="mb-2 block text-sm font-medium text-text-secondary">Color</span>
+            <span
+              id="workspace-color-label"
+              className="mb-2 block text-sm font-medium text-text-secondary"
+            >
+              Color
+            </span>
             <div role="group" aria-labelledby="workspace-color-label" className="flex gap-2">
               {COLORS.map((c) => (
                 <button
@@ -217,7 +280,12 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
             </div>
           </div>
           {isAdmin && (
-            <button onClick={handleSave} disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover" type="button">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
+              type="button"
+            >
               {saving ? "Saving..." : "Save Changes"}
             </button>
           )}
@@ -228,7 +296,9 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
       <section className="rounded-xl border border-border bg-surface-raised p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-primary">Members</h2>
-          <span className="text-sm text-text-muted">{members.length} member{members.length !== 1 ? "s" : ""}</span>
+          <span className="text-sm text-text-muted">
+            {members.length} member{members.length !== 1 ? "s" : ""}
+          </span>
         </div>
 
         {isAdmin && (
@@ -249,7 +319,11 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
               <option value="viewer">Viewer</option>
               <option value="admin">Admin</option>
             </select>
-            <button type="submit" disabled={inviting} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover">
+            <button
+              type="submit"
+              disabled={inviting}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
+            >
               {inviting ? "Sending..." : "Invite"}
             </button>
           </form>
@@ -281,18 +355,43 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
                     <option value="viewer">Viewer</option>
                   </select>
                 ) : (
-                  <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-text-muted capitalize">{member.role}</span>
+                  <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-text-muted capitalize">
+                    {member.role}
+                  </span>
                 )}
                 {member.userId === workspace.ownerId && (
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Owner</span>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                    Owner
+                  </span>
                 )}
                 {isAdmin && member.userId !== workspace.ownerId && member.userId !== user?.id && (
-                  <button onClick={() => handleRemoveMember(member.userId)} className="rounded p-1 text-text-muted hover:text-error transition" title="Remove member" type="button">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
+                  <button
+                    onClick={() => handleRemoveMember(member.userId)}
+                    className="rounded p-1 text-text-muted hover:text-error transition"
+                    title="Remove member"
+                    type="button"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                    </svg>
                   </button>
                 )}
                 {member.userId === user?.id && member.userId !== workspace.ownerId && (
-                  <button onClick={() => handleRemoveMember(member.userId)} className="rounded px-2 py-0.5 text-xs text-error hover:bg-error/10 transition" type="button">
+                  <button
+                    onClick={() => handleRemoveMember(member.userId)}
+                    className="rounded px-2 py-0.5 text-xs text-error hover:bg-error/10 transition"
+                    type="button"
+                  >
                     Leave
                   </button>
                 )}
@@ -307,16 +406,26 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
         <section className="rounded-xl border border-border bg-surface-raised p-6">
           <h2 className="mb-2 text-lg font-semibold text-text-primary">Transfer Ownership</h2>
           <p className="mb-4 text-sm text-text-secondary">
-            Transfer this workspace to another admin. You will remain as an admin after the transfer.
+            Transfer this workspace to another admin. You will remain as an admin after the
+            transfer.
           </p>
           {!showTransfer ? (
-            <button onClick={() => setShowTransfer(true)} className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface" type="button">
+            <button
+              onClick={() => setShowTransfer(true)}
+              className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface"
+              type="button"
+            >
               Transfer Ownership...
             </button>
           ) : (
             <div className="space-y-3">
               <div>
-                <label htmlFor="workspace-new-owner" className="mb-1 block text-sm font-medium text-text-secondary">New Owner</label>
+                <label
+                  htmlFor="workspace-new-owner"
+                  className="mb-1 block text-sm font-medium text-text-secondary"
+                >
+                  New Owner
+                </label>
                 <select
                   id="workspace-new-owner"
                   className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none"
@@ -327,7 +436,9 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
                   {members
                     .filter((m) => m.role === "admin" && m.userId !== user?.id)
                     .map((m) => (
-                      <option key={m.userId} value={m.userId}>{m.userName} ({m.userEmail})</option>
+                      <option key={m.userId} value={m.userId}>
+                        {m.userName} ({m.userEmail})
+                      </option>
                     ))}
                 </select>
               </div>
@@ -349,7 +460,11 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
                 >
                   {transferring ? "Transferring..." : "Confirm Transfer"}
                 </button>
-                <button onClick={() => setShowTransfer(false)} className="rounded-lg border border-border px-4 py-2 text-sm text-text-secondary transition hover:bg-surface" type="button">
+                <button
+                  onClick={() => setShowTransfer(false)}
+                  className="rounded-lg border border-border px-4 py-2 text-sm text-text-secondary transition hover:bg-surface"
+                  type="button"
+                >
                   Cancel
                 </button>
               </div>
@@ -362,8 +477,15 @@ export function WorkspaceSettingsContent({ workspaceId, onClose, onWorkspaceUpda
       {isAdmin && !workspace.isPersonal && (
         <section className="rounded-xl border border-error/30 bg-error/5 p-6">
           <h2 className="mb-2 text-lg font-semibold text-error">Danger Zone</h2>
-          <p className="mb-4 text-sm text-text-secondary">Once you delete a workspace, all diagrams will revert to their owners' personal workspaces.</p>
-          <button onClick={handleDelete} className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white transition hover:bg-error/80" type="button">
+          <p className="mb-4 text-sm text-text-secondary">
+            Once you delete a workspace, all diagrams will revert to their owners' personal
+            workspaces.
+          </p>
+          <button
+            onClick={handleDelete}
+            className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white transition hover:bg-error/80"
+            type="button"
+          >
             Delete Workspace
           </button>
         </section>

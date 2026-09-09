@@ -8,12 +8,12 @@ Strongest differentiator — no other self-hosted whiteboard has this. Any AI ag
 
 ## Tools
 
-| Tool | Description |
-|------|-------------|
-| `create_diagram` | Create a new diagram with optional Excalidraw elements |
-| `list_diagrams` | List diagrams in a workspace, optionally filtered by folder |
-| `update_diagram` | Update diagram title, elements, or metadata |
-| `get_diagram` | Get diagram content including Excalidraw elements |
+| Tool             | Description                                                 |
+| ---------------- | ----------------------------------------------------------- |
+| `create_diagram` | Create a new diagram with optional Excalidraw elements      |
+| `list_diagrams`  | List diagrams in a workspace, optionally filtered by folder |
+| `update_diagram` | Update diagram title, elements, or metadata                 |
+| `get_diagram`    | Get diagram content including Excalidraw elements           |
 
 ## Open Questions
 

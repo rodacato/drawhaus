@@ -46,7 +46,9 @@ export function registerUpdateDiagram(server: McpServer, client: DrawhausClient)
         const changes: string[] = [];
         if (input.title !== undefined) changes.push(`title → "${diagram.title}"`);
         if (input.elements !== undefined)
-          changes.push(`elements (${Array.isArray(diagram.elements) ? diagram.elements.length : 0} items)`);
+          changes.push(
+            `elements (${Array.isArray(diagram.elements) ? diagram.elements.length : 0} items)`,
+          );
         if (input.appState !== undefined) changes.push("appState");
 
         const text = [

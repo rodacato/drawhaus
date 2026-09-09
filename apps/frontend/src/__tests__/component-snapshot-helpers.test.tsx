@@ -1,6 +1,10 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { TRIGGER_LABELS, timeAgo, SessionBadge } from "../components/board-sidebar/snapshot-helpers";
+import {
+  TRIGGER_LABELS,
+  timeAgo,
+  SessionBadge,
+} from "../components/board-sidebar/snapshot-helpers";
 
 describe("TRIGGER_LABELS", () => {
   test("groups all auto-save triggers under Auto-save", () => {

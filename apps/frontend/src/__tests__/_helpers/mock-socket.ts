@@ -29,7 +29,10 @@ export function createMockSocket(overrides: { id?: string; connected?: boolean }
   });
 
   const off = vi.fn((event: string, fn?: Handler) => {
-    if (!fn) { handlers.delete(event); return; }
+    if (!fn) {
+      handlers.delete(event);
+      return;
+    }
     handlers.get(event)?.delete(fn);
   });
 
@@ -39,7 +42,10 @@ export function createMockSocket(overrides: { id?: string; connected?: boolean }
   });
 
   const managerOff = vi.fn((event: string, fn?: Handler) => {
-    if (!fn) { managerHandlers.delete(event); return; }
+    if (!fn) {
+      managerHandlers.delete(event);
+      return;
+    }
     managerHandlers.get(event)?.delete(fn);
   });
 
@@ -80,11 +86,13 @@ export function makeRef<T>(value: T): React.MutableRefObject<T> {
 }
 
 /** Minimal stub of the Excalidraw API surface used by collaboration hooks. */
-export function createExcalidrawApiStub(overrides: Partial<{
-  elements: unknown[];
-  appState: Record<string, unknown>;
-  files: Record<string, unknown>;
-}> = {}) {
+export function createExcalidrawApiStub(
+  overrides: Partial<{
+    elements: unknown[];
+    appState: Record<string, unknown>;
+    files: Record<string, unknown>;
+  }> = {},
+) {
   const state = {
     elements: overrides.elements ?? [],
     appState: overrides.appState ?? { scrollX: 0, scrollY: 0, zoom: { value: 1 } },

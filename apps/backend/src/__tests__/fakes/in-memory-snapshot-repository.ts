@@ -83,7 +83,12 @@ export class InMemorySnapshotRepository implements SnapshotRepository {
     const before = this.store.length;
     this.store = this.store.filter(
       (s) =>
-        !(s.diagramId === diagramId && s.name === null && !keepIds.has(s.id) && s.createdAt.getTime() < cutoff),
+        !(
+          s.diagramId === diagramId &&
+          s.name === null &&
+          !keepIds.has(s.id) &&
+          s.createdAt.getTime() < cutoff
+        ),
     );
     return before - this.store.length;
   }

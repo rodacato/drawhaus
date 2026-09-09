@@ -30,7 +30,13 @@ function toDomain(row: InvitationRow): Invitation {
 const COLUMNS = "id, email, role, token, invited_by, expires_at, used_at, created_at";
 
 export class PgInvitationRepository implements InvitationRepository {
-  async create(data: { email: string; role: UserRole; token: string; invitedBy: string; expiresAt: Date }): Promise<Invitation> {
+  async create(data: {
+    email: string;
+    role: UserRole;
+    token: string;
+    invitedBy: string;
+    expiresAt: Date;
+  }): Promise<Invitation> {
     const { rows } = await pool.query<InvitationRow>(
       `INSERT INTO invitations (email, role, token, invited_by, expires_at)
        VALUES ($1, $2, $3, $4, $5)

@@ -54,13 +54,21 @@ export function SnapshotItem({
           >
             {snapshot.name ? (
               <span className="flex items-center gap-1.5">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="shrink-0 text-primary">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="shrink-0 text-primary"
+                >
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                 </svg>
                 {snapshot.name}
               </span>
             ) : (
-              <span className="text-text-secondary">{TRIGGER_LABELS[snapshot.trigger] ?? snapshot.trigger}</span>
+              <span className="text-text-secondary">
+                {TRIGGER_LABELS[snapshot.trigger] ?? snapshot.trigger}
+              </span>
             )}
           </button>
         )}
@@ -86,33 +94,51 @@ export function SnapshotItem({
           </button>
           {menuOpen && (
             <>
-              <button type="button" aria-label="Close menu" className="fixed inset-0 z-10 cursor-default" onClick={() => setMenuOpen(false)} />
+              <button
+                type="button"
+                aria-label="Close menu"
+                className="fixed inset-0 z-10 cursor-default"
+                onClick={() => setMenuOpen(false)}
+              />
               <div className="absolute right-0 top-full z-20 mt-1 w-36 rounded-lg border border-border bg-surface-raised py-1 shadow-lg">
                 <button
                   type="button"
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-surface"
-                  onClick={() => { setMenuOpen(false); onPreview(); }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onPreview();
+                  }}
                 >
                   Preview
                 </button>
                 <button
                   type="button"
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-surface"
-                  onClick={() => { setMenuOpen(false); onRestore(); }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onRestore();
+                  }}
                 >
                   Restore
                 </button>
                 <button
                   type="button"
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-surface"
-                  onClick={() => { setMenuOpen(false); setEditing(true); setNameValue(snapshot.name ?? ""); }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setEditing(true);
+                    setNameValue(snapshot.name ?? "");
+                  }}
                 >
                   {snapshot.name ? "Rename" : "Name this version"}
                 </button>
                 <button
                   type="button"
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-danger hover:bg-surface"
-                  onClick={() => { setMenuOpen(false); onDelete(); }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onDelete();
+                  }}
                 >
                   Delete
                 </button>

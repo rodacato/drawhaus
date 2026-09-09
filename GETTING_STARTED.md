@@ -72,11 +72,11 @@ the matching keys in `.env` (see the commented blocks in `.env.example`):
 
 ## Troubleshooting
 
-| Symptom | Cause / fix |
-|---|---|
-| `ECONNREFUSED :5432` on `npm run dev` | No PostgreSQL running. Use Path 1 (Compose), or start your own PG and point `DATABASE_URL` at it. |
+| Symptom                                                        | Cause / fix                                                                                                |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `ECONNREFUSED :5432` on `npm run dev`                          | No PostgreSQL running. Use Path 1 (Compose), or start your own PG and point `DATABASE_URL` at it.          |
 | Backend calls fail when hitting `:4000` directly under Compose | Compose maps the backend to `:4300` (internal `4000`). Use `:5173` — the Vite proxy routes `/api` for you. |
-| Real-time sync lost across multiple backend instances | Set `REDIS_URL`; the in-memory adapter is single-instance only. |
+| Real-time sync lost across multiple backend instances          | Set `REDIS_URL`; the in-memory adapter is single-instance only.                                            |
 
 ## More
 

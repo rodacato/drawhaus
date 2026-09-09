@@ -78,9 +78,7 @@ describe("DrawhausClient", () => {
         updatedAt: "2026-03-19T10:00:00.000Z",
       };
 
-      mockFetch.mock.mockImplementation(async () =>
-        jsonResponse({ data: diagram }, 201),
-      );
+      mockFetch.mock.mockImplementation(async () => jsonResponse({ data: diagram }, 201));
 
       const result = await client.createDiagram({ title: "Test" });
       assert.equal(result.id, "abc-123");
@@ -155,9 +153,7 @@ describe("DrawhausClient", () => {
 
   describe("deleteDiagram", () => {
     it("sends DELETE and returns void", async () => {
-      mockFetch.mock.mockImplementation(
-        async () => new Response(null, { status: 204 }),
-      );
+      mockFetch.mock.mockImplementation(async () => new Response(null, { status: 204 }));
 
       await client.deleteDiagram("abc-123");
 
@@ -173,13 +169,16 @@ describe("DrawhausClient", () => {
         jsonResponse({ error: "Invalid API key" }, 401),
       );
 
-      await assert.rejects(() => client.getDiagram("abc"), (error: unknown) => {
-        assert.ok(error instanceof DrawhausApiError);
-        assert.equal(error.status, 401);
-        assert.equal(error.apiMessage, "Invalid API key");
-        assert.ok(error.hint.includes("DRAWHAUS_API_KEY"));
-        return true;
-      });
+      await assert.rejects(
+        () => client.getDiagram("abc"),
+        (error: unknown) => {
+          assert.ok(error instanceof DrawhausApiError);
+          assert.equal(error.status, 401);
+          assert.equal(error.apiMessage, "Invalid API key");
+          assert.ok(error.hint.includes("DRAWHAUS_API_KEY"));
+          return true;
+        },
+      );
     });
 
     it("throws DrawhausApiError on 404", async () => {
@@ -187,24 +186,28 @@ describe("DrawhausClient", () => {
         jsonResponse({ error: "Diagram not found" }, 404),
       );
 
-      await assert.rejects(() => client.getDiagram("abc"), (error: unknown) => {
-        assert.ok(error instanceof DrawhausApiError);
-        assert.equal(error.status, 404);
-        assert.ok(error.hint.includes("list_diagrams"));
-        return true;
-      });
+      await assert.rejects(
+        () => client.getDiagram("abc"),
+        (error: unknown) => {
+          assert.ok(error instanceof DrawhausApiError);
+          assert.equal(error.status, 404);
+          assert.ok(error.hint.includes("list_diagrams"));
+          return true;
+        },
+      );
     });
 
     it("never includes API key in error messages", async () => {
-      mockFetch.mock.mockImplementation(async () =>
-        jsonResponse({ error: "Server error" }, 500),
-      );
+      mockFetch.mock.mockImplementation(async () => jsonResponse({ error: "Server error" }, 500));
 
-      await assert.rejects(() => client.health(), (error: unknown) => {
-        const msg = String(error);
-        assert.ok(!msg.includes("dhk_test_key_123"));
-        return true;
-      });
+      await assert.rejects(
+        () => client.health(),
+        (error: unknown) => {
+          const msg = String(error);
+          assert.ok(!msg.includes("dhk_test_key_123"));
+          return true;
+        },
+      );
     });
   });
 });

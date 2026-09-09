@@ -30,12 +30,40 @@ type DiagramGridProps = DiagramActions & {
   activeWorkspaceId?: string | null;
 };
 
-export function DiagramGrid({ diagrams, folders, allTags, viewMode, appendToGrid, workspaces, activeWorkspaceId, onMove, onDelete, onDuplicate, onToggleStar, onShare, onEmbed, onRename, onToggleTag, onCreateTag, onDeleteTag, onSaveAsTemplate }: DiagramGridProps) {
+export function DiagramGrid({
+  diagrams,
+  folders,
+  allTags,
+  viewMode,
+  appendToGrid,
+  workspaces,
+  activeWorkspaceId,
+  onMove,
+  onDelete,
+  onDuplicate,
+  onToggleStar,
+  onShare,
+  onEmbed,
+  onRename,
+  onToggleTag,
+  onCreateTag,
+  onDeleteTag,
+  onSaveAsTemplate,
+}: DiagramGridProps) {
   if (viewMode === "list") {
     return (
       <div className="divide-y divide-border rounded-lg border border-border bg-surface-raised">
         {diagrams.map((diagram) => (
-          <DiagramListRow key={diagram.id} diagram={diagram} onRename={onRename} onToggleStar={onToggleStar} onShare={onShare} onEmbed={onEmbed} onDuplicate={onDuplicate} onDelete={onDelete} />
+          <DiagramListRow
+            key={diagram.id}
+            diagram={diagram}
+            onRename={onRename}
+            onToggleStar={onToggleStar}
+            onShare={onShare}
+            onEmbed={onEmbed}
+            onDuplicate={onDuplicate}
+            onDelete={onDelete}
+          />
         ))}
       </div>
     );
@@ -44,7 +72,25 @@ export function DiagramGrid({ diagrams, folders, allTags, viewMode, appendToGrid
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
       {diagrams.map((diagram) => (
-        <DiagramCard key={diagram.id} diagram={diagram} folders={folders} allTags={allTags} workspaces={workspaces} activeWorkspaceId={activeWorkspaceId} onMove={onMove} onDelete={onDelete} onDuplicate={onDuplicate} onToggleStar={onToggleStar} onShare={(id) => onShare(id)} onEmbed={onEmbed} onRename={onRename} onToggleTag={onToggleTag} onCreateTag={onCreateTag} onDeleteTag={onDeleteTag} onSaveAsTemplate={onSaveAsTemplate} />
+        <DiagramCard
+          key={diagram.id}
+          diagram={diagram}
+          folders={folders}
+          allTags={allTags}
+          workspaces={workspaces}
+          activeWorkspaceId={activeWorkspaceId}
+          onMove={onMove}
+          onDelete={onDelete}
+          onDuplicate={onDuplicate}
+          onToggleStar={onToggleStar}
+          onShare={(id) => onShare(id)}
+          onEmbed={onEmbed}
+          onRename={onRename}
+          onToggleTag={onToggleTag}
+          onCreateTag={onCreateTag}
+          onDeleteTag={onDeleteTag}
+          onSaveAsTemplate={onSaveAsTemplate}
+        />
       ))}
       {appendToGrid}
     </div>

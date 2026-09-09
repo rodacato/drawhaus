@@ -25,7 +25,11 @@ function toDomain(row: ResetRow): PasswordResetToken {
 const COLUMNS = "id, user_id, token, expires_at, used_at, created_at";
 
 export class PgPasswordResetRepository implements PasswordResetRepository {
-  async create(data: { userId: string; token: string; expiresAt: Date }): Promise<PasswordResetToken> {
+  async create(data: {
+    userId: string;
+    token: string;
+    expiresAt: Date;
+  }): Promise<PasswordResetToken> {
     const { rows } = await pool.query<ResetRow>(
       `INSERT INTO password_reset_tokens (user_id, token, expires_at)
        VALUES ($1, $2, $3)

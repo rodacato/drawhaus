@@ -44,7 +44,11 @@ export class InMemorySceneRepository implements SceneRepository {
     return scene;
   }
 
-  async updateScene(id: string, elements: unknown[], appState: Record<string, unknown>): Promise<void> {
+  async updateScene(
+    id: string,
+    elements: unknown[],
+    appState: Record<string, unknown>,
+  ): Promise<void> {
     const scene = this.store.find((s) => s.id === id);
     if (scene) {
       scene.elements = elements;
@@ -53,7 +57,11 @@ export class InMemorySceneRepository implements SceneRepository {
     }
   }
 
-  async updateSceneMerged(id: string, incomingElements: unknown[], appState: Record<string, unknown>): Promise<void> {
+  async updateSceneMerged(
+    id: string,
+    incomingElements: unknown[],
+    appState: Record<string, unknown>,
+  ): Promise<void> {
     const scene = this.store.find((s) => s.id === id);
     if (scene) {
       scene.elements = mergeElements(scene.elements, incomingElements);

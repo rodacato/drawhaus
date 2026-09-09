@@ -37,12 +37,7 @@ export {
 export { EXCALIDRAW_SPEC, getSpecForPrompt } from "./spec.js";
 
 // Merge utilities
-export {
-  mergeElements,
-  mergeDelta,
-  diffElements,
-  type ElementDelta,
-} from "./merge.js";
+export { mergeElements, mergeDelta, diffElements, type ElementDelta } from "./merge.js";
 
 // Types
 export type { ExcalidrawElement, Box } from "./types.js";

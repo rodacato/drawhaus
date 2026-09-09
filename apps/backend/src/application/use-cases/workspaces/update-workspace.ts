@@ -4,7 +4,11 @@ import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 export class UpdateWorkspaceUseCase {
   constructor(private readonly workspaces: WorkspaceRepository) {}
 
-  async execute(workspaceId: string, userId: string, data: { name?: string; description?: string; color?: string; icon?: string }) {
+  async execute(
+    workspaceId: string,
+    userId: string,
+    data: { name?: string; description?: string; color?: string; icon?: string },
+  ) {
     const workspace = await this.workspaces.findById(workspaceId);
     if (!workspace) throw new NotFoundError("Workspace");
 

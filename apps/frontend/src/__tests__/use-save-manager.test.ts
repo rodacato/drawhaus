@@ -43,7 +43,9 @@ function renderSaveManager(opts: RenderOpts) {
   const applyingRemoteCounter = makeRef(0);
   const activeSceneIdRef = makeRef<string | null>(opts.activeSceneId ?? "scene-1");
   const followingUserIdRef = makeRef<string | null>(null);
-  const followedViewportRef = makeRef<{ scrollX: number; scrollY: number; zoom: number } | null>(null);
+  const followedViewportRef = makeRef<{ scrollX: number; scrollY: number; zoom: number } | null>(
+    null,
+  );
 
   return {
     api,
@@ -78,7 +80,11 @@ describe("useSaveManager", () => {
     vi.mocked(diagramsApi.updateThumbnail).mockClear();
     socket = createMockSocket({ id: "self" });
     socket.connected = true;
-    try { localStorage.clear(); } catch { /* ignore */ }
+    try {
+      localStorage.clear();
+    } catch {
+      /* ignore */
+    }
   });
 
   afterEach(() => {
@@ -94,28 +100,45 @@ describe("useSaveManager", () => {
 
   test("onChange sets saveState='pending' immediately when canEdit", () => {
     const { result } = renderSaveManager({ socket });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
     expect(result.current.saveState).toBe("pending");
   });
 
   test("onChange does NOT set pending when canEdit=false", () => {
     const { result } = renderSaveManager({ socket, canEdit: false });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
     expect(result.current.saveState).toBe("idle");
   });
 
   test("onChange emits viewport-update on the throttled window", () => {
     const { result } = renderSaveManager({ socket });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], { ...appStateBase, scrollX: 30 }); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], { ...appStateBase, scrollX: 30 });
+    });
     const viewportEmits = socket.emit.mock.calls.filter((c) => c[0] === "viewport-update");
     expect(viewportEmits.length).toBe(1);
-    expect(viewportEmits[0][1]).toMatchObject({ roomId: "diag-1", scrollX: 30, scrollY: 0, zoom: 1 });
+    expect(viewportEmits[0][1]).toMatchObject({
+      roomId: "diag-1",
+      scrollX: 30,
+      scrollY: 0,
+      zoom: 1,
+    });
   });
 
   test("first onChange emits scene-delta with the new elements", () => {
     const { result } = renderSaveManager({ socket });
     act(() => {
-      result.current.onChange([{ id: "e1", version: 1 }, { id: "e2", version: 1 }], appStateBase);
+      result.current.onChange(
+        [
+          { id: "e1", version: 1 },
+          { id: "e2", version: 1 },
+        ],
+        appStateBase,
+      );
     });
     const deltas = socket.emit.mock.calls.filter((c) => c[0] === "scene-delta");
     expect(deltas.length).toBe(1);
@@ -124,8 +147,12 @@ describe("useSaveManager", () => {
 
   test("rapid onChange invocations are throttled (no double-emit within one window)", () => {
     const { result } = renderSaveManager({ socket });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
-    act(() => { result.current.onChange([{ id: "e1", version: 2 }], appStateBase); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 2 }], appStateBase);
+    });
     const deltas = socket.emit.mock.calls.filter((c) => c[0] === "scene-delta");
     // Second call is queued behind the throttle timer; only the first delta has been emitted.
     expect(deltas.length).toBe(1);
@@ -133,9 +160,13 @@ describe("useSaveManager", () => {
 
   test("debounce: after SAVE_DEBOUNCE_MS the scene is persisted (emits save-scene when connected)", async () => {
     const { result } = renderSaveManager({ socket, socketConnected: true });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
     socket.emit.mockClear();
-    await act(async () => { vi.advanceTimersByTime(1300); });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
     const saves = socket.emit.mock.calls.filter((c) => c[0] === "save-scene");
     expect(saves.length).toBe(1);
     expect(saves[0][1]).toMatchObject({ roomId: "diag-1", sceneId: "scene-1" });
@@ -143,20 +174,36 @@ describe("useSaveManager", () => {
 
   test("when socket is disconnected the debounced save falls back to diagramsApi.update", async () => {
     const { result } = renderSaveManager({ socket, socketConnected: false });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
-    await act(async () => { vi.advanceTimersByTime(1300); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
     // Let the awaited promise inside persistScene resolve before asserting.
-    await act(async () => { await Promise.resolve(); });
-    expect(vi.mocked(diagramsApi.update)).toHaveBeenCalledWith("diag-1", expect.objectContaining({ elements: expect.any(Array) }));
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(vi.mocked(diagramsApi.update)).toHaveBeenCalledWith(
+      "diag-1",
+      expect.objectContaining({ elements: expect.any(Array) }),
+    );
   });
 
   test("REST fallback path transitions saveState to 'saved' on success", async () => {
     vi.mocked(diagramsApi.update).mockResolvedValueOnce({} as never);
     const { result } = renderSaveManager({ socket, socketConnected: false });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
-    await act(async () => { vi.advanceTimersByTime(1300); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
     // Flush microtasks queued by the awaited diagramsApi.update + thumbnail import chain.
-    for (let i = 0; i < 5; i++) await act(async () => { await Promise.resolve(); });
+    for (let i = 0; i < 5; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
     expect(result.current.saveState).toBe("saved");
     expect(result.current.lastSavedAt).not.toBeNull();
   });
@@ -164,29 +211,42 @@ describe("useSaveManager", () => {
   test("REST fallback path sets saveState='error' when diagramsApi.update rejects", async () => {
     vi.mocked(diagramsApi.update).mockRejectedValueOnce(new Error("network"));
     const { result } = renderSaveManager({ socket, socketConnected: false });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
-    await act(async () => { vi.advanceTimersByTime(1300); });
-    for (let i = 0; i < 5; i++) await act(async () => { await Promise.resolve(); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    for (let i = 0; i < 5; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
     expect(result.current.saveState).toBe("error");
   });
 
   test("scene-saved socket event transitions to 'saved' and updates lastSavedAt", () => {
     const { result } = renderSaveManager({ socket });
-    act(() => { triggerSocketEvent(socket, "scene-saved", {}); });
+    act(() => {
+      triggerSocketEvent(socket, "scene-saved", {});
+    });
     expect(result.current.saveState).toBe("saved");
     expect(result.current.lastSavedAt).not.toBeNull();
   });
 
   test("scene-saved derives label as 'Saved <time>'", () => {
     const { result } = renderSaveManager({ socket });
-    act(() => { triggerSocketEvent(socket, "scene-saved", {}); });
+    act(() => {
+      triggerSocketEvent(socket, "scene-saved", {});
+    });
     expect(result.current.saveLabel.startsWith("Saved ")).toBe(true);
   });
 
   test("when applyingRemoteCounter > 0, onChange is a no-op (no emits, no pending)", () => {
     const { result, applyingRemoteCounter } = renderSaveManager({ socket });
     applyingRemoteCounter.current = 1;
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
     expect(socket.emit).not.toHaveBeenCalled();
     expect(result.current.saveState).toBe("idle");
   });
@@ -195,7 +255,13 @@ describe("useSaveManager", () => {
     const { result, followingUserIdRef, followedViewportRef, api } = renderSaveManager({ socket });
     followingUserIdRef.current = "u-target";
     followedViewportRef.current = { scrollX: 100, scrollY: 100, zoom: 1 };
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], { scrollX: 0, scrollY: 0, zoom: { value: 1 } }); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], {
+        scrollX: 0,
+        scrollY: 0,
+        zoom: { value: 1 },
+      });
+    });
     // No scene-delta should be emitted — we're following someone.
     const deltas = socket.emit.mock.calls.filter((c) => c[0] === "scene-delta");
     expect(deltas.length).toBe(0);
@@ -207,8 +273,13 @@ describe("useSaveManager", () => {
     const api = createExcalidrawApiStub({ elements: [{ id: "x", version: 1 }] });
     const { result } = renderSaveManager({ socket, api, socketConnected: false });
     let returned: boolean | undefined;
-    await act(async () => { returned = await result.current.flushSave(); });
-    expect(vi.mocked(diagramsApi.update)).toHaveBeenCalledWith("diag-1", expect.objectContaining({ elements: expect.any(Array) }));
+    await act(async () => {
+      returned = await result.current.flushSave();
+    });
+    expect(vi.mocked(diagramsApi.update)).toHaveBeenCalledWith(
+      "diag-1",
+      expect.objectContaining({ elements: expect.any(Array) }),
+    );
     expect(returned).toBe(true);
   });
 
@@ -217,7 +288,9 @@ describe("useSaveManager", () => {
     const api = createExcalidrawApiStub({ elements: [{ id: "x", version: 1 }] });
     const { result } = renderSaveManager({ socket, api, socketConnected: false });
     let returned: boolean | undefined;
-    await act(async () => { returned = await result.current.flushSave(); });
+    await act(async () => {
+      returned = await result.current.flushSave();
+    });
     expect(returned).toBe(false);
     expect(result.current.saveState).toBe("error");
   });
@@ -226,7 +299,9 @@ describe("useSaveManager", () => {
     const api = createExcalidrawApiStub({ elements: [{ id: "x", version: 1 }] });
     const { result } = renderSaveManager({ socket, api, socketConnected: true });
     let returned: boolean | undefined;
-    await act(async () => { returned = await result.current.flushSave(); });
+    await act(async () => {
+      returned = await result.current.flushSave();
+    });
     const saves = socket.emit.mock.calls.filter((c) => c[0] === "save-scene");
     expect(saves.length).toBe(1);
     expect(returned).toBe(true);
@@ -244,31 +319,47 @@ describe("useSaveManager", () => {
         excalidrawApiRef: excalidrawApiRef as never,
         applyingRemoteCounter: makeRef(0),
         followingUserIdRef: makeRef<string | null>(null),
-        followedViewportRef: makeRef<{ scrollX: number; scrollY: number; zoom: number } | null>(null),
+        followedViewportRef: makeRef<{ scrollX: number; scrollY: number; zoom: number } | null>(
+          null,
+        ),
         canEdit: true,
       }),
     );
-    await act(async () => { await result.current.flushSave(); });
+    await act(async () => {
+      await result.current.flushSave();
+    });
     expect(vi.mocked(diagramsApi.update)).not.toHaveBeenCalled();
   });
 
   test("cancelPendingTimers prevents the debounced save from firing", async () => {
     const { result } = renderSaveManager({ socket, socketConnected: true });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
     socket.emit.mockClear();
-    act(() => { result.current.cancelPendingTimers(); });
-    await act(async () => { vi.advanceTimersByTime(2000); });
+    act(() => {
+      result.current.cancelPendingTimers();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
     const saves = socket.emit.mock.calls.filter((c) => c[0] === "save-scene");
     expect(saves.length).toBe(0);
   });
 
   test("persistScene aborts when the captured scene id no longer matches the active scene", async () => {
     const { result, activeSceneIdRef } = renderSaveManager({ socket, socketConnected: false });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
     // Active scene changes BEFORE debounce fires — persist should bail out.
     activeSceneIdRef.current = "scene-different";
-    await act(async () => { vi.advanceTimersByTime(1300); });
-    await act(async () => { await Promise.resolve(); });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
     expect(vi.mocked(diagramsApi.update)).not.toHaveBeenCalled();
   });
 
@@ -288,9 +379,13 @@ describe("useSaveManager", () => {
     });
     socket.emit.mockClear();
     // Wait past the throttle window so the next onChange emits immediately.
-    act(() => { vi.advanceTimersByTime(200); });
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     // Remove 3 of 4 => >50%, should emit scene-update (full) not scene-delta.
-    act(() => { result.current.onChange([{ id: "a", version: 1 }], appStateBase); });
+    act(() => {
+      result.current.onChange([{ id: "a", version: 1 }], appStateBase);
+    });
     const fullUpdates = socket.emit.mock.calls.filter((c) => c[0] === "scene-update");
     const deltas = socket.emit.mock.calls.filter((c) => c[0] === "scene-delta");
     expect(fullUpdates.length).toBe(1);
@@ -300,9 +395,15 @@ describe("useSaveManager", () => {
   test("cache-key is written to localStorage on persist", async () => {
     const setItem = vi.spyOn(Storage.prototype, "setItem");
     const { result } = renderSaveManager({ socket, socketConnected: false, diagramId: "diag-99" });
-    act(() => { result.current.onChange([{ id: "e1", version: 1 }], appStateBase); });
-    await act(async () => { vi.advanceTimersByTime(1300); });
-    await act(async () => { await Promise.resolve(); });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
     const calls = setItem.mock.calls.filter((c) => c[0] === "drawhaus_scene_diag-99");
     expect(calls.length).toBeGreaterThanOrEqual(1);
     setItem.mockRestore();

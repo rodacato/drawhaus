@@ -14,13 +14,13 @@ export const config = {
   metricsToken: process.env.METRICS_TOKEN ?? "",
   frontendUrl: isProduction
     ? requireEnv("FRONTEND_URL")
-    : process.env.FRONTEND_URL ?? "http://localhost:5173",
+    : (process.env.FRONTEND_URL ?? "http://localhost:5173"),
   databaseUrl: isProduction
     ? requireEnv("DATABASE_URL")
-    : process.env.DATABASE_URL ?? "postgres://drawhaus:drawhaus@db:5432/drawhaus",
+    : (process.env.DATABASE_URL ?? "postgres://drawhaus:drawhaus@db:5432/drawhaus"),
   sessionSecret: isProduction
     ? requireEnv("SESSION_SECRET")
-    : process.env.SESSION_SECRET ?? "dev-secret",
+    : (process.env.SESSION_SECRET ?? "dev-secret"),
   nodeEnv: process.env.NODE_ENV ?? "development",
   sessionTtlDays: 30,
   cookieName: "drawhaus_session",

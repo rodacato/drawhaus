@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  type ReactNode,
+} from "react";
 
 type Theme = "light" | "dark";
 
@@ -30,18 +38,17 @@ export function ThemeProvider({ children }: { readonly children: ReactNode }) {
   }, [theme]);
 
   const setTheme = useCallback((t: Theme) => setThemeState(t), []);
-  const toggleTheme = useCallback(() => setThemeState((t) => (t === "dark" ? "light" : "dark")), []);
+  const toggleTheme = useCallback(
+    () => setThemeState((t) => (t === "dark" ? "light" : "dark")),
+    [],
+  );
 
   const contextValue = useMemo(
     () => ({ theme, toggleTheme, setTheme }),
     [theme, toggleTheme, setTheme],
   );
 
-  return (
-    <ThemeContext.Provider value={contextValue}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

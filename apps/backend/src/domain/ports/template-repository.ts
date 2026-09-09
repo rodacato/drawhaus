@@ -15,7 +15,10 @@ export interface TemplateRepository {
     appState: Record<string, unknown>;
     thumbnail?: string | null;
   }): Promise<Template>;
-  update(id: string, data: Partial<Pick<Template, "title" | "description" | "category" | "thumbnail">>): Promise<Template | null>;
+  update(
+    id: string,
+    data: Partial<Pick<Template, "title" | "description" | "category" | "thumbnail">>,
+  ): Promise<Template | null>;
   incrementUsageCount(id: string): Promise<void>;
   delete(id: string): Promise<void>;
 

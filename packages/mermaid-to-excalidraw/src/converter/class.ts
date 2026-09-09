@@ -9,7 +9,11 @@
  * 5. Render relations (arrows with proper heads)
  */
 
-import type { ExcalidrawElementSkeleton, MermaidConfig, MermaidToExcalidrawResult } from "../types.js";
+import type {
+  ExcalidrawElementSkeleton,
+  MermaidConfig,
+  MermaidToExcalidrawResult,
+} from "../types.js";
 import type {
   ClassDiagramAST,
   ClassEntity,
@@ -135,22 +139,25 @@ export function mapClassDiagram(
 
 function getEntityStyle(kind: ClassKind, theme: MermaidTheme): ShapeStyle {
   switch (kind) {
-    case "class": return theme.class;
-    case "abstract_class": return theme.abstractClass;
-    case "interface": return theme.interface;
-    case "enumeration": return theme.enumeration;
+    case "class":
+      return theme.class;
+    case "abstract_class":
+      return theme.abstractClass;
+    case "interface":
+      return theme.interface;
+    case "enumeration":
+      return theme.enumeration;
   }
 }
 
-function measureEntity(entity: ClassEntity, theme: MermaidTheme): { width: number; height: number } {
+function measureEntity(
+  entity: ClassEntity,
+  theme: MermaidTheme,
+): { width: number; height: number } {
   const headerLines = getHeaderLines(entity);
   const { attributes, methods } = splitMembers(entity.members);
 
-  const allLines = [
-    ...headerLines,
-    ...attributes.map(formatMember),
-    ...methods.map(formatMember),
-  ];
+  const allLines = [...headerLines, ...attributes.map(formatMember), ...methods.map(formatMember)];
 
   const maxLineWidth = Math.max(
     ...allLines.map((l) => l.length * CHAR_WIDTH + PADDING_X * 2),
@@ -305,8 +312,7 @@ function renderRelation(
   targetId?: string,
   dagrePoints?: Array<{ x: number; y: number }>,
 ): ExcalidrawElementSkeleton {
-  const { startArrowhead, endArrowhead, strokeStyle, isDependency } =
-    getArrowStyle(relationType);
+  const { startArrowhead, endArrowhead, strokeStyle, isDependency } = getArrowStyle(relationType);
 
   const arrowTheme = isDependency ? theme.dependencyArrow : theme.arrow;
   const points = buildArrowPoints(source, target, dagrePoints);
@@ -332,20 +338,55 @@ function getArrowStyle(relationType: RelationType): {
 } {
   switch (relationType) {
     case "inheritance":
-      return { startArrowhead: null, endArrowhead: "triangle", strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: "triangle",
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "implementation":
-      return { startArrowhead: null, endArrowhead: "triangle", strokeStyle: "dashed", isDependency: true };
+      return {
+        startArrowhead: null,
+        endArrowhead: "triangle",
+        strokeStyle: "dashed",
+        isDependency: true,
+      };
     case "composition":
-      return { startArrowhead: null, endArrowhead: "diamond", strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: "diamond",
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "aggregation":
-      return { startArrowhead: null, endArrowhead: "diamond", strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: "diamond",
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "directed_association":
-      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: "arrow",
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "dependency":
-      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "dashed", isDependency: true };
+      return {
+        startArrowhead: null,
+        endArrowhead: "arrow",
+        strokeStyle: "dashed",
+        isDependency: true,
+      };
     case "association":
     default:
-      return { startArrowhead: null, endArrowhead: null, strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: null,
+        strokeStyle: "solid",
+        isDependency: false,
+      };
   }
 }
 

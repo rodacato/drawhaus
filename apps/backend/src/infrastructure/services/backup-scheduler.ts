@@ -24,7 +24,10 @@ export async function startBackupScheduler(): Promise<void> {
     logger.info("Starting scheduled backup...");
     try {
       const result = await createBackup();
-      logger.info({ filename: result.filename, size: result.size, durationMs: result.durationMs }, "Backup completed");
+      logger.info(
+        { filename: result.filename, size: result.size, durationMs: result.durationMs },
+        "Backup completed",
+      );
 
       const currentConfig = await getBackupConfig();
       const deleted = await cleanupOldBackups(currentConfig.retentionDays);

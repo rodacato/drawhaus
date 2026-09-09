@@ -65,12 +65,18 @@ describe("encryption", () => {
   });
 
   it("encrypt throws when key is not 64 hex characters", () => {
-    assert.throws(() => encrypt("secret-value", "abcd"), /ENCRYPTION_KEY must be exactly 64 hex characters/);
+    assert.throws(
+      () => encrypt("secret-value", "abcd"),
+      /ENCRYPTION_KEY must be exactly 64 hex characters/,
+    );
   });
 
   it("decrypt throws when key is not 64 hex characters", () => {
     const encrypted = encrypt("secret-value", TEST_KEY);
 
-    assert.throws(() => decrypt(encrypted, "abcd"), /ENCRYPTION_KEY must be exactly 64 hex characters/);
+    assert.throws(
+      () => decrypt(encrypted, "abcd"),
+      /ENCRYPTION_KEY must be exactly 64 hex characters/,
+    );
   });
 });

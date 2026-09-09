@@ -1,8 +1,27 @@
 // ── AST Types ──────────────────────────────────────────────────
 
-export type DiagramType = "class" | "object" | "usecase" | "state" | "component" | "deployment" | "sequence" | "mindmap" | "activity" | "unknown";
+export type DiagramType =
+  | "class"
+  | "object"
+  | "usecase"
+  | "state"
+  | "component"
+  | "deployment"
+  | "sequence"
+  | "mindmap"
+  | "activity"
+  | "unknown";
 
-export type DiagramAST = ClassDiagramAST | ObjectDiagramAST | UseCaseDiagramAST | StateDiagramAST | ComponentDiagramAST | DeploymentDiagramAST | SequenceDiagramAST | MindmapDiagramAST | ActivityDiagramAST;
+export type DiagramAST =
+  | ClassDiagramAST
+  | ObjectDiagramAST
+  | UseCaseDiagramAST
+  | StateDiagramAST
+  | ComponentDiagramAST
+  | DeploymentDiagramAST
+  | SequenceDiagramAST
+  | MindmapDiagramAST
+  | ActivityDiagramAST;
 
 // ── Class Diagram ──────────────────────────────────────────────
 
@@ -125,12 +144,7 @@ export interface UseCaseBoundary {
   name: string;
 }
 
-export type UseCaseRelationType =
-  | "association"
-  | "directed"
-  | "include"
-  | "extend"
-  | "inheritance";
+export type UseCaseRelationType = "association" | "directed" | "include" | "extend" | "inheritance";
 
 export interface UseCaseRelation {
   left: string;
@@ -156,7 +170,8 @@ export interface ComponentNode {
   container: string | null;
 }
 
-export type ContainerKind = "package" | "node" | "cloud" | "database" | "folder" | "frame" | "rectangle";
+export type ContainerKind =
+  "package" | "node" | "cloud" | "database" | "folder" | "frame" | "rectangle";
 
 export interface ComponentContainer {
   kind: ContainerKind;
@@ -171,11 +186,7 @@ export interface ComponentInterface {
 }
 
 export type ComponentRelationType =
-  | "association"
-  | "directed"
-  | "dependency"
-  | "provided"
-  | "required";
+  "association" | "directed" | "dependency" | "provided" | "required";
 
 export interface ComponentRelation {
   left: string;
@@ -193,9 +204,22 @@ export interface DeploymentDiagramAST {
 }
 
 export type DeploymentNodeKind =
-  | "node" | "artifact" | "cloud" | "database" | "folder" | "frame"
-  | "queue" | "stack" | "storage" | "card" | "agent" | "actor"
-  | "component" | "package" | "rectangle" | "person";
+  | "node"
+  | "artifact"
+  | "cloud"
+  | "database"
+  | "folder"
+  | "frame"
+  | "queue"
+  | "stack"
+  | "storage"
+  | "card"
+  | "agent"
+  | "actor"
+  | "component"
+  | "package"
+  | "rectangle"
+  | "person";
 
 export interface DeploymentNode {
   kind: DeploymentNodeKind;
@@ -263,7 +287,15 @@ export interface SequenceParticipant {
   name: string;
   alias: string | null;
   label: string | null;
-  kind: "participant" | "actor" | "boundary" | "control" | "entity" | "database" | "collections" | "queue";
+  kind:
+    | "participant"
+    | "actor"
+    | "boundary"
+    | "control"
+    | "entity"
+    | "database"
+    | "collections"
+    | "queue";
 }
 
 export interface SequenceMessage {

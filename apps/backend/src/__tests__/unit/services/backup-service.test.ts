@@ -19,8 +19,9 @@ const ORIGINAL_ENV: Record<string, string | undefined> = {
 
 // CommonJS require() preserves source order, unlike hoisted ESM/TS imports.
 // Required so BACKUP_PATH is set before the module's top-level const reads it.
+type BackupService = typeof import("../../../infrastructure/services/backup-service");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const backupService = require("../../../infrastructure/services/backup-service") as typeof import("../../../infrastructure/services/backup-service");
+const backupService = require("../../../infrastructure/services/backup-service") as BackupService;
 const {
   parseConnectionString,
   findPgBin,
@@ -30,8 +31,9 @@ const {
   cleanupOldBackups,
   getBackupConfig,
 } = backupService;
+type Db = typeof import("../../../infrastructure/db");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { pool } = require("../../../infrastructure/db") as typeof import("../../../infrastructure/db");
+const { pool } = require("../../../infrastructure/db") as Db;
 
 type QueryFn = typeof pool.query;
 let originalQuery: QueryFn;
@@ -237,7 +239,10 @@ describe("cleanupOldBackups", () => {
     const deleted = await cleanupOldBackups(7);
 
     assert.equal(deleted.length, 2);
-    assert.deepEqual([...deleted].sort((a, b) => a.localeCompare(b)), ["old1.sql.gz", "old2.sql.gz"]);
+    assert.deepEqual(
+      [...deleted].sort((a, b) => a.localeCompare(b)),
+      ["old1.sql.gz", "old2.sql.gz"],
+    );
     await assert.rejects(() => fs.access(old1));
     await assert.rejects(() => fs.access(old2));
     await assert.doesNotReject(() => fs.access(fresh));
@@ -279,8 +284,12 @@ describe("cleanupOldBackups", () => {
 });
 
 describe("getBackupConfig", () => {
-  function stubPoolQuery(handler: (sql: string) => { rows: unknown[] } | Promise<{ rows: unknown[] }>): void {
-    (pool as unknown as { query: (sql: string) => Promise<{ rows: unknown[] }> }).query = async (sql: string) => {
+  function stubPoolQuery(
+    handler: (sql: string) => { rows: unknown[] } | Promise<{ rows: unknown[] }>,
+  ): void {
+    (pool as unknown as { query: (sql: string) => Promise<{ rows: unknown[] }> }).query = async (
+      sql: string,
+    ) => {
       const result = handler(sql);
       return result instanceof Promise ? result : Promise.resolve(result);
     };

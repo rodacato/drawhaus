@@ -58,12 +58,14 @@ components:
 ## Documentation Content
 
 Each endpoint includes:
+
 - Description and use case
 - Full request/response examples
 - Error codes and meanings
 - Auth requirements (API key + header)
 
 Additional pages:
+
 - **Authentication guide**: How to create API key, required headers, example curl
 - **MCP setup**: Copy-paste config for Claude Code, Cursor, VS Code
 - **Rate limits**: 60 req/min per key, response headers (`X-RateLimit-*`)

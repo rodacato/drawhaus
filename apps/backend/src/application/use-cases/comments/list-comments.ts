@@ -9,7 +9,11 @@ export class ListCommentsUseCase {
     private readonly diagrams: DiagramRepository,
   ) {}
 
-  async execute(diagramId: string, userId: string, sceneId?: string | null): Promise<CommentThread[]> {
+  async execute(
+    diagramId: string,
+    userId: string,
+    sceneId?: string | null,
+  ): Promise<CommentThread[]> {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
     requireAccess(role);
     return this.comments.findByDiagram(diagramId, sceneId, userId);

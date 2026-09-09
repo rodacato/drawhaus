@@ -38,10 +38,13 @@ export function SaveTemplatePanel({ excalidrawApiRef, workspaceId }: SaveTemplat
 
   useEffect(() => {
     if (!workspaceId) return;
-    workspacesApi.get(workspaceId).then((res) => {
-      const ws = res.workspace ?? res;
-      setWsName(ws.isPersonal ? "Personal" : ws.name);
-    }).catch(() => {});
+    workspacesApi
+      .get(workspaceId)
+      .then((res) => {
+        const ws = res.workspace ?? res;
+        setWsName(ws.isPersonal ? "Personal" : ws.name);
+      })
+      .catch(() => {});
   }, [workspaceId]);
 
   async function handleSave() {
@@ -72,7 +75,9 @@ export function SaveTemplatePanel({ excalidrawApiRef, workspaceId }: SaveTemplat
           maxWidthOrHeight: 300,
         });
         thumbnail = await blobToDataUrl(blob);
-      } catch { /* thumbnail is optional */ }
+      } catch {
+        /* thumbnail is optional */
+      }
 
       await templatesApi.create({
         title: title.trim(),
@@ -127,13 +132,11 @@ export function SaveTemplatePanel({ excalidrawApiRef, workspaceId }: SaveTemplat
 
       <label className={ui.label}>
         <span>Category</span>
-        <select
-          className={ui.input}
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
+        <select className={ui.input} value={category} onChange={(e) => setCategory(e.target.value)}>
           {CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>{c.label}</option>
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
           ))}
         </select>
       </label>

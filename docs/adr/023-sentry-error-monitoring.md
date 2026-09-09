@@ -18,17 +18,20 @@ Two pain points motivated the swap:
 Adopt Sentry as the single error monitoring vendor across backend and frontend.
 
 ### Backend (`@sentry/node`)
+
 - `Sentry.init` runs at boot guarded by `if (config.sentryDsn)` — no DSN → SDK is a no-op.
 - `Sentry.setupExpressErrorHandler(app)` replaces `Honeybadger.errorHandler` after all routes are mounted.
 - The two manual notifications inside `asyncRoute` / `asyncPublicRoute` use `Sentry.captureException(err, { extra: { method, url } })`.
 - `beforeSend` strips `request.data` and `request.cookies` to keep PII out of events.
 
 ### Frontend (`@sentry/react`)
+
 - `Sentry.init` runs in `main.tsx` guarded by `import.meta.env.VITE_SENTRY_DSN` — empty DSN → bundle ships with the SDK loaded but inactive.
 - No `ErrorBoundary` wrapper at the root: Drawhaus already uses `react-error-boundary` for scoped fallbacks, and Sentry's auto-instrumentation captures `window.onerror` and `unhandledrejection` without help. Per-feature boundaries can call `Sentry.captureException` from their `onError` if they want to.
 - `@sentry/vite-plugin` uploads source maps at build time, gated on `SENTRY_AUTH_TOKEN` + `SENTRY_ORG` + `SENTRY_PROJECT` all being set; missing any one drops the plugin silently so local builds keep working.
 
 ### Deploy wiring
+
 - Secrets in the GitHub `production` environment: `SENTRY_DSN`, `VITE_SENTRY_DSN`, `SENTRY_AUTH_TOKEN`.
 - Vars: `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE`, `SENTRY_ORG`, `VITE_SENTRY_ENVIRONMENT` (defaulted in the workflow).
 - `SENTRY_RELEASE` and `VITE_SENTRY_RELEASE` are set to `${{ github.sha }}` by the workflow so events tie back to a commit and source maps line up with the release.

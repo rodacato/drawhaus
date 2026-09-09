@@ -56,7 +56,13 @@ export class PgSceneRepository implements SceneRepository {
     const { rows } = await pool.query<SceneRow>(
       `INSERT INTO scenes (diagram_id, name, sort_order, elements, app_state)
        VALUES ($1, $2, $3, $4, $5) RETURNING ${COLS}`,
-      [data.diagramId, data.name, data.sortOrder, JSON.stringify(data.elements ?? []), JSON.stringify(data.appState ?? {})],
+      [
+        data.diagramId,
+        data.name,
+        data.sortOrder,
+        JSON.stringify(data.elements ?? []),
+        JSON.stringify(data.appState ?? {}),
+      ],
     );
     return toDomain(rows[0]);
   }
@@ -69,14 +75,22 @@ export class PgSceneRepository implements SceneRepository {
     return rows[0] ? toDomain(rows[0]) : null;
   }
 
-  async updateScene(id: string, elements: unknown[], appState: Record<string, unknown>): Promise<void> {
+  async updateScene(
+    id: string,
+    elements: unknown[],
+    appState: Record<string, unknown>,
+  ): Promise<void> {
     await pool.query(
       "UPDATE scenes SET elements = $1, app_state = $2, updated_at = now() WHERE id = $3",
       [JSON.stringify(elements), JSON.stringify(appState), id],
     );
   }
 
-  async updateSceneMerged(id: string, incomingElements: unknown[], appState: Record<string, unknown>): Promise<void> {
+  async updateSceneMerged(
+    id: string,
+    incomingElements: unknown[],
+    appState: Record<string, unknown>,
+  ): Promise<void> {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");

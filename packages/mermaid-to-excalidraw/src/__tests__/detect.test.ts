@@ -36,7 +36,7 @@ describe("detectDiagramType", () => {
   });
 
   it("detects pie", () => {
-    assert.equal(detectDiagramType("pie title Share\n  \"A\" : 50"), "pie");
+    assert.equal(detectDiagramType('pie title Share\n  "A" : 50'), "pie");
   });
 
   it("detects mindmap", () => {
@@ -56,17 +56,11 @@ describe("detectDiagramType", () => {
   });
 
   it("skips mermaid directives (%%)", () => {
-    assert.equal(
-      detectDiagramType("%%{init: {}}%%\nflowchart TD\n  A --> B"),
-      "flowchart",
-    );
+    assert.equal(detectDiagramType("%%{init: {}}%%\nflowchart TD\n  A --> B"), "flowchart");
   });
 
   it("skips empty lines", () => {
-    assert.equal(
-      detectDiagramType("\n\n  flowchart LR\n  A --> B"),
-      "flowchart",
-    );
+    assert.equal(detectDiagramType("\n\n  flowchart LR\n  A --> B"), "flowchart");
   });
 
   it("returns unknown for empty input", () => {

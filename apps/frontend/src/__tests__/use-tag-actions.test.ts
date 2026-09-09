@@ -43,7 +43,13 @@ describe("useTagActions", () => {
   });
 
   test("toggleTag unassigns tag when diagram already has it", async () => {
-    const diagram: Diagram = { id: "d1", title: "X", folderId: null, thumbnail: null, tags: [tagRed, tagBlue] };
+    const diagram: Diagram = {
+      id: "d1",
+      title: "X",
+      folderId: null,
+      thumbnail: null,
+      tags: [tagRed, tagBlue],
+    };
     const { result, getDiagrams } = setup([diagram]);
     const unassignSpy = vi.spyOn(tagsApi, "unassign").mockResolvedValue({} as never);
 

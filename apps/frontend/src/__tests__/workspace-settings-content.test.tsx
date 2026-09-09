@@ -80,7 +80,12 @@ function makeMember(overrides: Partial<WorkspaceMember> = {}): WorkspaceMember {
 function mockGet(
   workspace: Workspace = makeWorkspace(),
   members: WorkspaceMember[] = [
-    makeMember({ userId: "user-1", role: "admin", userName: "Owner", userEmail: "owner@example.com" }),
+    makeMember({
+      userId: "user-1",
+      role: "admin",
+      userName: "Owner",
+      userEmail: "owner@example.com",
+    }),
     makeMember(),
   ],
   role = "admin",
@@ -117,7 +122,11 @@ describe("WorkspaceSettingsContent", () => {
   });
 
   test("non-admin sees disabled inputs and no Save button", async () => {
-    mockGet(makeWorkspace(), [makeMember({ userId: "user-1", role: "viewer", userName: "Me", userEmail: "me@x.com" })], "viewer");
+    mockGet(
+      makeWorkspace(),
+      [makeMember({ userId: "user-1", role: "viewer", userName: "Me", userEmail: "me@x.com" })],
+      "viewer",
+    );
     render(<WorkspaceSettingsContent workspaceId="ws-1" onClose={() => {}} />);
     const nameInput = (await screen.findByLabelText("Name")) as HTMLInputElement;
     expect(nameInput.disabled).toBe(true);
@@ -126,7 +135,9 @@ describe("WorkspaceSettingsContent", () => {
 
   test("Save calls API with trimmed name and description, fires onWorkspaceUpdated", async () => {
     mockGet();
-    vi.mocked(workspacesApi.update).mockResolvedValue({ workspace: makeWorkspace({ name: "Renamed" }) });
+    vi.mocked(workspacesApi.update).mockResolvedValue({
+      workspace: makeWorkspace({ name: "Renamed" }),
+    });
     const onClose = vi.fn();
     const onWorkspaceUpdated = vi.fn();
     const onStatusMessage = vi.fn();
@@ -175,7 +186,9 @@ describe("WorkspaceSettingsContent", () => {
     await waitFor(() =>
       expect(workspacesApi.invite).toHaveBeenCalledWith("ws-1", "alice@example.com", "editor"),
     );
-    await waitFor(() => expect(screen.getByText(/Invitation sent to alice@example.com/)).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText(/Invitation sent to alice@example.com/)).toBeTruthy(),
+    );
   });
 
   test("Invite shows failure status on API error", async () => {
@@ -255,7 +268,7 @@ describe("WorkspaceSettingsContent", () => {
     // Bob's per-row role select. The invite select has options ordered editor/viewer/admin
     // while the per-row select has admin/editor/viewer. Pick the one with "admin" as first option.
     const bobSelect = roleSelects.find(
-      (s) => s.value === "editor" && (s.options[0]?.value === "admin"),
+      (s) => s.value === "editor" && s.options[0]?.value === "admin",
     )!;
     await user.selectOptions(bobSelect, "admin");
     await waitFor(() =>
@@ -270,7 +283,13 @@ describe("WorkspaceSettingsContent", () => {
     const onClose = vi.fn();
     const onWorkspaceUpdated = vi.fn();
     const user = userEvent.setup();
-    render(<WorkspaceSettingsContent workspaceId="ws-1" onClose={onClose} onWorkspaceUpdated={onWorkspaceUpdated} />);
+    render(
+      <WorkspaceSettingsContent
+        workspaceId="ws-1"
+        onClose={onClose}
+        onWorkspaceUpdated={onWorkspaceUpdated}
+      />,
+    );
     await screen.findByText("Danger Zone");
     await user.click(screen.getByRole("button", { name: "Delete Workspace" }));
     await waitFor(() => expect(workspacesApi.delete).toHaveBeenCalledWith("ws-1"));
@@ -298,13 +317,10 @@ describe("WorkspaceSettingsContent", () => {
   });
 
   test("Owner sees the Transfer Ownership section; clicking expands it", async () => {
-    mockGet(
-      makeWorkspace({ ownerId: "user-1" }),
-      [
-        makeMember({ userId: "user-1", role: "admin", userName: "Owner", userEmail: "owner@x.com" }),
-        makeMember({ userId: "user-2", role: "admin", userName: "Coadmin", userEmail: "co@x.com" }),
-      ],
-    );
+    mockGet(makeWorkspace({ ownerId: "user-1" }), [
+      makeMember({ userId: "user-1", role: "admin", userName: "Owner", userEmail: "owner@x.com" }),
+      makeMember({ userId: "user-2", role: "admin", userName: "Coadmin", userEmail: "co@x.com" }),
+    ]);
     const user = userEvent.setup();
     render(<WorkspaceSettingsContent workspaceId="ws-1" onClose={() => {}} />);
     await screen.findByText("Transfer Ownership");
@@ -314,13 +330,10 @@ describe("WorkspaceSettingsContent", () => {
   });
 
   test("Transfer ownership: confirm + API call + toast with diagram/template counts", async () => {
-    mockGet(
-      makeWorkspace({ ownerId: "user-1" }),
-      [
-        makeMember({ userId: "user-1", role: "admin", userName: "Owner", userEmail: "owner@x.com" }),
-        makeMember({ userId: "user-2", role: "admin", userName: "Coadmin", userEmail: "co@x.com" }),
-      ],
-    );
+    mockGet(makeWorkspace({ ownerId: "user-1" }), [
+      makeMember({ userId: "user-1", role: "admin", userName: "Owner", userEmail: "owner@x.com" }),
+      makeMember({ userId: "user-2", role: "admin", userName: "Coadmin", userEmail: "co@x.com" }),
+    ]);
     confirmFn.mockResolvedValue(true);
     vi.mocked(workspacesApi.transferOwnership).mockResolvedValue({
       success: true,
@@ -343,13 +356,10 @@ describe("WorkspaceSettingsContent", () => {
   });
 
   test("Transfer ownership: 0 counts produce a clean toast", async () => {
-    mockGet(
-      makeWorkspace({ ownerId: "user-1" }),
-      [
-        makeMember({ userId: "user-1", role: "admin", userName: "Owner", userEmail: "owner@x.com" }),
-        makeMember({ userId: "user-2", role: "admin", userName: "Coadmin", userEmail: "co@x.com" }),
-      ],
-    );
+    mockGet(makeWorkspace({ ownerId: "user-1" }), [
+      makeMember({ userId: "user-1", role: "admin", userName: "Owner", userEmail: "owner@x.com" }),
+      makeMember({ userId: "user-2", role: "admin", userName: "Coadmin", userEmail: "co@x.com" }),
+    ]);
     confirmFn.mockResolvedValue(true);
     vi.mocked(workspacesApi.transferOwnership).mockResolvedValue({
       success: true,
@@ -366,13 +376,10 @@ describe("WorkspaceSettingsContent", () => {
   });
 
   test("Transfer ownership: API failure toasts an error", async () => {
-    mockGet(
-      makeWorkspace({ ownerId: "user-1" }),
-      [
-        makeMember({ userId: "user-1", role: "admin", userName: "Owner", userEmail: "owner@x.com" }),
-        makeMember({ userId: "user-2", role: "admin", userName: "Coadmin", userEmail: "co@x.com" }),
-      ],
-    );
+    mockGet(makeWorkspace({ ownerId: "user-1" }), [
+      makeMember({ userId: "user-1", role: "admin", userName: "Owner", userEmail: "owner@x.com" }),
+      makeMember({ userId: "user-2", role: "admin", userName: "Coadmin", userEmail: "co@x.com" }),
+    ]);
     confirmFn.mockResolvedValue(true);
     vi.mocked(workspacesApi.transferOwnership).mockRejectedValue(new Error("boom"));
     const user = userEvent.setup();
@@ -381,15 +388,19 @@ describe("WorkspaceSettingsContent", () => {
     await user.click(screen.getByRole("button", { name: /Transfer Ownership\.\.\./ }));
     await user.selectOptions(screen.getByLabelText("New Owner"), "user-2");
     await user.click(screen.getByRole("button", { name: "Confirm Transfer" }));
-    await waitFor(() => expect(toastFn).toHaveBeenCalledWith("Failed to transfer ownership.", "error"));
+    await waitFor(() =>
+      expect(toastFn).toHaveBeenCalledWith("Failed to transfer ownership.", "error"),
+    );
   });
 
   test("Color palette picks update local state on admin click", async () => {
     mockGet();
     const user = userEvent.setup();
-    const { container } = render(<WorkspaceSettingsContent workspaceId="ws-1" onClose={() => {}} />);
+    const { container } = render(
+      <WorkspaceSettingsContent workspaceId="ws-1" onClose={() => {}} />,
+    );
     await screen.findByText("Workspace Identity");
-    const swatches = container.querySelectorAll("[style*=\"background-color\"]");
+    const swatches = container.querySelectorAll('[style*="background-color"]');
     expect(swatches.length).toBeGreaterThan(0);
     await user.click(swatches[1] as HTMLElement);
     // Color is internal state; assert the component survived the interaction.

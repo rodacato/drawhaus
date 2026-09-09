@@ -35,9 +35,7 @@ test.describe("Share", () => {
     await page.goto(`/share/${shareToken}`);
 
     await expect(page.getByText(/your name/i)).toBeVisible({ timeout: 10_000 });
-    await expect(
-      page.getByRole("button", { name: /view diagram|join session/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /view diagram|join session/i })).toBeVisible();
 
     await context.close();
   });
@@ -58,7 +56,9 @@ test.describe("Share", () => {
 
     // The join button should become disabled or the form should be processing
     // We verify by checking the URL hasn't changed to an error page
-    await page.waitForURL((url) => !url.pathname.includes("/error"), { timeout: 5_000 }).catch(() => {});
+    await page
+      .waitForURL((url) => !url.pathname.includes("/error"), { timeout: 5_000 })
+      .catch(() => {});
     expect(page.url()).toContain("/share/");
 
     await context.close();
@@ -71,9 +71,9 @@ test.describe("Share", () => {
     await page.goto("/share/invalid-token-xyz-12345");
     await page.waitForLoadState("networkidle");
 
-    await expect(
-      page.getByText(/not found|expired|invalid|error/i),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/not found|expired|invalid|error/i)).toBeVisible({
+      timeout: 10_000,
+    });
 
     await context.close();
   });

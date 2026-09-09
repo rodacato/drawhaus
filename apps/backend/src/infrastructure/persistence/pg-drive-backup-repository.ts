@@ -51,7 +51,10 @@ export class PgDriveBackupRepository implements DriveBackupRepository {
     return rows[0] ? toSettings(rows[0]) : null;
   }
 
-  async upsertSettings(userId: string, data: { enabled: boolean; rootFolderId?: string | null }): Promise<DriveBackupSettings> {
+  async upsertSettings(
+    userId: string,
+    data: { enabled: boolean; rootFolderId?: string | null },
+  ): Promise<DriveBackupSettings> {
     const { rows } = await pool.query<SettingsRow>(
       `INSERT INTO drive_backup_settings (user_id, enabled, root_folder_id)
        VALUES ($1, $2, $3)
@@ -69,7 +72,11 @@ export class PgDriveBackupRepository implements DriveBackupRepository {
     await pool.query(`DELETE FROM drive_backup_settings WHERE user_id = $1`, [userId]);
   }
 
-  async getFileMapping(userId: string, diagramId: string, sceneId: string | null): Promise<DriveFileMapping | null> {
+  async getFileMapping(
+    userId: string,
+    diagramId: string,
+    sceneId: string | null,
+  ): Promise<DriveFileMapping | null> {
     const { rows } = await pool.query<MappingRow>(
       sceneId
         ? `SELECT * FROM drive_file_mappings WHERE user_id = $1 AND diagram_id = $2 AND scene_id = $3`
@@ -100,9 +107,9 @@ export class PgDriveBackupRepository implements DriveBackupRepository {
   }
 
   async deleteFileMappings(userId: string, diagramId: string): Promise<void> {
-    await pool.query(
-      `DELETE FROM drive_file_mappings WHERE user_id = $1 AND diagram_id = $2`,
-      [userId, diagramId],
-    );
+    await pool.query(`DELETE FROM drive_file_mappings WHERE user_id = $1 AND diagram_id = $2`, [
+      userId,
+      diagramId,
+    ]);
   }
 }

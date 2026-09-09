@@ -16,13 +16,10 @@ test.describe("Comments API", () => {
     diagramId = diagram.id;
   });
 
-  test("POST /api/diagrams/:id/comments creates a comment thread", async ({
-    request,
-  }) => {
-    const response = await request.post(
-      `/api/diagrams/${diagramId}/comments`,
-      { data: { body: "This is a test comment", elementId: "test-element-1" } }
-    );
+  test("POST /api/diagrams/:id/comments creates a comment thread", async ({ request }) => {
+    const response = await request.post(`/api/diagrams/${diagramId}/comments`, {
+      data: { body: "This is a test comment", elementId: "test-element-1" },
+    });
     expect(response.ok()).toBeTruthy();
     const resBody = await response.json();
     const thread = resBody.thread ?? resBody;
@@ -31,12 +28,8 @@ test.describe("Comments API", () => {
     threadId = thread.id;
   });
 
-  test("GET /api/diagrams/:id/comments lists comment threads", async ({
-    request,
-  }) => {
-    const response = await request.get(
-      `/api/diagrams/${diagramId}/comments`
-    );
+  test("GET /api/diagrams/:id/comments lists comment threads", async ({ request }) => {
+    const response = await request.get(`/api/diagrams/${diagramId}/comments`);
     expect(response.ok()).toBeTruthy();
     const resBody = await response.json();
     const threads = resBody.threads ?? resBody;
@@ -45,13 +38,10 @@ test.describe("Comments API", () => {
     expect(found).toBeTruthy();
   });
 
-  test("POST /api/diagrams/:id/comments/:threadId/replies adds a reply", async ({
-    request,
-  }) => {
-    const response = await request.post(
-      `/api/diagrams/${diagramId}/comments/${threadId}/replies`,
-      { data: { body: "This is a reply" } }
-    );
+  test("POST /api/diagrams/:id/comments/:threadId/replies adds a reply", async ({ request }) => {
+    const response = await request.post(`/api/diagrams/${diagramId}/comments/${threadId}/replies`, {
+      data: { body: "This is a reply" },
+    });
     expect(response.ok()).toBeTruthy();
     const resBody = await response.json();
     const reply = resBody.reply ?? resBody;
@@ -63,14 +53,12 @@ test.describe("Comments API", () => {
   }) => {
     const response = await request.patch(
       `/api/diagrams/${diagramId}/comments/${threadId}/resolve`,
-      { data: { resolved: true } }
+      { data: { resolved: true } },
     );
     expect(response.ok()).toBeTruthy();
 
     // Verify resolved
-    const threads = await request.get(
-      `/api/diagrams/${diagramId}/comments`
-    );
+    const threads = await request.get(`/api/diagrams/${diagramId}/comments`);
     const resBody = await threads.json();
     const allThreads = resBody.threads ?? resBody;
     const thread = allThreads.find((c: any) => c.id === threadId);
@@ -82,40 +70,28 @@ test.describe("Comments API", () => {
   }) => {
     const response = await request.patch(
       `/api/diagrams/${diagramId}/comments/${threadId}/resolve`,
-      { data: { resolved: false } }
+      { data: { resolved: false } },
     );
     expect(response.ok()).toBeTruthy();
 
-    const threads = await request.get(
-      `/api/diagrams/${diagramId}/comments`
-    );
+    const threads = await request.get(`/api/diagrams/${diagramId}/comments`);
     const resBody = await threads.json();
     const allThreads = resBody.threads ?? resBody;
     const thread = allThreads.find((c: any) => c.id === threadId);
     expect(thread.resolved).toBeFalsy();
   });
 
-  test("POST /api/diagrams/:id/comments/:threadId/like toggles like", async ({
-    request,
-  }) => {
-    const response = await request.post(
-      `/api/diagrams/${diagramId}/comments/${threadId}/like`
-    );
+  test("POST /api/diagrams/:id/comments/:threadId/like toggles like", async ({ request }) => {
+    const response = await request.post(`/api/diagrams/${diagramId}/comments/${threadId}/like`);
     expect(response.ok()).toBeTruthy();
   });
 
-  test("DELETE /api/diagrams/:id/comments/:threadId deletes a thread", async ({
-    request,
-  }) => {
-    const response = await request.delete(
-      `/api/diagrams/${diagramId}/comments/${threadId}`
-    );
+  test("DELETE /api/diagrams/:id/comments/:threadId deletes a thread", async ({ request }) => {
+    const response = await request.delete(`/api/diagrams/${diagramId}/comments/${threadId}`);
     expect(response.ok()).toBeTruthy();
 
     // Verify deletion
-    const threads = await request.get(
-      `/api/diagrams/${diagramId}/comments`
-    );
+    const threads = await request.get(`/api/diagrams/${diagramId}/comments`);
     const resBody = await threads.json();
     const allThreads = resBody.threads ?? resBody;
     const found = allThreads.find((c: any) => c.id === threadId);

@@ -90,6 +90,8 @@ test.describe("Code Import Panel", () => {
     await page.keyboard.press("Escape");
 
     // Panel should close — the heading disappears
-    await expect(page.getByRole("heading", { name: "Import from Code" })).not.toBeVisible({ timeout: 3_000 });
+    await expect(page.getByRole("heading", { name: "Import from Code" })).not.toBeVisible({
+      timeout: 3_000,
+    });
   });
 });

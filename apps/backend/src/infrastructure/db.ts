@@ -1,7 +1,15 @@
 import { Pool, type PoolClient } from "pg";
 import path from "node:path";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { runner } = require("node-pg-migrate") as { runner: (options: { databaseUrl: string; dir: string; migrationsTable: string; direction: "up" | "down"; log: (msg: string) => void }) => Promise<unknown> };
+const { runner } = require("node-pg-migrate") as {
+  runner: (options: {
+    databaseUrl: string;
+    dir: string;
+    migrationsTable: string;
+    direction: "up" | "down";
+    log: (msg: string) => void;
+  }) => Promise<unknown>;
+};
 import { config } from "./config";
 import { logger } from "./logger";
 

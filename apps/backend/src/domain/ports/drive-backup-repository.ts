@@ -2,10 +2,17 @@ import type { DriveBackupSettings, DriveFileMapping } from "../entities/drive-ba
 
 export interface DriveBackupRepository {
   getSettings(userId: string): Promise<DriveBackupSettings | null>;
-  upsertSettings(userId: string, data: { enabled: boolean; rootFolderId?: string | null }): Promise<DriveBackupSettings>;
+  upsertSettings(
+    userId: string,
+    data: { enabled: boolean; rootFolderId?: string | null },
+  ): Promise<DriveBackupSettings>;
   deleteSettings(userId: string): Promise<void>;
 
-  getFileMapping(userId: string, diagramId: string, sceneId: string | null): Promise<DriveFileMapping | null>;
+  getFileMapping(
+    userId: string,
+    diagramId: string,
+    sceneId: string | null,
+  ): Promise<DriveFileMapping | null>;
   upsertFileMapping(data: {
     userId: string;
     diagramId: string;

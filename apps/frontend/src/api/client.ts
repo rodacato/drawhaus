@@ -6,9 +6,7 @@ export const api = axios.create({
 });
 
 // Auto-unwrap response data
-api.interceptors.response.use(
-  (response) => response.data,
-);
+api.interceptors.response.use((response) => response.data);
 
 api.interceptors.response.use(
   (res) => res,
@@ -31,5 +29,5 @@ api.interceptors.response.use(
       globalThis.location.href = "/login";
     }
     return Promise.reject(err);
-  }
+  },
 );
