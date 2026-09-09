@@ -3,6 +3,7 @@ import tsPlugin from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import sonarjs from "eslint-plugin-sonarjs";
 import globals from "globals";
+import eslintConfigPrettier from "eslint-config-prettier";
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
@@ -23,11 +24,14 @@ export default [
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
-      "@typescript-eslint/no-unused-vars": ["error", {
-        argsIgnorePattern: "^_",
-        varsIgnorePattern: "^_",
-        destructuredArrayIgnorePattern: "^_",
-      }],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+        },
+      ],
     },
   },
   sonarjs.configs.recommended,
@@ -53,4 +57,6 @@ export default [
       "sonarjs/super-linear-regex": "off", // ratchet: re-enable after clearing backlog (1) — also a server hotspot S5852 TO_REVIEW (real, prod sanitizer)
     },
   },
+
+  eslintConfigPrettier,
 ];

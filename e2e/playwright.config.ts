@@ -49,9 +49,7 @@ export default defineConfig({
       cwd: "..",
       env: {
         NODE_ENV: "test",
-        DATABASE_URL:
-          process.env.DATABASE_URL ??
-          "postgres://drawhaus:drawhaus@db:5432/drawhaus",
+        DATABASE_URL: process.env.DATABASE_URL ?? "postgres://drawhaus:drawhaus@db:5432/drawhaus",
         SESSION_SECRET: process.env.SESSION_SECRET ?? "e2e-test-secret",
         PORT: "4000",
         FRONTEND_URL: "http://localhost:5173",

@@ -121,7 +121,10 @@ describe("IntegrationSecretsPanel", () => {
     await user.click(saveBtn);
 
     await waitFor(() => {
-      expect(adminApi.updateIntegration).toHaveBeenCalledWith("GOOGLE_CLIENT_ID", "new-secret-value");
+      expect(adminApi.updateIntegration).toHaveBeenCalledWith(
+        "GOOGLE_CLIENT_ID",
+        "new-secret-value",
+      );
     });
     expect(toastFn).toHaveBeenCalledWith("Integration secret updated", "success");
   });

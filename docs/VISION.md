@@ -28,11 +28,11 @@ But I kept hitting the same walls:
 - **No programmatic access.** I can't create a diagram from a CI pipeline, a CLI, or an AI agent. The only entry point is a human with a mouse.
 - **No infrastructure layer in the OSS version.** User accounts, workspaces, roles, sharing, version history, templates — these exist in Excalidraw+ as a service, but not self-hosted.
 
-| What I wanted | What exists today |
-|---|---|
-| Diagrams from PlantUML/Mermaid as **editable** elements | Most tools render static images |
-| AI agents creating diagrams via MCP | No diagramming tool has this |
-| A REST API to manage diagrams programmatically | Not available in Excalidraw OSS |
+| What I wanted                                            | What exists today                                     |
+| -------------------------------------------------------- | ----------------------------------------------------- |
+| Diagrams from PlantUML/Mermaid as **editable** elements  | Most tools render static images                       |
+| AI agents creating diagrams via MCP                      | No diagramming tool has this                          |
+| A REST API to manage diagrams programmatically           | Not available in Excalidraw OSS                       |
 | Workspaces, roles, and sharing on a self-hosted instance | Excalidraw+ offers this as a service, not self-hosted |
 
 **None of this diminishes what Excalidraw is.** They built the engine. Drawhaus is a personal shell around that engine, exploring what's possible when you add infrastructure, programmatic access, and AI on top.
@@ -55,7 +55,7 @@ Principles that guide every decision. If nobody would disagree, it's not a princ
 Every feature must work with `docker compose up`. Optional integrations (Google Drive, Resend, Sentry) are additive — the core works without them. If a feature requires a managed service, it doesn't ship.
 
 **2. Excalidraw is the editor. Period.**
-The editor is world-class — there's nothing to improve, and no reason to try. Drawhaus builds everything *around* it: persistence, auth, collaboration infrastructure, programmatic access. The editor is theirs. The platform is ours.
+The editor is world-class — there's nothing to improve, and no reason to try. Drawhaus builds everything _around_ it: persistence, auth, collaboration infrastructure, programmatic access. The editor is theirs. The platform is ours.
 
 **3. Three entry points, one diagram.**
 Humans (editor), code (API), and AI (MCP) all produce the same Excalidraw element arrays stored in the same PostgreSQL tables. No format translation, no lossy conversion. A diagram can start in Claude Code and get refined in the editor.
@@ -77,6 +77,7 @@ This is a personal project built to learn full-stack development. Every feature 
 **Broader audience: small teams (2-10) who diagram together.** Freelancers sharing architecture with clients. Small studios collaborating on system design. Teams that want real-time collaboration without paying per-seat for a tool they use weekly.
 
 **Not for:**
+
 - **Enterprises** needing SSO/SAML, compliance audit trails, or 99.99% SLA. This is a single-VPS tool, not an enterprise platform.
 - **Designers** wanting pixel-perfect UI design. Drawhaus is for diagrams and sketches.
 - **Non-technical users** who can't run Docker. Self-hosted means you're your own ops team.
@@ -116,11 +117,11 @@ Drawhaus
 
 Every diagram in Drawhaus is accessible through three surfaces:
 
-| Surface | Who uses it | How |
-|---|---|---|
-| **Editor** | Humans | Draw, sketch, arrange — the Excalidraw experience |
-| **API** | Code & CI/CD | REST endpoints for CRUD, templates, export |
-| **MCP** | AI agents | Claude Code, Cursor, VS Code create diagrams from natural language |
+| Surface    | Who uses it  | How                                                                |
+| ---------- | ------------ | ------------------------------------------------------------------ |
+| **Editor** | Humans       | Draw, sketch, arrange — the Excalidraw experience                  |
+| **API**    | Code & CI/CD | REST endpoints for CRUD, templates, export                         |
+| **MCP**    | AI agents    | Claude Code, Cursor, VS Code create diagrams from natural language |
 
 This means a diagram can start as a text prompt in Claude Code, get refined by a developer in the editor, and be updated by a CI pipeline when the architecture changes. **Same diagram, three entry points.**
 
@@ -159,12 +160,12 @@ Most tools go the other direction (diagram → static image). Drawhaus goes **co
 
 AI coding assistants (Claude Code, Cursor, Windsurf) can interact with Drawhaus directly:
 
-| MCP Tool | What it does |
-|---|---|
-| `create_diagram` | Generate a diagram from a description or element array |
-| `list_diagrams` | Browse existing diagrams in a workspace |
-| `get_diagram` | Read a diagram's elements and metadata |
-| `update_diagram` | Modify an existing diagram programmatically |
+| MCP Tool            | What it does                                               |
+| ------------------- | ---------------------------------------------------------- |
+| `create_diagram`    | Generate a diagram from a description or element array     |
+| `list_diagrams`     | Browse existing diagrams in a workspace                    |
+| `get_diagram`       | Read a diagram's elements and metadata                     |
+| `update_diagram`    | Modify an existing diagram programmatically                |
 | `validate_elements` | Check elements against the Excalidraw spec before creating |
 
 The `@drawhaus/helpers` package provides element builders, layout engines (dagre), arrow routing, and a curated Excalidraw spec — so AI models produce valid, well-laid-out diagrams without hallucinating element properties.
@@ -203,7 +204,7 @@ Every feature must work with `docker compose up`. No external services required.
 
 ### 2. Excalidraw Is The Editor
 
-Excalidraw is world-class — there's nothing to improve there, and no reason to try. Drawhaus builds everything *around* it: persistence, auth, collaboration infrastructure, programmatic access. The editor is theirs. The platform is ours.
+Excalidraw is world-class — there's nothing to improve there, and no reason to try. Drawhaus builds everything _around_ it: persistence, auth, collaboration infrastructure, programmatic access. The editor is theirs. The platform is ours.
 
 ### 3. Three Entry Points, One Data Model
 
@@ -235,15 +236,15 @@ Before adding any new feature, ask:
 
 Drawhaus isn't trying to replace anything. It occupies a specific niche: **self-hosted, with programmatic and AI access**. If you're happy with Excalidraw+ — you should use it. If you want to self-host, tinker, and integrate with AI workflows — that's what this project is for.
 
-| Capability | What Drawhaus adds beyond Excalidraw OSS |
-|---|---|
-| **Persistence & auth** | User accounts, sessions, PostgreSQL storage |
-| **Workspaces & sharing** | Roles, share links, guest access, embeds |
-| **Snapshots & backups** | Version history, automated backups, restore |
-| **REST API** | Programmatic CRUD for diagrams |
-| **MCP server** | AI agents can create and manage diagrams |
-| **Diagram-as-code** | PlantUML/Mermaid → editable Excalidraw elements |
-| **Admin panel** | User management, metrics, integrations |
+| Capability               | What Drawhaus adds beyond Excalidraw OSS        |
+| ------------------------ | ----------------------------------------------- |
+| **Persistence & auth**   | User accounts, sessions, PostgreSQL storage     |
+| **Workspaces & sharing** | Roles, share links, guest access, embeds        |
+| **Snapshots & backups**  | Version history, automated backups, restore     |
+| **REST API**             | Programmatic CRUD for diagrams                  |
+| **MCP server**           | AI agents can create and manage diagrams        |
+| **Diagram-as-code**      | PlantUML/Mermaid → editable Excalidraw elements |
+| **Admin panel**          | User management, metrics, integrations          |
 
 ---
 
@@ -289,23 +290,23 @@ The ecosystem uses a consistent naming pattern:
 
 ### Ideas that belong here (someday)
 
-| Idea | What it is | Builds on |
-|---|---|---|
-| **AI Assist** | Natural language → Excalidraw elements via Claude API | MCP + helpers |
-| **Webhooks** | Notify external systems on diagram create/update/delete events | API |
-| **Embed SDK** | `@drawhaus/embed` — drop a live diagram into any webpage | Sharing + API |
-| **CLI Tool** | Create/list/export diagrams from the terminal | API |
-| **GitHub Gist Export** | One-click export diagram as Gist | API |
-| **@mentions in Comments** | Tag team members in diagram threads | Comments system |
-| **Admin Analytics** | Charts for user growth, diagram activity, collaboration patterns | Admin panel |
+| Idea                      | What it is                                                       | Builds on       |
+| ------------------------- | ---------------------------------------------------------------- | --------------- |
+| **AI Assist**             | Natural language → Excalidraw elements via Claude API            | MCP + helpers   |
+| **Webhooks**              | Notify external systems on diagram create/update/delete events   | API             |
+| **Embed SDK**             | `@drawhaus/embed` — drop a live diagram into any webpage         | Sharing + API   |
+| **CLI Tool**              | Create/list/export diagrams from the terminal                    | API             |
+| **GitHub Gist Export**    | One-click export diagram as Gist                                 | API             |
+| **@mentions in Comments** | Tag team members in diagram threads                              | Comments system |
+| **Admin Analytics**       | Charts for user growth, diagram activity, collaboration patterns | Admin panel     |
 
 ### Ideas that belong somewhere else
 
-| Idea | Why not Drawhaus |
-|---|---|
-| **E2E encryption** | Breaks real-time collaboration merge logic; redundant when self-hosted |
-| **Voice/screenshare** | Users have Meet/Discord; adds massive complexity |
-| **Offline mode** | Requires CRDT rewrite of the sync layer |
-| **SSO/SAML** | Enterprise complexity for a tool targeting indie teams |
-| **PDF/PPTX export** | PNG/SVG are sufficient; users paste into their own tools |
-| **Presentation mode** | Use actual presentation tools; Drawhaus is where diagrams live |
+| Idea                  | Why not Drawhaus                                                       |
+| --------------------- | ---------------------------------------------------------------------- |
+| **E2E encryption**    | Breaks real-time collaboration merge logic; redundant when self-hosted |
+| **Voice/screenshare** | Users have Meet/Discord; adds massive complexity                       |
+| **Offline mode**      | Requires CRDT rewrite of the sync layer                                |
+| **SSO/SAML**          | Enterprise complexity for a tool targeting indie teams                 |
+| **PDF/PPTX export**   | PNG/SVG are sufficient; users paste into their own tools               |
+| **Presentation mode** | Use actual presentation tools; Drawhaus is where diagrams live         |

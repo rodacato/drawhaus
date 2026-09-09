@@ -81,26 +81,55 @@ function buildBaseApp(opts?: { withSecrets?: boolean }) {
   const app = express();
   app.use(express.json());
 
-  app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
-    login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
-    logout: new LogoutUseCase(sessions),
-    getCurrentUser,
-    updateProfile: new UpdateProfileUseCase(users),
-    changePassword: new ChangePasswordUseCase(users, hasher),
-    acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
-    forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
-    resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
-  }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register: new RegisterUseCase(
+          users,
+          sessions,
+          hasher,
+          new InMemorySiteSettingsRepository(),
+        ),
+        login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
+        logout: new LogoutUseCase(sessions),
+        getCurrentUser,
+        updateProfile: new UpdateProfileUseCase(users),
+        changePassword: new ChangePasswordUseCase(users, hasher),
+        acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
+        forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
+        resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
+        deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
+        googleAuth: new GoogleAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        githubAuth: new GitHubAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        unlinkOAuth: new UnlinkOAuthUseCase(
+          users,
+          new InMemoryOAuthTokenRepository(),
+          new InMemoryDriveBackupRepository(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
   // Stub GetMetricsUseCase: the real one calls pool.query directly.
   // The route only depends on `.execute()`, so a duck-typed object is enough.
   const getMetrics = {
-    async execute() { return metricsPayload; },
+    async execute() {
+      return metricsPayload;
+    },
   } as unknown as import("../../application/use-cases/admin/get-metrics").GetMetricsUseCase;
 
   const adminDeps = {
@@ -123,11 +152,13 @@ function buildBaseApp(opts?: { withSecrets?: boolean }) {
 }
 
 async function registerUser(app: express.Express, email: string) {
-  const res = await request(app).post("/api/auth/register").send({
-    email,
-    name: email.split("@")[0],
-    password: "password123",
-  });
+  const res = await request(app)
+    .post("/api/auth/register")
+    .send({
+      email,
+      name: email.split("@")[0],
+      password: "password123",
+    });
   const cookie = res.headers["set-cookie"][0].split(";")[0];
   return { cookie, userId: res.body.user.id as string };
 }
@@ -219,10 +250,7 @@ test("PATCH /api/admin/users/:id returns 400 with no fields", async () => {
   const { cookie } = await registerAdmin(app, "admin-pu3@example.com");
   const { userId } = await registerUser(app, "target3@example.com");
 
-  const res = await request(app)
-    .patch(`/api/admin/users/${userId}`)
-    .set("Cookie", cookie)
-    .send({});
+  const res = await request(app).patch(`/api/admin/users/${userId}`).set("Cookie", cookie).send({});
 
   assert.equal(res.status, 400);
 });
@@ -271,22 +299,21 @@ test("DELETE /api/admin/users/:id deletes a non-admin user", async () => {
   const { cookie } = await registerAdmin(app, "admin-del@example.com");
   const { userId } = await registerUser(app, "togo@example.com");
 
-  const res = await request(app)
-    .delete(`/api/admin/users/${userId}`)
-    .set("Cookie", cookie);
+  const res = await request(app).delete(`/api/admin/users/${userId}`).set("Cookie", cookie);
 
   assert.equal(res.status, 200);
   assert.equal(res.body.success, true);
-  assert.equal(users.store.find((u) => u.id === userId), undefined);
+  assert.equal(
+    users.store.find((u) => u.id === userId),
+    undefined,
+  );
 });
 
 test("DELETE /api/admin/users/:id rejects deleting self", async () => {
   const app = buildBaseApp();
   const { cookie, userId } = await registerAdmin(app, "admin-self-del@example.com");
 
-  const res = await request(app)
-    .delete(`/api/admin/users/${userId}`)
-    .set("Cookie", cookie);
+  const res = await request(app).delete(`/api/admin/users/${userId}`).set("Cookie", cookie);
 
   assert.equal(res.status, 400);
 });
@@ -296,9 +323,7 @@ test("DELETE /api/admin/users/:id rejects deleting another admin", async () => {
   const { cookie } = await registerAdmin(app, "admin-del2@example.com");
   const { userId } = await registerAdmin(app, "admin-other@example.com");
 
-  const res = await request(app)
-    .delete(`/api/admin/users/${userId}`)
-    .set("Cookie", cookie);
+  const res = await request(app).delete(`/api/admin/users/${userId}`).set("Cookie", cookie);
 
   assert.equal(res.status, 400);
 });
@@ -473,8 +498,14 @@ test("POST /api/admin/invite returns 409 when email already belongs to a user", 
 test("GET /api/admin/invitations lists pending invitations only", async () => {
   const app = buildBaseApp();
   const { cookie } = await registerAdmin(app, "admin-li@example.com");
-  await request(app).post("/api/admin/invite").set("Cookie", cookie).send({ email: "p1@example.com" });
-  await request(app).post("/api/admin/invite").set("Cookie", cookie).send({ email: "p2@example.com" });
+  await request(app)
+    .post("/api/admin/invite")
+    .set("Cookie", cookie)
+    .send({ email: "p1@example.com" });
+  await request(app)
+    .post("/api/admin/invite")
+    .set("Cookie", cookie)
+    .send({ email: "p2@example.com" });
   // Mark one as used
   invitations.store[0].usedAt = new Date();
 
@@ -515,7 +546,9 @@ test("GET /api/admin/integrations (with secrets repo) mixes db + env sources", a
 
   assert.equal(res.status, 200);
   assert.equal(res.body.encryptionEnabled, true);
-  const dbBacked = res.body.integrations.find((i: { key: string }) => i.key === "GOOGLE_CLIENT_SECRET");
+  const dbBacked = res.body.integrations.find(
+    (i: { key: string }) => i.key === "GOOGLE_CLIENT_SECRET",
+  );
   assert.equal(dbBacked.source, "db");
   assert.match(dbBacked.maskedValue as string, /^db-s.+1234$/);
   const envBacked = res.body.integrations.find((i: { key: string }) => i.key === "RESEND_API_KEY");
@@ -624,9 +657,7 @@ test("POST /api/admin/backups/trigger requires admin", async () => {
   await registerAdmin(app, "seed-admin-bkt@example.com");
   const { cookie } = await registerUser(app, "plain-bkt@example.com");
 
-  const res = await request(app)
-    .post("/api/admin/backups/trigger")
-    .set("Cookie", cookie);
+  const res = await request(app).post("/api/admin/backups/trigger").set("Cookie", cookie);
 
   assert.equal(res.status, 403);
 });

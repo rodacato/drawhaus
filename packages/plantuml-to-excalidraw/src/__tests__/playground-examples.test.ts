@@ -4,10 +4,7 @@
  */
 import test, { describe } from "node:test";
 import assert from "node:assert/strict";
-import {
-  parsePlantUMLToExcalidraw,
-  PlantUMLUnsupportedError,
-} from "../index.js";
+import { parsePlantUMLToExcalidraw, PlantUMLUnsupportedError } from "../index.js";
 import { ALL_EXAMPLES } from "../../playground/examples/class.js";
 
 for (const section of ALL_EXAMPLES) {
@@ -16,10 +13,7 @@ for (const section of ALL_EXAMPLES) {
       if (section.supported) {
         test(`${example.title} — parses and converts`, () => {
           const result = parsePlantUMLToExcalidraw(example.code);
-          assert.ok(
-            result.elements.length > 0,
-            `"${example.title}" should produce elements`,
-          );
+          assert.ok(result.elements.length > 0, `"${example.title}" should produce elements`);
           assert.ok(
             result.diagramType !== "unknown",
             `"${example.title}" should detect a known diagram type`,

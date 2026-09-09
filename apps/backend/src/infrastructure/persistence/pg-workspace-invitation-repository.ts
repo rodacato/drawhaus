@@ -44,7 +44,14 @@ export class PgWorkspaceInvitationRepository implements WorkspaceInvitationRepos
       `INSERT INTO workspace_invitations (workspace_id, email, role, token, invited_by, expires_at)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING ${COLUMNS}`,
-      [data.workspaceId, data.email, data.role, data.token, data.invitedBy, data.expiresAt.toISOString()],
+      [
+        data.workspaceId,
+        data.email,
+        data.role,
+        data.token,
+        data.invitedBy,
+        data.expiresAt.toISOString(),
+      ],
     );
     return toDomain(rows[0]);
   }

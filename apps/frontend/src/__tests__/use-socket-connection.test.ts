@@ -1,6 +1,11 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { createMockSocket, triggerSocketEvent, triggerManagerEvent, type MockSocket } from "./_helpers/mock-socket";
+import {
+  createMockSocket,
+  triggerSocketEvent,
+  triggerManagerEvent,
+  type MockSocket,
+} from "./_helpers/mock-socket";
 
 let nextSocket: MockSocket;
 
@@ -33,16 +38,18 @@ describe("useSocketConnection", () => {
     const { result } = renderHook(() =>
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
     );
-    act(() => { triggerSocketEvent(nextSocket, "connect"); });
+    act(() => {
+      triggerSocketEvent(nextSocket, "connect");
+    });
     expect(result.current.connectionState).toBe("connected");
     expect(nextSocket.emit).toHaveBeenCalledWith("join-room", { roomId: "room-1" });
   });
 
   test("on 'connect' (guest mode) emits join-room-guest with token and name", () => {
-    renderHook(() =>
-      useSocketConnection({ diagramId: "d1", joinMode: guestJoin }),
-    );
-    act(() => { triggerSocketEvent(nextSocket, "connect"); });
+    renderHook(() => useSocketConnection({ diagramId: "d1", joinMode: guestJoin }));
+    act(() => {
+      triggerSocketEvent(nextSocket, "connect");
+    });
     expect(nextSocket.emit).toHaveBeenCalledWith("join-room-guest", {
       shareToken: "tok-9",
       guestName: "Visitor",
@@ -53,7 +60,9 @@ describe("useSocketConnection", () => {
     const { result } = renderHook(() =>
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
     );
-    act(() => { triggerSocketEvent(nextSocket, "connect_error", { message: "no route" }); });
+    act(() => {
+      triggerSocketEvent(nextSocket, "connect_error", { message: "no route" });
+    });
     expect(result.current.connectionState).toBe("error");
     expect(result.current.connectionError).toBe("no route");
   });
@@ -62,8 +71,12 @@ describe("useSocketConnection", () => {
     const { result } = renderHook(() =>
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
     );
-    act(() => { triggerSocketEvent(nextSocket, "connect"); });
-    act(() => { triggerSocketEvent(nextSocket, "disconnect", "transport close"); });
+    act(() => {
+      triggerSocketEvent(nextSocket, "connect");
+    });
+    act(() => {
+      triggerSocketEvent(nextSocket, "disconnect", "transport close");
+    });
     expect(result.current.connectionState).toBe("disconnected");
   });
 
@@ -71,7 +84,9 @@ describe("useSocketConnection", () => {
     const { result } = renderHook(() =>
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
     );
-    act(() => { triggerSocketEvent(nextSocket, "room-error", { message: "denied" }); });
+    act(() => {
+      triggerSocketEvent(nextSocket, "room-error", { message: "denied" });
+    });
     expect(result.current.connectionState).toBe("error");
     expect(result.current.connectionError).toBe("denied");
   });
@@ -80,7 +95,9 @@ describe("useSocketConnection", () => {
     const { result } = renderHook(() =>
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
     );
-    act(() => { triggerSocketEvent(nextSocket, "room-joined", { role: "editor", userId: "u-77" }); });
+    act(() => {
+      triggerSocketEvent(nextSocket, "room-joined", { role: "editor", userId: "u-77" });
+    });
     expect(result.current.userRole).toBe("editor");
     expect(result.current.selfUserId).toBe("u-77");
     expect(result.current.connectionError).toBeNull();
@@ -90,8 +107,12 @@ describe("useSocketConnection", () => {
     const { result } = renderHook(() =>
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
     );
-    act(() => { triggerSocketEvent(nextSocket, "connect"); });
-    act(() => { triggerManagerEvent(nextSocket, "reconnect_attempt"); });
+    act(() => {
+      triggerSocketEvent(nextSocket, "connect");
+    });
+    act(() => {
+      triggerManagerEvent(nextSocket, "reconnect_attempt");
+    });
     expect(result.current.connectionState).toBe("connecting");
   });
 
@@ -99,9 +120,13 @@ describe("useSocketConnection", () => {
     const { result } = renderHook(() =>
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
     );
-    act(() => { triggerSocketEvent(nextSocket, "connect"); });
+    act(() => {
+      triggerSocketEvent(nextSocket, "connect");
+    });
     nextSocket.emit.mockClear();
-    act(() => { triggerManagerEvent(nextSocket, "reconnect"); });
+    act(() => {
+      triggerManagerEvent(nextSocket, "reconnect");
+    });
     expect(result.current.connectionState).toBe("connected");
     expect(nextSocket.emit).toHaveBeenCalledWith("join-room", { roomId: "room-1" });
   });
@@ -110,7 +135,9 @@ describe("useSocketConnection", () => {
     const { result } = renderHook(() =>
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
     );
-    act(() => { triggerManagerEvent(nextSocket, "reconnect_failed"); });
+    act(() => {
+      triggerManagerEvent(nextSocket, "reconnect_failed");
+    });
     expect(result.current.connectionState).toBe("error");
     expect(result.current.connectionError).toMatch(/reconectar/i);
   });
@@ -130,7 +157,9 @@ describe("useSocketConnection", () => {
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
     );
     unmount();
-    act(() => { triggerSocketEvent(nextSocket, "room-joined", { role: "admin", userId: "after" }); });
+    act(() => {
+      triggerSocketEvent(nextSocket, "room-joined", { role: "admin", userId: "after" });
+    });
     await waitFor(() => {
       expect(result.current.userRole).toBeNull();
       expect(result.current.selfUserId).toBeNull();

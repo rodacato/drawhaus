@@ -15,12 +15,15 @@ export class ExportToDriveUseCase {
     private readonly tokenRefresher: TokenRefresherPort,
   ) {}
 
-  async execute(userId: string, data: {
-    format: ExportFormat;
-    targetFolderId: string;
-    content: string;
-    fileName: string;
-  }): Promise<{ driveFileId: string; webViewLink: string }> {
+  async execute(
+    userId: string,
+    data: {
+      format: ExportFormat;
+      targetFolderId: string;
+      content: string;
+      fileName: string;
+    },
+  ): Promise<{ driveFileId: string; webViewLink: string }> {
     const accessToken = await this.tokenRefresher.getValidAccessToken(userId);
 
     const mimeType = MIME_TYPES[data.format];

@@ -24,9 +24,9 @@
 
 **Code quality** (SonarQube, per workspace):
 
-| Package | Quality Gate | Coverage | Maintainability | Reliability | Security |
-|---|---|---|---|---|---|
-| **backend** (`apps/backend`) | [![Quality Gate](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=alert_status&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend) | [![Coverage](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=coverage&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend) | [![Maintainability](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=sqale_rating&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend) | [![Reliability](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=reliability_rating&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend) | [![Security](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=security_rating&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend) |
+| Package                        | Quality Gate                                                                                                                                                                                                                                     | Coverage                                                                                                                                                                                                                                 | Maintainability                                                                                                                                                                                                                                     | Reliability                                                                                                                                                                                                                                           | Security                                                                                                                                                                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **backend** (`apps/backend`)   | [![Quality Gate](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=alert_status&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend)   | [![Coverage](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=coverage&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend)   | [![Maintainability](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=sqale_rating&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend)   | [![Reliability](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=reliability_rating&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend)   | [![Security](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-backend&metric=security_rating&token=sqb_51fa06357141603164d6f9f97c74a5c643b5f913)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-backend)   |
 | **frontend** (`apps/frontend`) | [![Quality Gate](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-frontend&metric=alert_status&token=sqb_664c936aad7f42bda3c4aa5e342d2b5282f32068)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-frontend) | [![Coverage](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-frontend&metric=coverage&token=sqb_664c936aad7f42bda3c4aa5e342d2b5282f32068)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-frontend) | [![Maintainability](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-frontend&metric=sqale_rating&token=sqb_664c936aad7f42bda3c4aa5e342d2b5282f32068)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-frontend) | [![Reliability](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-frontend&metric=reliability_rating&token=sqb_664c936aad7f42bda3c4aa5e342d2b5282f32068)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-frontend) | [![Security](https://sonarqube.notdefined.dev/api/project_badges/measure?project=drawhaus-frontend&metric=security_rating&token=sqb_664c936aad7f42bda3c4aa5e342d2b5282f32068)](https://sonarqube.notdefined.dev/dashboard?id=drawhaus-frontend) |
 
 ---
@@ -75,18 +75,18 @@ troubleshooting.
 
 > These must be set as env vars (GitHub Actions secrets or deploy config). They are needed at server boot before DB is available and **cannot** be moved to the database.
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
-| `SESSION_SECRET` | Yes (prod) | `dev-secret` | Session cookie signing key |
-| `PORT` | No | `4000` | Server port |
-| `METRICS_ENABLED` | No | `false` | Set to `true` to expose Prometheus `GET /metrics`. Opt-in — left off, there's no endpoint and no instrumentation overhead |
-| `METRICS_TOKEN` | No | — | Bearer token guarding `/metrics`. **Required in production** when metrics are enabled (without it the endpoint returns 404); in dev it's optional (open) |
-| `FRONTEND_URL` | No | `http://localhost:5173` | Allowed CORS origin |
-| `COOKIE_DOMAIN` | No | — | Cookie domain for subdomain sharing (e.g. `.drawhaus.dev`) |
-| `REDIS_URL` | No | — | Redis connection string. Required for multi-container deployments (Socket.IO scaling) |
-| `ENCRYPTION_KEY` | No | — | 32-byte hex key for encrypting integration secrets in DB. Generate with `openssl rand -hex 32` |
-| `BACKUP_PATH` | No | `/data/backups` | Directory to store backup files (filesystem path, must be an env var) |
+| Variable          | Required   | Default                 | Description                                                                                                                                              |
+| ----------------- | ---------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`    | Yes        | —                       | PostgreSQL connection string                                                                                                                             |
+| `SESSION_SECRET`  | Yes (prod) | `dev-secret`            | Session cookie signing key                                                                                                                               |
+| `PORT`            | No         | `4000`                  | Server port                                                                                                                                              |
+| `METRICS_ENABLED` | No         | `false`                 | Set to `true` to expose Prometheus `GET /metrics`. Opt-in — left off, there's no endpoint and no instrumentation overhead                                |
+| `METRICS_TOKEN`   | No         | —                       | Bearer token guarding `/metrics`. **Required in production** when metrics are enabled (without it the endpoint returns 404); in dev it's optional (open) |
+| `FRONTEND_URL`    | No         | `http://localhost:5173` | Allowed CORS origin                                                                                                                                      |
+| `COOKIE_DOMAIN`   | No         | —                       | Cookie domain for subdomain sharing (e.g. `.drawhaus.dev`)                                                                                               |
+| `REDIS_URL`       | No         | —                       | Redis connection string. Required for multi-container deployments (Socket.IO scaling)                                                                    |
+| `ENCRYPTION_KEY`  | No         | —                       | 32-byte hex key for encrypting integration secrets in DB. Generate with `openssl rand -hex 32`                                                           |
+| `BACKUP_PATH`     | No         | `/data/backups`         | Directory to store backup files (filesystem path, must be an env var)                                                                                    |
 
 > **Backup schedule, retention, and enable/disable** are configured from the admin panel (Settings → Database Backups) or during the setup wizard. They are stored in the `site_settings` table. Env vars `BACKUP_ENABLED`, `BACKUP_CRON`, and `BACKUP_RETENTION_DAYS` are used as fallback defaults only if the DB values are not yet set.
 
@@ -94,29 +94,29 @@ troubleshooting.
 
 > When `ENCRYPTION_KEY` is set, these can be managed from the **admin panel** (Settings → Integrations) instead of env vars. The app checks the DB first, then falls back to env vars. After migrating to the DB, you can remove these from GitHub secrets.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `GOOGLE_CLIENT_ID` | — | Google OAuth client ID. Leave blank to disable Google login |
-| `GOOGLE_CLIENT_SECRET` | — | Google OAuth client secret |
-| `GOOGLE_REDIRECT_URI` | — | Google OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/google/callback`) |
-| `GH_CLIENT_ID` | — | GitHub OAuth client ID. Leave blank to disable GitHub login. Uses `GH_` prefix because GitHub reserves `GITHUB_` |
-| `GH_CLIENT_SECRET` | — | GitHub OAuth client secret |
-| `GH_REDIRECT_URI` | — | GitHub OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/github/callback`) |
-| `RESEND_API_KEY` | — | Resend API key for emails. If blank, emails log to console |
-| `FROM_EMAIL` | `noreply@drawhaus.dev` | Sender address for transactional emails |
-| `SENTRY_DSN` | — | Sentry DSN for backend error monitoring (optional) |
-| `SENTRY_ENVIRONMENT` | `NODE_ENV` | Sentry environment label (e.g. `staging`, `production`) |
-| `SENTRY_TRACES_SAMPLE_RATE` | `0` | Performance tracing sample rate (0..1) |
+| Variable                    | Default                | Description                                                                                                      |
+| --------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_CLIENT_ID`          | —                      | Google OAuth client ID. Leave blank to disable Google login                                                      |
+| `GOOGLE_CLIENT_SECRET`      | —                      | Google OAuth client secret                                                                                       |
+| `GOOGLE_REDIRECT_URI`       | —                      | Google OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/google/callback`)                           |
+| `GH_CLIENT_ID`              | —                      | GitHub OAuth client ID. Leave blank to disable GitHub login. Uses `GH_` prefix because GitHub reserves `GITHUB_` |
+| `GH_CLIENT_SECRET`          | —                      | GitHub OAuth client secret                                                                                       |
+| `GH_REDIRECT_URI`           | —                      | GitHub OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/github/callback`)                           |
+| `RESEND_API_KEY`            | —                      | Resend API key for emails. If blank, emails log to console                                                       |
+| `FROM_EMAIL`                | `noreply@drawhaus.dev` | Sender address for transactional emails                                                                          |
+| `SENTRY_DSN`                | —                      | Sentry DSN for backend error monitoring (optional)                                                               |
+| `SENTRY_ENVIRONMENT`        | `NODE_ENV`             | Sentry environment label (e.g. `staging`, `production`)                                                          |
+| `SENTRY_TRACES_SAMPLE_RATE` | `0`                    | Performance tracing sample rate (0..1)                                                                           |
 
 ### Frontend
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `VITE_API_URL` | No | — | Backend URL. Leave empty in dev (Vite proxy handles it) |
-| `VITE_WS_URL` | No | — | WebSocket URL. Leave empty in dev |
-| `VITE_GOOGLE_API_KEY` | No | — | Google Picker API key for Drive file browser. Leave blank to disable |
-| `VITE_SENTRY_DSN` | No | — | Sentry DSN for frontend error monitoring. Leave blank to disable |
-| `VITE_SENTRY_ENVIRONMENT` | No | Vite `MODE` | Sentry environment label baked into the bundle |
+| Variable                  | Required | Default     | Description                                                          |
+| ------------------------- | -------- | ----------- | -------------------------------------------------------------------- |
+| `VITE_API_URL`            | No       | —           | Backend URL. Leave empty in dev (Vite proxy handles it)              |
+| `VITE_WS_URL`             | No       | —           | WebSocket URL. Leave empty in dev                                    |
+| `VITE_GOOGLE_API_KEY`     | No       | —           | Google Picker API key for Drive file browser. Leave blank to disable |
+| `VITE_SENTRY_DSN`         | No       | —           | Sentry DSN for frontend error monitoring. Leave blank to disable     |
+| `VITE_SENTRY_ENVIRONMENT` | No       | Vite `MODE` | Sentry environment label baked into the bundle                       |
 
 > **Local dev:** Copy `.env.example` to `.env` — Docker Compose loads it automatically. For production, configure secrets in GitHub Actions (see [Deployment](#deployment)).
 
@@ -124,28 +124,28 @@ troubleshooting.
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start frontend + backend concurrently |
-| `npm run dev:frontend` | Frontend only (Vite on :5173) |
-| `npm run dev:backend` | Backend only (Express on :4000) |
-| `npm run build` | Production build (both workspaces) |
-| `npm run lint` | Lint all workspaces |
-| `npm run typecheck` | Type-check all workspaces |
-| `npm test --workspace=backend` | Run backend unit & integration tests |
-| `cd e2e && npm test` | Run Playwright end-to-end tests (requires running backend + frontend + PG) |
-| `cd e2e && npm run test:ui` | Open Playwright test runner UI |
-| `npm run db:seed` | Seed database with test data |
-| `npm run db:reset` | Drop all tables, recreate schema, and seed |
-| `npm run db:backup --workspace=backend` | Create an on-demand database backup |
-| `npm run db:restore --workspace=backend -- latest` | Restore database from most recent backup |
-| `npm run docs:lint` | Lint OpenAPI spec with Redocly |
-| `npm run docs:build` | Build static API docs to `docs/api/` |
-| `npm run docs:preview` | Preview API docs locally |
-| `npm run build --workspace=@drawhaus/helpers` | Build helpers package |
-| `npm test --workspace=@drawhaus/helpers` | Run helpers tests (90 tests) |
-| `npm run build --workspace=@drawhaus/mcp` | Build MCP server package |
-| `npm test --workspace=@drawhaus/mcp` | Run MCP server tests |
+| Command                                            | Description                                                                |
+| -------------------------------------------------- | -------------------------------------------------------------------------- |
+| `npm run dev`                                      | Start frontend + backend concurrently                                      |
+| `npm run dev:frontend`                             | Frontend only (Vite on :5173)                                              |
+| `npm run dev:backend`                              | Backend only (Express on :4000)                                            |
+| `npm run build`                                    | Production build (both workspaces)                                         |
+| `npm run lint`                                     | Lint all workspaces                                                        |
+| `npm run typecheck`                                | Type-check all workspaces                                                  |
+| `npm test --workspace=backend`                     | Run backend unit & integration tests                                       |
+| `cd e2e && npm test`                               | Run Playwright end-to-end tests (requires running backend + frontend + PG) |
+| `cd e2e && npm run test:ui`                        | Open Playwright test runner UI                                             |
+| `npm run db:seed`                                  | Seed database with test data                                               |
+| `npm run db:reset`                                 | Drop all tables, recreate schema, and seed                                 |
+| `npm run db:backup --workspace=backend`            | Create an on-demand database backup                                        |
+| `npm run db:restore --workspace=backend -- latest` | Restore database from most recent backup                                   |
+| `npm run docs:lint`                                | Lint OpenAPI spec with Redocly                                             |
+| `npm run docs:build`                               | Build static API docs to `docs/api/`                                       |
+| `npm run docs:preview`                             | Preview API docs locally                                                   |
+| `npm run build --workspace=@drawhaus/helpers`      | Build helpers package                                                      |
+| `npm test --workspace=@drawhaus/helpers`           | Run helpers tests (90 tests)                                               |
+| `npm run build --workspace=@drawhaus/mcp`          | Build MCP server package                                                   |
+| `npm test --workspace=@drawhaus/mcp`               | Run MCP server tests                                                       |
 
 ---
 
@@ -188,16 +188,16 @@ drawhaus/
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React 18 + Vite + React Router + Tailwind CSS |
-| Editor | Excalidraw |
-| Backend | Express + Socket.IO + Zod |
-| Database | PostgreSQL 16 |
-| Email | Resend (transactional) |
-| Deployment | Kamal (backend + frontend) |
-| CI | GitHub Actions |
-| Monitoring | Sentry |
+| Layer      | Technology                                    |
+| ---------- | --------------------------------------------- |
+| Frontend   | React 18 + Vite + React Router + Tailwind CSS |
+| Editor     | Excalidraw                                    |
+| Backend    | Express + Socket.IO + Zod                     |
+| Database   | PostgreSQL 16                                 |
+| Email      | Resend (transactional)                        |
+| Deployment | Kamal (backend + frontend)                    |
+| CI         | GitHub Actions                                |
+| Monitoring | Sentry                                        |
 
 ---
 
@@ -257,6 +257,7 @@ scrape_configs:
 ### Step 1: Backend setup
 
 1. **Create a `deploy` user on your server** with Docker access:
+
    ```bash
    ssh root@YOUR_SERVER
    adduser deploy
@@ -266,9 +267,11 @@ scrape_configs:
 2. **Configure GitHub Actions secrets** — see the [GitHub Actions secrets](#github-actions-secrets) table below. These are stored in the `production` environment in your GitHub repo (Settings → Environments → production). Both backend and frontend deploy jobs share this environment.
 
 3. **First deploy with Kamal** (from your local machine):
+
    ```bash
    kamal setup -c config/deploy.backend.yml
    ```
+
    This provisions the server: boots PostgreSQL, builds the Docker image, and starts the backend.
 
 4. **Subsequent deploys** happen automatically via GitHub Actions when you push to the `production` branch. You can also trigger manually from the Actions tab.
@@ -278,6 +281,7 @@ scrape_configs:
 The frontend is deployed as a separate Kamal service on the same server. No external hosting (Cloudflare Pages, Vercel, etc.) is needed.
 
 1. **First deploy** (from your local machine):
+
    ```bash
    kamal setup -c config/deploy.frontend.yml
    ```
@@ -309,28 +313,28 @@ This triggers the GitHub Actions [deploy workflow](.github/workflows/build-push.
 
 Configure these in your GitHub repo under **Settings → Environments → production** (both backend and frontend deploy jobs use the `production` environment):
 
-| Secret | Description |
-|--------|-------------|
-| `HOST_IP` | Your server's IP address |
-| `SSH_PRIVATE_KEY` | SSH key for the `deploy` user on your server |
-| `DATABASE_URL` | PostgreSQL connection string (e.g. `postgres://drawhaus:PASSWORD@localhost:5433/drawhaus_production`) |
-| `SESSION_SECRET` | Random string for session signing (`openssl rand -hex 32`) |
-| `FRONTEND_URL` | Your frontend URL (e.g. `https://yourdomain.com`) |
-| `COOKIE_DOMAIN` | (Optional) Parent domain for cookies (e.g. `.yourdomain.com`) — only needed for cross-subdomain setups |
-| `POSTGRES_PASSWORD` | PostgreSQL password (`openssl rand -hex 32`) |
-| `SENTRY_DSN` | (Optional) Sentry DSN for backend error monitoring |
-| `VITE_SENTRY_DSN` | (Optional) Sentry DSN for frontend error monitoring |
-| `SENTRY_AUTH_TOKEN` | (Optional) Auth token for source-map upload during the frontend build |
-| `RESEND_API_KEY` | (Optional) Resend API key for emails — without it, emails log to console |
-| `FROM_EMAIL` | (Optional) Sender address for transactional emails |
-| `GOOGLE_CLIENT_ID` | (Optional) Google OAuth client ID — leave blank to disable Google login |
-| `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth client secret |
-| `GOOGLE_REDIRECT_URI` | (Optional) Google OAuth redirect URI (e.g. `https://api.yourdomain.com/api/auth/google/callback`) |
-| `GH_CLIENT_ID` | (Optional) GitHub OAuth client ID — leave blank to disable GitHub login |
-| `GH_CLIENT_SECRET` | (Optional) GitHub OAuth client secret |
-| `GH_REDIRECT_URI` | (Optional) GitHub OAuth redirect URI (e.g. `https://api.yourdomain.com/api/auth/github/callback`) |
-| `REDIS_URL` | (Optional) Redis connection string for Socket.IO scaling |
-| `ENCRYPTION_KEY` | (Optional) 32-byte hex key for encrypting integration secrets (`openssl rand -hex 32`) |
+| Secret                 | Description                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `HOST_IP`              | Your server's IP address                                                                               |
+| `SSH_PRIVATE_KEY`      | SSH key for the `deploy` user on your server                                                           |
+| `DATABASE_URL`         | PostgreSQL connection string (e.g. `postgres://drawhaus:PASSWORD@localhost:5433/drawhaus_production`)  |
+| `SESSION_SECRET`       | Random string for session signing (`openssl rand -hex 32`)                                             |
+| `FRONTEND_URL`         | Your frontend URL (e.g. `https://yourdomain.com`)                                                      |
+| `COOKIE_DOMAIN`        | (Optional) Parent domain for cookies (e.g. `.yourdomain.com`) — only needed for cross-subdomain setups |
+| `POSTGRES_PASSWORD`    | PostgreSQL password (`openssl rand -hex 32`)                                                           |
+| `SENTRY_DSN`           | (Optional) Sentry DSN for backend error monitoring                                                     |
+| `VITE_SENTRY_DSN`      | (Optional) Sentry DSN for frontend error monitoring                                                    |
+| `SENTRY_AUTH_TOKEN`    | (Optional) Auth token for source-map upload during the frontend build                                  |
+| `RESEND_API_KEY`       | (Optional) Resend API key for emails — without it, emails log to console                               |
+| `FROM_EMAIL`           | (Optional) Sender address for transactional emails                                                     |
+| `GOOGLE_CLIENT_ID`     | (Optional) Google OAuth client ID — leave blank to disable Google login                                |
+| `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth client secret                                                                  |
+| `GOOGLE_REDIRECT_URI`  | (Optional) Google OAuth redirect URI (e.g. `https://api.yourdomain.com/api/auth/google/callback`)      |
+| `GH_CLIENT_ID`         | (Optional) GitHub OAuth client ID — leave blank to disable GitHub login                                |
+| `GH_CLIENT_SECRET`     | (Optional) GitHub OAuth client secret                                                                  |
+| `GH_REDIRECT_URI`      | (Optional) GitHub OAuth redirect URI (e.g. `https://api.yourdomain.com/api/auth/github/callback`)      |
+| `REDIS_URL`            | (Optional) Redis connection string for Socket.IO scaling                                               |
+| `ENCRYPTION_KEY`       | (Optional) 32-byte hex key for encrypting integration secrets (`openssl rand -hex 32`)                 |
 
 ### Manual deploy commands
 
@@ -359,176 +363,191 @@ kamal rollback -c config/deploy.frontend.yml
 ## API Overview
 
 ### Health & Status
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | Health check (DB status, uptime) |
-| `GET` | `/api/version` | App version, commit, deploy date |
-| `GET` | `/api/site/status` | Site status (maintenance, instance name) |
-| `GET` | `/metrics` | Prometheus metrics (default + HTTP histogram + active collaborators). Opt-in (`METRICS_ENABLED`), bearer-token gated (`METRICS_TOKEN`) — see [Observability](#observability) |
+
+| Method | Endpoint           | Description                                                                                                                                                                  |
+| ------ | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/health`          | Health check (DB status, uptime)                                                                                                                                             |
+| `GET`  | `/api/version`     | App version, commit, deploy date                                                                                                                                             |
+| `GET`  | `/api/site/status` | Site status (maintenance, instance name)                                                                                                                                     |
+| `GET`  | `/metrics`         | Prometheus metrics (default + HTTP histogram + active collaborators). Opt-in (`METRICS_ENABLED`), bearer-token gated (`METRICS_TOKEN`) — see [Observability](#observability) |
 
 ### Auth
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/auth/setup-status` | Check if initial setup is needed |
-| `POST` | `/api/auth/register` | Create account |
-| `POST` | `/api/auth/login` | Sign in |
-| `POST` | `/api/auth/logout` | Sign out |
-| `GET` | `/api/auth/me` | Current user |
-| `PATCH` | `/api/auth/me` | Update profile (name, email) |
-| `POST` | `/api/auth/change-password` | Change password |
-| `POST` | `/api/auth/forgot-password` | Request password reset |
-| `POST` | `/api/auth/reset-password` | Reset password with token |
-| `DELETE` | `/api/auth/account` | Delete account |
-| `GET` | `/api/auth/google` | Google OAuth login |
-| `GET` | `/api/auth/google/callback` | Google OAuth callback |
-| `GET` | `/api/auth/github` | GitHub OAuth login |
-| `GET` | `/api/auth/github/callback` | GitHub OAuth callback |
-| `GET` | `/api/auth/link/google` | Link Google account (requires auth) |
-| `GET` | `/api/auth/link/github` | Link GitHub account (requires auth) |
-| `DELETE` | `/api/auth/link/:provider` | Unlink OAuth provider (requires auth) |
+
+| Method   | Endpoint                    | Description                           |
+| -------- | --------------------------- | ------------------------------------- |
+| `GET`    | `/api/auth/setup-status`    | Check if initial setup is needed      |
+| `POST`   | `/api/auth/register`        | Create account                        |
+| `POST`   | `/api/auth/login`           | Sign in                               |
+| `POST`   | `/api/auth/logout`          | Sign out                              |
+| `GET`    | `/api/auth/me`              | Current user                          |
+| `PATCH`  | `/api/auth/me`              | Update profile (name, email)          |
+| `POST`   | `/api/auth/change-password` | Change password                       |
+| `POST`   | `/api/auth/forgot-password` | Request password reset                |
+| `POST`   | `/api/auth/reset-password`  | Reset password with token             |
+| `DELETE` | `/api/auth/account`         | Delete account                        |
+| `GET`    | `/api/auth/google`          | Google OAuth login                    |
+| `GET`    | `/api/auth/google/callback` | Google OAuth callback                 |
+| `GET`    | `/api/auth/github`          | GitHub OAuth login                    |
+| `GET`    | `/api/auth/github/callback` | GitHub OAuth callback                 |
+| `GET`    | `/api/auth/link/google`     | Link Google account (requires auth)   |
+| `GET`    | `/api/auth/link/github`     | Link GitHub account (requires auth)   |
+| `DELETE` | `/api/auth/link/:provider`  | Unlink OAuth provider (requires auth) |
 
 ### Setup
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/setup/status` | Current setup step (1–3 or complete) |
-| `POST` | `/api/setup/step-2` | Set instance name and registration |
-| `POST` | `/api/setup/skip-integrations` | Skip integration setup |
-| `POST` | `/api/setup/complete` | Mark setup as complete |
+
+| Method | Endpoint                       | Description                          |
+| ------ | ------------------------------ | ------------------------------------ |
+| `GET`  | `/api/setup/status`            | Current setup step (1–3 or complete) |
+| `POST` | `/api/setup/step-2`            | Set instance name and registration   |
+| `POST` | `/api/setup/skip-integrations` | Skip integration setup               |
+| `POST` | `/api/setup/complete`          | Mark setup as complete               |
 
 ### Diagrams
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/diagrams` | List diagrams (filter by folder/workspace) |
-| `GET` | `/api/diagrams/search` | Search diagrams by query |
-| `POST` | `/api/diagrams` | Create diagram |
-| `GET` | `/api/diagrams/:id` | Get diagram |
-| `PATCH` | `/api/diagrams/:id` | Update diagram |
-| `DELETE` | `/api/diagrams/:id` | Delete diagram |
-| `PUT` | `/api/diagrams/:id/thumbnail` | Update thumbnail |
-| `POST` | `/api/diagrams/:id/move` | Move to folder |
-| `PATCH` | `/api/diagrams/:id/star` | Toggle starred |
-| `POST` | `/api/diagrams/:id/duplicate` | Duplicate diagram |
+
+| Method   | Endpoint                      | Description                                |
+| -------- | ----------------------------- | ------------------------------------------ |
+| `GET`    | `/api/diagrams`               | List diagrams (filter by folder/workspace) |
+| `GET`    | `/api/diagrams/search`        | Search diagrams by query                   |
+| `POST`   | `/api/diagrams`               | Create diagram                             |
+| `GET`    | `/api/diagrams/:id`           | Get diagram                                |
+| `PATCH`  | `/api/diagrams/:id`           | Update diagram                             |
+| `DELETE` | `/api/diagrams/:id`           | Delete diagram                             |
+| `PUT`    | `/api/diagrams/:id/thumbnail` | Update thumbnail                           |
+| `POST`   | `/api/diagrams/:id/move`      | Move to folder                             |
+| `PATCH`  | `/api/diagrams/:id/star`      | Toggle starred                             |
+| `POST`   | `/api/diagrams/:id/duplicate` | Duplicate diagram                          |
 
 ### Comments
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/diagrams/:id/comments` | List comment threads |
-| `POST` | `/api/diagrams/:id/comments` | Create comment |
-| `POST` | `/api/diagrams/:id/comments/:threadId/replies` | Reply to thread |
-| `PATCH` | `/api/diagrams/:id/comments/:threadId/resolve` | Resolve/unresolve |
-| `DELETE` | `/api/diagrams/:id/comments/:threadId` | Delete thread |
-| `POST` | `/api/diagrams/:id/comments/:threadId/like` | Toggle like |
+
+| Method   | Endpoint                                       | Description          |
+| -------- | ---------------------------------------------- | -------------------- |
+| `GET`    | `/api/diagrams/:id/comments`                   | List comment threads |
+| `POST`   | `/api/diagrams/:id/comments`                   | Create comment       |
+| `POST`   | `/api/diagrams/:id/comments/:threadId/replies` | Reply to thread      |
+| `PATCH`  | `/api/diagrams/:id/comments/:threadId/resolve` | Resolve/unresolve    |
+| `DELETE` | `/api/diagrams/:id/comments/:threadId`         | Delete thread        |
+| `POST`   | `/api/diagrams/:id/comments/:threadId/like`    | Toggle like          |
 
 ### Folders
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/folders` | List folders |
-| `POST` | `/api/folders` | Create folder |
-| `PATCH` | `/api/folders/:id` | Rename folder |
+
+| Method   | Endpoint           | Description   |
+| -------- | ------------------ | ------------- |
+| `GET`    | `/api/folders`     | List folders  |
+| `POST`   | `/api/folders`     | Create folder |
+| `PATCH`  | `/api/folders/:id` | Rename folder |
 | `DELETE` | `/api/folders/:id` | Delete folder |
 
 ### Tags
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/tags` | List tags |
-| `POST` | `/api/tags` | Create tag |
-| `PATCH` | `/api/tags/:id` | Update tag |
-| `DELETE` | `/api/tags/:id` | Delete tag |
-| `POST` | `/api/tags/:id/assign` | Assign tag to diagram |
-| `POST` | `/api/tags/:id/unassign` | Remove tag from diagram |
+
+| Method   | Endpoint                 | Description             |
+| -------- | ------------------------ | ----------------------- |
+| `GET`    | `/api/tags`              | List tags               |
+| `POST`   | `/api/tags`              | Create tag              |
+| `PATCH`  | `/api/tags/:id`          | Update tag              |
+| `DELETE` | `/api/tags/:id`          | Delete tag              |
+| `POST`   | `/api/tags/:id/assign`   | Assign tag to diagram   |
+| `POST`   | `/api/tags/:id/unassign` | Remove tag from diagram |
 
 ### Workspaces
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/workspaces` | List workspaces |
-| `POST` | `/api/workspaces` | Create workspace |
-| `GET` | `/api/workspaces/:id` | Get workspace |
-| `PATCH` | `/api/workspaces/:id` | Update workspace |
-| `DELETE` | `/api/workspaces/:id` | Delete workspace |
-| `POST` | `/api/workspaces/:id/invite` | Invite member |
-| `PATCH` | `/api/workspaces/:id/members/:userId` | Update member role |
-| `DELETE` | `/api/workspaces/:id/members/:userId` | Remove member |
-| `POST` | `/api/workspaces/:id/transfer-ownership` | Transfer workspace ownership to admin member |
-| `GET` | `/api/workspaces/owned-shared` | List owned workspaces with other members |
+
+| Method   | Endpoint                                 | Description                                  |
+| -------- | ---------------------------------------- | -------------------------------------------- |
+| `GET`    | `/api/workspaces`                        | List workspaces                              |
+| `POST`   | `/api/workspaces`                        | Create workspace                             |
+| `GET`    | `/api/workspaces/:id`                    | Get workspace                                |
+| `PATCH`  | `/api/workspaces/:id`                    | Update workspace                             |
+| `DELETE` | `/api/workspaces/:id`                    | Delete workspace                             |
+| `POST`   | `/api/workspaces/:id/invite`             | Invite member                                |
+| `PATCH`  | `/api/workspaces/:id/members/:userId`    | Update member role                           |
+| `DELETE` | `/api/workspaces/:id/members/:userId`    | Remove member                                |
+| `POST`   | `/api/workspaces/:id/transfer-ownership` | Transfer workspace ownership to admin member |
+| `GET`    | `/api/workspaces/owned-shared`           | List owned workspaces with other members     |
 
 ### Share
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/share/:diagramId` | Create share link |
-| `GET` | `/api/share/:diagramId/links` | List share links |
-| `GET` | `/api/share/link/:token` | Resolve share link |
-| `DELETE` | `/api/share/link/:token` | Revoke share link |
+
+| Method   | Endpoint                      | Description        |
+| -------- | ----------------------------- | ------------------ |
+| `POST`   | `/api/share/:diagramId`       | Create share link  |
+| `GET`    | `/api/share/:diagramId/links` | List share links   |
+| `GET`    | `/api/share/link/:token`      | Resolve share link |
+| `DELETE` | `/api/share/link/:token`      | Revoke share link  |
 
 ### Templates
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/templates` | List all templates (built-in + user's custom) |
-| `GET` | `/api/templates/:id` | Get single template |
-| `POST` | `/api/templates` | Create custom template from current canvas |
-| `POST` | `/api/templates/:id/use` | Create a new diagram from a template |
-| `PATCH` | `/api/templates/:id` | Update custom template (title, description, category) |
-| `DELETE` | `/api/templates/:id` | Delete custom template |
-| `POST` | `/api/templates/transfer-ownership` | Bulk transfer template ownership |
+
+| Method   | Endpoint                            | Description                                           |
+| -------- | ----------------------------------- | ----------------------------------------------------- |
+| `GET`    | `/api/templates`                    | List all templates (built-in + user's custom)         |
+| `GET`    | `/api/templates/:id`                | Get single template                                   |
+| `POST`   | `/api/templates`                    | Create custom template from current canvas            |
+| `POST`   | `/api/templates/:id/use`            | Create a new diagram from a template                  |
+| `PATCH`  | `/api/templates/:id`                | Update custom template (title, description, category) |
+| `DELETE` | `/api/templates/:id`                | Delete custom template                                |
+| `POST`   | `/api/templates/transfer-ownership` | Bulk transfer template ownership                      |
 
 ### Snapshots
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/diagrams/:id/snapshots` | List snapshots (metadata only) |
-| `POST` | `/api/diagrams/:id/snapshots` | Create snapshot (manual trigger) |
-| `GET` | `/api/diagrams/:id/snapshots/:snapshotId` | Get full snapshot (with elements) |
-| `POST` | `/api/diagrams/:id/snapshots/:snapshotId/restore` | Restore snapshot (creates pre-restore backup) |
-| `PATCH` | `/api/diagrams/:id/snapshots/:snapshotId` | Rename snapshot |
-| `DELETE` | `/api/diagrams/:id/snapshots/:snapshotId` | Delete snapshot |
+
+| Method   | Endpoint                                          | Description                                   |
+| -------- | ------------------------------------------------- | --------------------------------------------- |
+| `GET`    | `/api/diagrams/:id/snapshots`                     | List snapshots (metadata only)                |
+| `POST`   | `/api/diagrams/:id/snapshots`                     | Create snapshot (manual trigger)              |
+| `GET`    | `/api/diagrams/:id/snapshots/:snapshotId`         | Get full snapshot (with elements)             |
+| `POST`   | `/api/diagrams/:id/snapshots/:snapshotId/restore` | Restore snapshot (creates pre-restore backup) |
+| `PATCH`  | `/api/diagrams/:id/snapshots/:snapshotId`         | Rename snapshot                               |
+| `DELETE` | `/api/diagrams/:id/snapshots/:snapshotId`         | Delete snapshot                               |
 
 ### Diagrams — Transfer
-| Method | Endpoint | Description |
-|--------|----------|-------------|
+
+| Method | Endpoint                           | Description                     |
+| ------ | ---------------------------------- | ------------------------------- |
 | `POST` | `/api/diagrams/transfer-ownership` | Bulk transfer diagram ownership |
 
 ### Drive
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/drive/status` | Drive connection status |
-| `POST` | `/api/drive/export` | Export diagram to Drive |
-| `POST` | `/api/drive/import` | Import from Drive |
-| `POST` | `/api/drive/backup/toggle` | Toggle auto-backup |
-| `POST` | `/api/drive/disconnect` | Disconnect Drive |
+
+| Method | Endpoint                   | Description             |
+| ------ | -------------------------- | ----------------------- |
+| `GET`  | `/api/drive/status`        | Drive connection status |
+| `POST` | `/api/drive/export`        | Export diagram to Drive |
+| `POST` | `/api/drive/import`        | Import from Drive       |
+| `POST` | `/api/drive/backup/toggle` | Toggle auto-backup      |
+| `POST` | `/api/drive/disconnect`    | Disconnect Drive        |
 
 ### Admin
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/admin/metrics` | Instance metrics |
-| `GET` | `/api/admin/users` | List all users |
-| `PATCH` | `/api/admin/users/:id` | Update user (role, status) |
-| `DELETE` | `/api/admin/users/:id` | Delete user |
-| `GET` | `/api/admin/settings` | Get site settings |
-| `PATCH` | `/api/admin/settings` | Update site settings |
-| `POST` | `/api/admin/invite` | Send invite email |
-| `GET` | `/api/admin/invitations` | List pending invitations |
-| `GET` | `/api/admin/integrations` | Get integration secrets status |
-| `PATCH` | `/api/admin/integrations` | Update integration secrets |
-| `GET` | `/api/admin/backups` | List database backups |
-| `POST` | `/api/admin/backups/trigger` | Trigger manual backup |
+
+| Method   | Endpoint                     | Description                    |
+| -------- | ---------------------------- | ------------------------------ |
+| `GET`    | `/api/admin/metrics`         | Instance metrics               |
+| `GET`    | `/api/admin/users`           | List all users                 |
+| `PATCH`  | `/api/admin/users/:id`       | Update user (role, status)     |
+| `DELETE` | `/api/admin/users/:id`       | Delete user                    |
+| `GET`    | `/api/admin/settings`        | Get site settings              |
+| `PATCH`  | `/api/admin/settings`        | Update site settings           |
+| `POST`   | `/api/admin/invite`          | Send invite email              |
+| `GET`    | `/api/admin/invitations`     | List pending invitations       |
+| `GET`    | `/api/admin/integrations`    | Get integration secrets status |
+| `PATCH`  | `/api/admin/integrations`    | Update integration secrets     |
+| `GET`    | `/api/admin/backups`         | List database backups          |
+| `POST`   | `/api/admin/backups/trigger` | Trigger manual backup          |
 
 ### API Keys
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/api-keys` | List API keys for current user |
-| `POST` | `/api/api-keys` | Create a new API key |
-| `DELETE` | `/api/api-keys/:id` | Revoke an API key |
+
+| Method   | Endpoint            | Description                    |
+| -------- | ------------------- | ------------------------------ |
+| `GET`    | `/api/api-keys`     | List API keys for current user |
+| `POST`   | `/api/api-keys`     | Create a new API key           |
+| `DELETE` | `/api/api-keys/:id` | Revoke an API key              |
 
 ### Public API `/v1/`
 
 All `/v1/` endpoints (except health) require `Authorization: Bearer dhk_...` and `X-Drawhaus-Client` headers. Operations are scoped to the API key's workspace.
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/v1/health` | None | Health check (DB connectivity) |
-| `POST` | `/v1/diagrams` | API Key | Create a diagram |
-| `GET` | `/v1/diagrams` | API Key | List diagrams (paginated) |
-| `GET` | `/v1/diagrams/:id` | API Key | Get diagram with scene data |
-| `PATCH` | `/v1/diagrams/:id` | API Key | Update diagram |
-| `DELETE` | `/v1/diagrams/:id` | API Key | Delete diagram |
+| Method   | Endpoint           | Auth    | Description                    |
+| -------- | ------------------ | ------- | ------------------------------ |
+| `GET`    | `/v1/health`       | None    | Health check (DB connectivity) |
+| `POST`   | `/v1/diagrams`     | API Key | Create a diagram               |
+| `GET`    | `/v1/diagrams`     | API Key | List diagrams (paginated)      |
+| `GET`    | `/v1/diagrams/:id` | API Key | Get diagram with scene data    |
+| `PATCH`  | `/v1/diagrams/:id` | API Key | Update diagram                 |
+| `DELETE` | `/v1/diagrams/:id` | API Key | Delete diagram                 |
 
 ### MCP Server
 
@@ -565,20 +584,20 @@ See [packages/mcp/README.md](packages/mcp/README.md) for full setup instructions
 
 ## Routes
 
-| Path | Access | Description |
-|------|--------|-------------|
-| `/` | Public | Landing page (redirects to dashboard if logged in) |
-| `/setup` | Public | First-time admin creation |
-| `/login` | Public | Sign in |
-| `/register` | Public | Create account |
-| `/forgot-password` | Public | Request password reset |
-| `/reset-password/:token` | Public | Set new password |
-| `/dashboard` | Authenticated | Diagram list with folders |
-| `/board/:id` | Authenticated | Excalidraw editor |
-| `/settings` | Authenticated | Profile, security, preferences |
-| `/admin` | Admin only | User management, metrics, invites |
-| `/share/:token` | Public | Join session via share link |
-| `/embed/:token` | Public | Read-only embed view |
+| Path                     | Access        | Description                                        |
+| ------------------------ | ------------- | -------------------------------------------------- |
+| `/`                      | Public        | Landing page (redirects to dashboard if logged in) |
+| `/setup`                 | Public        | First-time admin creation                          |
+| `/login`                 | Public        | Sign in                                            |
+| `/register`              | Public        | Create account                                     |
+| `/forgot-password`       | Public        | Request password reset                             |
+| `/reset-password/:token` | Public        | Set new password                                   |
+| `/dashboard`             | Authenticated | Diagram list with folders                          |
+| `/board/:id`             | Authenticated | Excalidraw editor                                  |
+| `/settings`              | Authenticated | Profile, security, preferences                     |
+| `/admin`                 | Admin only    | User management, metrics, invites                  |
+| `/share/:token`          | Public        | Join session via share link                        |
+| `/embed/:token`          | Public        | Read-only embed view                               |
 
 ---
 
@@ -630,17 +649,17 @@ CI runs automatically on every PR (lint, typecheck, backend tests, build).
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
+| Document                                 | Description                                                     |
+| ---------------------------------------- | --------------------------------------------------------------- |
 | [GETTING_STARTED.md](GETTING_STARTED.md) | Run Drawhaus locally — all paths, social login, troubleshooting |
-| [CHANGELOG.md](CHANGELOG.md) | Full version history |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Feature plan and backlog |
-| [docs/VISION.md](docs/VISION.md) | Product vision and architecture principles |
-| [docs/WORKFLOW.md](docs/WORKFLOW.md) | AI-assisted build cycle and conventions |
-| [docs/BRANDING.md](docs/BRANDING.md) | Brand guide, assets, and design tokens |
-| [docs/adr/](docs/adr/) | Architecture Decision Records |
-| [docs/specs/](docs/specs/) | Feature implementation specs |
-| [docs/guides/](docs/guides/) | Deploy and release guides |
+| [CHANGELOG.md](CHANGELOG.md)             | Full version history                                            |
+| [docs/ROADMAP.md](docs/ROADMAP.md)       | Feature plan and backlog                                        |
+| [docs/VISION.md](docs/VISION.md)         | Product vision and architecture principles                      |
+| [docs/WORKFLOW.md](docs/WORKFLOW.md)     | AI-assisted build cycle and conventions                         |
+| [docs/BRANDING.md](docs/BRANDING.md)     | Brand guide, assets, and design tokens                          |
+| [docs/adr/](docs/adr/)                   | Architecture Decision Records                                   |
+| [docs/specs/](docs/specs/)               | Feature implementation specs                                    |
+| [docs/guides/](docs/guides/)             | Deploy and release guides                                       |
 
 ---
 

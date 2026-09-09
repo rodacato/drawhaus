@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'Kamal command (default `deploy`; pick `setup` for first-time bootstrap on a new host)'
+        description: "Kamal command (default `deploy`; pick `setup` for first-time bootstrap on a new host)"
         type: choice
         options:
           - deploy

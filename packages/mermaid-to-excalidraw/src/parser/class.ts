@@ -33,26 +33,26 @@ import type {
 const ARROW_PATTERNS: Array<{ regex: RegExp; type: RelationType; reversed: boolean }> = [
   // Implementation (dotted + triangle)
   { regex: /\.\.\|>/, type: "implementation", reversed: false },
-  { regex: /<\|\.\./,  type: "implementation", reversed: true },
+  { regex: /<\|\.\./, type: "implementation", reversed: true },
   // Inheritance (solid + triangle)
   { regex: /<\|--/, type: "inheritance", reversed: true },
   { regex: /--\|>/, type: "inheritance", reversed: false },
   // Composition (solid + diamond filled)
-  { regex: /\*--/,  type: "composition", reversed: true },
-  { regex: /--\*/,  type: "composition", reversed: false },
+  { regex: /\*--/, type: "composition", reversed: true },
+  { regex: /--\*/, type: "composition", reversed: false },
   // Aggregation (solid + diamond open)
-  { regex: /o--/,   type: "aggregation", reversed: true },
-  { regex: /--o/,   type: "aggregation", reversed: false },
+  { regex: /o--/, type: "aggregation", reversed: true },
+  { regex: /--o/, type: "aggregation", reversed: false },
   // Dependency (dotted + arrow)
-  { regex: /\.\.>/,  type: "dependency", reversed: false },
-  { regex: /<\.\./,  type: "dependency", reversed: true },
+  { regex: /\.\.>/, type: "dependency", reversed: false },
+  { regex: /<\.\./, type: "dependency", reversed: true },
   // Directed association (solid + arrow)
-  { regex: /-->/,   type: "directed_association", reversed: false },
-  { regex: /<--/,   type: "directed_association", reversed: true },
+  { regex: /-->/, type: "directed_association", reversed: false },
+  { regex: /<--/, type: "directed_association", reversed: true },
   // Association (plain solid)
-  { regex: /--/,    type: "association", reversed: false },
+  { regex: /--/, type: "association", reversed: false },
   // Dotted association
-  { regex: /\.\./,  type: "association", reversed: false },
+  { regex: /\.\./, type: "association", reversed: false },
 ];
 
 // Build one big regex that captures: leftClass "card" arrow "card" rightClass : label
@@ -60,12 +60,12 @@ function buildRelationRegex(): RegExp {
   const arrowAlts = ARROW_PATTERNS.map((p) => p.regex.source).join("|");
   // Match: ClassName "cardinality"? <arrow> "cardinality"? ClassName : label?
   return new RegExp(
-    `^\\s*(\\S+)\\s+` +                              // left class
-    `(?:"([^"]*)"\\s+)?` +                            // optional left cardinality
-    `(${arrowAlts})` +                                 // arrow
-    `\\s+(?:"([^"]*)"\\s+)?` +                        // optional right cardinality
-    `(\\S+)` +                                         // right class
-    `(?:\\s*:\\s*(.+))?$`,                              // optional label
+    `^\\s*(\\S+)\\s+` + // left class
+      `(?:"([^"]*)"\\s+)?` + // optional left cardinality
+      `(${arrowAlts})` + // arrow
+      `\\s+(?:"([^"]*)"\\s+)?` + // optional right cardinality
+      `(\\S+)` + // right class
+      `(?:\\s*:\\s*(.+))?$`, // optional label
   );
 }
 
@@ -136,15 +136,17 @@ function parseMember(line: string): ClassMember | null {
 // ── Inline member parsing (ClassName : member) ────────────────
 
 function parseInlineMember(memberStr: string): ClassMember {
-  return parseMember(memberStr) ?? {
-    kind: "attribute",
-    visibility: "",
-    name: memberStr.trim(),
-    type: null,
-    parameters: null,
-    isStatic: false,
-    isAbstract: false,
-  };
+  return (
+    parseMember(memberStr) ?? {
+      kind: "attribute",
+      visibility: "",
+      name: memberStr.trim(),
+      type: null,
+      parameters: null,
+      isStatic: false,
+      isAbstract: false,
+    }
+  );
 }
 
 // ── Main parser ───────────────────────────────────────────────
@@ -191,9 +193,7 @@ export function parseMermaidClassDiagram(definition: string): ClassDiagramAST {
     if (line === "}") continue;
 
     // Class block: class ClassName { ... }
-    const classBlockMatch = line.match(
-      /^class\s+(\S+?)(?:\s*~([^~]+)~)?\s*\{?\s*$/,
-    );
+    const classBlockMatch = line.match(/^class\s+(\S+?)(?:\s*~([^~]+)~)?\s*\{?\s*$/);
     if (classBlockMatch) {
       const entity = getOrCreateEntity(classBlockMatch[1]);
 
@@ -220,9 +220,7 @@ export function parseMermaidClassDiagram(definition: string): ClassDiagramAST {
     }
 
     // Annotation: <<interface>> ClassName  or  <<abstract>> ClassName
-    const annotationMatch = line.match(
-      /^<<(\w+)>>\s+(\S+)$/,
-    );
+    const annotationMatch = line.match(/^<<(\w+)>>\s+(\S+)$/);
     if (annotationMatch) {
       const entity = getOrCreateEntity(annotationMatch[2]);
       const annotation = annotationMatch[1].toLowerCase();

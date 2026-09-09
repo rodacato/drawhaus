@@ -41,7 +41,9 @@ export class InMemoryTagRepository implements TagRepository {
   }
 
   async unassignFromDiagram(diagramId: string, tagId: string): Promise<void> {
-    this.assignments = this.assignments.filter((a) => !(a.diagramId === diagramId && a.tagId === tagId));
+    this.assignments = this.assignments.filter(
+      (a) => !(a.diagramId === diagramId && a.tagId === tagId),
+    );
   }
 
   async listForDiagram(diagramId: string): Promise<Tag[]> {

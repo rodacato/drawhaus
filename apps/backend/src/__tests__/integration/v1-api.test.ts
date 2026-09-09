@@ -82,13 +82,19 @@ function createApp() {
   app.use("/v1", requireSdkHeader, requireApiKey, logApiRequest);
 
   // Diagram routes
-  app.use("/v1/diagrams", createV1DiagramRoutes({
-    create: new CreateDiagramUseCase(diagrams),
-    get: new GetDiagramUseCase(diagrams, new InMemorySceneRepository()),
-    list: new ListDiagramsUseCase(diagrams),
-    update: new UpdateDiagramUseCase(diagrams),
-    delete: new DeleteDiagramUseCase(diagrams, new InMemoryWorkspaceRepository()),
-  }, FRONTEND_URL));
+  app.use(
+    "/v1/diagrams",
+    createV1DiagramRoutes(
+      {
+        create: new CreateDiagramUseCase(diagrams),
+        get: new GetDiagramUseCase(diagrams, new InMemorySceneRepository()),
+        list: new ListDiagramsUseCase(diagrams),
+        update: new UpdateDiagramUseCase(diagrams),
+        delete: new DeleteDiagramUseCase(diagrams, new InMemoryWorkspaceRepository()),
+      },
+      FRONTEND_URL,
+    ),
+  );
 
   return app;
 }
@@ -104,13 +110,25 @@ function _authHeaders(app: ReturnType<typeof express>) {
 function api(app: ReturnType<typeof express>) {
   return {
     get: (url: string) =>
-      request(app).get(url).set("Authorization", `Bearer ${rawKey}`).set("X-Drawhaus-Client", "test-suite"),
+      request(app)
+        .get(url)
+        .set("Authorization", `Bearer ${rawKey}`)
+        .set("X-Drawhaus-Client", "test-suite"),
     post: (url: string) =>
-      request(app).post(url).set("Authorization", `Bearer ${rawKey}`).set("X-Drawhaus-Client", "test-suite"),
+      request(app)
+        .post(url)
+        .set("Authorization", `Bearer ${rawKey}`)
+        .set("X-Drawhaus-Client", "test-suite"),
     patch: (url: string) =>
-      request(app).patch(url).set("Authorization", `Bearer ${rawKey}`).set("X-Drawhaus-Client", "test-suite"),
+      request(app)
+        .patch(url)
+        .set("Authorization", `Bearer ${rawKey}`)
+        .set("X-Drawhaus-Client", "test-suite"),
     delete: (url: string) =>
-      request(app).delete(url).set("Authorization", `Bearer ${rawKey}`).set("X-Drawhaus-Client", "test-suite"),
+      request(app)
+        .delete(url)
+        .set("Authorization", `Bearer ${rawKey}`)
+        .set("X-Drawhaus-Client", "test-suite"),
   };
 }
 
@@ -129,18 +147,14 @@ describe("/v1/health", () => {
 describe("/v1/ auth middleware", () => {
   test("rejects request without Authorization header", async () => {
     const app = createApp();
-    const res = await request(app)
-      .get("/v1/diagrams")
-      .set("X-Drawhaus-Client", "test");
+    const res = await request(app).get("/v1/diagrams").set("X-Drawhaus-Client", "test");
 
     assert.equal(res.status, 401);
   });
 
   test("rejects request without X-Drawhaus-Client header", async () => {
     const app = createApp();
-    const res = await request(app)
-      .get("/v1/diagrams")
-      .set("Authorization", `Bearer ${rawKey}`);
+    const res = await request(app).get("/v1/diagrams").set("Authorization", `Bearer ${rawKey}`);
 
     assert.equal(res.status, 400);
     assert.match(res.body.error, /X-Drawhaus-Client/);
@@ -230,13 +244,19 @@ describe("/v1/diagrams CRUD", () => {
 
   test("create with elements and appState", async () => {
     const app = createApp();
-    const res = await api(app).post("/v1/diagrams").send({
-      title: "With Scene",
-      elements: [{ id: "el-1", type: "rectangle", x: 0, y: 0, width: 100, height: 50, text: "Hello" }],
-      appState: { viewBackgroundColor: "#fff" },
-    });
+    const res = await api(app)
+      .post("/v1/diagrams")
+      .send({
+        title: "With Scene",
+        elements: [
+          { id: "el-1", type: "rectangle", x: 0, y: 0, width: 100, height: 50, text: "Hello" },
+        ],
+        appState: { viewBackgroundColor: "#fff" },
+      });
     assert.equal(res.status, 201);
-    assert.deepEqual(res.body.data.elements, [{ id: "el-1", type: "rectangle", x: 0, y: 0, width: 100, height: 50, text: "Hello" }]);
+    assert.deepEqual(res.body.data.elements, [
+      { id: "el-1", type: "rectangle", x: 0, y: 0, width: 100, height: 50, text: "Hello" },
+    ]);
     assert.deepEqual(res.body.data.appState, { viewBackgroundColor: "#fff" });
   });
 
@@ -327,13 +347,15 @@ describe("/v1/diagrams sanitization", () => {
   test("strips HTML tags from element text fields", async () => {
     const app = createApp();
 
-    const res = await api(app).post("/v1/diagrams").send({
-      title: "XSS Test",
-      elements: [
-        { id: "el-1", type: "text", x: 0, y: 0, text: "<script>alert('xss')</script>Hello" },
-        { id: "el-2", type: "rectangle", x: 0, y: 0, width: 100, height: 50 },
-      ],
-    });
+    const res = await api(app)
+      .post("/v1/diagrams")
+      .send({
+        title: "XSS Test",
+        elements: [
+          { id: "el-1", type: "text", x: 0, y: 0, text: "<script>alert('xss')</script>Hello" },
+          { id: "el-2", type: "rectangle", x: 0, y: 0, width: 100, height: 50 },
+        ],
+      });
 
     assert.equal(res.status, 201);
     assert.equal(res.body.data.elements[0].text, "alert('xss')Hello");
@@ -345,9 +367,11 @@ describe("/v1/diagrams sanitization", () => {
     const createRes = await api(app).post("/v1/diagrams").send({ title: "Test" });
     const id = createRes.body.data.id;
 
-    const res = await api(app).patch(`/v1/diagrams/${id}`).send({
-      elements: [{ id: "el-1", type: "text", x: 0, y: 0, text: "<b>bold</b> text" }],
-    });
+    const res = await api(app)
+      .patch(`/v1/diagrams/${id}`)
+      .send({
+        elements: [{ id: "el-1", type: "text", x: 0, y: 0, text: "<b>bold</b> text" }],
+      });
 
     assert.equal(res.status, 200);
     assert.equal(res.body.data.elements[0].text, "bold text");
@@ -360,7 +384,9 @@ describe("/v1/diagrams pagination", () => {
 
     // Create 5 diagrams
     for (let i = 1; i <= 5; i++) {
-      await api(app).post("/v1/diagrams").send({ title: `Diagram ${i}` });
+      await api(app)
+        .post("/v1/diagrams")
+        .send({ title: `Diagram ${i}` });
     }
 
     const res = await api(app).get("/v1/diagrams?limit=2&offset=1");

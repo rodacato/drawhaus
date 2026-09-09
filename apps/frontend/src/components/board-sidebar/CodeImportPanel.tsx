@@ -2,14 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ui } from "@/lib/ui";
 import type { ExcalidrawApi } from "@/lib/types";
 import { renderMermaid } from "@/lib/diagram-code/mermaid-renderer";
-import {
-  mermaidToElements,
-  plantumlToElements,
-} from "@/lib/diagram-code/convert-to-excalidraw";
-import {
-  PlantUMLParseError,
-  PlantUMLUnsupportedError,
-} from "@drawhaus/plantuml-to-excalidraw";
+import { mermaidToElements, plantumlToElements } from "@/lib/diagram-code/convert-to-excalidraw";
+import { PlantUMLParseError, PlantUMLUnsupportedError } from "@drawhaus/plantuml-to-excalidraw";
 import { detectDiagramFormat, type DiagramFormat } from "@/lib/format-utils";
 
 type Format = DiagramFormat;
@@ -75,67 +69,62 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
   }
 
   // Debounced preview render
-  const updatePreview = useCallback(
-    (text: string, fmt: Format) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (!text.trim()) {
-        setPreview(null);
-        setError(null);
-        setIsFallback(false);
-        setValidationInfo(null);
-        return;
-      }
-      debounceRef.current = setTimeout(async () => {
-        try {
-          if (fmt === "mermaid") {
-            const svg = await renderMermaid(text);
-            setPreview(svg);
-            setValidationInfo(null);
-          } else {
-            // For PlantUML, validate parse and extract stats for feedback
-            try {
-              const result = plantumlToElements(text);
-              setPreview(null);
-              setIsFallback(false);
-              // Extract entity/relation counts from the parsed elements
-              const rects = result.elements.filter(
-                (e: { type: string }) => e.type === "rectangle",
-              ).length;
-              const arrows = result.elements.filter(
-                (e: { type: string }) => e.type === "arrow",
-              ).length;
-              setValidationInfo({
-                entityCount: rects,
-                relationCount: arrows,
-              });
-            } catch (err) {
-              if (err instanceof PlantUMLUnsupportedError) {
-                setPreview(null);
-                setIsFallback(true);
-                setValidationInfo(null);
-                setError(
-                  `${err.diagramType} diagrams are not yet supported for editable import.`,
-                );
-                return;
-              }
-              throw err;
-            }
-          }
-          setError(null);
-        } catch (err) {
-          setPreview(null);
-          setIsFallback(false);
+  const updatePreview = useCallback((text: string, fmt: Format) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!text.trim()) {
+      setPreview(null);
+      setError(null);
+      setIsFallback(false);
+      setValidationInfo(null);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        if (fmt === "mermaid") {
+          const svg = await renderMermaid(text);
+          setPreview(svg);
           setValidationInfo(null);
-          if (err instanceof PlantUMLParseError) {
-            setError(`Line ${err.line}, Column ${err.column}: ${err.message}`);
-          } else {
-            setError(err instanceof Error ? err.message : "Invalid syntax");
+        } else {
+          // For PlantUML, validate parse and extract stats for feedback
+          try {
+            const result = plantumlToElements(text);
+            setPreview(null);
+            setIsFallback(false);
+            // Extract entity/relation counts from the parsed elements
+            const rects = result.elements.filter(
+              (e: { type: string }) => e.type === "rectangle",
+            ).length;
+            const arrows = result.elements.filter(
+              (e: { type: string }) => e.type === "arrow",
+            ).length;
+            setValidationInfo({
+              entityCount: rects,
+              relationCount: arrows,
+            });
+          } catch (err) {
+            if (err instanceof PlantUMLUnsupportedError) {
+              setPreview(null);
+              setIsFallback(true);
+              setValidationInfo(null);
+              setError(`${err.diagramType} diagrams are not yet supported for editable import.`);
+              return;
+            }
+            throw err;
           }
         }
-      }, 500);
-    },
-    [],
-  );
+        setError(null);
+      } catch (err) {
+        setPreview(null);
+        setIsFallback(false);
+        setValidationInfo(null);
+        if (err instanceof PlantUMLParseError) {
+          setError(`Line ${err.line}, Column ${err.column}: ${err.message}`);
+        } else {
+          setError(err instanceof Error ? err.message : "Invalid syntax");
+        }
+      }
+    }, 500);
+  }, []);
 
   useEffect(() => {
     updatePreview(code, format);
@@ -166,8 +155,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
     }
   }
 
-  const placeholder =
-    format === "mermaid" ? MERMAID_PLACEHOLDER : PLANTUML_PLACEHOLDER;
+  const placeholder = format === "mermaid" ? MERMAID_PLACEHOLDER : PLANTUML_PLACEHOLDER;
 
   const buttonLabel = computeButtonLabel({ importing, validationInfo, format });
 
@@ -200,9 +188,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
           PlantUML
         </button>
         {autoDetected && code.trim() && (
-          <span className="text-[10px] text-gray-400 italic">
-            auto-detected
-          </span>
+          <span className="text-[10px] text-gray-400 italic">auto-detected</span>
         )}
       </div>
 
@@ -219,9 +205,15 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
       {validationInfo && format === "plantuml" && !error && (
         <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700 flex items-center gap-1.5">
           <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            <path
+              fillRule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              clipRule="evenodd"
+            />
           </svg>
-          Valid class diagram — {validationInfo.entityCount} class{validationInfo.entityCount !== 1 ? "es" : ""}, {validationInfo.relationCount} relation{validationInfo.relationCount !== 1 ? "s" : ""}
+          Valid class diagram — {validationInfo.entityCount} class
+          {validationInfo.entityCount !== 1 ? "es" : ""}, {validationInfo.relationCount} relation
+          {validationInfo.relationCount !== 1 ? "s" : ""}
         </div>
       )}
 
@@ -230,12 +222,19 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
         <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700 space-y-1">
           <div className="flex items-center gap-1.5 font-medium">
             <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.168 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.168 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+                clipRule="evenodd"
+              />
             </svg>
             Diagram type not supported yet
           </div>
           <p>{error}</p>
-          <p className="text-amber-600">Currently supported: class diagrams (class, interface, enum, abstract). Sequence and activity diagrams are coming soon.</p>
+          <p className="text-amber-600">
+            Currently supported: class diagrams (class, interface, enum, abstract). Sequence and
+            activity diagrams are coming soon.
+          </p>
         </div>
       )}
 
@@ -288,7 +287,9 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
 }
 
 function computeButtonLabel({
-  importing, validationInfo, format,
+  importing,
+  validationInfo,
+  format,
 }: {
   importing: boolean;
   validationInfo: ValidationInfo;

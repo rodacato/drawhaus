@@ -63,26 +63,36 @@ export async function createBackup(): Promise<BackupResult> {
   const conn = parseConnectionString(config.databaseUrl);
   const pgDump = findPgBin("pg_dump");
 
-  const dump = spawn(pgDump, [
-    "-h", conn.host,
-    "-p", conn.port,
-    "-U", conn.user,
-    "-d", conn.database,
-    "--no-owner",
-    "--no-privileges",
-    "--clean",
-    "--if-exists",
-    "--format=plain",
-  ], {
-    env: { ...process.env, PGPASSWORD: conn.password },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  const dump = spawn(
+    pgDump,
+    [
+      "-h",
+      conn.host,
+      "-p",
+      conn.port,
+      "-U",
+      conn.user,
+      "-d",
+      conn.database,
+      "--no-owner",
+      "--no-privileges",
+      "--clean",
+      "--if-exists",
+      "--format=plain",
+    ],
+    {
+      env: { ...process.env, PGPASSWORD: conn.password },
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
 
   const gzip = createGzip({ level: 6 });
   const output = createWriteStream(filepath);
 
   let stderr = "";
-  dump.stderr.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
+  dump.stderr.on("data", (chunk: Buffer) => {
+    stderr += chunk.toString();
+  });
 
   const exitPromise = new Promise<number>((resolve, reject) => {
     dump.on("close", (code) => resolve(code ?? 1));
@@ -116,19 +126,29 @@ export async function restoreBackup(filename: string): Promise<void> {
   const gunzip = createGunzip();
   const input = createReadStream(filepath);
 
-  const psql = spawn(psqlBin, [
-    "-h", conn.host,
-    "-p", conn.port,
-    "-U", conn.user,
-    "-d", conn.database,
-    "--single-transaction",
-  ], {
-    env: { ...process.env, PGPASSWORD: conn.password },
-    stdio: ["pipe", "pipe", "pipe"],
-  });
+  const psql = spawn(
+    psqlBin,
+    [
+      "-h",
+      conn.host,
+      "-p",
+      conn.port,
+      "-U",
+      conn.user,
+      "-d",
+      conn.database,
+      "--single-transaction",
+    ],
+    {
+      env: { ...process.env, PGPASSWORD: conn.password },
+      stdio: ["pipe", "pipe", "pipe"],
+    },
+  );
 
   let stderr = "";
-  psql.stderr.on("data", (chunk: Buffer) => { stderr += chunk.toString(); });
+  psql.stderr.on("data", (chunk: Buffer) => {
+    stderr += chunk.toString();
+  });
 
   const exitCode = await new Promise<number>((resolve, reject) => {
     pipeline(input, gunzip, psql.stdin).catch((err) => {
@@ -183,10 +203,19 @@ export async function cleanupOldBackups(retentionDays?: number): Promise<string[
 }
 
 /** Read backup config from DB (site_settings), falling back to env vars */
-export async function getBackupConfig(): Promise<{ backupDir: string; retentionDays: number; schedule: string; enabled: boolean }> {
+export async function getBackupConfig(): Promise<{
+  backupDir: string;
+  retentionDays: number;
+  schedule: string;
+  enabled: boolean;
+}> {
   try {
     const { pool } = await import("../db");
-    const { rows } = await pool.query<{ backup_enabled: boolean; backup_cron: string; backup_retention_days: number }>(
+    const { rows } = await pool.query<{
+      backup_enabled: boolean;
+      backup_cron: string;
+      backup_retention_days: number;
+    }>(
       "SELECT backup_enabled, backup_cron, backup_retention_days FROM site_settings WHERE id = true LIMIT 1",
     );
     if (rows[0]) {

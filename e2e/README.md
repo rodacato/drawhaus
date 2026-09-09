@@ -19,14 +19,14 @@ npm run test:e2e -- --debug tests/auth/register.spec.ts
 
 Some commands require a display server (X11) that isn't available inside a devcontainer. The table below shows what works where:
 
-| Command | Devcontainer | Local |
-|---------|:---:|:---:|
-| `npm run test:e2e` (headless) | Yes | Yes |
-| `npm run test:e2e -- --reporter=html` | Yes | Yes |
-| `npm run test:e2e:debug` | No | Yes |
-| `npm run test:e2e:ui` | No | Yes |
-| `npm run test:e2e:headed` | No | Yes |
-| `npm run test:e2e:update-snapshots` | Yes | Yes |
+| Command                               | Devcontainer | Local |
+| ------------------------------------- | :----------: | :---: |
+| `npm run test:e2e` (headless)         |     Yes      |  Yes  |
+| `npm run test:e2e -- --reporter=html` |     Yes      |  Yes  |
+| `npm run test:e2e:debug`              |      No      |  Yes  |
+| `npm run test:e2e:ui`                 |      No      |  Yes  |
+| `npm run test:e2e:headed`             |      No      |  Yes  |
+| `npm run test:e2e:update-snapshots`   |     Yes      |  Yes  |
 
 ### Viewing the HTML report from a devcontainer
 
@@ -83,46 +83,56 @@ e2e/
 
 Tests use isolated users per domain to avoid resource conflicts:
 
-| User | Email | Purpose |
-|------|-------|---------|
-| Admin | `admin@drawhaus.test` | Admin panel, settings, metrics |
-| Primary | `e2e@drawhaus.test` | General tests (diagrams, sharing, etc.) |
-| WS CRUD | `e2e-ws-crud@drawhaus.test` | Workspace create/update/delete |
-| WS Member | `e2e-ws-member@drawhaus.test` | Workspace membership and invites |
-| API Tests | `e2e-api@drawhaus.test` | Scenes, comments, tags API |
+| User      | Email                         | Purpose                                 |
+| --------- | ----------------------------- | --------------------------------------- |
+| Admin     | `admin@drawhaus.test`         | Admin panel, settings, metrics          |
+| Primary   | `e2e@drawhaus.test`           | General tests (diagrams, sharing, etc.) |
+| WS CRUD   | `e2e-ws-crud@drawhaus.test`   | Workspace create/update/delete          |
+| WS Member | `e2e-ws-member@drawhaus.test` | Workspace membership and invites        |
+| API Tests | `e2e-api@drawhaus.test`       | Scenes, comments, tags API              |
 
 ## What the tests cover
 
 ### Smoke tests
+
 Critical end-to-end paths: login, diagram creation, workspace listing, sharing, search, admin access, logout.
 
 ### Authentication
+
 Login/logout flows, registration, forgot password, session persistence, form validation.
 
 ### Diagrams
+
 Full CRUD, folder management (create, rename, move diagrams), search with URL params, star/unstar favorites.
 
 ### Workspaces
+
 Create/update/delete workspaces, personal workspace protection, member invitations, cross-user access control.
 
 ### Sharing & collaboration
+
 Share link creation (viewer/editor roles), link revocation, guest join flow, embed route (minimal chrome, no auth required).
 
 ### Permissions
+
 - **Auth boundaries:** All protected endpoints return 401 without a session
 - **Resource access:** Users cannot read/update/delete other users' diagrams
 - **Role boundaries:** Non-admins get 403 on all admin endpoints
 
 ### API
+
 Scenes (diagram versions), comment threads (replies, resolve, like), tags (CRUD, assign/unassign to diagrams).
 
 ### User settings
+
 Profile name updates, password changes, account deletion with password confirmation.
 
 ### Admin
+
 User listing and role management, invitation system, instance settings (name, registration toggle).
 
 ### Visual regression
+
 Baseline screenshots of login, dashboard, register, forgot password, settings, and admin pages. Uses animation disabling, element masking, and a 5% pixel diff tolerance.
 
 ## Coverage gaps
@@ -132,6 +142,7 @@ Tests pending implementation, grouped by priority and target file.
 ### Tier 1 — Critical flows without coverage
 
 **`tests/workspaces/invite.spec.ts`** (new file)
+
 - [ ] `GET /api/workspaces/invite/:token` validates token
 - [ ] `POST /api/workspaces/accept-invite` adds user to workspace
 - [ ] Accepted member can access workspace resources
@@ -139,17 +150,20 @@ Tests pending implementation, grouped by priority and target file.
 - [ ] UI: `/workspace-invite/:token` renders accept/reject flow
 
 **`tests/workspaces/members.spec.ts`** (extend existing)
+
 - [ ] `PATCH /api/workspaces/:id/members/:userId` changes member role
 - [ ] `DELETE /api/workspaces/:id/members/:userId` removes member
 - [ ] Removed member loses access to workspace
 - [ ] Member limit enforced (max 5)
 
 **`tests/auth/reset-password.spec.ts`** (new file)
+
 - [ ] `/reset-password/:token` page loads the form
 - [ ] `POST /api/auth/reset-password` resets password with valid token
 - [ ] Expired/invalid token shows error on reset page
 
 **`tests/auth/invite.spec.ts`** (new file)
+
 - [ ] `GET /api/auth/invite/:token` validates user invitation
 - [ ] `POST /api/auth/accept-invite` creates account from invitation
 - [ ] `/register?invite=:token` pre-fills email from invitation
@@ -157,14 +171,17 @@ Tests pending implementation, grouped by priority and target file.
 ### Tier 2 — Security and admin gaps
 
 **`tests/permissions/disabled-user.spec.ts`** (new file)
+
 - [ ] Admin disables user via `PATCH /api/admin/users/:id`
 - [ ] Disabled user cannot login
 - [ ] Disabled user's existing session is rejected
 
 **`tests/permissions/resource-access.spec.ts`** (extend existing)
+
 - [ ] Share link with `viewer` role blocks `PATCH` on diagram
 
 **`tests/admin/settings.spec.ts`** (extend existing)
+
 - [ ] Toggle maintenance mode on → non-admins see maintenance page
 - [ ] Admin retains access during maintenance
 - [ ] Toggle maintenance mode off → access restored
@@ -172,15 +189,18 @@ Tests pending implementation, grouped by priority and target file.
 ### Tier 3 — Nice to have
 
 **`tests/visual.spec.ts`** (extend existing)
+
 - [ ] Landing page (`/`) screenshot
 - [ ] Dashboard empty state screenshot
 - [ ] 404 page screenshot
 
 **`tests/user-settings/preferences.spec.ts`** (new file)
+
 - [ ] Settings tabs load: billing, integrations, preferences
 - [ ] Theme toggle (light/dark) persists
 
 **Not planned** (low ROI or requires external mocks):
+
 - Google OAuth login/callback — requires Google mock
 - Google Drive endpoints (`/api/drive/*`) — requires Drive API mock
 - WebSocket real-time collaboration — requires WebGL in headless
@@ -195,10 +215,10 @@ Tests pending implementation, grouped by priority and target file.
 
 ## Scripts
 
-| Script | Description | Requires display |
-|--------|-------------|:---:|
-| `npm run test:e2e` | Run all tests headless | No |
-| `npm run test:e2e:ui` | Interactive UI mode | Yes |
-| `npm run test:e2e:headed` | Run with visible browser | Yes |
-| `npm run test:e2e:debug` | Step-through debugger | Yes |
-| `npm run test:e2e:update-snapshots` | Update visual regression baselines | No |
+| Script                              | Description                        | Requires display |
+| ----------------------------------- | ---------------------------------- | :--------------: |
+| `npm run test:e2e`                  | Run all tests headless             |        No        |
+| `npm run test:e2e:ui`               | Interactive UI mode                |       Yes        |
+| `npm run test:e2e:headed`           | Run with visible browser           |       Yes        |
+| `npm run test:e2e:debug`            | Step-through debugger              |       Yes        |
+| `npm run test:e2e:update-snapshots` | Update visual regression baselines |        No        |

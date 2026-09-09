@@ -13,16 +13,19 @@ export function Setup() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setupApi.getStatus().then((status) => {
-      if (status.setupCompleted) {
+    setupApi
+      .getStatus()
+      .then((status) => {
+        if (status.setupCompleted) {
+          navigate("/login", { replace: true });
+        } else {
+          setStep(typeof status.step === "number" ? status.step : 1);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
         navigate("/login", { replace: true });
-      } else {
-        setStep(typeof status.step === "number" ? status.step : 1);
-        setLoading(false);
-      }
-    }).catch(() => {
-      navigate("/login", { replace: true });
-    });
+      });
   }, [navigate]);
 
   async function handleComplete() {

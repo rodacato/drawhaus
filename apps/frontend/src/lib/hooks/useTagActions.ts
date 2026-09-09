@@ -23,12 +23,16 @@ export function useTagActions({ diagrams, setDiagrams, setAllTags }: UseTagActio
     try {
       if (hasTag) {
         await tagsApi.unassign(tag.id, diagramId);
-        setDiagrams((prev) => prev.map((d) => d.id === diagramId ? withTagRemoved(d, tag.id) : d));
+        setDiagrams((prev) =>
+          prev.map((d) => (d.id === diagramId ? withTagRemoved(d, tag.id) : d)),
+        );
       } else {
         await tagsApi.assign(tag.id, diagramId);
-        setDiagrams((prev) => prev.map((d) => d.id === diagramId ? withTagAdded(d, tag) : d));
+        setDiagrams((prev) => prev.map((d) => (d.id === diagramId ? withTagAdded(d, tag) : d)));
       }
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   async function createTag(name: string, color: string) {
@@ -36,7 +40,9 @@ export function useTagActions({ diagrams, setDiagrams, setAllTags }: UseTagActio
       const res = await tagsApi.create(name, color);
       setAllTags((prev) => [...prev, res.tag]);
       return res.tag;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   async function deleteTag(tagId: string) {
@@ -44,7 +50,9 @@ export function useTagActions({ diagrams, setDiagrams, setAllTags }: UseTagActio
       await tagsApi.delete(tagId);
       setAllTags((prev) => prev.filter((t) => t.id !== tagId));
       setDiagrams((prev) => prev.map((d) => withTagRemoved(d, tagId)));
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   return { toggleTag, createTag, deleteTag };

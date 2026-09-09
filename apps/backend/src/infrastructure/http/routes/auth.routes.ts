@@ -29,10 +29,12 @@ const loginSchema = z.object({
   password: z.string().min(1).max(128),
 });
 
-const updateProfileSchema = z.object({
-  name: z.string().trim().min(1).max(100).optional(),
-  email: z.string().trim().pipe(z.email()).optional(),
-}).refine((v) => Object.keys(v).length > 0, { message: "At least one field is required" });
+const updateProfileSchema = z
+  .object({
+    name: z.string().trim().min(1).max(100).optional(),
+    email: z.string().trim().pipe(z.email()).optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: "At least one field is required" });
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1).max(128).optional(),
@@ -62,7 +64,7 @@ function getClearCookieOptions() {
   const isProduction = config.nodeEnv === "production";
   return {
     httpOnly: true,
-    sameSite: (isProduction && config.cookieDomain) ? "none" as const : "lax" as const,
+    sameSite: isProduction && config.cookieDomain ? ("none" as const) : ("lax" as const),
     secure: isProduction,
     path: "/",
     ...(config.cookieDomain ? { domain: config.cookieDomain } : {}),
@@ -107,85 +109,135 @@ export function createAuthRoutes(
 ) {
   const router = Router();
 
-  router.get("/setup-status", asyncPublicRoute(async (_req, res) => {
-    const needsSetup = await useCases.register.needsSetup();
-    return res.status(200).json({ needsSetup });
-  }));
+  router.get(
+    "/setup-status",
+    asyncPublicRoute(async (_req, res) => {
+      const needsSetup = await useCases.register.needsSetup();
+      return res.status(200).json({ needsSetup });
+    }),
+  );
 
-  router.post("/register", validate(registerSchema), asyncPublicRoute(async (req, res) => {
-    const result = await useCases.register.execute(req.body);
-    res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
-    return res.status(201).json({ user: result.user });
-  }));
+  router.post(
+    "/register",
+    validate(registerSchema),
+    asyncPublicRoute(async (req, res) => {
+      const result = await useCases.register.execute(req.body);
+      res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
+      return res.status(201).json({ user: result.user });
+    }),
+  );
 
-  router.post("/login", validate(loginSchema), asyncPublicRoute(async (req, res) => {
-    const result = await useCases.login.execute(req.body);
-    res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
-    return res.status(200).json({ user: result.user });
-  }));
+  router.post(
+    "/login",
+    validate(loginSchema),
+    asyncPublicRoute(async (req, res) => {
+      const result = await useCases.login.execute(req.body);
+      res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
+      return res.status(200).json({ user: result.user });
+    }),
+  );
 
-  router.post("/logout", asyncPublicRoute(async (req, res) => {
-    const cookieHeader = req.headers.cookie;
-    const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
-    await useCases.logout.execute(token);
-    res.clearCookie(config.cookieName, getClearCookieOptions());
-    return res.status(200).json({ success: true });
-  }));
+  router.post(
+    "/logout",
+    asyncPublicRoute(async (req, res) => {
+      const cookieHeader = req.headers.cookie;
+      const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
+      await useCases.logout.execute(token);
+      res.clearCookie(config.cookieName, getClearCookieOptions());
+      return res.status(200).json({ success: true });
+    }),
+  );
 
-  router.get("/me", asyncPublicRoute(async (req, res) => {
-    const cookieHeader = req.headers.cookie;
-    const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
-    const user = await useCases.getCurrentUser.execute(token);
-    return res.status(200).json({ user });
-  }));
+  router.get(
+    "/me",
+    asyncPublicRoute(async (req, res) => {
+      const cookieHeader = req.headers.cookie;
+      const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
+      const user = await useCases.getCurrentUser.execute(token);
+      return res.status(200).json({ user });
+    }),
+  );
 
-  router.patch("/me", requireAuth, validate(updateProfileSchema), asyncRoute(async (req, res) => {
-    const user = await useCases.updateProfile.execute(req.authUser.id, req.body);
-    return res.status(200).json({ user });
-  }));
+  router.patch(
+    "/me",
+    requireAuth,
+    validate(updateProfileSchema),
+    asyncRoute(async (req, res) => {
+      const user = await useCases.updateProfile.execute(req.authUser.id, req.body);
+      return res.status(200).json({ user });
+    }),
+  );
 
-  router.post("/change-password", requireAuth, validate(changePasswordSchema), asyncRoute(async (req, res) => {
-    await useCases.changePassword.execute(req.authUser.id, req.body);
-    return res.status(200).json({ success: true });
-  }));
+  router.post(
+    "/change-password",
+    requireAuth,
+    validate(changePasswordSchema),
+    asyncRoute(async (req, res) => {
+      await useCases.changePassword.execute(req.authUser.id, req.body);
+      return res.status(200).json({ success: true });
+    }),
+  );
 
   // --- Invite acceptance ---
 
-  router.get("/invite/:token", asyncPublicRoute(async (req, res) => {
-    const result = await useCases.acceptInvite.resolve(req.params.token as string);
-    return res.status(200).json(result);
-  }));
+  router.get(
+    "/invite/:token",
+    asyncPublicRoute(async (req, res) => {
+      const result = await useCases.acceptInvite.resolve(req.params.token as string);
+      return res.status(200).json(result);
+    }),
+  );
 
-  router.post("/accept-invite", validate(acceptInviteSchema), asyncPublicRoute(async (req, res) => {
-    const result = await useCases.acceptInvite.execute(req.body);
-    res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
-    return res.status(201).json({ user: result.user });
-  }));
+  router.post(
+    "/accept-invite",
+    validate(acceptInviteSchema),
+    asyncPublicRoute(async (req, res) => {
+      const result = await useCases.acceptInvite.execute(req.body);
+      res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
+      return res.status(201).json({ user: result.user });
+    }),
+  );
 
   // --- Forgot / Reset password ---
 
-  router.post("/forgot-password", validate(forgotPasswordSchema), asyncPublicRoute(async (req, res) => {
-    await useCases.forgotPassword.execute(req.body.email);
-    return res.status(200).json({ success: true });
-  }));
+  router.post(
+    "/forgot-password",
+    validate(forgotPasswordSchema),
+    asyncPublicRoute(async (req, res) => {
+      await useCases.forgotPassword.execute(req.body.email);
+      return res.status(200).json({ success: true });
+    }),
+  );
 
-  router.get("/reset-password/:token", asyncPublicRoute(async (req, res) => {
-    const result = await useCases.resetPassword.validate(req.params.token as string);
-    return res.status(200).json(result);
-  }));
+  router.get(
+    "/reset-password/:token",
+    asyncPublicRoute(async (req, res) => {
+      const result = await useCases.resetPassword.validate(req.params.token as string);
+      return res.status(200).json(result);
+    }),
+  );
 
-  router.post("/reset-password", validate(resetPasswordSchema), asyncPublicRoute(async (req, res) => {
-    await useCases.resetPassword.execute(req.body);
-    return res.status(200).json({ success: true });
-  }));
+  router.post(
+    "/reset-password",
+    validate(resetPasswordSchema),
+    asyncPublicRoute(async (req, res) => {
+      await useCases.resetPassword.execute(req.body);
+      return res.status(200).json({ success: true });
+    }),
+  );
 
   // --- Delete account ---
 
-  router.delete("/account", requireAuth, validate(deleteAccountSchema), asyncRoute(async (req, res) => {
-    await useCases.deleteAccount.execute(req.authUser.id, req.body.password ?? null);
-    res.clearCookie(config.cookieName, getClearCookieOptions());
-    return res.status(200).json({ success: true });
-  }));
+  router.delete(
+    "/account",
+    requireAuth,
+    validate(deleteAccountSchema),
+    asyncRoute(async (req, res) => {
+      await useCases.deleteAccount.execute(req.authUser.id, req.body.password ?? null);
+      res.clearCookie(config.cookieName, getClearCookieOptions());
+      return res.status(200).json({ success: true });
+    }),
+  );
 
   // --- Google OAuth ---
 
@@ -202,73 +254,82 @@ export function createAuthRoutes(
   });
 
   // Drive scope upgrade (requires auth — user must be logged in)
-  router.get("/google/drive", requireAuth, asyncRoute(async (req, res) => {
-    if (!useCases.googleAuth.isEnabled) {
-      return res.status(404).json({ error: "Google OAuth is not configured" });
-    }
-
-    const csrf = useCases.googleAuth.generateStateToken();
-    setOAuthStateCookie(res, JSON.stringify({ csrf, flow: "drive", userId: req.authUser.id }));
-
-    const authUrl = useCases.googleAuth.getAuthorizationUrl(csrf, [
-      "openid", "email", "profile",
-      "https://www.googleapis.com/auth/drive.file",
-    ]);
-    return res.redirect(authUrl);
-  }));
-
-  router.get("/google/callback", asyncPublicRoute(async (req, res) => {
-    const { code, state } = req.query;
-    const cookieHeader = req.headers.cookie;
-    const rawState = cookieHeader ? (parse(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
-
-    clearOAuthStateCookie(res);
-
-    // Parse state payload
-    let statePayload: { csrf: string; flow: string; userId?: string };
-    try {
-      statePayload = JSON.parse(rawState ?? "");
-    } catch {
-      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
-    }
-
-    // Validate CSRF
-    if (!state || state !== statePayload.csrf) {
-      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
-    }
-
-    if (!code || typeof code !== "string") {
-      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
-    }
-
-    // Branch by flow type
-    if (statePayload.flow === "drive" && statePayload.userId) {
-      try {
-        await useCases.googleAuth.handleDriveCallback(code, statePayload.userId);
-        return res.redirect(`${config.frontendUrl}/settings?tab=integrations&drive=connected`);
-      } catch {
-        return res.redirect(`${config.frontendUrl}/settings?tab=integrations&drive=error`);
+  router.get(
+    "/google/drive",
+    requireAuth,
+    asyncRoute(async (req, res) => {
+      if (!useCases.googleAuth.isEnabled) {
+        return res.status(404).json({ error: "Google OAuth is not configured" });
       }
-    }
 
-    if (statePayload.flow === "link" && statePayload.userId) {
+      const csrf = useCases.googleAuth.generateStateToken();
+      setOAuthStateCookie(res, JSON.stringify({ csrf, flow: "drive", userId: req.authUser.id }));
+
+      const authUrl = useCases.googleAuth.getAuthorizationUrl(csrf, [
+        "openid",
+        "email",
+        "profile",
+        "https://www.googleapis.com/auth/drive.file",
+      ]);
+      return res.redirect(authUrl);
+    }),
+  );
+
+  router.get(
+    "/google/callback",
+    asyncPublicRoute(async (req, res) => {
+      const { code, state } = req.query;
+      const cookieHeader = req.headers.cookie;
+      const rawState = cookieHeader ? (parse(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
+
+      clearOAuthStateCookie(res);
+
+      // Parse state payload
+      let statePayload: { csrf: string; flow: string; userId?: string };
       try {
-        await useCases.googleAuth.handleLinkCallback(code, statePayload.userId);
-        return res.redirect(`${config.frontendUrl}/settings?tab=security&linked=google`);
+        statePayload = JSON.parse(rawState ?? "");
       } catch {
-        return res.redirect(`${config.frontendUrl}/settings?tab=security&link_error=google`);
+        return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
       }
-    }
 
-    // Default: login flow
-    try {
-      const result = await useCases.googleAuth.handleCallback(code);
-      res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
-      return res.redirect(result.redirectUrl);
-    } catch {
-      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
-    }
-  }));
+      // Validate CSRF
+      if (!state || state !== statePayload.csrf) {
+        return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+      }
+
+      if (!code || typeof code !== "string") {
+        return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+      }
+
+      // Branch by flow type
+      if (statePayload.flow === "drive" && statePayload.userId) {
+        try {
+          await useCases.googleAuth.handleDriveCallback(code, statePayload.userId);
+          return res.redirect(`${config.frontendUrl}/settings?tab=integrations&drive=connected`);
+        } catch {
+          return res.redirect(`${config.frontendUrl}/settings?tab=integrations&drive=error`);
+        }
+      }
+
+      if (statePayload.flow === "link" && statePayload.userId) {
+        try {
+          await useCases.googleAuth.handleLinkCallback(code, statePayload.userId);
+          return res.redirect(`${config.frontendUrl}/settings?tab=security&linked=google`);
+        } catch {
+          return res.redirect(`${config.frontendUrl}/settings?tab=security&link_error=google`);
+        }
+      }
+
+      // Default: login flow
+      try {
+        const result = await useCases.googleAuth.handleCallback(code);
+        res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
+        return res.redirect(result.redirectUrl);
+      } catch {
+        return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+      }
+    }),
+  );
 
   // --- GitHub OAuth ---
 
@@ -284,83 +345,104 @@ export function createAuthRoutes(
     return res.redirect(authUrl);
   });
 
-  router.get("/github/callback", asyncPublicRoute(async (req, res) => {
-    const { code, state } = req.query;
-    const cookieHeader = req.headers.cookie;
-    const rawState = cookieHeader ? (parse(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
+  router.get(
+    "/github/callback",
+    asyncPublicRoute(async (req, res) => {
+      const { code, state } = req.query;
+      const cookieHeader = req.headers.cookie;
+      const rawState = cookieHeader ? (parse(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
 
-    clearOAuthStateCookie(res);
+      clearOAuthStateCookie(res);
 
-    let statePayload: { csrf: string; flow: string; userId?: string };
-    try {
-      statePayload = JSON.parse(rawState ?? "");
-    } catch {
-      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
-    }
-
-    if (!state || state !== statePayload.csrf) {
-      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
-    }
-
-    if (!code || typeof code !== "string") {
-      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
-    }
-
-    // Link flow (user is already authenticated)
-    if (statePayload.flow === "link" && statePayload.userId) {
+      let statePayload: { csrf: string; flow: string; userId?: string };
       try {
-        await useCases.githubAuth.handleLinkCallback(code, statePayload.userId);
-        return res.redirect(`${config.frontendUrl}/settings?tab=security&linked=github`);
+        statePayload = JSON.parse(rawState ?? "");
       } catch {
-        return res.redirect(`${config.frontendUrl}/settings?tab=security&link_error=github`);
+        return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
       }
-    }
 
-    // Default: login flow
-    try {
-      const result = await useCases.githubAuth.handleCallback(code);
-      res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
-      return res.redirect(result.redirectUrl);
-    } catch {
-      return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
-    }
-  }));
+      if (!state || state !== statePayload.csrf) {
+        return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+      }
+
+      if (!code || typeof code !== "string") {
+        return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+      }
+
+      // Link flow (user is already authenticated)
+      if (statePayload.flow === "link" && statePayload.userId) {
+        try {
+          await useCases.githubAuth.handleLinkCallback(code, statePayload.userId);
+          return res.redirect(`${config.frontendUrl}/settings?tab=security&linked=github`);
+        } catch {
+          return res.redirect(`${config.frontendUrl}/settings?tab=security&link_error=github`);
+        }
+      }
+
+      // Default: login flow
+      try {
+        const result = await useCases.githubAuth.handleCallback(code);
+        res.cookie(config.cookieName, result.sessionToken, getCookieOptions());
+        return res.redirect(result.redirectUrl);
+      } catch {
+        return res.redirect(`${config.frontendUrl}/login?error=oauth_failed`);
+      }
+    }),
+  );
 
   // --- Link / Unlink OAuth providers ---
 
-  router.get("/link/github", requireAuth, asyncRoute(async (req, res) => {
-    if (!useCases.githubAuth.isEnabled) {
-      return res.status(404).json({ error: "GitHub OAuth is not configured" });
-    }
+  router.get(
+    "/link/github",
+    requireAuth,
+    asyncRoute(async (req, res) => {
+      if (!useCases.githubAuth.isEnabled) {
+        return res.status(404).json({ error: "GitHub OAuth is not configured" });
+      }
 
-    const csrf = useCases.githubAuth.generateStateToken();
-    setOAuthStateCookie(res, JSON.stringify({ csrf, flow: "link", provider: "github", userId: req.authUser.id }));
+      const csrf = useCases.githubAuth.generateStateToken();
+      setOAuthStateCookie(
+        res,
+        JSON.stringify({ csrf, flow: "link", provider: "github", userId: req.authUser.id }),
+      );
 
-    const authUrl = useCases.githubAuth.getAuthorizationUrl(csrf);
-    return res.redirect(authUrl);
-  }));
+      const authUrl = useCases.githubAuth.getAuthorizationUrl(csrf);
+      return res.redirect(authUrl);
+    }),
+  );
 
-  router.get("/link/google", requireAuth, asyncRoute(async (req, res) => {
-    if (!useCases.googleAuth.isEnabled) {
-      return res.status(404).json({ error: "Google OAuth is not configured" });
-    }
+  router.get(
+    "/link/google",
+    requireAuth,
+    asyncRoute(async (req, res) => {
+      if (!useCases.googleAuth.isEnabled) {
+        return res.status(404).json({ error: "Google OAuth is not configured" });
+      }
 
-    const csrf = useCases.googleAuth.generateStateToken();
-    setOAuthStateCookie(res, JSON.stringify({ csrf, flow: "link", provider: "google", userId: req.authUser.id }));
+      const csrf = useCases.googleAuth.generateStateToken();
+      setOAuthStateCookie(
+        res,
+        JSON.stringify({ csrf, flow: "link", provider: "google", userId: req.authUser.id }),
+      );
 
-    const authUrl = useCases.googleAuth.getAuthorizationUrl(csrf);
-    return res.redirect(authUrl);
-  }));
+      const authUrl = useCases.googleAuth.getAuthorizationUrl(csrf);
+      return res.redirect(authUrl);
+    }),
+  );
 
-  router.delete("/link/:provider", requireAuth, asyncRoute(async (req, res) => {
-    const provider = req.params.provider as string;
-    if (provider !== "google" && provider !== "github") {
-      return res.status(400).json({ error: "Invalid provider" });
-    }
+  router.delete(
+    "/link/:provider",
+    requireAuth,
+    asyncRoute(async (req, res) => {
+      const provider = req.params.provider as string;
+      if (provider !== "google" && provider !== "github") {
+        return res.status(400).json({ error: "Invalid provider" });
+      }
 
-    await useCases.unlinkOAuth.execute(req.authUser.id, provider);
-    return res.status(200).json({ success: true });
-  }));
+      await useCases.unlinkOAuth.execute(req.authUser.id, provider);
+      return res.status(200).json({ success: true });
+    }),
+  );
 
   return router;
 }

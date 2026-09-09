@@ -24,7 +24,10 @@ test.describe("Search Diagrams", () => {
 
   test("search updates URL with query param", async ({ page }) => {
     await page.goto("/dashboard");
-    await page.getByText("Loading...").waitFor({ state: "hidden", timeout: 10_000 }).catch(() => {});
+    await page
+      .getByText("Loading...")
+      .waitFor({ state: "hidden", timeout: 10_000 })
+      .catch(() => {});
 
     const searchInput = page.getByPlaceholder(/search/i);
     if (await searchInput.isVisible().catch(() => false)) {

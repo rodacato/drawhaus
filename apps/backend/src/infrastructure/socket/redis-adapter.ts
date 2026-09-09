@@ -28,10 +28,7 @@ export async function attachRedisAdapter(io: Server): Promise<void> {
     pubClient.on("error", noop);
     subClient.on("error", noop);
 
-    await Promise.all([
-      pubClient.connect(),
-      subClient.connect(),
-    ]);
+    await Promise.all([pubClient.connect(), subClient.connect()]);
 
     // Remove noop handlers — let runtime errors surface normally
     pubClient.removeListener("error", noop);

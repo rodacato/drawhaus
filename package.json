@@ -15,6 +15,8 @@
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",
     "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
     "typecheck": "npm run typecheck --workspace=frontend && npm run typecheck --workspace=backend",
     "test": "npm run test --workspace=frontend && npm run test --workspace=backend && npm run test:packages",
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@redocly/cli": "^2.34.0",
     "concurrently": "^10.0.3",
-    "eslint-plugin-sonarjs": "^4.1.0"
+    "eslint-plugin-sonarjs": "^4.1.0",
+    "prettier": "^3.9.6"
   }
 }

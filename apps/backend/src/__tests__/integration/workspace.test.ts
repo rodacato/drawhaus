@@ -86,47 +86,92 @@ function createApp() {
   const invitations = new InMemoryInvitationRepository();
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
-  app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
-    login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
-    logout: new LogoutUseCase(sessions),
-    getCurrentUser,
-    updateProfile: new UpdateProfileUseCase(users),
-    changePassword: new ChangePasswordUseCase(users, hasher),
-    acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
-    forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
-    resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
-  }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register: new RegisterUseCase(
+          users,
+          sessions,
+          hasher,
+          new InMemorySiteSettingsRepository(),
+        ),
+        login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
+        logout: new LogoutUseCase(sessions),
+        getCurrentUser,
+        updateProfile: new UpdateProfileUseCase(users),
+        changePassword: new ChangePasswordUseCase(users, hasher),
+        acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
+        forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
+        resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
+        deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
+        googleAuth: new GoogleAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        githubAuth: new GitHubAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        unlinkOAuth: new UnlinkOAuthUseCase(
+          users,
+          new InMemoryOAuthTokenRepository(),
+          new InMemoryDriveBackupRepository(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
-  app.use("/api/workspaces", createWorkspaceRoutes({
-    create: new CreateWorkspaceUseCase(workspaces, siteSettings),
-    list: new ListWorkspacesUseCase(workspaces),
-    get: new GetWorkspaceUseCase(workspaces),
-    update: new UpdateWorkspaceUseCase(workspaces),
-    delete: new DeleteWorkspaceUseCase(workspaces),
-    addMember: new AddWorkspaceMemberUseCase(workspaces, siteSettings, new NoopAuditLogger()),
-    updateMemberRole: new UpdateWorkspaceMemberRoleUseCase(workspaces),
-    removeMember: new RemoveWorkspaceMemberUseCase(workspaces),
-    invite: new InviteToWorkspaceUseCase(workspaces, workspaceInvitations, siteSettings, emailService),
-    acceptInvite: new AcceptWorkspaceInviteUseCase(workspaces, workspaceInvitations),
-    resolveInvite: new ResolveWorkspaceInviteUseCase(workspaces, workspaceInvitations),
-    ensurePersonal: new EnsurePersonalWorkspaceUseCase(workspaces),
-    transferOwnership: new TransferWorkspaceOwnershipUseCase(workspaces, diagrams, templates, new NoopAuditLogger()),
-  }, requireAuth));
+  app.use(
+    "/api/workspaces",
+    createWorkspaceRoutes(
+      {
+        create: new CreateWorkspaceUseCase(workspaces, siteSettings),
+        list: new ListWorkspacesUseCase(workspaces),
+        get: new GetWorkspaceUseCase(workspaces),
+        update: new UpdateWorkspaceUseCase(workspaces),
+        delete: new DeleteWorkspaceUseCase(workspaces),
+        addMember: new AddWorkspaceMemberUseCase(workspaces, siteSettings, new NoopAuditLogger()),
+        updateMemberRole: new UpdateWorkspaceMemberRoleUseCase(workspaces),
+        removeMember: new RemoveWorkspaceMemberUseCase(workspaces),
+        invite: new InviteToWorkspaceUseCase(
+          workspaces,
+          workspaceInvitations,
+          siteSettings,
+          emailService,
+        ),
+        acceptInvite: new AcceptWorkspaceInviteUseCase(workspaces, workspaceInvitations),
+        resolveInvite: new ResolveWorkspaceInviteUseCase(workspaces, workspaceInvitations),
+        ensurePersonal: new EnsurePersonalWorkspaceUseCase(workspaces),
+        transferOwnership: new TransferWorkspaceOwnershipUseCase(
+          workspaces,
+          diagrams,
+          templates,
+          new NoopAuditLogger(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
   return app;
 }
 
 async function registerAndGetUser(app: express.Express, email: string) {
-  const res = await request(app).post("/api/auth/register").send({
-    email,
-    name: email.split("@")[0],
-    password: "password123",
-  });
+  const res = await request(app)
+    .post("/api/auth/register")
+    .send({
+      email,
+      name: email.split("@")[0],
+      password: "password123",
+    });
   const cookie = res.headers["set-cookie"][0].split(";")[0];
   return { cookie, userId: res.body.user.id as string };
 }
@@ -232,7 +277,9 @@ test("GET /api/workspaces is idempotent for the personal workspace (no duplicate
   const second = await request(app).get("/api/workspaces").set("Cookie", cookie);
 
   assert.equal(second.status, 200);
-  const personalCount = second.body.workspaces.filter((w: { isPersonal: boolean }) => w.isPersonal).length;
+  const personalCount = second.body.workspaces.filter(
+    (w: { isPersonal: boolean }) => w.isPersonal,
+  ).length;
   assert.equal(personalCount, 1);
 });
 
@@ -295,17 +342,17 @@ test("PATCH /api/workspaces/:id returns 400 when no fields are supplied", async 
   const { cookie, userId } = await registerAndGetUser(app, "wpatchnone@example.com");
   const ws = await workspaces.create({ name: "X", ownerId: userId });
 
-  const res = await request(app)
-    .patch(`/api/workspaces/${ws.id}`)
-    .set("Cookie", cookie)
-    .send({});
+  const res = await request(app).patch(`/api/workspaces/${ws.id}`).set("Cookie", cookie).send({});
 
   assert.equal(res.status, 400);
 });
 
 test("PATCH /api/workspaces/:id returns 403 when caller is editor, not admin", async () => {
   const app = createApp();
-  const { cookie: editorCookie, userId: editorId } = await registerAndGetUser(app, "wpatch403@example.com");
+  const { cookie: editorCookie, userId: editorId } = await registerAndGetUser(
+    app,
+    "wpatch403@example.com",
+  );
   const ws = await workspaces.create({ name: "X", ownerId: "owner-id" });
   await workspaces.addMember(ws.id, editorId, "editor");
 
@@ -684,7 +731,10 @@ test("DELETE /:id/members/:userId lets a non-admin member leave themselves", asy
 
 test("DELETE /:id/members/:userId returns 403 when trying to remove the owner", async () => {
   const app = createApp();
-  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(app, "wrmown@example.com");
+  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(
+    app,
+    "wrmown@example.com",
+  );
   const ws = await workspaces.create({ name: "Team", ownerId: ownerId });
 
   const res = await request(app)

@@ -3,7 +3,7 @@
 export interface ERAttribute {
   type: string;
   name: string;
-  constraints: string[];   // "PK", "FK", "UK"
+  constraints: string[]; // "PK", "FK", "UK"
   comment?: string;
 }
 

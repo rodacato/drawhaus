@@ -36,10 +36,7 @@ export function mapSequenceDiagram(
   const participantWidths = new Map<string, number>();
   for (const p of ast.participants) {
     const displayName = p.label ?? p.name;
-    const width = Math.max(
-      displayName.length * CHAR_WIDTH + PADDING_X * 2,
-      PARTICIPANT_MIN_WIDTH,
-    );
+    const width = Math.max(displayName.length * CHAR_WIDTH + PADDING_X * 2, PARTICIPANT_MIN_WIDTH);
     participantWidths.set(p.name, width);
   }
 

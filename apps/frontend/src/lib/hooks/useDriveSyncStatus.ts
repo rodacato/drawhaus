@@ -24,7 +24,9 @@ export function useDriveSyncStatus(socketRef: React.MutableRefObject<Socket | nu
       }
     };
     socket.on("drive-sync-status", handler);
-    return () => { socket.off("drive-sync-status", handler); };
+    return () => {
+      socket.off("drive-sync-status", handler);
+    };
   }, [socketRef]);
 
   return { driveSyncState, driveSyncError };

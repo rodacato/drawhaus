@@ -21,7 +21,11 @@ const RATE_LIMIT_MAX_CURSOR = 60;
 
 export { RATE_LIMIT_MAX_SCENE, RATE_LIMIT_MAX_CURSOR };
 
-export function checkRateLimit(socket: { data: Record<string, unknown> }, bucket: string, max: number): boolean {
+export function checkRateLimit(
+  socket: { data: Record<string, unknown> },
+  bucket: string,
+  max: number,
+): boolean {
   const now = Date.now();
   const startKey = `_rl_${bucket}_start`;
   const countKey = `_rl_${bucket}_count`;
@@ -44,7 +48,11 @@ export function canEdit(socket: { data: Record<string, unknown> }, roomId: strin
 }
 
 /** Find the next canEdit user in a room (excluding a given socketId) */
-export async function findNextEditor(io: Server, roomId: string, excludeSocketId?: string): Promise<{ userId: string; userName: string; socketId: string } | null> {
+export async function findNextEditor(
+  io: Server,
+  roomId: string,
+  excludeSocketId?: string,
+): Promise<{ userId: string; userName: string; socketId: string } | null> {
   const sockets = await io.in(roomId).fetchSockets();
   for (const s of sockets) {
     if (excludeSocketId && s.id === excludeSocketId) continue;

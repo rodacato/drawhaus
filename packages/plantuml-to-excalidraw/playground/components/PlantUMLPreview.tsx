@@ -7,8 +7,7 @@ interface PlantUMLPreviewProps {
 
 // PlantUML uses a custom base64 alphabet for URL encoding
 // See: https://plantuml.com/text-encoding
-const PLANTUML_ALPHABET =
-  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+const PLANTUML_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
 
 function encode6bit(b: number): string {
   return PLANTUML_ALPHABET[b & 0x3f];

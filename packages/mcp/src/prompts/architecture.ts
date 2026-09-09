@@ -6,7 +6,11 @@ export function registerArchitecturePrompt(server: McpServer) {
   server.prompt(
     "architecture_diagram",
     "Generate an architecture diagram showing system components and their connections. Describe your system or paste code.",
-    { system: z.string().describe("Description of the system architecture, or paste relevant code/config") },
+    {
+      system: z
+        .string()
+        .describe("Description of the system architecture, or paste relevant code/config"),
+    },
     ({ system }) => ({
       messages: [
         {

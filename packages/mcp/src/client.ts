@@ -91,7 +91,7 @@ export class DrawhausClient {
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     const headers: Record<string, string> = {
-      "Authorization": `Bearer ${this.apiKey}`,
+      Authorization: `Bearer ${this.apiKey}`,
       "X-Drawhaus-Client": "mcp-server",
     };
     if (body !== undefined) {
@@ -111,7 +111,7 @@ export class DrawhausClient {
     if (!response.ok) {
       let apiMessage = `HTTP ${response.status}`;
       try {
-        const errorBody = await response.json() as { error?: string };
+        const errorBody = (await response.json()) as { error?: string };
         if (errorBody.error) apiMessage = errorBody.error;
       } catch {
         // Use status text if body parsing fails

@@ -45,7 +45,10 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-function findElement(elements: readonly unknown[], elementId: string): ExcalidrawElement | undefined {
+function findElement(
+  elements: readonly unknown[],
+  elementId: string,
+): ExcalidrawElement | undefined {
   return (elements as ExcalidrawElement[]).find((e) => e.id === elementId);
 }
 
@@ -139,19 +142,45 @@ export function CommentsPanel({
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               {showIndicators ? (
                 <>
-                  <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5"/>
+                  <path
+                    d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" />
                 </>
               ) : (
                 <>
-                  <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-                  <path d="M3 13L13 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path
+                    d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 13L13 3"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
                 </>
               )}
             </svg>
           </button>
-          <button onClick={onClose} className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary" title="Close">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <button
+            onClick={onClose}
+            className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary"
+            title="Close"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M4 4l8 8M12 4l-8 8"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
         </div>
       </div>
@@ -177,7 +206,10 @@ export function CommentsPanel({
       <form onSubmit={handleCreate} className="border-b border-border px-4 py-3">
         <p className="mb-2 text-xs text-text-muted">
           {selectedElementId
-            ? (() => { const sel = findElement(elements, selectedElementId); return sel ? `Comment on: ${elementLabel(sel)}` : "Comment on selected element"; })()
+            ? (() => {
+                const sel = findElement(elements, selectedElementId);
+                return sel ? `Comment on: ${elementLabel(sel)}` : "Comment on selected element";
+              })()
             : "General comment"}
         </p>
         <textarea
@@ -233,7 +265,10 @@ export function CommentsPanel({
           const el = isGeneral ? undefined : findElement(elements, thread.elementId);
           const exists = isGeneral || !!el;
           return (
-            <div key={thread.id} className={`border-b border-border px-4 py-3 ${thread.resolved ? "opacity-60" : ""}`}>
+            <div
+              key={thread.id}
+              className={`border-b border-border px-4 py-3 ${thread.resolved ? "opacity-60" : ""}`}
+            >
               {/* Enhanced comment card */}
               <div className="flex items-start gap-2.5">
                 {/* Avatar circle */}
@@ -244,7 +279,9 @@ export function CommentsPanel({
                 <div className="min-w-0 flex-1">
                   {/* Author + timestamp */}
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-text-primary">{thread.authorName}</span>
+                    <span className="text-xs font-semibold text-text-primary">
+                      {thread.authorName}
+                    </span>
                     <span className="text-[10px] text-text-muted">{timeAgo(thread.createdAt)}</span>
                   </div>
 
@@ -304,7 +341,14 @@ export function CommentsPanel({
                       className="rounded p-0.5 text-text-muted hover:bg-surface-raised hover:text-red-500"
                       title="Delete"
                     >
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 4l6 6M10 4l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path
+                          d="M4 4l6 6M10 4l-6 6"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                      </svg>
                     </button>
                   </div>
                 </div>
@@ -321,8 +365,12 @@ export function CommentsPanel({
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-text-primary">{reply.authorName}</span>
-                          <span className="text-[10px] text-text-muted">{timeAgo(reply.createdAt)}</span>
+                          <span className="text-xs font-semibold text-text-primary">
+                            {reply.authorName}
+                          </span>
+                          <span className="text-[10px] text-text-muted">
+                            {timeAgo(reply.createdAt)}
+                          </span>
                         </div>
                         <p className="mt-0.5 text-sm text-text-secondary">{reply.body}</p>
                       </div>
@@ -333,7 +381,10 @@ export function CommentsPanel({
 
               {/* Reply form */}
               {replyingTo === thread.id && (
-                <form onSubmit={(e) => handleReply(e, thread.id)} className="mt-3 border-l-2 border-border pl-4">
+                <form
+                  onSubmit={(e) => handleReply(e, thread.id)}
+                  className="mt-3 border-l-2 border-border pl-4"
+                >
                   <textarea
                     className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-text-primary outline-none placeholder:text-text-muted focus:border-primary"
                     rows={2}
@@ -352,7 +403,10 @@ export function CommentsPanel({
                     </button>
                     <button
                       type="button"
-                      onClick={() => { setReplyingTo(null); setReplyBody(""); }}
+                      onClick={() => {
+                        setReplyingTo(null);
+                        setReplyBody("");
+                      }}
                       className="rounded px-2 py-1 text-[10px] text-text-muted hover:bg-surface-raised"
                     >
                       Cancel

@@ -30,7 +30,9 @@ export function useCollaboration({
   const applyingRemoteCounter = useRef(0);
   const activeSceneIdRef = useRef<string | null>(null);
   const followingUserIdRef = useRef<string | null>(null);
-  const followedViewportRef = useRef<{ scrollX: number; scrollY: number; zoom: number } | null>(null);
+  const followedViewportRef = useRef<{ scrollX: number; scrollY: number; zoom: number } | null>(
+    null,
+  );
   const pendingSceneRef = useRef<{ elements: unknown[] } | null>(null);
 
   const cacheKey = `drawhaus_scene_${diagramId}`;
@@ -45,28 +47,45 @@ export function useCollaboration({
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed.elements) && parsed.elements.length > 0) elements = parsed.elements;
+          if (Array.isArray(parsed.elements) && parsed.elements.length > 0)
+            elements = parsed.elements;
           if (parsed.appState) appState = parsed.appState;
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
     return {
       elements,
-      appState: { ...appState, ...canvasPrefs, collaborators: new Map(), theme: "light", viewModeEnabled: true },
+      appState: {
+        ...appState,
+        ...canvasPrefs,
+        collaborators: new Map(),
+        theme: "light",
+        viewModeEnabled: true,
+      },
     };
   }, [initialElements, initialAppState, cacheKey]);
 
   /* ─── 1. Socket connection ─── */
-  const { socketRef, socketGeneration, connectionState, connectionError, userRole, selfUserId } = useSocketConnection({
-    diagramId,
-    joinMode,
-  });
+  const { socketRef, socketGeneration, connectionState, connectionError, userRole, selfUserId } =
+    useSocketConnection({
+      diagramId,
+      joinMode,
+    });
 
   /* ─── 2. Edit lock (stub — concurrent editing) ─── */
   const editLock = useEditLock({ socketRef, socketGeneration, selfUserId });
 
   /* ─── 3. Save manager ─── */
-  const { saveState, saveLabel, saveColor, lastSavedAt, onChange: rawOnChange, flushSave } = useSaveManager({
+  const {
+    saveState,
+    saveLabel,
+    saveColor,
+    lastSavedAt,
+    onChange: rawOnChange,
+    flushSave,
+  } = useSaveManager({
     socketRef,
     socketGeneration,
     diagramId,
@@ -88,7 +107,17 @@ export function useCollaboration({
   );
 
   /* ─── 4. Presence ─── */
-  const { presenceUsers, cursors, followingUserId, setFollowingUserId, onPointerMove, raisedHands, raiseHand, lowerHand, isHandRaised } = usePresence({
+  const {
+    presenceUsers,
+    cursors,
+    followingUserId,
+    setFollowingUserId,
+    onPointerMove,
+    raisedHands,
+    raiseHand,
+    lowerHand,
+    isHandRaised,
+  } = usePresence({
     socketRef,
     socketGeneration,
     diagramId,
@@ -118,7 +147,9 @@ export function useCollaboration({
     const viewMode = !canEdit || !!followingUserIdRef.current;
     applyingRemoteCounter.current += 1;
     api.updateScene({ appState: { viewModeEnabled: viewMode } });
-    setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+    setTimeout(() => {
+      applyingRemoteCounter.current -= 1;
+    }, 0);
   }, [canEdit]);
 
   /* ─── excalidraw API init ─── */
@@ -134,18 +165,37 @@ export function useCollaboration({
       setTimeout(() => {
         applyingRemoteCounter.current += 1;
         excalidrawApi.updateScene({ elements: pending.elements });
-        setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+        setTimeout(() => {
+          applyingRemoteCounter.current -= 1;
+        }, 0);
       }, 0);
     }
   }, []);
 
   return {
-    saveState, connectionState, connectionError, selfUserId,
-    presenceUsers, cursors, userRole,
-    followingUserId, setFollowingUserId, toolbarOpen, setToolbarOpen,
-    initialData, canEdit, saveLabel, saveColor, lastSavedAt,
+    saveState,
+    connectionState,
+    connectionError,
+    selfUserId,
+    presenceUsers,
+    cursors,
+    userRole,
+    followingUserId,
+    setFollowingUserId,
+    toolbarOpen,
+    setToolbarOpen,
+    initialData,
+    canEdit,
+    saveLabel,
+    saveColor,
+    lastSavedAt,
     activeSceneId,
-    excalidrawApiRef, socketRef, onExcalidrawApi, onChange, onPointerMove, flushSave,
+    excalidrawApiRef,
+    socketRef,
+    onExcalidrawApi,
+    onChange,
+    onPointerMove,
+    flushSave,
     // Edit lock
     editLockHolder: editLock.editLockHolder,
     hasEditLock: editLock.hasEditLock,

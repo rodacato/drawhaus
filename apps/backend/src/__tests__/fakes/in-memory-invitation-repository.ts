@@ -6,7 +6,13 @@ import type { UserRole } from "../../domain/entities/user";
 export class InMemoryInvitationRepository implements InvitationRepository {
   store: Invitation[] = [];
 
-  async create(data: { email: string; role: UserRole; token: string; invitedBy: string; expiresAt: Date }): Promise<Invitation> {
+  async create(data: {
+    email: string;
+    role: UserRole;
+    token: string;
+    invitedBy: string;
+    expiresAt: Date;
+  }): Promise<Invitation> {
     const invitation: Invitation = {
       id: crypto.randomUUID(),
       email: data.email,

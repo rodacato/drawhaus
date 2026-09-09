@@ -38,6 +38,8 @@ describe("auth pages — smoke (render without crashing)", () => {
 
   test("ResetPassword renders once the token validates", async () => {
     renderWithProviders(<ResetPassword />, { route: "/reset/tok123", path: "/reset/:token" });
-    await waitFor(() => expect(screen.getByRole("heading", { name: /set new password/i })).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: /set new password/i })).toBeTruthy(),
+    );
   });
 });

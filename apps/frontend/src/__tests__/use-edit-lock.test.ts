@@ -15,7 +15,7 @@ function renderEditLock(opts: {
   selfUserId?: string | null;
 }) {
   const socketRef = makeRef(opts.socket as unknown as Socket | null);
-  const initialSelfUserId = "selfUserId" in opts ? opts.selfUserId ?? null : "user-1";
+  const initialSelfUserId = "selfUserId" in opts ? (opts.selfUserId ?? null) : "user-1";
   return renderHook(
     ({ generation, selfUserId }) =>
       useEditLock({

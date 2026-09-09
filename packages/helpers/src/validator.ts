@@ -38,11 +38,13 @@ const STROKE_WIDTH_MAX = 10;
 
 const pointSchema = z.tuple([z.number(), z.number()]);
 
-const baseElementSchema = z.object({
-  type: z.enum(VALID_TYPES),
-  x: z.number(),
-  y: z.number(),
-}).passthrough();
+const baseElementSchema = z
+  .object({
+    type: z.enum(VALID_TYPES),
+    x: z.number(),
+    y: z.number(),
+  })
+  .passthrough();
 
 function hasDangerousKeys(obj: Record<string, unknown>): string | null {
   for (const key of Object.keys(obj)) {
@@ -271,24 +273,54 @@ function validateShapeElement(
   warnings: ValidationError[],
 ): void {
   if (typeof record.width !== "number") {
-    errors.push({ elementIndex: index, elementId: elId, field: "width", message: "width is required for shape elements" });
+    errors.push({
+      elementIndex: index,
+      elementId: elId,
+      field: "width",
+      message: "width is required for shape elements",
+    });
   } else {
     if (record.width <= 0) {
-      warnings.push({ elementIndex: index, elementId: elId, field: "width", message: `width should be positive, got ${record.width}` });
+      warnings.push({
+        elementIndex: index,
+        elementId: elId,
+        field: "width",
+        message: `width should be positive, got ${record.width}`,
+      });
     }
     if (record.width > DIM_MAX) {
-      warnings.push({ elementIndex: index, elementId: elId, field: "width", message: `width exceeds typical maximum (${DIM_MAX}), got ${record.width}` });
+      warnings.push({
+        elementIndex: index,
+        elementId: elId,
+        field: "width",
+        message: `width exceeds typical maximum (${DIM_MAX}), got ${record.width}`,
+      });
     }
   }
 
   if (typeof record.height !== "number") {
-    errors.push({ elementIndex: index, elementId: elId, field: "height", message: "height is required for shape elements" });
+    errors.push({
+      elementIndex: index,
+      elementId: elId,
+      field: "height",
+      message: "height is required for shape elements",
+    });
   } else {
     if (record.height <= 0) {
-      warnings.push({ elementIndex: index, elementId: elId, field: "height", message: `height should be positive, got ${record.height}` });
+      warnings.push({
+        elementIndex: index,
+        elementId: elId,
+        field: "height",
+        message: `height should be positive, got ${record.height}`,
+      });
     }
     if (record.height > DIM_MAX) {
-      warnings.push({ elementIndex: index, elementId: elId, field: "height", message: `height exceeds typical maximum (${DIM_MAX}), got ${record.height}` });
+      warnings.push({
+        elementIndex: index,
+        elementId: elId,
+        field: "height",
+        message: `height exceeds typical maximum (${DIM_MAX}), got ${record.height}`,
+      });
     }
   }
 }
@@ -301,9 +333,19 @@ function validateTextElement(
   _warnings: ValidationError[],
 ): void {
   if (typeof record.text !== "string") {
-    errors.push({ elementIndex: index, elementId: elId, field: "text", message: "text is required for text elements" });
+    errors.push({
+      elementIndex: index,
+      elementId: elId,
+      field: "text",
+      message: "text is required for text elements",
+    });
   } else if (record.text.length > MAX_TEXT_LENGTH) {
-    errors.push({ elementIndex: index, elementId: elId, field: "text", message: `text must be at most ${MAX_TEXT_LENGTH} characters, got ${record.text.length}` });
+    errors.push({
+      elementIndex: index,
+      elementId: elId,
+      field: "text",
+      message: `text must be at most ${MAX_TEXT_LENGTH} characters, got ${record.text.length}`,
+    });
   }
 }
 
@@ -315,12 +357,22 @@ function validateLinearElement(
   _warnings: ValidationError[],
 ): void {
   if (!Array.isArray(record.points)) {
-    errors.push({ elementIndex: index, elementId: elId, field: "points", message: "points array is required for arrow/line elements" });
+    errors.push({
+      elementIndex: index,
+      elementId: elId,
+      field: "points",
+      message: "points array is required for arrow/line elements",
+    });
     return;
   }
 
   if (record.points.length < 2) {
-    errors.push({ elementIndex: index, elementId: elId, field: "points", message: "points must have at least 2 entries" });
+    errors.push({
+      elementIndex: index,
+      elementId: elId,
+      field: "points",
+      message: "points must have at least 2 entries",
+    });
     return;
   }
 
@@ -328,7 +380,12 @@ function validateLinearElement(
     const pt = record.points[j];
     const result = pointSchema.safeParse(pt);
     if (!result.success) {
-      errors.push({ elementIndex: index, elementId: elId, field: `points[${j}]`, message: "Each point must be a [x, y] tuple of numbers" });
+      errors.push({
+        elementIndex: index,
+        elementId: elId,
+        field: `points[${j}]`,
+        message: "Each point must be a [x, y] tuple of numbers",
+      });
     }
   }
 }

@@ -13,7 +13,11 @@ const lastIntervalSnapshot = new Map<string, number>(); // in-memory fallback
 export function registerSceneHandlers(
   io: Server,
   socket: Socket,
-  useCases: { saveScene: SaveSceneUseCase; syncToDrive?: SyncToDriveUseCase; createSnapshot: CreateSnapshotUseCase },
+  useCases: {
+    saveScene: SaveSceneUseCase;
+    syncToDrive?: SyncToDriveUseCase;
+    createSnapshot: CreateSnapshotUseCase;
+  },
 ) {
   socket.on(
     "scene-update",
@@ -38,7 +42,17 @@ export function registerSceneHandlers(
   /* ─── scene-delta: incremental element changes (concurrent editing) ─── */
   socket.on(
     "scene-delta",
-    ({ roomId, sceneId, changed, removedIds }: { roomId: string; sceneId?: string; changed: unknown[]; removedIds: string[] }) => {
+    ({
+      roomId,
+      sceneId,
+      changed,
+      removedIds,
+    }: {
+      roomId: string;
+      sceneId?: string;
+      changed: unknown[];
+      removedIds: string[];
+    }) => {
       if (!socket.rooms.has(roomId)) return;
       if (!canEdit(socket, roomId)) return;
       if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
@@ -103,7 +117,9 @@ export function registerSceneHandlers(
           try {
             const set = await redis.set(snapshotKey, "1", "EX", SNAPSHOT_INTERVAL_SECONDS, "NX");
             shouldSnapshot = set === "OK";
-          } catch { shouldSnapshot = false; }
+          } catch {
+            shouldSnapshot = false;
+          }
         } else {
           const now = Date.now();
           const lastTs = lastIntervalSnapshot.get(roomId) ?? 0;
@@ -114,13 +130,24 @@ export function registerSceneHandlers(
         }
         if (shouldSnapshot) {
           const sockets = await io.in(roomId).fetchSockets();
-          const uniqueIds = new Set(sockets.map((s) => (s.data as SocketData).userId).filter(Boolean));
-          useCases.createSnapshot.execute(roomId, saveUserId, "interval", undefined, uniqueIds.size || 1)
+          const uniqueIds = new Set(
+            sockets.map((s) => (s.data as SocketData).userId).filter(Boolean),
+          );
+          useCases.createSnapshot
+            .execute(roomId, saveUserId, "interval", undefined, uniqueIds.size || 1)
             .then((snap) => {
               if (snap) {
                 io.to(roomId).emit("snapshot-created", {
                   diagramId: roomId,
-                  snapshot: { id: snap.id, trigger: snap.trigger, name: snap.name, createdBy: snap.createdBy, createdByName: snap.createdByName, activeUsers: snap.activeUsers, createdAt: snap.createdAt.toISOString() },
+                  snapshot: {
+                    id: snap.id,
+                    trigger: snap.trigger,
+                    name: snap.name,
+                    createdBy: snap.createdBy,
+                    createdByName: snap.createdByName,
+                    activeUsers: snap.activeUsers,
+                    createdAt: snap.createdAt.toISOString(),
+                  },
                 });
               }
             })
@@ -141,7 +168,9 @@ export function registerSceneHandlers(
                 });
               }
             })
-            .catch(() => { /* already logged inside SyncToDriveUseCase */ });
+            .catch(() => {
+              /* already logged inside SyncToDriveUseCase */
+            });
         }
       } catch (error: unknown) {
         logger.error(error, "save-scene failed");

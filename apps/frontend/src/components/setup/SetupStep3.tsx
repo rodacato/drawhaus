@@ -20,8 +20,8 @@ export function SetupStep3({ onComplete }: { readonly onComplete: () => void }) 
       <div className="space-y-1">
         <h2 className={ui.h2}>Integrations</h2>
         <p className="text-sm text-text-secondary">
-          Configure optional integrations like Google OAuth, email, and error monitoring.
-          You can set these up later from the admin settings.
+          Configure optional integrations like Google OAuth, email, and error monitoring. You can
+          set these up later from the admin settings.
         </p>
       </div>
 
@@ -41,10 +41,15 @@ export function SetupStep3({ onComplete }: { readonly onComplete: () => void }) 
       </div>
 
       <p className="text-xs text-text-muted">
-        These integrations will be configurable from the admin panel once integration secrets are stored in the database (coming soon).
+        These integrations will be configurable from the admin panel once integration secrets are
+        stored in the database (coming soon).
       </p>
 
-      <button className={`${ui.btn} ${ui.btnPrimary} w-full`} onClick={handleSkip} disabled={pending}>
+      <button
+        className={`${ui.btn} ${ui.btnPrimary} w-full`}
+        onClick={handleSkip}
+        disabled={pending}
+      >
         {pending ? "Finishing..." : "Skip for now & finish setup"}
       </button>
     </div>

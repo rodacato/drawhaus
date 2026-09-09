@@ -75,7 +75,11 @@ describe("JoinRoomGuestUseCase", () => {
     const createLink = new CreateShareLinkUseCase(shares, diagrams);
 
     const diagram = await createDiagram.execute({ ownerId: "user-1", title: "Shared" });
-    const link = await createLink.execute({ diagramId: diagram.id, userId: "user-1", role: "editor" });
+    const link = await createLink.execute({
+      diagramId: diagram.id,
+      userId: "user-1",
+      role: "editor",
+    });
 
     const result = await joinGuest.execute(link.token);
     assert.equal(result.role, "editor");

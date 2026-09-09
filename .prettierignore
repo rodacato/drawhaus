@@ -1,0 +1,11 @@
+dist/
+coverage/
+build/
+node_modules/
+package-lock.json
+docs/api/index.html
+packages/*/dist/
+apps/*/dist/
+
+# Kamal deploy configs embed ERB, which prettier cannot parse as YAML
+config/deploy.*.yml

@@ -33,7 +33,9 @@ export function SnapshotPreview({
         const { exportToCanvas } = await import("@excalidraw/excalidraw");
         const canvas = await exportToCanvas({
           elements: snapshot.elements as Parameters<typeof exportToCanvas>[0]["elements"],
-          appState: { ...snapshot.appState, exportWithDarkMode: false } as Parameters<typeof exportToCanvas>[0]["appState"],
+          appState: { ...snapshot.appState, exportWithDarkMode: false } as Parameters<
+            typeof exportToCanvas
+          >[0]["appState"],
           files: null,
           maxWidthOrHeight: 600,
         });
@@ -43,10 +45,14 @@ export function SnapshotPreview({
         canvas.style.height = "auto";
         canvas.style.borderRadius = "8px";
         container.appendChild(canvas);
-      } catch { /* preview is best-effort */ }
+      } catch {
+        /* preview is best-effort */
+      }
     }
     render();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [snapshot]);
 
   function handleNameSubmit() {
@@ -57,15 +63,34 @@ export function SnapshotPreview({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <button type="button" aria-label="Close" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <button
+        type="button"
+        aria-label="Close"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div className={`${ui.card} relative z-10 w-full max-w-xl space-y-3 shadow-2xl`}>
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className={ui.h2}>
-            {snapshot.name ?? `${TRIGGER_LABELS[snapshot.trigger] ?? snapshot.trigger} — ${timeAgo(snapshot.createdAt)}`}
+            {snapshot.name ??
+              `${TRIGGER_LABELS[snapshot.trigger] ?? snapshot.trigger} — ${timeAgo(snapshot.createdAt)}`}
           </h2>
-          <button type="button" onClick={onClose} className="rounded p-1 text-text-muted hover:bg-surface hover:text-text-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded p-1 text-text-muted hover:bg-surface hover:text-text-primary"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </button>
@@ -85,7 +110,10 @@ export function SnapshotPreview({
         </div>
 
         {/* Canvas preview */}
-        <div ref={canvasRef} className="flex min-h-[200px] items-center justify-center rounded-lg bg-white">
+        <div
+          ref={canvasRef}
+          className="flex min-h-[200px] items-center justify-center rounded-lg bg-white"
+        >
           <span className="text-xs text-text-muted">Rendering preview...</span>
         </div>
 
@@ -96,7 +124,10 @@ export function SnapshotPreview({
               type="button"
               className={`${ui.btn} ${ui.btnPrimary} flex-1`}
               disabled={restoring}
-              onClick={() => { setRestoring(true); onRestore(); }}
+              onClick={() => {
+                setRestoring(true);
+                onRestore();
+              }}
             >
               {restoring ? "Restoring..." : "Restore this version"}
             </button>
@@ -125,7 +156,10 @@ export function SnapshotPreview({
               <button
                 type="button"
                 className={`${ui.btn} ${ui.btnSecondary} flex-1`}
-                onClick={() => { setNameValue(snapshot.name ?? ""); setNaming(true); }}
+                onClick={() => {
+                  setNameValue(snapshot.name ?? "");
+                  setNaming(true);
+                }}
               >
                 {snapshot.name ? "Rename" : "Name this version"}
               </button>
@@ -144,13 +178,27 @@ export function SnapshotPreview({
               const title = snapshot.name
                 ? `${snapshot.name} (copy)`
                 : `Snapshot ${new Date(snapshot.createdAt).toLocaleDateString()} (copy)`;
-              const res = await diagramsApi.create({ title, elements: snapshot.elements }) as { id: string };
+              const res = (await diagramsApi.create({ title, elements: snapshot.elements })) as {
+                id: string;
+              };
               window.open(`/board/${res.id}`, "_blank");
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
             setCreatingDiagram(false);
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="shrink-0"
+          >
             <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
             <polyline points="15 3 21 3 21 9" />
             <line x1="10" y1="14" x2="21" y2="3" />

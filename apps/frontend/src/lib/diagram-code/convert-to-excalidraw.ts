@@ -15,8 +15,7 @@ export async function mermaidToElements(code: string) {
  * Convert PlantUML code into Excalidraw elements ready for the canvas.
  */
 export function plantumlToElements(code: string) {
-  const { elements: skeletons, diagramType } =
-    parsePlantUMLToExcalidraw(code);
+  const { elements: skeletons, diagramType } = parsePlantUMLToExcalidraw(code);
   const elements = convertToExcalidrawElements(skeletons as any);
   return { elements, diagramType };
 }

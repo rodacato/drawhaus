@@ -129,25 +129,202 @@ app.use("/api/auth/forgot-password", authLimiter);
 app.use("/api/auth/reset-password", authLimiter);
 app.use("/api", generalLimiter);
 
-app.use("/api/setup", createSetupRoutes({ getSettings: useCases.getSettings, updateSettings: useCases.updateSettings }, repos.userRepo, requireAuth, setupLock.invalidate));
-app.use("/api/auth", createAuthRoutes({ register: useCases.register, login: useCases.login, logout: useCases.logout, getCurrentUser: useCases.getCurrentUser, updateProfile: useCases.updateProfile, changePassword: useCases.changePassword, acceptInvite: useCases.acceptInvite, forgotPassword: useCases.forgotPassword, resetPassword: useCases.resetPassword, deleteAccount: useCases.deleteAccount, googleAuth: useCases.googleAuth, githubAuth: useCases.githubAuth, unlinkOAuth: useCases.unlinkOAuth }, requireAuth));
-app.use("/api/diagrams", createDiagramRoutes({ create: useCases.createDiagram, get: useCases.getDiagram, list: useCases.listDiagrams, search: useCases.searchDiagrams, update: useCases.updateDiagram, updateThumbnail: useCases.updateThumbnail, delete: useCases.deleteDiagram, toggleStar: useCases.toggleStar, duplicate: useCases.duplicateDiagram, move: useCases.moveDiagram, transferOwnership: useCases.transferDiagramOwnership }, requireAuth, repos.tagRepo, repos.snapshotRepo));
+app.use(
+  "/api/setup",
+  createSetupRoutes(
+    { getSettings: useCases.getSettings, updateSettings: useCases.updateSettings },
+    repos.userRepo,
+    requireAuth,
+    setupLock.invalidate,
+  ),
+);
+app.use(
+  "/api/auth",
+  createAuthRoutes(
+    {
+      register: useCases.register,
+      login: useCases.login,
+      logout: useCases.logout,
+      getCurrentUser: useCases.getCurrentUser,
+      updateProfile: useCases.updateProfile,
+      changePassword: useCases.changePassword,
+      acceptInvite: useCases.acceptInvite,
+      forgotPassword: useCases.forgotPassword,
+      resetPassword: useCases.resetPassword,
+      deleteAccount: useCases.deleteAccount,
+      googleAuth: useCases.googleAuth,
+      githubAuth: useCases.githubAuth,
+      unlinkOAuth: useCases.unlinkOAuth,
+    },
+    requireAuth,
+  ),
+);
+app.use(
+  "/api/diagrams",
+  createDiagramRoutes(
+    {
+      create: useCases.createDiagram,
+      get: useCases.getDiagram,
+      list: useCases.listDiagrams,
+      search: useCases.searchDiagrams,
+      update: useCases.updateDiagram,
+      updateThumbnail: useCases.updateThumbnail,
+      delete: useCases.deleteDiagram,
+      toggleStar: useCases.toggleStar,
+      duplicate: useCases.duplicateDiagram,
+      move: useCases.moveDiagram,
+      transferOwnership: useCases.transferDiagramOwnership,
+    },
+    requireAuth,
+    repos.tagRepo,
+    repos.snapshotRepo,
+  ),
+);
 
-app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({ list: useCases.listComments, create: useCases.createComment, reply: useCases.replyComment, resolve: useCases.resolveComment, delete: useCases.deleteComment, toggleLike: useCases.toggleLike }, requireAuth));
-app.use("/api/diagrams/:diagramId/snapshots", createSnapshotRoutes({ create: useCases.createSnapshot, list: useCases.listSnapshots, get: useCases.getSnapshot, restore: useCases.restoreSnapshot, rename: useCases.renameSnapshot, delete: useCases.deleteSnapshot }, requireAuth, ioHolder));
-app.use("/api/tags", createTagRoutes({ create: useCases.createTag, list: useCases.listTags, delete: useCases.deleteTag, update: useCases.updateTag, assign: useCases.assignTag, unassign: useCases.unassignTag }, requireAuth));
-app.use("/api/folders", createFolderRoutes({ create: useCases.createFolder, list: useCases.listFolders, rename: useCases.renameFolder, delete: useCases.deleteFolder }, requireAuth));
-app.use("/api/workspaces", createWorkspaceRoutes({ create: useCases.createWorkspace, list: useCases.listWorkspaces, get: useCases.getWorkspace, update: useCases.updateWorkspace, delete: useCases.deleteWorkspace, addMember: useCases.addWorkspaceMember, updateMemberRole: useCases.updateWorkspaceMemberRole, removeMember: useCases.removeWorkspaceMember, invite: useCases.inviteToWorkspace, acceptInvite: useCases.acceptWorkspaceInvite, resolveInvite: useCases.resolveWorkspaceInvite, ensurePersonal: useCases.ensurePersonalWorkspace, transferOwnership: useCases.transferWorkspaceOwnership }, requireAuth));
-app.use("/api/share", createShareRoutes({ createLink: useCases.createLink, resolveLink: useCases.resolveLink, listLinks: useCases.listLinks, deleteLink: useCases.deleteLink }, requireAuth));
-app.use("/api/admin", createAdminRoutes(
-  { listUsers: useCases.listUsers, updateUser: useCases.adminUpdateUser, deleteUser: useCases.adminDeleteUser, getSettings: useCases.getSettings, updateSettings: useCases.updateSettings, getMetrics: useCases.getMetrics, inviteUser: useCases.inviteUser },
-  requireAuth,
-  repos.invitationRepo,
-  repos.integrationSecretsRepo ? { repo: repos.integrationSecretsRepo, configProvider: services.configProvider } : undefined,
-));
-app.use("/api/templates", createTemplateRoutes({ create: useCases.createTemplate, get: useCases.getTemplate, list: useCases.listTemplates, update: useCases.updateTemplate, delete: useCases.deleteTemplate, use: useCases.useTemplate, transferOwnership: useCases.transferTemplateOwnership }, requireAuth));
-app.use("/api/drive", createDriveRoutes({ getDriveStatus: useCases.getDriveStatus, toggleDriveBackup: useCases.toggleDriveBackup, disconnectDrive: useCases.disconnectDrive, exportToDrive: useCases.exportToDrive, listDriveFiles: useCases.listDriveFiles, importFromDrive: useCases.importFromDrive }, services.tokenRefresher, requireAuth));
-app.use("/api/api-keys", createApiKeyRoutes({ create: useCases.createApiKey, list: useCases.listApiKeys, revoke: useCases.revokeApiKey }, requireAuth));
+app.use(
+  "/api/diagrams/:diagramId/comments",
+  createCommentRoutes(
+    {
+      list: useCases.listComments,
+      create: useCases.createComment,
+      reply: useCases.replyComment,
+      resolve: useCases.resolveComment,
+      delete: useCases.deleteComment,
+      toggleLike: useCases.toggleLike,
+    },
+    requireAuth,
+  ),
+);
+app.use(
+  "/api/diagrams/:diagramId/snapshots",
+  createSnapshotRoutes(
+    {
+      create: useCases.createSnapshot,
+      list: useCases.listSnapshots,
+      get: useCases.getSnapshot,
+      restore: useCases.restoreSnapshot,
+      rename: useCases.renameSnapshot,
+      delete: useCases.deleteSnapshot,
+    },
+    requireAuth,
+    ioHolder,
+  ),
+);
+app.use(
+  "/api/tags",
+  createTagRoutes(
+    {
+      create: useCases.createTag,
+      list: useCases.listTags,
+      delete: useCases.deleteTag,
+      update: useCases.updateTag,
+      assign: useCases.assignTag,
+      unassign: useCases.unassignTag,
+    },
+    requireAuth,
+  ),
+);
+app.use(
+  "/api/folders",
+  createFolderRoutes(
+    {
+      create: useCases.createFolder,
+      list: useCases.listFolders,
+      rename: useCases.renameFolder,
+      delete: useCases.deleteFolder,
+    },
+    requireAuth,
+  ),
+);
+app.use(
+  "/api/workspaces",
+  createWorkspaceRoutes(
+    {
+      create: useCases.createWorkspace,
+      list: useCases.listWorkspaces,
+      get: useCases.getWorkspace,
+      update: useCases.updateWorkspace,
+      delete: useCases.deleteWorkspace,
+      addMember: useCases.addWorkspaceMember,
+      updateMemberRole: useCases.updateWorkspaceMemberRole,
+      removeMember: useCases.removeWorkspaceMember,
+      invite: useCases.inviteToWorkspace,
+      acceptInvite: useCases.acceptWorkspaceInvite,
+      resolveInvite: useCases.resolveWorkspaceInvite,
+      ensurePersonal: useCases.ensurePersonalWorkspace,
+      transferOwnership: useCases.transferWorkspaceOwnership,
+    },
+    requireAuth,
+  ),
+);
+app.use(
+  "/api/share",
+  createShareRoutes(
+    {
+      createLink: useCases.createLink,
+      resolveLink: useCases.resolveLink,
+      listLinks: useCases.listLinks,
+      deleteLink: useCases.deleteLink,
+    },
+    requireAuth,
+  ),
+);
+app.use(
+  "/api/admin",
+  createAdminRoutes(
+    {
+      listUsers: useCases.listUsers,
+      updateUser: useCases.adminUpdateUser,
+      deleteUser: useCases.adminDeleteUser,
+      getSettings: useCases.getSettings,
+      updateSettings: useCases.updateSettings,
+      getMetrics: useCases.getMetrics,
+      inviteUser: useCases.inviteUser,
+    },
+    requireAuth,
+    repos.invitationRepo,
+    repos.integrationSecretsRepo
+      ? { repo: repos.integrationSecretsRepo, configProvider: services.configProvider }
+      : undefined,
+  ),
+);
+app.use(
+  "/api/templates",
+  createTemplateRoutes(
+    {
+      create: useCases.createTemplate,
+      get: useCases.getTemplate,
+      list: useCases.listTemplates,
+      update: useCases.updateTemplate,
+      delete: useCases.deleteTemplate,
+      use: useCases.useTemplate,
+      transferOwnership: useCases.transferTemplateOwnership,
+    },
+    requireAuth,
+  ),
+);
+app.use(
+  "/api/drive",
+  createDriveRoutes(
+    {
+      getDriveStatus: useCases.getDriveStatus,
+      toggleDriveBackup: useCases.toggleDriveBackup,
+      disconnectDrive: useCases.disconnectDrive,
+      exportToDrive: useCases.exportToDrive,
+      listDriveFiles: useCases.listDriveFiles,
+      importFromDrive: useCases.importFromDrive,
+    },
+    services.tokenRefresher,
+    requireAuth,
+  ),
+);
+app.use(
+  "/api/api-keys",
+  createApiKeyRoutes(
+    { create: useCases.createApiKey, list: useCases.listApiKeys, revoke: useCases.revokeApiKey },
+    requireAuth,
+  ),
+);
 
 // --- Public API /v1/ ---
 app.use("/v1/health", createV1HealthRoutes());
@@ -156,7 +333,19 @@ app.use("/v1/docs", express.static(path.resolve(__dirname, "../../docs/api")));
 const requireApiKey = createRequireApiKey(useCases.validateApiKey);
 const logApiRequest = createLogApiRequest(repos.apiKeyRepo);
 app.use("/v1", apiKeyRateLimiter, requireSdkHeader, requireApiKey, logApiRequest);
-app.use("/v1/diagrams", createV1DiagramRoutes({ create: useCases.createDiagram, get: useCases.getDiagram, list: useCases.listDiagrams, update: useCases.updateDiagram, delete: useCases.deleteDiagram }, config.frontendUrl));
+app.use(
+  "/v1/diagrams",
+  createV1DiagramRoutes(
+    {
+      create: useCases.createDiagram,
+      get: useCases.getDiagram,
+      list: useCases.listDiagrams,
+      update: useCases.updateDiagram,
+      delete: useCases.deleteDiagram,
+    },
+    config.frontendUrl,
+  ),
+);
 
 // --- Sentry error handler (must be after all routes) ---
 if (config.sentryDsn) {
@@ -175,13 +364,24 @@ async function startServer(): Promise<void> {
   const redisClient = await getRedisClient();
   if (redisClient) {
     const { upgradeRateLimiters } = await import("./infrastructure/http/middleware/rate-limit");
-    const { upgradeApiRateLimiter } = await import("./infrastructure/http/public-api/middleware/api-rate-limit");
+    const { upgradeApiRateLimiter } =
+      await import("./infrastructure/http/public-api/middleware/api-rate-limit");
     upgradeRateLimiters(redisClient);
     upgradeApiRateLimiter(redisClient);
   }
 
   const httpServer = createServer(app);
-  ioHolder.io = await setupSocketServer(httpServer, { joinRoom: useCases.joinRoom, joinRoomGuest: useCases.joinRoomGuest, saveScene: useCases.saveScene, syncToDrive: useCases.syncToDrive, createComment: useCases.createComment, replyComment: useCases.replyComment, resolveComment: useCases.resolveComment, deleteComment: useCases.deleteComment, createSnapshot: useCases.createSnapshot });
+  ioHolder.io = await setupSocketServer(httpServer, {
+    joinRoom: useCases.joinRoom,
+    joinRoomGuest: useCases.joinRoomGuest,
+    saveScene: useCases.saveScene,
+    syncToDrive: useCases.syncToDrive,
+    createComment: useCases.createComment,
+    replyComment: useCases.replyComment,
+    resolveComment: useCases.resolveComment,
+    deleteComment: useCases.deleteComment,
+    createSnapshot: useCases.createSnapshot,
+  });
 
   // Start backup scheduler (cron-based, reads config from DB, no-op if disabled)
   const { startBackupScheduler } = await import("./infrastructure/services/backup-scheduler");

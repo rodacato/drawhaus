@@ -27,9 +27,7 @@ export function registerListDiagrams(server: McpServer, client: DrawhausClient) 
 
         const header = `| Title | ID | URL | Updated |`;
         const separator = `|-------|-----|-----|---------|`;
-        const rows = result.data.map(
-          (d) => `| ${d.title} | ${d.id} | ${d.url} | ${d.updatedAt} |`,
-        );
+        const rows = result.data.map((d) => `| ${d.title} | ${d.id} | ${d.url} | ${d.updatedAt} |`);
 
         const text = [
           `Found ${result.total} diagram(s) (showing ${result.data.length}):`,

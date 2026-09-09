@@ -21,20 +21,24 @@ export type WorkspaceMember = {
 };
 
 export const workspacesApi = {
-  list: () =>
-    api.get("/api/workspaces") as Promise<{ workspaces: Workspace[] }>,
+  list: () => api.get("/api/workspaces") as Promise<{ workspaces: Workspace[] }>,
 
   get: (id: string) =>
-    api.get(`/api/workspaces/${id}`) as Promise<{ workspace: Workspace; role: string; members: WorkspaceMember[] }>,
+    api.get(`/api/workspaces/${id}`) as Promise<{
+      workspace: Workspace;
+      role: string;
+      members: WorkspaceMember[];
+    }>,
 
   create: (data: { name: string; description?: string; color?: string; icon?: string }) =>
     api.post("/api/workspaces", data) as Promise<{ workspace: Workspace }>,
 
-  update: (id: string, data: { name?: string; description?: string; color?: string; icon?: string }) =>
-    api.patch(`/api/workspaces/${id}`, data) as Promise<{ workspace: Workspace }>,
+  update: (
+    id: string,
+    data: { name?: string; description?: string; color?: string; icon?: string },
+  ) => api.patch(`/api/workspaces/${id}`, data) as Promise<{ workspace: Workspace }>,
 
-  delete: (id: string) =>
-    api.delete(`/api/workspaces/${id}`),
+  delete: (id: string) => api.delete(`/api/workspaces/${id}`),
 
   invite: (id: string, email: string, role: string = "editor") =>
     api.post(`/api/workspaces/${id}/invite`, { email, role }),
@@ -45,15 +49,23 @@ export const workspacesApi = {
   removeMember: (workspaceId: string, userId: string) =>
     api.delete(`/api/workspaces/${workspaceId}/members/${userId}`),
 
-  acceptInvite: (token: string) =>
-    api.post("/api/workspaces/accept-invite", { token }),
+  acceptInvite: (token: string) => api.post("/api/workspaces/accept-invite", { token }),
 
   resolveInvite: (token: string) =>
-    api.get(`/api/workspaces/invite/${token}`) as Promise<{ workspaceName: string; role: string; email: string }>,
+    api.get(`/api/workspaces/invite/${token}`) as Promise<{
+      workspaceName: string;
+      role: string;
+      email: string;
+    }>,
 
   transferOwnership: (id: string, newOwnerId: string, transferResources?: boolean) =>
-    api.post(`/api/workspaces/${id}/transfer-ownership`, { newOwnerId, transferResources }) as Promise<{ success: boolean; diagramCount: number; templateCount: number }>,
+    api.post(`/api/workspaces/${id}/transfer-ownership`, {
+      newOwnerId,
+      transferResources,
+    }) as Promise<{ success: boolean; diagramCount: number; templateCount: number }>,
 
   listOwnedShared: () =>
-    api.get("/api/workspaces/owned-shared") as Promise<{ workspaces: { id: string; name: string }[] }>,
+    api.get("/api/workspaces/owned-shared") as Promise<{
+      workspaces: { id: string; name: string }[];
+    }>,
 };

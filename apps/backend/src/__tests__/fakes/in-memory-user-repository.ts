@@ -21,7 +21,15 @@ export class InMemoryUserRepository implements UserRepository {
     return this.store.find((u) => u.githubId === githubId) ?? null;
   }
 
-  async create(data: { email: string; name: string; passwordHash: string | null; googleId?: string; githubId?: string; githubUsername?: string; avatarUrl?: string }): Promise<User> {
+  async create(data: {
+    email: string;
+    name: string;
+    passwordHash: string | null;
+    googleId?: string;
+    githubId?: string;
+    githubUsername?: string;
+    avatarUrl?: string;
+  }): Promise<User> {
     const user: User = {
       id: crypto.randomUUID(),
       email: data.email,
@@ -39,7 +47,15 @@ export class InMemoryUserRepository implements UserRepository {
     return user;
   }
 
-  async update(id: string, data: Partial<Pick<User, "email" | "name" | "passwordHash" | "googleId" | "githubId" | "githubUsername" | "avatarUrl">>): Promise<User | null> {
+  async update(
+    id: string,
+    data: Partial<
+      Pick<
+        User,
+        "email" | "name" | "passwordHash" | "googleId" | "githubId" | "githubUsername" | "avatarUrl"
+      >
+    >,
+  ): Promise<User | null> {
     const user = this.store.find((u) => u.id === id);
     if (!user) return null;
     if (data.email !== undefined) user.email = data.email;
@@ -60,7 +76,10 @@ export class InMemoryUserRepository implements UserRepository {
     return this.store.map(({ passwordHash: _passwordHash, ...rest }) => rest);
   }
 
-  async adminUpdate(id: string, data: { role?: UserRole; disabled?: boolean }): Promise<User | null> {
+  async adminUpdate(
+    id: string,
+    data: { role?: UserRole; disabled?: boolean },
+  ): Promise<User | null> {
     const user = this.store.find((u) => u.id === id);
     if (!user) return null;
     if (data.role !== undefined) user.role = data.role;

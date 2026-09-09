@@ -14,7 +14,13 @@ export class InviteToWorkspaceUseCase {
     private readonly emailService: EmailService,
   ) {}
 
-  async execute(input: { workspaceId: string; actorId: string; actorName: string; email: string; role: WorkspaceRole }) {
+  async execute(input: {
+    workspaceId: string;
+    actorId: string;
+    actorName: string;
+    email: string;
+    role: WorkspaceRole;
+  }) {
     const workspace = await this.workspaces.findById(input.workspaceId);
     if (!workspace) throw new NotFoundError("Workspace");
     if (workspace.isPersonal) throw new ForbiddenError();
@@ -41,7 +47,12 @@ export class InviteToWorkspaceUseCase {
       expiresAt,
     });
 
-    await this.emailService.sendWorkspaceInviteEmail(input.email, token, input.actorName, workspace.name);
+    await this.emailService.sendWorkspaceInviteEmail(
+      input.email,
+      token,
+      input.actorName,
+      workspace.name,
+    );
 
     return { token, email: input.email, role: input.role, expiresAt };
   }

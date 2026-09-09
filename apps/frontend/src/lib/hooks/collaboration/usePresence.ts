@@ -11,7 +11,11 @@ export interface UsePresenceParams {
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
   applyingRemoteCounter: React.MutableRefObject<number>;
   followingUserIdRef: React.MutableRefObject<string | null>;
-  followedViewportRef: React.MutableRefObject<{ scrollX: number; scrollY: number; zoom: number } | null>;
+  followedViewportRef: React.MutableRefObject<{
+    scrollX: number;
+    scrollY: number;
+    zoom: number;
+  } | null>;
   selfUserId: string | null;
 }
 
@@ -95,7 +99,10 @@ export function usePresence({
   /* ─── Mejora 2: request viewport when starting to follow ─── */
   useEffect(() => {
     if (followingUserId) {
-      socketRef.current?.emit("request-viewport", { roomId: diagramId, targetUserId: followingUserId });
+      socketRef.current?.emit("request-viewport", {
+        roomId: diagramId,
+        targetUserId: followingUserId,
+      });
     }
   }, [followingUserId, diagramId]);
 
@@ -104,9 +111,21 @@ export function usePresence({
     const socket = socketRef.current;
     if (!socket) return;
 
-    const handlePresence = ({ users }: { users: PresenceUser[] }) => { setPresenceUsers(users); };
+    const handlePresence = ({ users }: { users: PresenceUser[] }) => {
+      setPresenceUsers(users);
+    };
 
-    const handleCursorMoved = ({ userId, name: cursorName, x, y }: { userId: string; name: string; x: number; y: number }) => {
+    const handleCursorMoved = ({
+      userId,
+      name: cursorName,
+      x,
+      y,
+    }: {
+      userId: string;
+      name: string;
+      x: number;
+      y: number;
+    }) => {
       cursorsRef.current[userId] = { name: cursorName, x, y, lastSeen: Date.now() };
       cursorsDirty.current = true;
     };
@@ -117,12 +136,26 @@ export function usePresence({
     };
 
     /* ─── Mejora 5: use setTimeout(0) instead of rAF for applyingRemoteCounter ─── */
-    const handleViewport = ({ userId, scrollX, scrollY, zoom }: { userId: string; scrollX: number; scrollY: number; zoom: number }) => {
+    const handleViewport = ({
+      userId,
+      scrollX,
+      scrollY,
+      zoom,
+    }: {
+      userId: string;
+      scrollX: number;
+      scrollY: number;
+      zoom: number;
+    }) => {
       if (followingUserIdRef.current !== userId) return;
       followedViewportRef.current = { scrollX, scrollY, zoom };
       applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({ appState: { scrollX, scrollY, zoom: { value: zoom } } });
-      setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+      excalidrawApiRef.current?.updateScene({
+        appState: { scrollX, scrollY, zoom: { value: zoom } },
+      });
+      setTimeout(() => {
+        applyingRemoteCounter.current -= 1;
+      }, 0);
     };
 
     /* ─── Mejora 2: respond to viewport requests from followers ─── */
@@ -143,7 +176,11 @@ export function usePresence({
       setRaisedHands((prev) => new Set(prev).add(userId));
     };
     const handleHandLowered = ({ userId }: { userId: string }) => {
-      setRaisedHands((prev) => { const next = new Set(prev); next.delete(userId); return next; });
+      setRaisedHands((prev) => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
     };
 
     socket.on("room-presence", handlePresence);
@@ -166,25 +203,35 @@ export function usePresence({
   }, [socketGeneration, diagramId]);
 
   /* ─── cursor emit ─── */
-  const onPointerMove = useCallback((e: { clientX: number; clientY: number }) => {
-    const now = Date.now();
-    if (now - lastCursorEmitTime.current >= CURSOR_THROTTLE_MS) {
-      lastCursorEmitTime.current = now;
-      socketRef.current?.emit("cursor-move", { roomId: diagramId, x: e.clientX, y: e.clientY });
-    }
-  }, [diagramId]);
+  const onPointerMove = useCallback(
+    (e: { clientX: number; clientY: number }) => {
+      const now = Date.now();
+      if (now - lastCursorEmitTime.current >= CURSOR_THROTTLE_MS) {
+        lastCursorEmitTime.current = now;
+        socketRef.current?.emit("cursor-move", { roomId: diagramId, x: e.clientX, y: e.clientY });
+      }
+    },
+    [diagramId],
+  );
 
   /* ─── raise / lower hand ─── */
   const raiseHand = useCallback(() => {
     socketRef.current?.emit("raise-hand", { roomId: diagramId });
     setIsHandRaised(true);
-    setRaisedHands((prev) => selfUserId ? new Set(prev).add(selfUserId) : prev);
+    setRaisedHands((prev) => (selfUserId ? new Set(prev).add(selfUserId) : prev));
   }, [diagramId, selfUserId]);
 
   const lowerHand = useCallback(() => {
     socketRef.current?.emit("lower-hand", { roomId: diagramId });
     setIsHandRaised(false);
-    setRaisedHands((prev) => { if (!selfUserId) { return prev; } const next = new Set(prev); next.delete(selfUserId); return next; });
+    setRaisedHands((prev) => {
+      if (!selfUserId) {
+        return prev;
+      }
+      const next = new Set(prev);
+      next.delete(selfUserId);
+      return next;
+    });
   }, [diagramId, selfUserId]);
 
   /* ─── clear raised hands for users who leave ─── */
@@ -194,14 +241,30 @@ export function usePresence({
       let changed = false;
       const next = new Set(prev);
       for (const id of prev) {
-        if (!currentIds.has(id)) { next.delete(id); changed = true; }
+        if (!currentIds.has(id)) {
+          next.delete(id);
+          changed = true;
+        }
       }
       return changed ? next : prev;
     });
   }, [presenceUsers]);
 
   /* ─── derived: map presence with self ─── */
-  const mappedPresenceUsers: PresenceUserWithSelf[] = presenceUsers.map((u) => ({ ...u, isSelf: u.userId === selfUserId }));
+  const mappedPresenceUsers: PresenceUserWithSelf[] = presenceUsers.map((u) => ({
+    ...u,
+    isSelf: u.userId === selfUserId,
+  }));
 
-  return { presenceUsers: mappedPresenceUsers, cursors, followingUserId, setFollowingUserId, onPointerMove, raisedHands, raiseHand, lowerHand, isHandRaised };
+  return {
+    presenceUsers: mappedPresenceUsers,
+    cursors,
+    followingUserId,
+    setFollowingUserId,
+    onPointerMove,
+    raisedHands,
+    raiseHand,
+    lowerHand,
+    isHandRaised,
+  };
 }

@@ -92,7 +92,15 @@ describe("TransferWorkspaceOwnershipUseCase", () => {
     const d1 = await diagrams.create({ title: "D1", ownerId: "owner-1", workspaceId: ws.id });
     const d2 = await diagrams.create({ title: "D2", ownerId: "owner-1", workspaceId: ws.id });
     const d3 = await diagrams.create({ title: "D3", ownerId: "other-user", workspaceId: ws.id }); // not owned
-    const t1 = await templates.create({ creatorId: "owner-1", workspaceId: ws.id, title: "T1", description: "", category: "general", elements: [], appState: {} });
+    const t1 = await templates.create({
+      creatorId: "owner-1",
+      workspaceId: ws.id,
+      title: "T1",
+      description: "",
+      category: "general",
+      elements: [],
+      appState: {},
+    });
 
     const result = await useCase.execute(ws.id, "owner-1", "admin-2", true);
 

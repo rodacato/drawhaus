@@ -201,11 +201,13 @@ describe("GoogleTokenRefresher.getValidAccessToken — successful refresh", () =
       tokenExpiresAt: new Date(Date.now() - 60_000),
       scopes: "drive.file openid",
     });
-    installFetchMock(() => jsonResponse({
-      access_token: "fresh-access",
-      expires_in: 1800,
-      refresh_token: "rotated-refresh",
-    }));
+    installFetchMock(() =>
+      jsonResponse({
+        access_token: "fresh-access",
+        expires_in: 1800,
+        refresh_token: "rotated-refresh",
+      }),
+    );
     const refresher = new GoogleTokenRefresher(tokens);
 
     await refresher.getValidAccessToken(USER_ID);
@@ -225,7 +227,9 @@ describe("GoogleTokenRefresher.getValidAccessToken — successful refresh", () =
       tokenExpiresAt: new Date(Date.now() - 60_000),
       scopes: "drive.file",
     });
-    const fetchMock = installFetchMock(() => jsonResponse({ access_token: "new", expires_in: 3600 }));
+    const fetchMock = installFetchMock(() =>
+      jsonResponse({ access_token: "new", expires_in: 3600 }),
+    );
     const refresher = new GoogleTokenRefresher(tokens);
 
     await refresher.getValidAccessToken(USER_ID);

@@ -2,8 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { sanitizeElements } from "../../infrastructure/http/public-api/sanitize-elements";
 
-const textOf = (elements: unknown[]) =>
-  (elements[0] as Record<string, unknown>).text as string;
+const textOf = (elements: unknown[]) => (elements[0] as Record<string, unknown>).text as string;
 
 describe("sanitizeElements", () => {
   it("strips a plain tag", () => {

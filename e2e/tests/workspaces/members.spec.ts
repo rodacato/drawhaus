@@ -71,7 +71,7 @@ test.describe("Workspace Members", () => {
       test.skip(true, "Could not create workspace (limit reached)");
       return;
     }
-    const ws = (await createRes.json()).workspace ?? await createRes.json();
+    const ws = (await createRes.json()).workspace ?? (await createRes.json());
 
     const res = await request.post(`/api/workspaces/${ws.id}/invite`, {
       data: { email: ADMIN_USER.email, role: "editor" },

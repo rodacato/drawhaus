@@ -193,8 +193,7 @@ function renderRelation(
   targetId?: string,
   dagrePoints?: Array<{ x: number; y: number }>,
 ): ExcalidrawElementSkeleton {
-  const { startArrowhead, endArrowhead, strokeStyle, isDependency } =
-    getArrowStyle(relationType);
+  const { startArrowhead, endArrowhead, strokeStyle, isDependency } = getArrowStyle(relationType);
 
   const arrowTheme = isDependency ? theme.dependencyArrow : theme.arrow;
   const points = buildArrowPoints(source, target, dagrePoints);
@@ -220,30 +219,90 @@ function getArrowStyle(relationType: ClassRelationType): {
 } {
   switch (relationType) {
     case "inheritance":
-      return { startArrowhead: null, endArrowhead: "triangle", strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: "triangle",
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "inheritance_reverse":
-      return { startArrowhead: "triangle", endArrowhead: null, strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: "triangle",
+        endArrowhead: null,
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "implementation":
-      return { startArrowhead: null, endArrowhead: "triangle", strokeStyle: "dashed", isDependency: true };
+      return {
+        startArrowhead: null,
+        endArrowhead: "triangle",
+        strokeStyle: "dashed",
+        isDependency: true,
+      };
     case "implementation_reverse":
-      return { startArrowhead: "triangle", endArrowhead: null, strokeStyle: "dashed", isDependency: true };
+      return {
+        startArrowhead: "triangle",
+        endArrowhead: null,
+        strokeStyle: "dashed",
+        isDependency: true,
+      };
     case "composition":
-      return { startArrowhead: null, endArrowhead: "diamond", strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: "diamond",
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "composition_reverse":
-      return { startArrowhead: "diamond", endArrowhead: null, strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: "diamond",
+        endArrowhead: null,
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "aggregation":
-      return { startArrowhead: null, endArrowhead: "diamond", strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: "diamond",
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "aggregation_reverse":
-      return { startArrowhead: "diamond", endArrowhead: null, strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: "diamond",
+        endArrowhead: null,
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "directed_association":
-      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: "arrow",
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "directed_association_reverse":
-      return { startArrowhead: "arrow", endArrowhead: null, strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: "arrow",
+        endArrowhead: null,
+        strokeStyle: "solid",
+        isDependency: false,
+      };
     case "dependency":
-      return { startArrowhead: null, endArrowhead: "arrow", strokeStyle: "dashed", isDependency: true };
+      return {
+        startArrowhead: null,
+        endArrowhead: "arrow",
+        strokeStyle: "dashed",
+        isDependency: true,
+      };
     case "association":
     default:
-      return { startArrowhead: null, endArrowhead: null, strokeStyle: "solid", isDependency: false };
+      return {
+        startArrowhead: null,
+        endArrowhead: null,
+        strokeStyle: "solid",
+        isDependency: false,
+      };
   }
 }
 

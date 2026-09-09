@@ -55,38 +55,73 @@ function createApp() {
   const invitations = new InMemoryInvitationRepository();
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
-  app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
-    login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
-    logout: new LogoutUseCase(sessions),
-    getCurrentUser,
-    updateProfile: new UpdateProfileUseCase(users),
-    changePassword: new ChangePasswordUseCase(users, hasher),
-    acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
-    forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
-    resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
-  }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register: new RegisterUseCase(
+          users,
+          sessions,
+          hasher,
+          new InMemorySiteSettingsRepository(),
+        ),
+        login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
+        logout: new LogoutUseCase(sessions),
+        getCurrentUser,
+        updateProfile: new UpdateProfileUseCase(users),
+        changePassword: new ChangePasswordUseCase(users, hasher),
+        acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
+        forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
+        resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
+        deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
+        googleAuth: new GoogleAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        githubAuth: new GitHubAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        unlinkOAuth: new UnlinkOAuthUseCase(
+          users,
+          new InMemoryOAuthTokenRepository(),
+          new InMemoryDriveBackupRepository(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
-  app.use("/api/folders", createFolderRoutes({
-    create: new CreateFolderUseCase(folders, workspaces),
-    list: new ListFoldersUseCase(folders, workspaces),
-    rename: new RenameFolderUseCase(folders),
-    delete: new DeleteFolderUseCase(folders),
-  }, requireAuth));
+  app.use(
+    "/api/folders",
+    createFolderRoutes(
+      {
+        create: new CreateFolderUseCase(folders, workspaces),
+        list: new ListFoldersUseCase(folders, workspaces),
+        rename: new RenameFolderUseCase(folders),
+        delete: new DeleteFolderUseCase(folders),
+      },
+      requireAuth,
+    ),
+  );
 
   return app;
 }
 
 async function registerAndGetCookie(app: express.Express, email: string) {
-  const res = await request(app).post("/api/auth/register").send({
-    email,
-    name: email.split("@")[0],
-    password: "password123",
-  });
+  const res = await request(app)
+    .post("/api/auth/register")
+    .send({
+      email,
+      name: email.split("@")[0],
+      password: "password123",
+    });
   return res.headers["set-cookie"][0].split(";")[0];
 }
 
@@ -211,10 +246,7 @@ test("POST /api/folders rejects empty name with 400", async () => {
   const app = createApp();
   const cookie = await registerAndGetCookie(app, "fempty@example.com");
 
-  const res = await request(app)
-    .post("/api/folders")
-    .set("Cookie", cookie)
-    .send({ name: "" });
+  const res = await request(app).post("/api/folders").set("Cookie", cookie).send({ name: "" });
 
   assert.equal(res.status, 400);
 });

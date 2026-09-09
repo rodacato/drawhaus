@@ -12,7 +12,15 @@ export class RestoreSnapshotUseCase {
     private readonly diagrams: DiagramRepository,
   ) {}
 
-  async execute(snapshotId: string, userId: string): Promise<{ diagramId: string; elements: unknown[]; appState: Record<string, unknown>; sceneId: string | null }> {
+  async execute(
+    snapshotId: string,
+    userId: string,
+  ): Promise<{
+    diagramId: string;
+    elements: unknown[];
+    appState: Record<string, unknown>;
+    sceneId: string | null;
+  }> {
     const snapshot = await this.snapshots.findById(snapshotId);
     if (!snapshot) throw new NotFoundError("Snapshot");
 
@@ -23,16 +31,18 @@ export class RestoreSnapshotUseCase {
     const scenes = await this.scenes.findByDiagram(snapshot.diagramId);
     const currentScene = scenes[0];
     if (currentScene) {
-      await this.snapshots.create({
-        diagramId: snapshot.diagramId,
-        createdBy: userId,
-        trigger: "manual",
-        name: "Pre-restore backup",
-        elements: currentScene.elements,
-        appState: currentScene.appState,
-      }).catch((err) => {
-        logger.error(err, "Failed to create pre-restore snapshot");
-      });
+      await this.snapshots
+        .create({
+          diagramId: snapshot.diagramId,
+          createdBy: userId,
+          trigger: "manual",
+          name: "Pre-restore backup",
+          elements: currentScene.elements,
+          appState: currentScene.appState,
+        })
+        .catch((err) => {
+          logger.error(err, "Failed to create pre-restore snapshot");
+        });
 
       // Restore: overwrite current scene with snapshot data
       await this.scenes.updateScene(currentScene.id, snapshot.elements, snapshot.appState);

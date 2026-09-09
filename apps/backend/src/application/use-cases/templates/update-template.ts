@@ -4,7 +4,11 @@ import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 export class UpdateTemplateUseCase {
   constructor(private readonly templates: TemplateRepository) {}
 
-  async execute(id: string, userId: string, data: { title?: string; description?: string; category?: string; thumbnail?: string }) {
+  async execute(
+    id: string,
+    userId: string,
+    data: { title?: string; description?: string; category?: string; thumbnail?: string },
+  ) {
     const template = await this.templates.findById(id);
     if (!template) throw new NotFoundError("Template");
     if (template.isBuiltIn || template.creatorId !== userId) throw new ForbiddenError();

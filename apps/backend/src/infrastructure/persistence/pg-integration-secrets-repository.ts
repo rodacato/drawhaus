@@ -10,10 +10,7 @@ export class PgIntegrationSecretsRepository implements IntegrationSecretsReposit
       encrypted_value: string;
       iv: string;
       auth_tag: string;
-    }>(
-      "SELECT encrypted_value, iv, auth_tag FROM integration_secrets WHERE key = $1",
-      [key],
-    );
+    }>("SELECT encrypted_value, iv, auth_tag FROM integration_secrets WHERE key = $1", [key]);
 
     if (rows.length === 0) return null;
 

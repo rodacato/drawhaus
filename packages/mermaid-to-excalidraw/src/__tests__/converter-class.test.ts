@@ -212,10 +212,7 @@ describe("convertClassDiagram", () => {
 
     for (let i = 0; i < examples.length; i++) {
       const result = await convertClassDiagram(examples[i]);
-      assert.ok(
-        result.elements.length > 0,
-        `Example ${i + 1} should produce elements`,
-      );
+      assert.ok(result.elements.length > 0, `Example ${i + 1} should produce elements`);
       assert.equal(result.diagramType, "classDiagram");
     }
   });

@@ -15,7 +15,13 @@ const createSchema = z.object({
   expiresInHours: z.number().int().min(1).max(720).optional(),
 });
 
-function formatLink(l: { token: string; diagramId: string; role: string; expiresAt: Date | null; createdAt: Date }) {
+function formatLink(l: {
+  token: string;
+  diagramId: string;
+  role: string;
+  expiresAt: Date | null;
+  createdAt: Date;
+}) {
   return {
     token: l.token,
     diagramId: l.diagramId,
@@ -36,45 +42,62 @@ export function createShareRoutes(
 ) {
   const router = Router();
 
-  router.post("/:diagramId", requireAuth, validateParams(diagramIdParams), validate(createSchema), asyncRoute(async (req, res) => {
-    const link = await useCases.createLink.execute({
-      diagramId: String(req.params.diagramId),
-      userId: req.authUser.id,
-      role: req.body.role,
-      expiresInHours: req.body.expiresInHours,
-    });
-    return res.status(201).json({ shareLink: formatLink(link) });
-  }));
+  router.post(
+    "/:diagramId",
+    requireAuth,
+    validateParams(diagramIdParams),
+    validate(createSchema),
+    asyncRoute(async (req, res) => {
+      const link = await useCases.createLink.execute({
+        diagramId: String(req.params.diagramId),
+        userId: req.authUser.id,
+        role: req.body.role,
+        expiresInHours: req.body.expiresInHours,
+      });
+      return res.status(201).json({ shareLink: formatLink(link) });
+    }),
+  );
 
-  router.get("/:diagramId/links", requireAuth, validateParams(diagramIdParams), asyncRoute(async (req, res) => {
-    const links = await useCases.listLinks.execute(
-      String(req.params.diagramId),
-      req.authUser.id,
-    );
-    return res.status(200).json({ links: links.map(formatLink) });
-  }));
+  router.get(
+    "/:diagramId/links",
+    requireAuth,
+    validateParams(diagramIdParams),
+    asyncRoute(async (req, res) => {
+      const links = await useCases.listLinks.execute(String(req.params.diagramId), req.authUser.id);
+      return res.status(200).json({ links: links.map(formatLink) });
+    }),
+  );
 
-  router.delete("/link/:token", requireAuth, validateParams(tokenParams), asyncRoute(async (req, res) => {
-    await useCases.deleteLink.execute(String(req.params.token), req.authUser.id);
-    return res.status(200).json({ success: true });
-  }));
+  router.delete(
+    "/link/:token",
+    requireAuth,
+    validateParams(tokenParams),
+    asyncRoute(async (req, res) => {
+      await useCases.deleteLink.execute(String(req.params.token), req.authUser.id);
+      return res.status(200).json({ success: true });
+    }),
+  );
 
-  router.get("/link/:token", validateParams(tokenParams), asyncPublicRoute(async (req, res) => {
-    const { link, diagram } = await useCases.resolveLink.execute(String(req.params.token));
-    return res.status(200).json({
-      share: {
-        token: link.token,
-        role: link.role,
-        expiresAt: link.expiresAt?.toISOString() ?? null,
-      },
-      diagram: {
-        id: diagram.id,
-        title: diagram.title,
-        elements: diagram.elements,
-        appState: diagram.appState,
-      },
-    });
-  }));
+  router.get(
+    "/link/:token",
+    validateParams(tokenParams),
+    asyncPublicRoute(async (req, res) => {
+      const { link, diagram } = await useCases.resolveLink.execute(String(req.params.token));
+      return res.status(200).json({
+        share: {
+          token: link.token,
+          role: link.role,
+          expiresAt: link.expiresAt?.toISOString() ?? null,
+        },
+        diagram: {
+          id: diagram.id,
+          title: diagram.title,
+          elements: diagram.elements,
+          appState: diagram.appState,
+        },
+      });
+    }),
+  );
 
   return router;
 }

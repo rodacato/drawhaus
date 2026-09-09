@@ -16,7 +16,10 @@ export function useBoardShortcuts({ flushSave, onToggleComments, toast }: UseBoa
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
         flushSave().then((ok) => {
-          toast(ok ? "Diagrama guardado" : "Error al guardar el diagrama", ok ? "success" : "error");
+          toast(
+            ok ? "Diagrama guardado" : "Error al guardar el diagrama",
+            ok ? "success" : "error",
+          );
         });
       }
     }

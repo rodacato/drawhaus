@@ -89,14 +89,16 @@ const DEFAULT_GITHUB_USER = {
   avatar_url: "https://avatars.githubusercontent.com/u/12345",
 };
 
-function buildHandler(overrides: {
-  token?: unknown;
-  tokenStatus?: number;
-  user?: unknown;
-  userStatus?: number;
-  emails?: unknown;
-  emailsStatus?: number;
-} = {}): FetchHandler {
+function buildHandler(
+  overrides: {
+    token?: unknown;
+    tokenStatus?: number;
+    user?: unknown;
+    userStatus?: number;
+    emails?: unknown;
+    emailsStatus?: number;
+  } = {},
+): FetchHandler {
   return (url) => {
     if (url.startsWith("https://github.com/login/oauth/access_token")) {
       const body = overrides.token ?? DEFAULT_TOKEN_RESPONSE;
@@ -185,7 +187,10 @@ describe("GitHubAuthUseCase", () => {
       assert.equal(parsed.origin, "https://github.com");
       assert.equal(parsed.pathname, "/login/oauth/authorize");
       assert.equal(parsed.searchParams.get("client_id"), "my-client-id");
-      assert.equal(parsed.searchParams.get("redirect_uri"), "https://app.test/auth/github/callback");
+      assert.equal(
+        parsed.searchParams.get("redirect_uri"),
+        "https://app.test/auth/github/callback",
+      );
       assert.equal(parsed.searchParams.get("scope"), "read:user user:email");
       assert.equal(parsed.searchParams.get("state"), "state-abc");
     });
@@ -400,9 +405,7 @@ describe("GitHubAuthUseCase", () => {
     });
 
     it("throws when token exchange returns a non-2xx status", async () => {
-      installFetchMock(
-        buildHandler({ tokenStatus: 400, token: "bad request body" }),
-      );
+      installFetchMock(buildHandler({ tokenStatus: 400, token: "bad request body" }));
       const { useCase } = setup();
 
       await assert.rejects(
@@ -412,9 +415,7 @@ describe("GitHubAuthUseCase", () => {
     });
 
     it("throws when token exchange returns 200 with an error body", async () => {
-      installFetchMock(
-        buildHandler({ token: { error: "bad_verification_code" } }),
-      );
+      installFetchMock(buildHandler({ token: { error: "bad_verification_code" } }));
       const { useCase } = setup();
 
       await assert.rejects(

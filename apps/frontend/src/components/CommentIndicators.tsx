@@ -30,7 +30,7 @@ export function CommentIndicators({
       const appState = api.getAppState();
       const scrollX = (appState.scrollX as number) ?? 0;
       const scrollY = (appState.scrollY as number) ?? 0;
-      const zoom = ((appState.zoom as { value: number })?.value) ?? 1;
+      const zoom = (appState.zoom as { value: number })?.value ?? 1;
 
       const positions: IndicatorPos[] = [];
       for (const el of elements) {

@@ -68,7 +68,9 @@ test.describe("Templates API — workspace scoping", () => {
     expect(workspace).toBeTruthy();
   });
 
-  test("GET /api/templates?workspaceId= includes workspace templates without duplication", async ({ request }) => {
+  test("GET /api/templates?workspaceId= includes workspace templates without duplication", async ({
+    request,
+  }) => {
     test.skip(!workspaceId || !workspaceTemplateId, "No workspace template");
 
     const res = await request.get(`/api/templates?workspaceId=${workspaceId}`);

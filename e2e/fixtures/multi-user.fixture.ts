@@ -32,7 +32,11 @@ export const API_TESTS_USER = {
 /**
  * Login via API and return an authenticated APIRequestContext.
  */
-export async function loginAsUser(baseURL: string, email: string, password: string): Promise<APIRequestContext> {
+export async function loginAsUser(
+  baseURL: string,
+  email: string,
+  password: string,
+): Promise<APIRequestContext> {
   const ctx = await playwrightRequest.newContext({
     baseURL,
     storageState: { cookies: [], origins: [] },

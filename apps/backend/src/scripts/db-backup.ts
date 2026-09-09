@@ -5,7 +5,11 @@
  *   npm run db:backup --workspace=backend
  */
 
-import { createBackup, cleanupOldBackups, getBackupConfig } from "../infrastructure/services/backup-service";
+import {
+  createBackup,
+  cleanupOldBackups,
+  getBackupConfig,
+} from "../infrastructure/services/backup-service";
 
 async function main() {
   const cfg = await getBackupConfig();

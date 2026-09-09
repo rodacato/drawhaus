@@ -79,19 +79,34 @@ export function DriveIntegrationCard() {
         <div>
           <h3 className="font-semibold text-text-primary">Google Drive</h3>
           <p className="text-xs text-text-secondary">
-            {status?.connected ? "Connected — auto-backup your diagrams" : "Back up diagrams to your Google Drive"}
+            {status?.connected
+              ? "Connected — auto-backup your diagrams"
+              : "Back up diagrams to your Google Drive"}
           </p>
         </div>
         {status?.connected && (
           <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
-            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            <svg
+              width="8"
+              height="8"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
             Connected
           </span>
         )}
       </div>
 
       {message && (
-        <p className={`mb-4 ${message.type === "error" ? ui.alertError : ui.alertSuccess}`}>{message.text}</p>
+        <p className={`mb-4 ${message.type === "error" ? ui.alertError : ui.alertSuccess}`}>
+          {message.text}
+        </p>
       )}
 
       {!status?.connected ? (
@@ -99,7 +114,20 @@ export function DriveIntegrationCard() {
           href={`${API_URL}/api/auth/google/drive`}
           className={`${ui.btn} ${ui.btnPrimary} inline-flex items-center gap-2`}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
           Connect Google Drive
         </a>
       ) : (
@@ -108,7 +136,9 @@ export function DriveIntegrationCard() {
           <div className="flex items-center justify-between rounded-lg border border-border p-4">
             <div>
               <p className="text-sm font-medium text-text-primary">Auto-backup</p>
-              <p className="text-xs text-text-secondary">Automatically save diagrams to Drive on every change</p>
+              <p className="text-xs text-text-secondary">
+                Automatically save diagrams to Drive on every change
+              </p>
             </div>
             <button
               type="button"
@@ -128,7 +158,8 @@ export function DriveIntegrationCard() {
 
           {status.autoBackupEnabled && (
             <p className="text-xs text-text-secondary">
-              Diagrams are saved to <span className="font-medium">Drawhaus Backups/</span> in your Google Drive.
+              Diagrams are saved to <span className="font-medium">Drawhaus Backups/</span> in your
+              Google Drive.
             </p>
           )}
 

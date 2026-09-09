@@ -171,23 +171,33 @@ test.describe("Marketing Screenshots", () => {
     // Create comments on main diagram
     if (mainDiagramId) {
       const comments = [
-        { elementId: "api-box", body: "Should we add a load balancer in front of the API Gateway?" },
+        {
+          elementId: "api-box",
+          body: "Should we add a load balancer in front of the API Gateway?",
+        },
         { elementId: "cache-box", body: "Redis cache TTL should be configurable per endpoint" },
-        { elementId: "ws-box", body: "Looks great! The WebSocket connection should be bidirectional" },
+        {
+          elementId: "ws-box",
+          body: "Looks great! The WebSocket connection should be bidirectional",
+        },
       ];
       for (const c of comments) {
-        await request.post(`/api/diagrams/${mainDiagramId}/comments`, {
-          data: { elementId: c.elementId, body: c.body },
-        }).catch(() => {});
+        await request
+          .post(`/api/diagrams/${mainDiagramId}/comments`, {
+            data: { elementId: c.elementId, body: c.body },
+          })
+          .catch(() => {});
       }
     }
 
     // Create extra scenes
     if (mainDiagramId) {
       for (const name of ["Auth Flow", "DB Schema", "Deploy Pipeline"]) {
-        await request.post(`/api/diagrams/${mainDiagramId}/scenes`, {
-          data: { title: name },
-        }).catch(() => {});
+        await request
+          .post(`/api/diagrams/${mainDiagramId}/scenes`, {
+            data: { title: name },
+          })
+          .catch(() => {});
       }
     }
   });
@@ -274,7 +284,7 @@ test.describe("Marketing Screenshots", () => {
     B -->|Invalid| D[Login Page]
     C --> E[Service Layer]
     E --> F[(Database)]
-    E --> G[Cache]`
+    E --> G[Cache]`,
     );
     await page.waitForTimeout(2000);
     await hideSaveBadge(page);
@@ -340,7 +350,10 @@ test.describe("Marketing Screenshots", () => {
   test("screenshot-dashboard", async ({ page }) => {
     await page.setViewportSize(VIEWPORT);
     await page.goto("/dashboard");
-    await page.getByText("Loading...").waitFor({ state: "hidden", timeout: 15_000 }).catch(() => {});
+    await page
+      .getByText("Loading...")
+      .waitFor({ state: "hidden", timeout: 15_000 })
+      .catch(() => {});
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(2000);
     await stabilizePage(page);
@@ -357,7 +370,10 @@ test.describe("Marketing Screenshots", () => {
     const page = await ctx.newPage();
 
     await page.goto("/dashboard");
-    await page.getByText("Loading...").waitFor({ state: "hidden", timeout: 15_000 }).catch(() => {});
+    await page
+      .getByText("Loading...")
+      .waitFor({ state: "hidden", timeout: 15_000 })
+      .catch(() => {});
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1000);
 
@@ -368,7 +384,10 @@ test.describe("Marketing Screenshots", () => {
       await page.waitForTimeout(2000);
     }
 
-    const newBtn = page.locator("button").filter({ hasText: /new diagram/i }).first();
+    const newBtn = page
+      .locator("button")
+      .filter({ hasText: /new diagram/i })
+      .first();
     await newBtn.waitFor({ state: "visible", timeout: 8_000 });
     await newBtn.click();
     await page.waitForTimeout(1500);
@@ -387,7 +406,10 @@ test.describe("Marketing Screenshots", () => {
     const page = await ctx.newPage();
 
     await page.goto("/dashboard");
-    await page.getByText("Loading...").waitFor({ state: "hidden", timeout: 15_000 }).catch(() => {});
+    await page
+      .getByText("Loading...")
+      .waitFor({ state: "hidden", timeout: 15_000 })
+      .catch(() => {});
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1500);
 

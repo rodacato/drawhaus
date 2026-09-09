@@ -15,6 +15,7 @@ Key finding: every product with real concurrent editing on canvas (Figma, Miro, 
 ## Decision
 
 Improve the existing lock with:
+
 - Reduced timeout (5s → 2.5s) and grace period (3s → 1s)
 - Server-side FIFO wait queue with auto-assign on release
 - Persistent badge with countdown instead of blocking overlay

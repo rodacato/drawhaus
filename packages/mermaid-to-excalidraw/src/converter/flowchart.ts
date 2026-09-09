@@ -9,18 +9,23 @@
  * 6. Render edges as arrows
  */
 
-import type { ExcalidrawElementSkeleton, MermaidConfig, MermaidToExcalidrawResult } from "../types.js";
-import type { FlowchartAST, FlowNode, FlowEdge, SubGraph, NodeShape, EdgeStyle } from "../parser/flowchart-types.js";
+import type {
+  ExcalidrawElementSkeleton,
+  MermaidConfig,
+  MermaidToExcalidrawResult,
+} from "../types.js";
+import type {
+  FlowchartAST,
+  FlowNode,
+  FlowEdge,
+  SubGraph,
+  NodeShape,
+  EdgeStyle,
+} from "../parser/flowchart-types.js";
 import type { MermaidTheme, ShapeStyle } from "../theme/types.js";
 import { DEFAULT_THEME } from "../theme/default.js";
 import { parseMermaidFlowchart } from "../parser/flowchart.js";
-import {
-  createRect,
-  createText,
-  createArrow,
-  createLine,
-  resetIdCounter,
-} from "../elements.js";
+import { createRect, createText, createArrow, createLine, resetIdCounter } from "../elements.js";
 import { createEllipse, createDiamond } from "../elements.js";
 import {
   layoutGraph,
@@ -57,10 +62,7 @@ export async function convertFlowchart(
   };
 }
 
-export function mapFlowchart(
-  ast: FlowchartAST,
-  theme: MermaidTheme,
-): ExcalidrawElementSkeleton[] {
+export function mapFlowchart(ast: FlowchartAST, theme: MermaidTheme): ExcalidrawElementSkeleton[] {
   const skeletons: ExcalidrawElementSkeleton[] = [];
 
   // Calculate dimensions for each node
@@ -71,7 +73,14 @@ export function mapFlowchart(
   }
 
   // Map direction
-  const dir = ast.direction === "BT" ? "BT" : ast.direction === "RL" ? "RL" : ast.direction === "LR" ? "LR" : "TB";
+  const dir =
+    ast.direction === "BT"
+      ? "BT"
+      : ast.direction === "RL"
+        ? "RL"
+        : ast.direction === "LR"
+          ? "LR"
+          : "TB";
 
   // Build layout graph
   const layoutNodes: LayoutNode[] = ast.nodes.map((n) => ({
@@ -210,103 +219,117 @@ function renderNode(
   switch (node.shape) {
     case "diamond":
     case "hexagon": {
-      skeletons.push(createDiamond({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        label: node.label,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createDiamond({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          label: node.label,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
     }
     case "circle": {
-      skeletons.push(createEllipse({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        label: node.label,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createEllipse({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          label: node.label,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
     }
     case "database": {
       // Database = ellipse (cylinder approximation)
-      skeletons.push(createEllipse({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        label: node.label,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createEllipse({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          label: node.label,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
     }
     case "stadium":
     case "rounded": {
-      skeletons.push(createRect({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        label: node.label,
-        roundness: 20,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createRect({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          label: node.label,
+          roundness: 20,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
     }
     case "subroutine": {
       // Subroutine = double-bordered rectangle (approximate with thicker stroke)
-      skeletons.push(createRect({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        label: node.label,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-        strokeWidth: 2,
-      }));
+      skeletons.push(
+        createRect({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          label: node.label,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+          strokeWidth: 2,
+        }),
+      );
       break;
     }
     case "asymmetric": {
       // Asymmetric → use rectangle as approximation
-      skeletons.push(createRect({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        label: node.label,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createRect({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          label: node.label,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
     }
     case "rectangle":
     case "parallelogram":
     case "trapezoid":
     default: {
-      skeletons.push(createRect({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        label: node.label,
-        backgroundColor: style.fill,
-        strokeColor: style.stroke,
-        strokeStyle: style.strokeStyle,
-      }));
+      skeletons.push(
+        createRect({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          label: node.label,
+          backgroundColor: style.fill,
+          strokeColor: style.stroke,
+          strokeStyle: style.strokeStyle,
+        }),
+      );
       break;
     }
   }
@@ -386,25 +409,29 @@ function renderSubGraph(
   const skeletons: ExcalidrawElementSkeleton[] = [];
 
   // Container rectangle
-  skeletons.push(createRect({
-    x: containerX,
-    y: containerY,
-    width: containerW,
-    height: containerH,
-    backgroundColor: style.fill,
-    strokeColor: style.stroke,
-    strokeStyle: style.strokeStyle,
-  }));
+  skeletons.push(
+    createRect({
+      x: containerX,
+      y: containerY,
+      width: containerW,
+      height: containerH,
+      backgroundColor: style.fill,
+      strokeColor: style.stroke,
+      strokeStyle: style.strokeStyle,
+    }),
+  );
 
   // Label text
-  skeletons.push(createText({
-    x: containerX + 10,
-    y: containerY + 4,
-    text: sg.label,
-    fontSize: theme.labelText.fontSize,
-    color: theme.labelText.color,
-    textAlign: "left",
-  }));
+  skeletons.push(
+    createText({
+      x: containerX + 10,
+      y: containerY + 4,
+      text: sg.label,
+      fontSize: theme.labelText.fontSize,
+      color: theme.labelText.color,
+      textAlign: "left",
+    }),
+  );
 
   return skeletons;
 }

@@ -19,8 +19,14 @@ export function createServices(repos: Repositories) {
   const githubOAuthProvider = new GitHubOAuthProvider();
 
   return {
-    hasher, configProvider, emailService, driveService, tokenRefresher, auditLogger,
-    googleOAuthProvider, githubOAuthProvider,
+    hasher,
+    configProvider,
+    emailService,
+    driveService,
+    tokenRefresher,
+    auditLogger,
+    googleOAuthProvider,
+    githubOAuthProvider,
   };
 }
 

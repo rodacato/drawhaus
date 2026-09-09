@@ -74,65 +74,98 @@ export function createTemplateRoutes(
   router.use(requireAuth);
 
   // List templates: built-in + personal + workspace (if workspaceId provided)
-  router.get("/", asyncRoute(async (req, res) => {
-    const workspaceId = typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
-    const [mine, workspace] = await Promise.all([
-      useCases.list.executeMine(req.authUser.id),
-      workspaceId ? useCases.list.executeByWorkspace(workspaceId) : Promise.resolve([]),
-    ]);
-    // Deduplicate (user might be creator of workspace templates)
-    const seen = new Set<string>();
-    const merged: Template[] = [];
-    for (const t of [...mine, ...workspace]) {
-      if (!seen.has(t.id)) { seen.add(t.id); merged.push(t); }
-    }
-    return res.json({ templates: merged.map(formatTemplate) });
-  }));
+  router.get(
+    "/",
+    asyncRoute(async (req, res) => {
+      const workspaceId =
+        typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
+      const [mine, workspace] = await Promise.all([
+        useCases.list.executeMine(req.authUser.id),
+        workspaceId ? useCases.list.executeByWorkspace(workspaceId) : Promise.resolve([]),
+      ]);
+      // Deduplicate (user might be creator of workspace templates)
+      const seen = new Set<string>();
+      const merged: Template[] = [];
+      for (const t of [...mine, ...workspace]) {
+        if (!seen.has(t.id)) {
+          seen.add(t.id);
+          merged.push(t);
+        }
+      }
+      return res.json({ templates: merged.map(formatTemplate) });
+    }),
+  );
 
   // Get single template
-  router.get("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
-    const template = await useCases.get.execute(String(req.params.id));
-    return res.json({ template: formatTemplate(template) });
-  }));
+  router.get(
+    "/:id",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      const template = await useCases.get.execute(String(req.params.id));
+      return res.json({ template: formatTemplate(template) });
+    }),
+  );
 
   // Create custom template
-  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
-    const template = await useCases.create.execute({
-      creatorId: req.authUser.id,
-      workspaceId: req.body.workspaceId,
-      title: req.body.title,
-      description: req.body.description,
-      category: req.body.category,
-      elements: req.body.elements,
-      appState: req.body.appState,
-      thumbnail: req.body.thumbnail,
-    });
-    return res.status(201).json({ template: formatTemplate(template) });
-  }));
+  router.post(
+    "/",
+    validate(createSchema),
+    asyncRoute(async (req, res) => {
+      const template = await useCases.create.execute({
+        creatorId: req.authUser.id,
+        workspaceId: req.body.workspaceId,
+        title: req.body.title,
+        description: req.body.description,
+        category: req.body.category,
+        elements: req.body.elements,
+        appState: req.body.appState,
+        thumbnail: req.body.thumbnail,
+      });
+      return res.status(201).json({ template: formatTemplate(template) });
+    }),
+  );
 
   // Use template to create a new diagram
-  router.post("/:id/use", validateParams(uuidParams), validate(useSchema), asyncRoute(async (req, res) => {
-    const diagram = await useCases.use.execute({
-      templateId: String(req.params.id),
-      userId: req.authUser.id,
-      title: req.body.title,
-      workspaceId: req.body.workspaceId,
-      folderId: req.body.folderId,
-    });
-    return res.status(201).json({ diagram: { id: diagram.id, title: diagram.title } });
-  }));
+  router.post(
+    "/:id/use",
+    validateParams(uuidParams),
+    validate(useSchema),
+    asyncRoute(async (req, res) => {
+      const diagram = await useCases.use.execute({
+        templateId: String(req.params.id),
+        userId: req.authUser.id,
+        title: req.body.title,
+        workspaceId: req.body.workspaceId,
+        folderId: req.body.folderId,
+      });
+      return res.status(201).json({ diagram: { id: diagram.id, title: diagram.title } });
+    }),
+  );
 
   // Update custom template
-  router.patch("/:id", validateParams(uuidParams), validate(updateSchema), asyncRoute(async (req, res) => {
-    const template = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
-    return res.json({ template: formatTemplate(template) });
-  }));
+  router.patch(
+    "/:id",
+    validateParams(uuidParams),
+    validate(updateSchema),
+    asyncRoute(async (req, res) => {
+      const template = await useCases.update.execute(
+        String(req.params.id),
+        req.authUser.id,
+        req.body,
+      );
+      return res.json({ template: formatTemplate(template) });
+    }),
+  );
 
   // Delete custom template
-  router.delete("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
-    await useCases.delete.execute(String(req.params.id), req.authUser.id);
-    return res.json({ success: true });
-  }));
+  router.delete(
+    "/:id",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      await useCases.delete.execute(String(req.params.id), req.authUser.id);
+      return res.json({ success: true });
+    }),
+  );
 
   // Transfer ownership (bulk)
   const transferSchema = z.object({
@@ -140,10 +173,18 @@ export function createTemplateRoutes(
     newCreatorId: z.uuid(),
   });
 
-  router.post("/transfer-ownership", validate(transferSchema), asyncRoute(async (req, res) => {
-    await useCases.transferOwnership.execute(req.body.templateIds, req.authUser.id, req.body.newCreatorId);
-    return res.json({ success: true });
-  }));
+  router.post(
+    "/transfer-ownership",
+    validate(transferSchema),
+    asyncRoute(async (req, res) => {
+      await useCases.transferOwnership.execute(
+        req.body.templateIds,
+        req.authUser.id,
+        req.body.newCreatorId,
+      );
+      return res.json({ success: true });
+    }),
+  );
 
   return router;
 }

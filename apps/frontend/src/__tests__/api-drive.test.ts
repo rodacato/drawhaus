@@ -7,7 +7,9 @@ describe("driveApi", () => {
   beforeEach(() => vi.restoreAllMocks());
 
   test("getStatus calls /api/drive/status", async () => {
-    const stub = vi.spyOn(api, "get").mockResolvedValue({ connected: true, autoBackupEnabled: false, scopes: "" });
+    const stub = vi
+      .spyOn(api, "get")
+      .mockResolvedValue({ connected: true, autoBackupEnabled: false, scopes: "" });
     await driveApi.getStatus();
     assert.deepEqual(stub.mock.calls[0], ["/api/drive/status"]);
   });
@@ -25,8 +27,15 @@ describe("driveApi", () => {
   });
 
   test("export posts full payload", async () => {
-    const stub = vi.spyOn(api, "post").mockResolvedValue({ driveFileId: "df1", webViewLink: "https://x" });
-    await driveApi.export({ format: "png", targetFolderId: "tf1", content: "data:...", fileName: "x.png" });
+    const stub = vi
+      .spyOn(api, "post")
+      .mockResolvedValue({ driveFileId: "df1", webViewLink: "https://x" });
+    await driveApi.export({
+      format: "png",
+      targetFolderId: "tf1",
+      content: "data:...",
+      fileName: "x.png",
+    });
     assert.deepEqual(stub.mock.calls[0], [
       "/api/drive/export",
       { format: "png", targetFolderId: "tf1", content: "data:...", fileName: "x.png" },

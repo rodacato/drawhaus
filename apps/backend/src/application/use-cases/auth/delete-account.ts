@@ -18,12 +18,20 @@ export class DeleteAccountUseCase {
 
     if (user.passwordHash) {
       if (!password) {
-        this.audit.log({ actor: userId, action: "user.delete_account.denied", meta: { reason: "missing_password" } });
+        this.audit.log({
+          actor: userId,
+          action: "user.delete_account.denied",
+          meta: { reason: "missing_password" },
+        });
         throw new UnauthorizedError();
       }
       const valid = await this.hasher.verify(password, user.passwordHash);
       if (!valid) {
-        this.audit.log({ actor: userId, action: "user.delete_account.denied", meta: { reason: "wrong_password" } });
+        this.audit.log({
+          actor: userId,
+          action: "user.delete_account.denied",
+          meta: { reason: "wrong_password" },
+        });
         throw new UnauthorizedError();
       }
     }

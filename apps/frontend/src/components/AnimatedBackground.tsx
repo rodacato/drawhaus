@@ -13,7 +13,12 @@ export function AnimatedBackground() {
     if (!container) return;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      container.clientWidth / container.clientHeight,
+      0.1,
+      100,
+    );
     camera.position.z = 30;
 
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });

@@ -9,10 +9,7 @@ describe("shareApi", () => {
   test("create posts role+expiresInHours", async () => {
     const stub = vi.spyOn(api, "post").mockResolvedValue({});
     await shareApi.create("d1", "viewer", 24);
-    assert.deepEqual(stub.mock.calls[0], [
-      "/api/share/d1",
-      { role: "viewer", expiresInHours: 24 },
-    ]);
+    assert.deepEqual(stub.mock.calls[0], ["/api/share/d1", { role: "viewer", expiresInHours: 24 }]);
   });
 
   test("create posts role with undefined expiresInHours when omitted", async () => {

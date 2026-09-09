@@ -34,7 +34,10 @@ test.describe("Star Diagrams", () => {
 
     // Navigate to starred view in dashboard
     await page.goto("/dashboard");
-    await page.getByText("Loading...").waitFor({ state: "hidden", timeout: 10_000 }).catch(() => {});
+    await page
+      .getByText("Loading...")
+      .waitFor({ state: "hidden", timeout: 10_000 })
+      .catch(() => {});
     await page.locator("nav").getByText("Starred").first().click({ force: true });
     await page.locator("main h2").first().waitFor({ timeout: 5_000 });
 

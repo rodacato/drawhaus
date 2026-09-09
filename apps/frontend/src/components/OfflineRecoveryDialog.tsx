@@ -40,8 +40,13 @@ export function OfflineRecoveryDialog({
   async function handleSaveAsSnapshot() {
     setLoading(true);
     try {
-      await snapshotsApi.create(snapshot.diagramId, `Offline backup (${new Date(snapshot.savedAt).toLocaleString()})`);
-    } catch { /* ignore */ }
+      await snapshotsApi.create(
+        snapshot.diagramId,
+        `Offline backup (${new Date(snapshot.savedAt).toLocaleString()})`,
+      );
+    } catch {
+      /* ignore */
+    }
     onSaveAsSnapshot();
   }
 
@@ -51,8 +56,9 @@ export function OfflineRecoveryDialog({
       <div className={`${ui.card} relative z-10 w-full max-w-md space-y-4 shadow-2xl`}>
         <h2 className={ui.h2}>Offline Changes Detected</h2>
         <p className="text-sm text-text-secondary">
-          You were disconnected and have local changes saved <strong>{timeAgo(snapshot.savedAt)}</strong>.
-          The server may have been updated by other users while you were offline.
+          You were disconnected and have local changes saved{" "}
+          <strong>{timeAgo(snapshot.savedAt)}</strong>. The server may have been updated by other
+          users while you were offline.
         </p>
 
         <div className="space-y-2 pt-2">
@@ -67,7 +73,10 @@ export function OfflineRecoveryDialog({
           <button
             type="button"
             className={`${ui.btn} ${ui.btnSecondary} w-full`}
-            onClick={() => { setLoading(true); onKeepServer(); }}
+            onClick={() => {
+              setLoading(true);
+              onKeepServer();
+            }}
             disabled={loading}
           >
             Keep server version

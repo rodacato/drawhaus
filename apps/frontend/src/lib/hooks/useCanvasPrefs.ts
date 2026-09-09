@@ -20,7 +20,9 @@ function load(): CanvasPrefs {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return { ...DEFAULTS };
 }
 
@@ -30,7 +32,11 @@ export function useCanvasPrefs() {
   const updatePrefs = useCallback((patch: Partial<CanvasPrefs>) => {
     setPrefs((prev) => {
       const next = { ...prev, ...patch };
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        /* quota */
+      }
       return next;
     });
   }, []);

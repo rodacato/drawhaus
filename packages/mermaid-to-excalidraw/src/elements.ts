@@ -35,9 +35,7 @@ export function createRect(opts: {
     backgroundColor: opts.backgroundColor ?? "transparent",
     fillStyle: opts.fillStyle ?? "solid",
     roundness: opts.roundness ? { type: 3, value: opts.roundness } : null,
-    ...(opts.label
-      ? { label: { text: opts.label, x: opts.x, y: opts.y } }
-      : {}),
+    ...(opts.label ? { label: { text: opts.label, x: opts.x, y: opts.y } } : {}),
   };
 }
 
@@ -74,10 +72,7 @@ export function createArrow(opts: {
 }): ExcalidrawElementSkeleton {
   const first = opts.points[0];
   const last = opts.points[opts.points.length - 1];
-  const relativePoints = opts.points.map((p) => [
-    p.x - first.x,
-    p.y - first.y,
-  ]);
+  const relativePoints = opts.points.map((p) => [p.x - first.x, p.y - first.y]);
 
   const midIdx = Math.floor(opts.points.length / 2);
   const midPoint = opts.points[midIdx];
@@ -95,9 +90,7 @@ export function createArrow(opts: {
     strokeStyle: opts.strokeStyle ?? "solid",
     strokeColor: opts.strokeColor,
     strokeWidth: opts.strokeWidth,
-    ...(opts.label
-      ? { label: { text: opts.label, x: midPoint.x, y: midPoint.y } }
-      : {}),
+    ...(opts.label ? { label: { text: opts.label, x: midPoint.x, y: midPoint.y } } : {}),
     ...(opts.startId ? { start: { id: opts.startId } } : {}),
     ...(opts.endId ? { end: { id: opts.endId } } : {}),
   };
@@ -124,9 +117,7 @@ export function createDiamond(opts: {
     strokeColor: opts.strokeColor,
     strokeStyle: opts.strokeStyle ?? "solid",
     fillStyle: "solid",
-    ...(opts.label
-      ? { label: { text: opts.label, x: opts.x, y: opts.y } }
-      : {}),
+    ...(opts.label ? { label: { text: opts.label, x: opts.x, y: opts.y } } : {}),
   };
 }
 
@@ -151,9 +142,7 @@ export function createEllipse(opts: {
     strokeColor: opts.strokeColor,
     strokeStyle: opts.strokeStyle ?? "solid",
     fillStyle: "solid",
-    ...(opts.label
-      ? { label: { text: opts.label, x: opts.x, y: opts.y } }
-      : {}),
+    ...(opts.label ? { label: { text: opts.label, x: opts.x, y: opts.y } } : {}),
   };
 }
 

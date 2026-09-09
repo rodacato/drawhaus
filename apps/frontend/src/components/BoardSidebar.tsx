@@ -4,7 +4,15 @@ import { createPortal } from "react-dom";
 import { ui } from "@/lib/ui";
 import type { ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 import { SidebarButton } from "./board-sidebar/SidebarButton";
-import { ExportIcon, CommentIcon, ShareIcon, GearIcon, TemplateIcon, CodeIcon, HistoryIcon } from "./board-sidebar/icons";
+import {
+  ExportIcon,
+  CommentIcon,
+  ShareIcon,
+  GearIcon,
+  TemplateIcon,
+  CodeIcon,
+  HistoryIcon,
+} from "./board-sidebar/icons";
 import { SidebarDrawer } from "./board-sidebar/SidebarDrawer";
 import { ExportPanel } from "./board-sidebar/ExportPanel";
 import { SharePanel } from "./board-sidebar/SharePanel";
@@ -78,7 +86,9 @@ export function BoardSidebar({
     setLeaving(true);
     try {
       await onBeforeLeave();
-    } catch { /* best effort */ }
+    } catch {
+      /* best effort */
+    }
     navigate("/dashboard");
   }
 
@@ -117,7 +127,12 @@ export function BoardSidebar({
         {/* Create & Import */}
         {canEdit && (
           <div className="flex flex-col items-center gap-1.5">
-            <SidebarButton icon={<CodeIcon />} label="Import from Code" active={activePanel === "code"} onClick={() => togglePanel("code")} />
+            <SidebarButton
+              icon={<CodeIcon />}
+              label="Import from Code"
+              active={activePanel === "code"}
+              onClick={() => togglePanel("code")}
+            />
           </div>
         )}
 
@@ -125,13 +140,21 @@ export function BoardSidebar({
 
         {/* View & Collaborate */}
         <div className="flex flex-col items-center gap-1.5">
-          <SidebarButton icon={<ExportIcon />} label="Export" active={activePanel === "export"} onClick={() => togglePanel("export")} />
+          <SidebarButton
+            icon={<ExportIcon />}
+            label="Export"
+            active={activePanel === "export"}
+            onClick={() => togglePanel("export")}
+          />
           <SidebarButton
             icon={<CommentIcon />}
             label="Comments"
             active={commentsPanelOpen}
             badge={commentCount}
-            onClick={() => { setActivePanel(null); onToggleComments(); }}
+            onClick={() => {
+              setActivePanel(null);
+              onToggleComments();
+            }}
           />
           <SidebarButton
             icon={<ShareIcon />}
@@ -147,8 +170,18 @@ export function BoardSidebar({
         {/* Save & History */}
         {canEdit && (
           <div className="flex flex-col items-center gap-1.5">
-            <SidebarButton icon={<TemplateIcon />} label="Save as Template" active={activePanel === "template"} onClick={() => togglePanel("template")} />
-            <SidebarButton icon={<HistoryIcon />} label="Version History" active={activePanel === "snapshots"} onClick={() => togglePanel("snapshots")} />
+            <SidebarButton
+              icon={<TemplateIcon />}
+              label="Save as Template"
+              active={activePanel === "template"}
+              onClick={() => togglePanel("template")}
+            />
+            <SidebarButton
+              icon={<HistoryIcon />}
+              label="Version History"
+              active={activePanel === "snapshots"}
+              onClick={() => togglePanel("snapshots")}
+            />
           </div>
         )}
 
@@ -157,7 +190,12 @@ export function BoardSidebar({
 
         {/* Bottom */}
         <div className="flex flex-col items-center gap-1.5">
-          <SidebarButton icon={<GearIcon />} label="Settings" active={activePanel === "settings"} onClick={() => togglePanel("settings")} />
+          <SidebarButton
+            icon={<GearIcon />}
+            label="Settings"
+            active={activePanel === "settings"}
+            onClick={() => togglePanel("settings")}
+          />
         </div>
       </div>
 
@@ -173,39 +211,70 @@ export function BoardSidebar({
             raisedHands={raisedHands}
           />
         )}
-        {activePanel === "settings" && <SettingsPanel userEmail={userEmail} onDashboardClick={() => setLeaveOpen(true)} canvasPrefs={canvasPrefs} onCanvasPrefsChange={onCanvasPrefsChange} />}
-        {activePanel === "template" && <SaveTemplatePanel excalidrawApiRef={excalidrawApiRef} workspaceId={workspaceId} />}
-        {activePanel === "code" && <CodeImportPanel excalidrawApiRef={excalidrawApiRef} onClose={closePanel} />}
-        {activePanel === "snapshots" && <SnapshotPanel diagramId={diagramId} canEdit={canEdit} excalidrawApiRef={excalidrawApiRef} onRestored={onSnapshotRestored} socketRef={socketRef} />}
+        {activePanel === "settings" && (
+          <SettingsPanel
+            userEmail={userEmail}
+            onDashboardClick={() => setLeaveOpen(true)}
+            canvasPrefs={canvasPrefs}
+            onCanvasPrefsChange={onCanvasPrefsChange}
+          />
+        )}
+        {activePanel === "template" && (
+          <SaveTemplatePanel excalidrawApiRef={excalidrawApiRef} workspaceId={workspaceId} />
+        )}
+        {activePanel === "code" && (
+          <CodeImportPanel excalidrawApiRef={excalidrawApiRef} onClose={closePanel} />
+        )}
+        {activePanel === "snapshots" && (
+          <SnapshotPanel
+            diagramId={diagramId}
+            canEdit={canEdit}
+            excalidrawApiRef={excalidrawApiRef}
+            onRestored={onSnapshotRestored}
+            socketRef={socketRef}
+          />
+        )}
       </SidebarDrawer>
 
-      {leaveOpen && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <button type="button" aria-label="Cancel" disabled={leaving} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !leaving && setLeaveOpen(false)} />
-          <div className={`${ui.card} relative z-10 w-full max-w-sm space-y-4 shadow-2xl`}>
-            <h2 className={ui.h2}>Leave Diagram</h2>
-            <p className="text-sm text-text-secondary">
-              {saveState === "pending" || saveState === "saving"
-                ? "You have unsaved changes. They will be saved before leaving."
-                : "Are you sure you want to go back to the Dashboard?"}
-            </p>
-            <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setLeaveOpen(false)} disabled={leaving} className={`${ui.btn} ${ui.btnSecondary}`}>
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={leaving}
-                className={`${ui.btn} ${ui.btnPrimary}`}
-                onClick={handleLeave}
-              >
-                {leaving ? "Saving..." : "Leave"}
-              </button>
+      {leaveOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <button
+              type="button"
+              aria-label="Cancel"
+              disabled={leaving}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => !leaving && setLeaveOpen(false)}
+            />
+            <div className={`${ui.card} relative z-10 w-full max-w-sm space-y-4 shadow-2xl`}>
+              <h2 className={ui.h2}>Leave Diagram</h2>
+              <p className="text-sm text-text-secondary">
+                {saveState === "pending" || saveState === "saving"
+                  ? "You have unsaved changes. They will be saved before leaving."
+                  : "Are you sure you want to go back to the Dashboard?"}
+              </p>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setLeaveOpen(false)}
+                  disabled={leaving}
+                  className={`${ui.btn} ${ui.btnSecondary}`}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={leaving}
+                  className={`${ui.btn} ${ui.btnPrimary}`}
+                  onClick={handleLeave}
+                >
+                  {leaving ? "Saving..." : "Leave"}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

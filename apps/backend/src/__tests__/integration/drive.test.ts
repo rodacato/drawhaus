@@ -66,44 +66,76 @@ function createApp() {
   const invitations = new InMemoryInvitationRepository();
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
-  app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
-    login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
-    logout: new LogoutUseCase(sessions),
-    getCurrentUser,
-    updateProfile: new UpdateProfileUseCase(users),
-    changePassword: new ChangePasswordUseCase(users, hasher),
-    acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
-    forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
-    resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
-  }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register: new RegisterUseCase(
+          users,
+          sessions,
+          hasher,
+          new InMemorySiteSettingsRepository(),
+        ),
+        login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
+        logout: new LogoutUseCase(sessions),
+        getCurrentUser,
+        updateProfile: new UpdateProfileUseCase(users),
+        changePassword: new ChangePasswordUseCase(users, hasher),
+        acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
+        forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
+        resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
+        deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
+        googleAuth: new GoogleAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        githubAuth: new GitHubAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        unlinkOAuth: new UnlinkOAuthUseCase(
+          users,
+          new InMemoryOAuthTokenRepository(),
+          new InMemoryDriveBackupRepository(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
-  app.use("/api/drive", createDriveRoutes(
-    {
-      getDriveStatus: new GetDriveStatusUseCase(oauth, driveBackup),
-      toggleDriveBackup: new ToggleDriveBackupUseCase(driveBackup, oauth),
-      disconnectDrive: new DisconnectDriveUseCase(driveBackup),
-      exportToDrive: new ExportToDriveUseCase(driveService, tokenRefresher),
-      listDriveFiles: new ListDriveFilesUseCase(driveService, driveBackup, tokenRefresher),
-      importFromDrive: new ImportFromDriveUseCase(driveService, diagrams, tokenRefresher),
-    },
-    tokenRefresher,
-    requireAuth,
-  ));
+  app.use(
+    "/api/drive",
+    createDriveRoutes(
+      {
+        getDriveStatus: new GetDriveStatusUseCase(oauth, driveBackup),
+        toggleDriveBackup: new ToggleDriveBackupUseCase(driveBackup, oauth),
+        disconnectDrive: new DisconnectDriveUseCase(driveBackup),
+        exportToDrive: new ExportToDriveUseCase(driveService, tokenRefresher),
+        listDriveFiles: new ListDriveFilesUseCase(driveService, driveBackup, tokenRefresher),
+        importFromDrive: new ImportFromDriveUseCase(driveService, diagrams, tokenRefresher),
+      },
+      tokenRefresher,
+      requireAuth,
+    ),
+  );
 
   return app;
 }
 
 async function registerAndGetUser(app: express.Express, email: string) {
-  const res = await request(app).post("/api/auth/register").send({
-    email,
-    name: email.split("@")[0],
-    password: "password123",
-  });
+  const res = await request(app)
+    .post("/api/auth/register")
+    .send({
+      email,
+      name: email.split("@")[0],
+      password: "password123",
+    });
   const cookie = res.headers["set-cookie"][0].split(";")[0];
   return { cookie, userId: res.body.user.id as string };
 }
@@ -208,15 +240,12 @@ test("POST /api/drive/export uploads to drive and returns metadata", async () =>
   const { cookie, userId } = await registerAndGetUser(app, "dr7@example.com");
   await connectDrive(userId);
 
-  const res = await request(app)
-    .post("/api/drive/export")
-    .set("Cookie", cookie)
-    .send({
-      format: "excalidraw",
-      targetFolderId: VALID_FOLDER_ID,
-      content: "{\"elements\":[]}",
-      fileName: "scene.excalidraw",
-    });
+  const res = await request(app).post("/api/drive/export").set("Cookie", cookie).send({
+    format: "excalidraw",
+    targetFolderId: VALID_FOLDER_ID,
+    content: '{"elements":[]}',
+    fileName: "scene.excalidraw",
+  });
 
   assert.equal(res.status, 200);
   assert.ok(res.body.driveFileId);
@@ -229,15 +258,12 @@ test("POST /api/drive/export rejects invalid format with 400", async () => {
   const app = createApp();
   const { cookie } = await registerAndGetUser(app, "dr8@example.com");
 
-  const res = await request(app)
-    .post("/api/drive/export")
-    .set("Cookie", cookie)
-    .send({
-      format: "pdf",
-      targetFolderId: VALID_FOLDER_ID,
-      content: "x",
-      fileName: "x",
-    });
+  const res = await request(app).post("/api/drive/export").set("Cookie", cookie).send({
+    format: "pdf",
+    targetFolderId: VALID_FOLDER_ID,
+    content: "x",
+    fileName: "x",
+  });
 
   assert.equal(res.status, 400);
 });
@@ -246,15 +272,12 @@ test("POST /api/drive/export rejects malformed folder id with 400", async () => 
   const app = createApp();
   const { cookie } = await registerAndGetUser(app, "dr9@example.com");
 
-  const res = await request(app)
-    .post("/api/drive/export")
-    .set("Cookie", cookie)
-    .send({
-      format: "png",
-      targetFolderId: "bad id with spaces",
-      content: "x",
-      fileName: "x.png",
-    });
+  const res = await request(app).post("/api/drive/export").set("Cookie", cookie).send({
+    format: "png",
+    targetFolderId: "bad id with spaces",
+    content: "x",
+    fileName: "x.png",
+  });
 
   assert.equal(res.status, 400);
 });
@@ -284,8 +307,18 @@ test("GET /api/drive/files lists files in given folder", async () => {
   await connectDrive(userId);
 
   driveService.files = [
-    { id: "f1", name: "Scene.excalidraw", mimeType: "application/json", modifiedTime: "2026-01-01" },
-    { id: "d1", name: "Sub", mimeType: "application/vnd.google-apps.folder", modifiedTime: "2026-01-02" },
+    {
+      id: "f1",
+      name: "Scene.excalidraw",
+      mimeType: "application/json",
+      modifiedTime: "2026-01-01",
+    },
+    {
+      id: "d1",
+      name: "Sub",
+      mimeType: "application/vnd.google-apps.folder",
+      modifiedTime: "2026-01-02",
+    },
   ];
 
   const res = await request(app)
@@ -311,7 +344,10 @@ test("POST /api/drive/import imports an excalidraw file into a new diagram", asy
   const app = createApp();
   const { cookie, userId } = await registerAndGetUser(app, "dr14@example.com");
   await connectDrive(userId);
-  driveService.contentByFileId.set(VALID_FOLDER_ID, JSON.stringify({ elements: [{ id: "el-1" }], appState: { theme: "dark" } }));
+  driveService.contentByFileId.set(
+    VALID_FOLDER_ID,
+    JSON.stringify({ elements: [{ id: "el-1" }], appState: { theme: "dark" } }),
+  );
 
   const res = await request(app)
     .post("/api/drive/import")

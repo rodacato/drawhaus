@@ -10,7 +10,10 @@ export class ImportFromDriveUseCase {
     private readonly tokenRefresher: TokenRefresherPort,
   ) {}
 
-  async execute(userId: string, data: { fileId: string; fileName: string }): Promise<{ diagramId: string; title: string }> {
+  async execute(
+    userId: string,
+    data: { fileId: string; fileName: string },
+  ): Promise<{ diagramId: string; title: string }> {
     const accessToken = await this.tokenRefresher.getValidAccessToken(userId);
 
     // Download file content from Drive
@@ -21,7 +24,9 @@ export class ImportFromDriveUseCase {
     try {
       parsed = JSON.parse(content);
     } catch {
-      throw new InvalidInputError("File is not valid JSON. Only .excalidraw files can be imported.");
+      throw new InvalidInputError(
+        "File is not valid JSON. Only .excalidraw files can be imported.",
+      );
     }
 
     if (!Array.isArray(parsed.elements)) {

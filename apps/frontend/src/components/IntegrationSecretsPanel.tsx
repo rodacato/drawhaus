@@ -39,7 +39,8 @@ export function IntegrationSecretsPanel() {
   const toast = useToast();
 
   useEffect(() => {
-    adminApi.getIntegrations()
+    adminApi
+      .getIntegrations()
       .then((data) => {
         setIntegrations(data.integrations);
         setEncryptionEnabled(data.encryptionEnabled);
@@ -84,8 +85,9 @@ export function IntegrationSecretsPanel() {
   if (!encryptionEnabled) {
     return (
       <div className={ui.alertError}>
-        <strong>ENCRYPTION_KEY</strong> is not set. Integration secrets can only be configured via environment variables.
-        Set <code className="font-mono text-xs">ENCRYPTION_KEY</code> (64 hex chars) to enable admin UI configuration.
+        <strong>ENCRYPTION_KEY</strong> is not set. Integration secrets can only be configured via
+        environment variables. Set <code className="font-mono text-xs">ENCRYPTION_KEY</code> (64 hex
+        chars) to enable admin UI configuration.
       </div>
     );
   }
@@ -104,13 +106,18 @@ export function IntegrationSecretsPanel() {
         <div key={group} className="space-y-3">
           <h3 className="text-sm font-medium text-text-primary">{group}</h3>
           {items.map((item) => (
-            <div key={item.key} className="flex items-center gap-3 rounded-lg border border-border bg-surface p-3">
+            <div
+              key={item.key}
+              className="flex items-center gap-3 rounded-lg border border-border bg-surface p-3"
+            >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-text-primary">
                     {LABELS[item.key]?.label ?? item.key}
                   </span>
-                  <span className={`text-xs px-1.5 py-0.5 rounded ${SOURCE_BADGE_CLASSES[item.source]}`}>
+                  <span
+                    className={`text-xs px-1.5 py-0.5 rounded ${SOURCE_BADGE_CLASSES[item.source]}`}
+                  >
                     {SOURCE_BADGE_LABELS[item.source]}
                   </span>
                 </div>
@@ -133,7 +140,10 @@ export function IntegrationSecretsPanel() {
                     </button>
                     <button
                       className={`${ui.btn} ${ui.btnSecondary}`}
-                      onClick={() => { setEditing(null); setEditValue(""); }}
+                      onClick={() => {
+                        setEditing(null);
+                        setEditValue("");
+                      }}
                     >
                       Cancel
                     </button>
@@ -148,7 +158,10 @@ export function IntegrationSecretsPanel() {
                 <div className="flex gap-1">
                   <button
                     className={`${ui.btn} ${ui.btnSecondary} text-xs h-8! px-2.5!`}
-                    onClick={() => { setEditing(item.key); setEditValue(""); }}
+                    onClick={() => {
+                      setEditing(item.key);
+                      setEditValue("");
+                    }}
                   >
                     Edit
                   </button>

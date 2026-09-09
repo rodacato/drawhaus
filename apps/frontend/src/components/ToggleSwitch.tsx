@@ -1,4 +1,12 @@
-export function ToggleSwitch({ checked, onChange, disabled }: { readonly checked: boolean; readonly onChange: (v: boolean) => void; readonly disabled?: boolean }) {
+export function ToggleSwitch({
+  checked,
+  onChange,
+  disabled,
+}: {
+  readonly checked: boolean;
+  readonly onChange: (v: boolean) => void;
+  readonly disabled?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -8,7 +16,9 @@ export function ToggleSwitch({ checked, onChange, disabled }: { readonly checked
         checked ? "bg-primary" : "bg-border"
       }`}
     >
-      <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${checked ? "translate-x-5" : "translate-x-0"}`} />
+      <span
+        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${checked ? "translate-x-5" : "translate-x-0"}`}
+      />
     </button>
   );
 }

@@ -189,7 +189,10 @@
       "y": 95,
       "width": 140,
       "height": 0,
-      "points": [[0, 0], [140, 0]],
+      "points": [
+        [0, 0],
+        [140, 0]
+      ],
       "strokeColor": "#1e1e1e",
       "strokeWidth": 2,
       "startArrowhead": null,
@@ -202,7 +205,10 @@
       "y": 80,
       "width": 120,
       "height": -30,
-      "points": [[0, 0], [120, -30]],
+      "points": [
+        [0, 0],
+        [120, -30]
+      ],
       "strokeColor": "#1e1e1e",
       "strokeWidth": 2,
       "startArrowhead": null,
@@ -215,7 +221,10 @@
       "y": 110,
       "width": 120,
       "height": 30,
-      "points": [[0, 0], [120, 30]],
+      "points": [
+        [0, 0],
+        [120, 30]
+      ],
       "strokeColor": "#1e1e1e",
       "strokeWidth": 2,
       "startArrowhead": null,
@@ -228,7 +237,10 @@
       "y": 130,
       "width": 0,
       "height": 110,
-      "points": [[0, 0], [0, 110]],
+      "points": [
+        [0, 0],
+        [0, 110]
+      ],
       "strokeColor": "#1e1e1e",
       "strokeWidth": 2,
       "startArrowhead": null,
@@ -241,7 +253,10 @@
       "y": 130,
       "width": 0,
       "height": 110,
-      "points": [[0, 0], [0, 110]],
+      "points": [
+        [0, 0],
+        [0, 110]
+      ],
       "strokeColor": "#2f9e44",
       "strokeWidth": 2,
       "strokeStyle": "dashed",
@@ -255,7 +270,10 @@
       "y": 170,
       "width": 0,
       "height": 70,
-      "points": [[0, 0], [0, 70]],
+      "points": [
+        [0, 0],
+        [0, 70]
+      ],
       "strokeColor": "#1e1e1e",
       "strokeWidth": 2,
       "startArrowhead": null,

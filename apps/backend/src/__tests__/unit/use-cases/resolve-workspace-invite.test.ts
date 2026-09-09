@@ -31,7 +31,10 @@ async function seedInvite(
 describe("ResolveWorkspaceInviteUseCase", () => {
   it("returns workspace name, role and email for a valid token", async () => {
     const { workspaces, invitations, useCase } = setup();
-    await seedInvite(workspaces, invitations, { token: "t1", expiresAt: new Date(Date.now() + 1_000_000) });
+    await seedInvite(workspaces, invitations, {
+      token: "t1",
+      expiresAt: new Date(Date.now() + 1_000_000),
+    });
 
     const result = await useCase.execute("t1");
 
@@ -40,21 +43,36 @@ describe("ResolveWorkspaceInviteUseCase", () => {
 
   it("throws NotFoundError when the token does not match", async () => {
     const { useCase } = setup();
-    await assert.rejects(() => useCase.execute("missing"), (e: unknown) => e instanceof NotFoundError);
+    await assert.rejects(
+      () => useCase.execute("missing"),
+      (e: unknown) => e instanceof NotFoundError,
+    );
   });
 
   it("throws NotFoundError when the invitation has been used", async () => {
     const { workspaces, invitations, useCase } = setup();
-    const invite = await seedInvite(workspaces, invitations, { token: "t2", expiresAt: new Date(Date.now() + 1_000_000) });
+    const invite = await seedInvite(workspaces, invitations, {
+      token: "t2",
+      expiresAt: new Date(Date.now() + 1_000_000),
+    });
     await invitations.markUsed(invite.id);
 
-    await assert.rejects(() => useCase.execute("t2"), (e: unknown) => e instanceof NotFoundError);
+    await assert.rejects(
+      () => useCase.execute("t2"),
+      (e: unknown) => e instanceof NotFoundError,
+    );
   });
 
   it("throws ExpiredError when the invitation has expired", async () => {
     const { workspaces, invitations, useCase } = setup();
-    await seedInvite(workspaces, invitations, { token: "t3", expiresAt: new Date(Date.now() - 1000) });
+    await seedInvite(workspaces, invitations, {
+      token: "t3",
+      expiresAt: new Date(Date.now() - 1000),
+    });
 
-    await assert.rejects(() => useCase.execute("t3"), (e: unknown) => e instanceof ExpiredError);
+    await assert.rejects(
+      () => useCase.execute("t3"),
+      (e: unknown) => e instanceof ExpiredError,
+    );
   });
 });

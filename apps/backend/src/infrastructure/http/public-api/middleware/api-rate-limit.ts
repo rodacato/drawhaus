@@ -16,7 +16,15 @@ function createApiLimiter(redisClient?: Redis): RequestHandler {
     legacyHeaders: false,
     keyGenerator: (req) => req.headers.authorization ?? req.ip ?? "unknown",
     message: { error: "Rate limit exceeded. Maximum 60 requests per minute per API key" },
-    ...(redisClient ? { store: new RedisStore({ sendCommand: (...args: string[]) => redisClient.call(args[0], ...args.slice(1)) as Promise<number | string>, prefix: "rl:api:" }) } : {}),
+    ...(redisClient
+      ? {
+          store: new RedisStore({
+            sendCommand: (...args: string[]) =>
+              redisClient.call(args[0], ...args.slice(1)) as Promise<number | string>,
+            prefix: "rl:api:",
+          }),
+        }
+      : {}),
   });
 }
 

@@ -43,10 +43,10 @@ export class PgTagRepository implements TagRepository {
   }
 
   async delete(id: string, ownerId: string): Promise<void> {
-    const { rowCount } = await pool.query(
-      "DELETE FROM tags WHERE id = $1 AND owner_id = $2",
-      [id, ownerId],
-    );
+    const { rowCount } = await pool.query("DELETE FROM tags WHERE id = $1 AND owner_id = $2", [
+      id,
+      ownerId,
+    ]);
     if (rowCount === 0) throw new NotFoundError("Tag");
   }
 
@@ -92,10 +92,10 @@ export class PgTagRepository implements TagRepository {
   }
 
   async unassignFromDiagram(diagramId: string, tagId: string): Promise<void> {
-    await pool.query(
-      "DELETE FROM diagram_tags WHERE diagram_id = $1 AND tag_id = $2",
-      [diagramId, tagId],
-    );
+    await pool.query("DELETE FROM diagram_tags WHERE diagram_id = $1 AND tag_id = $2", [
+      diagramId,
+      tagId,
+    ]);
   }
 
   async listForDiagram(diagramId: string): Promise<Tag[]> {

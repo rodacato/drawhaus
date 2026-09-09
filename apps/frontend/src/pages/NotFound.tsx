@@ -11,8 +11,12 @@ export function NotFound() {
           <p className={ui.subtitle}>The page you are looking for does not exist or was moved.</p>
         </div>
         <div className="flex gap-3">
-          <Link className={`${ui.btn} ${ui.btnPrimary}`} to="/dashboard">Dashboard</Link>
-          <Link className={`${ui.btn} ${ui.btnSecondary}`} to="/login">Login</Link>
+          <Link className={`${ui.btn} ${ui.btnPrimary}`} to="/dashboard">
+            Dashboard
+          </Link>
+          <Link className={`${ui.btn} ${ui.btnSecondary}`} to="/login">
+            Login
+          </Link>
         </div>
       </div>
     </div>

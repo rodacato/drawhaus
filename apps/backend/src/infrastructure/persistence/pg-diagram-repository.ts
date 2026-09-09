@@ -23,7 +23,8 @@ type AccessRow = {
   wm_role: "admin" | "editor" | "viewer" | null;
 };
 
-const COLS = "id, owner_id, workspace_id, folder_id, title, elements, app_state, thumbnail, starred, created_via, created_at, updated_at";
+const COLS =
+  "id, owner_id, workspace_id, folder_id, title, elements, app_state, thumbnail, starred, created_via, created_at, updated_at";
 
 function toDomain(row: DiagramRow): Diagram {
   return {
@@ -47,7 +48,9 @@ function escapeLike(str: string): string {
 }
 
 /** d.col alias helper */
-const D_COLS = COLS.split(", ").map((c) => `d.${c}`).join(", ");
+const D_COLS = COLS.split(", ")
+  .map((c) => `d.${c}`)
+  .join(", ");
 
 export class PgDiagramRepository implements DiagramRepository {
   async findById(id: string): Promise<Diagram | null> {
@@ -58,10 +61,17 @@ export class PgDiagramRepository implements DiagramRepository {
     return rows[0] ? toDomain(rows[0]) : null;
   }
 
-  async findByUser(userId: string, folderId?: string | null, workspaceId?: string): Promise<Diagram[]> {
+  async findByUser(
+    userId: string,
+    folderId?: string | null,
+    workspaceId?: string,
+  ): Promise<Diagram[]> {
     // Workspace-scoped query
     if (workspaceId) {
-      const conditions = [`d.workspace_id = $1`, `(d.owner_id = $2 OR dm.user_id = $2 OR wm.user_id IS NOT NULL)`];
+      const conditions = [
+        `d.workspace_id = $1`,
+        `(d.owner_id = $2 OR dm.user_id = $2 OR wm.user_id IS NOT NULL)`,
+      ];
       const params: unknown[] = [workspaceId, userId];
 
       if (folderId !== undefined) {
@@ -87,14 +97,15 @@ export class PgDiagramRepository implements DiagramRepository {
 
     // Legacy: user-scoped query (personal diagrams or all)
     if (folderId !== undefined) {
-      const sql = folderId === null
-        ? `SELECT DISTINCT ON (d.id) ${D_COLS}
+      const sql =
+        folderId === null
+          ? `SELECT DISTINCT ON (d.id) ${D_COLS}
            FROM diagrams d
            LEFT JOIN diagram_members dm ON dm.diagram_id = d.id
            LEFT JOIN workspace_members wm ON wm.workspace_id = d.workspace_id AND wm.user_id = $1
            WHERE (d.owner_id = $1 OR dm.user_id = $1 OR wm.user_id IS NOT NULL) AND d.folder_id IS NULL
            ORDER BY d.id, d.updated_at DESC`
-        : `SELECT DISTINCT ON (d.id) ${D_COLS}
+          : `SELECT DISTINCT ON (d.id) ${D_COLS}
            FROM diagrams d
            LEFT JOIN diagram_members dm ON dm.diagram_id = d.id
            LEFT JOIN workspace_members wm ON wm.workspace_id = d.workspace_id AND wm.user_id = $1
@@ -136,7 +147,16 @@ export class PgDiagramRepository implements DiagramRepository {
     return "viewer";
   }
 
-  async create(data: { title: string; ownerId: string; workspaceId?: string | null; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown>; thumbnail?: string | null; createdVia?: string }): Promise<Diagram> {
+  async create(data: {
+    title: string;
+    ownerId: string;
+    workspaceId?: string | null;
+    folderId?: string | null;
+    elements?: unknown[];
+    appState?: Record<string, unknown>;
+    thumbnail?: string | null;
+    createdVia?: string;
+  }): Promise<Diagram> {
     const folderId = data.folderId ?? null;
     const workspaceId = data.workspaceId ?? null;
     const createdVia = data.createdVia ?? "ui";
@@ -148,21 +168,45 @@ export class PgDiagramRepository implements DiagramRepository {
       : `INSERT INTO diagrams (owner_id, workspace_id, folder_id, title, thumbnail, created_via)
          VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${COLS}`;
     const params = hasScene
-      ? [data.ownerId, workspaceId, folderId, data.title, JSON.stringify(data.elements), JSON.stringify(data.appState ?? {}), data.thumbnail ?? null, createdVia]
+      ? [
+          data.ownerId,
+          workspaceId,
+          folderId,
+          data.title,
+          JSON.stringify(data.elements),
+          JSON.stringify(data.appState ?? {}),
+          data.thumbnail ?? null,
+          createdVia,
+        ]
       : [data.ownerId, workspaceId, folderId, data.title, data.thumbnail ?? null, createdVia];
 
     const { rows } = await pool.query<DiagramRow>(sql, params);
     return toDomain(rows[0]);
   }
 
-  async update(id: string, data: Partial<Pick<Diagram, "title" | "elements" | "appState">>): Promise<Diagram | null> {
+  async update(
+    id: string,
+    data: Partial<Pick<Diagram, "title" | "elements" | "appState">>,
+  ): Promise<Diagram | null> {
     const updates: string[] = [];
     const values: unknown[] = [];
     let index = 1;
 
-    if (data.title !== undefined) { updates.push(`title = $${index}`); values.push(data.title); index += 1; }
-    if (data.elements !== undefined) { updates.push(`elements = $${index}`); values.push(JSON.stringify(data.elements)); index += 1; }
-    if (data.appState !== undefined) { updates.push(`app_state = $${index}`); values.push(JSON.stringify(data.appState)); index += 1; }
+    if (data.title !== undefined) {
+      updates.push(`title = $${index}`);
+      values.push(data.title);
+      index += 1;
+    }
+    if (data.elements !== undefined) {
+      updates.push(`elements = $${index}`);
+      values.push(JSON.stringify(data.elements));
+      index += 1;
+    }
+    if (data.appState !== undefined) {
+      updates.push(`app_state = $${index}`);
+      values.push(JSON.stringify(data.appState));
+      index += 1;
+    }
 
     updates.push("updated_at = now()");
     values.push(id);
@@ -174,7 +218,11 @@ export class PgDiagramRepository implements DiagramRepository {
     return rows[0] ? toDomain(rows[0]) : null;
   }
 
-  async updateScene(id: string, elements: unknown[], appState: Record<string, unknown>): Promise<void> {
+  async updateScene(
+    id: string,
+    elements: unknown[],
+    appState: Record<string, unknown>,
+  ): Promise<void> {
     await pool.query(
       "UPDATE diagrams SET elements = $1, app_state = $2, updated_at = now() WHERE id = $3",
       [JSON.stringify(elements), JSON.stringify(appState), id],
@@ -186,7 +234,10 @@ export class PgDiagramRepository implements DiagramRepository {
   }
 
   async moveToWorkspace(id: string, workspaceId: string | null): Promise<void> {
-    await pool.query("UPDATE diagrams SET workspace_id = $1, folder_id = NULL WHERE id = $2", [workspaceId, id]);
+    await pool.query("UPDATE diagrams SET workspace_id = $1, folder_id = NULL WHERE id = $2", [
+      workspaceId,
+      id,
+    ]);
   }
 
   async search(userId: string, query: string): Promise<Diagram[]> {
@@ -216,10 +267,10 @@ export class PgDiagramRepository implements DiagramRepository {
 
   async transferBulkOwnership(diagramIds: string[], newOwnerId: string): Promise<void> {
     if (diagramIds.length === 0) return;
-    await pool.query(
-      `UPDATE diagrams SET owner_id = $1, updated_at = now() WHERE id = ANY($2)`,
-      [newOwnerId, diagramIds],
-    );
+    await pool.query(`UPDATE diagrams SET owner_id = $1, updated_at = now() WHERE id = ANY($2)`, [
+      newOwnerId,
+      diagramIds,
+    ]);
   }
 
   async findByOwnerInWorkspace(ownerId: string, workspaceId: string): Promise<Diagram[]> {

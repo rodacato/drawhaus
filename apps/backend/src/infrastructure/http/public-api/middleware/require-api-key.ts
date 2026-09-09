@@ -9,7 +9,11 @@ export type ApiKeyAuthedRequest = Request & {
 };
 
 export function createRequireApiKey(validateApiKey: ValidateApiKeyUseCase) {
-  return async function requireApiKey(req: Request, res: Response, next: NextFunction): Promise<void> {
+  return async function requireApiKey(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
       res.status(401).json({ error: "Missing or invalid Authorization header" });

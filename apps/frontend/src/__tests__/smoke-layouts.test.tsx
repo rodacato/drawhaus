@@ -16,7 +16,9 @@ vi.mock("@/api/admin", () => ({
   adminApi: {},
 }));
 vi.mock("@/api/setup", () => ({
-  setupApi: { getStatus: vi.fn().mockResolvedValue({ setupCompleted: true, setupSkippedIntegrations: false }) },
+  setupApi: {
+    getStatus: vi.fn().mockResolvedValue({ setupCompleted: true, setupSkippedIntegrations: false }),
+  },
 }));
 
 const getMe = vi.mocked(authApi.getMe);
@@ -24,7 +26,11 @@ const asUser = (role: string) => ({ id: "u1", name: "U", email: "u@x.com", role 
 
 beforeEach(() => getMe.mockReset());
 
-function gate(layout: React.ReactElement, protectedPath: string, target: { path: string; label: string }) {
+function gate(
+  layout: React.ReactElement,
+  protectedPath: string,
+  target: { path: string; label: string },
+) {
   return (
     <Routes>
       <Route element={layout}>
@@ -38,31 +44,45 @@ function gate(layout: React.ReactElement, protectedPath: string, target: { path:
 describe("layouts — behaviour smoke", () => {
   test("AppShell renders its Outlet", async () => {
     getMe.mockResolvedValue(null);
-    renderWithProviders(gate(<AppShell />, "/x", { path: "/login", label: "LOGIN" }), { route: "/x" });
+    renderWithProviders(gate(<AppShell />, "/x", { path: "/login", label: "LOGIN" }), {
+      route: "/x",
+    });
     await waitFor(() => expect(screen.getByText("OUTLET CONTENT")).toBeTruthy());
   });
 
   test("AuthLayout shows the Outlet when logged out", async () => {
     getMe.mockResolvedValue(null);
-    renderWithProviders(gate(<AuthLayout />, "/login-area", { path: "/dashboard", label: "DASHBOARD" }), { route: "/login-area" });
+    renderWithProviders(
+      gate(<AuthLayout />, "/login-area", { path: "/dashboard", label: "DASHBOARD" }),
+      { route: "/login-area" },
+    );
     await waitFor(() => expect(screen.getByText("OUTLET CONTENT")).toBeTruthy());
   });
 
   test("AuthLayout redirects to dashboard when logged in", async () => {
     getMe.mockResolvedValue(asUser("user"));
-    renderWithProviders(gate(<AuthLayout />, "/login-area", { path: "/dashboard", label: "DASHBOARD" }), { route: "/login-area" });
+    renderWithProviders(
+      gate(<AuthLayout />, "/login-area", { path: "/dashboard", label: "DASHBOARD" }),
+      { route: "/login-area" },
+    );
     await waitFor(() => expect(screen.getByText("DASHBOARD")).toBeTruthy());
   });
 
   test("ProtectedLayout redirects to login when logged out", async () => {
     getMe.mockResolvedValue(null);
-    renderWithProviders(gate(<ProtectedLayout />, "/protected", { path: "/login", label: "LOGIN" }), { route: "/protected" });
+    renderWithProviders(
+      gate(<ProtectedLayout />, "/protected", { path: "/login", label: "LOGIN" }),
+      { route: "/protected" },
+    );
     await waitFor(() => expect(screen.getByText("LOGIN")).toBeTruthy());
   });
 
   test("ProtectedLayout renders the Outlet when logged in", async () => {
     getMe.mockResolvedValue(asUser("user"));
-    renderWithProviders(gate(<ProtectedLayout />, "/protected", { path: "/login", label: "LOGIN" }), { route: "/protected" });
+    renderWithProviders(
+      gate(<ProtectedLayout />, "/protected", { path: "/login", label: "LOGIN" }),
+      { route: "/protected" },
+    );
     await waitFor(() => expect(screen.getByText("OUTLET CONTENT")).toBeTruthy());
   });
 
@@ -71,7 +91,10 @@ describe("layouts — behaviour smoke", () => {
   // legacy: not wired into AppRouter, which routes admin via Settings tabs.)
   test("AdminLayout redirects non-admins to dashboard", async () => {
     getMe.mockResolvedValue(asUser("user"));
-    renderWithProviders(gate(<AdminLayout />, "/admin-area", { path: "/dashboard", label: "DASHBOARD" }), { route: "/admin-area" });
+    renderWithProviders(
+      gate(<AdminLayout />, "/admin-area", { path: "/dashboard", label: "DASHBOARD" }),
+      { route: "/admin-area" },
+    );
     await waitFor(() => expect(screen.getByText("DASHBOARD")).toBeTruthy());
   });
 });

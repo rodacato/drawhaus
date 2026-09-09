@@ -8,7 +8,17 @@ export class StubGoogleTokenRefresher extends GoogleTokenRefresher {
     // Pass a stub OAuthTokenRepository — never reached because we override the only used method.
     super({
       findByUserAndProvider: async () => null,
-      upsert: async () => ({ id: "stub", userId: "stub", provider: "google", accessToken: "stub", refreshToken: null, tokenExpiresAt: null, scopes: "", createdAt: new Date(), updatedAt: new Date() }),
+      upsert: async () => ({
+        id: "stub",
+        userId: "stub",
+        provider: "google",
+        accessToken: "stub",
+        refreshToken: null,
+        tokenExpiresAt: null,
+        scopes: "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
       deleteByUserAndProvider: async () => undefined,
     });
   }

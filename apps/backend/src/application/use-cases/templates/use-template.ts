@@ -8,7 +8,13 @@ export class UseTemplateUseCase {
     private readonly diagrams: DiagramRepository,
   ) {}
 
-  async execute(input: { templateId: string; userId: string; title?: string; workspaceId?: string | null; folderId?: string | null }) {
+  async execute(input: {
+    templateId: string;
+    userId: string;
+    title?: string;
+    workspaceId?: string | null;
+    folderId?: string | null;
+  }) {
     const template = await this.templates.findById(input.templateId);
     if (!template) throw new NotFoundError("Template");
 

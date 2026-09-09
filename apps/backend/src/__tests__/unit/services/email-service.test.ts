@@ -23,7 +23,10 @@ class TestableEmailService extends ResendEmailService {
   }
 }
 
-function makeFakeClient(sendImpl: SendFn): { client: Resend; sendMock: ReturnType<typeof mock.fn> } {
+function makeFakeClient(sendImpl: SendFn): {
+  client: Resend;
+  sendMock: ReturnType<typeof mock.fn>;
+} {
   const sendMock = mock.fn(sendImpl);
   const client = { emails: { send: sendMock } } as unknown as Resend;
   return { client, sendMock };
@@ -127,7 +130,9 @@ describe("ResendEmailService.sendInviteEmail", () => {
       "raw <a> tag must NOT appear in the HTML",
     );
     assert.ok(
-      payload.html.includes("&lt;/strong&gt;&lt;a href=&quot;https://evil.example.com&quot;&gt;Click here&lt;/a&gt;&lt;strong&gt;"),
+      payload.html.includes(
+        "&lt;/strong&gt;&lt;a href=&quot;https://evil.example.com&quot;&gt;Click here&lt;/a&gt;&lt;strong&gt;",
+      ),
       "inviterName must be HTML-escaped",
     );
   });
@@ -175,7 +180,7 @@ describe("ResendEmailService.sendWorkspaceInviteEmail", () => {
     mock.method(logger, "info", () => {});
     const service = new TestableEmailService({ client, from: "noreply@example.test" });
 
-    const malicious = '<img src=x onerror=alert(1)>';
+    const malicious = "<img src=x onerror=alert(1)>";
     const escaped = "&lt;img src=x onerror=alert(1)&gt;";
     await service.sendWorkspaceInviteEmail("invitee@example.com", "t", "Bob", malicious);
 
@@ -209,7 +214,10 @@ describe("ResendEmailService.sendPasswordResetEmail", () => {
     await service.sendPasswordResetEmail("user@example.com", "reset-tok-abc");
 
     const payload = sendMock.mock.calls[0].arguments[0] as SendPayload;
-    assert.match(payload.html, /href="https:\/\/app\.example\.test\/reset-password\/reset-tok-abc"/);
+    assert.match(
+      payload.html,
+      /href="https:\/\/app\.example\.test\/reset-password\/reset-tok-abc"/,
+    );
   });
 
   it("body contains the reset-your-password copy and a 1-hour expiry note", async () => {
@@ -251,9 +259,10 @@ describe("ResendEmailService — send orchestration", () => {
     await service.sendPasswordResetEmail("user@example.com", "tok-1");
 
     assert.equal(sendShouldNotBeCalled.mock.calls.length, 0);
-    const noKeyCall = infoMock.mock.calls.find((c) =>
-      typeof c.arguments[1] === "string" &&
-      (c.arguments[1] as string).includes("No RESEND_API_KEY set"),
+    const noKeyCall = infoMock.mock.calls.find(
+      (c) =>
+        typeof c.arguments[1] === "string" &&
+        (c.arguments[1] as string).includes("No RESEND_API_KEY set"),
     );
     assert.ok(noKeyCall, "must log a 'no api key' message at info level");
     const meta = noKeyCall.arguments[0] as { to: string; subject: string; actionUrl: string };
@@ -295,9 +304,11 @@ describe("ResendEmailService.getResend — resolution paths", () => {
     });
     const service = new ResendEmailService(provider);
 
-    const resolved = await (service as unknown as {
-      getResend: () => Promise<{ client: Resend; from: string } | null>;
-    }).getResend();
+    const resolved = await (
+      service as unknown as {
+        getResend: () => Promise<{ client: Resend; from: string } | null>;
+      }
+    ).getResend();
 
     assert.ok(resolved);
     assert.equal(resolved.from, "configured@example.test");
@@ -309,9 +320,11 @@ describe("ResendEmailService.getResend — resolution paths", () => {
     mutableConfig.fromEmail = "env@example.test";
     const service = new ResendEmailService();
 
-    const resolved = await (service as unknown as {
-      getResend: () => Promise<{ client: Resend; from: string } | null>;
-    }).getResend();
+    const resolved = await (
+      service as unknown as {
+        getResend: () => Promise<{ client: Resend; from: string } | null>;
+      }
+    ).getResend();
 
     assert.ok(resolved);
     assert.equal(resolved.from, "env@example.test");
@@ -321,9 +334,11 @@ describe("ResendEmailService.getResend — resolution paths", () => {
     const provider = makeConfigProvider({ RESEND_API_KEY: "", FROM_EMAIL: "x@example.test" });
     const service = new ResendEmailService(provider);
 
-    const resolved = await (service as unknown as {
-      getResend: () => Promise<{ client: Resend; from: string } | null>;
-    }).getResend();
+    const resolved = await (
+      service as unknown as {
+        getResend: () => Promise<{ client: Resend; from: string } | null>;
+      }
+    ).getResend();
 
     assert.equal(resolved, null);
   });
@@ -332,9 +347,11 @@ describe("ResendEmailService.getResend — resolution paths", () => {
     mutableConfig.resendApiKey = "";
     const service = new ResendEmailService();
 
-    const resolved = await (service as unknown as {
-      getResend: () => Promise<{ client: Resend; from: string } | null>;
-    }).getResend();
+    const resolved = await (
+      service as unknown as {
+        getResend: () => Promise<{ client: Resend; from: string } | null>;
+      }
+    ).getResend();
 
     assert.equal(resolved, null);
   });
@@ -343,9 +360,11 @@ describe("ResendEmailService.getResend — resolution paths", () => {
     const provider = makeConfigProvider({ RESEND_API_KEY: "re_test_key", FROM_EMAIL: "" });
     const service = new ResendEmailService(provider);
 
-    const resolved = await (service as unknown as {
-      getResend: () => Promise<{ client: Resend; from: string } | null>;
-    }).getResend();
+    const resolved = await (
+      service as unknown as {
+        getResend: () => Promise<{ client: Resend; from: string } | null>;
+      }
+    ).getResend();
 
     assert.ok(resolved);
     assert.equal(resolved.from, "noreply@drawhaus.app");

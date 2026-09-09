@@ -45,11 +45,26 @@ export function createRepositories() {
   const workspaceInvitationRepo = new PgWorkspaceInvitationRepository();
 
   return {
-    userRepo, sessionRepo, diagramRepo, shareRepo, siteSettingsRepo,
-    folderRepo, sceneRepo, commentRepo, tagRepo, invitationRepo,
-    passwordResetRepo, oauthTokenRepo, driveBackupRepo, workspaceRepo,
-    integrationSecretsRepo, templateRepo, snapshotRepo, apiKeyRepo,
-    metricsRepo, workspaceInvitationRepo,
+    userRepo,
+    sessionRepo,
+    diagramRepo,
+    shareRepo,
+    siteSettingsRepo,
+    folderRepo,
+    sceneRepo,
+    commentRepo,
+    tagRepo,
+    invitationRepo,
+    passwordResetRepo,
+    oauthTokenRepo,
+    driveBackupRepo,
+    workspaceRepo,
+    integrationSecretsRepo,
+    templateRepo,
+    snapshotRepo,
+    apiKeyRepo,
+    metricsRepo,
+    workspaceInvitationRepo,
   };
 }
 

@@ -19,7 +19,10 @@ const ALLOWED_PREFIXES = [
   "/embed/",
 ];
 
-export function createSetupLock(siteSettingsRepo: SiteSettingsRepository): { middleware: RequestHandler; invalidate: () => void } {
+export function createSetupLock(siteSettingsRepo: SiteSettingsRepository): {
+  middleware: RequestHandler;
+  invalidate: () => void;
+} {
   let cached: boolean | null = null;
   let cacheTime = 0;
   const CACHE_TTL = 30_000;

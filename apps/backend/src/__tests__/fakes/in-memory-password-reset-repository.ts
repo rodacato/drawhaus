@@ -5,7 +5,11 @@ import type { PasswordResetToken } from "../../domain/entities/password-reset-to
 export class InMemoryPasswordResetRepository implements PasswordResetRepository {
   store: PasswordResetToken[] = [];
 
-  async create(data: { userId: string; token: string; expiresAt: Date }): Promise<PasswordResetToken> {
+  async create(data: {
+    userId: string;
+    token: string;
+    expiresAt: Date;
+  }): Promise<PasswordResetToken> {
     const reset: PasswordResetToken = {
       id: crypto.randomUUID(),
       userId: data.userId,

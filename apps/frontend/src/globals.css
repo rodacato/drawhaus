@@ -2,14 +2,14 @@
 
 @theme {
   /* Brand colors — docs/branding/BRANDING.md */
-  --color-primary: #0EA5E9;
+  --color-primary: #0ea5e9;
   --color-primary-hover: #0284c7;
-  --color-accent-coral: #E95B2D;
-  --color-accent-yellow: #FBBF24;
-  --color-accent-orange: #F97316;
+  --color-accent-coral: #e95b2d;
+  --color-accent-yellow: #fbbf24;
+  --color-accent-orange: #f97316;
 
   /* Surfaces (light defaults) */
-  --color-surface: #F8FAF3;
+  --color-surface: #f8faf3;
   --color-surface-raised: #ffffff;
   --color-surface-dark: #111827;
 
@@ -25,10 +25,10 @@
   --color-danger: #dc2626;
 
   /* Semantic states */
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-  --color-info: #3B87F6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b87f6;
 
   /* Typography */
   --font-family-heading: "Sora", system-ui, sans-serif;
@@ -67,10 +67,15 @@
     background-color: var(--color-surface);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-family-heading);
   }
 }

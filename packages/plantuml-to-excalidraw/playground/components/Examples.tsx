@@ -94,9 +94,7 @@ function ExampleCard({
         {example.title}
         {!supported && <span className="badge badge-unsupported">soon</span>}
       </div>
-      <div className="example-card-meta">
-        {example.description}
-      </div>
+      <div className="example-card-meta">{example.description}</div>
     </div>
   );
 }

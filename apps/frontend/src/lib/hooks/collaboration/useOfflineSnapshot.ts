@@ -1,7 +1,12 @@
 import { useEffect, useRef } from "react";
 import type { ExcalidrawApi } from "@/lib/types";
 import type { ConnectionState } from "@/lib/types";
-import { saveOfflineSnapshot, getOfflineSnapshot, deleteOfflineSnapshot, type OfflineSnapshot } from "@/lib/offline-storage";
+import {
+  saveOfflineSnapshot,
+  getOfflineSnapshot,
+  deleteOfflineSnapshot,
+  type OfflineSnapshot,
+} from "@/lib/offline-storage";
 
 const DEFAULT_graceMs = 5 * 60 * 1000;
 
@@ -55,10 +60,12 @@ export function useOfflineSnapshot({
             elements,
             appState,
             savedAt: new Date().toISOString(),
-          }).then(() => {
-            hasOfflineEdits.current = true;
-            onOfflineSave?.();
-          }).catch(() => {});
+          })
+            .then(() => {
+              hasOfflineEdits.current = true;
+              onOfflineSave?.();
+            })
+            .catch(() => {});
         }
       }, graceMs);
     }
@@ -72,12 +79,14 @@ export function useOfflineSnapshot({
       }
 
       if (hasOfflineEdits.current) {
-        getOfflineSnapshot(diagramId).then((snapshot) => {
-          if (snapshot) {
-            onConflict?.(snapshot);
-          }
-          hasOfflineEdits.current = false;
-        }).catch(() => {});
+        getOfflineSnapshot(diagramId)
+          .then((snapshot) => {
+            if (snapshot) {
+              onConflict?.(snapshot);
+            }
+            hasOfflineEdits.current = false;
+          })
+          .catch(() => {});
       }
 
       disconnectedAtRef.current = null;
@@ -98,7 +107,8 @@ export function useOfflineSnapshot({
     function handleBeforeUnload() {
       const api = excalidrawApiRef.current;
       const isOffline = connectionState === "disconnected" || connectionState === "error";
-      const offlineLongEnough = disconnectedAtRef.current && (Date.now() - disconnectedAtRef.current) >= graceMs;
+      const offlineLongEnough =
+        disconnectedAtRef.current && Date.now() - disconnectedAtRef.current >= graceMs;
       if (api && selfUserId && isOffline && offlineLongEnough) {
         const elements = [...api.getSceneElements()];
         const appState = api.getAppState();

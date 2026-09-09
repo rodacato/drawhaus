@@ -68,9 +68,9 @@ export class PgOAuthTokenRepository implements OAuthTokenRepository {
   }
 
   async deleteByUserAndProvider(userId: string, provider: string): Promise<void> {
-    await pool.query(
-      `DELETE FROM oauth_tokens WHERE user_id = $1 AND provider = $2`,
-      [userId, provider],
-    );
+    await pool.query(`DELETE FROM oauth_tokens WHERE user_id = $1 AND provider = $2`, [
+      userId,
+      provider,
+    ]);
   }
 }

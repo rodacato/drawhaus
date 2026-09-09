@@ -26,7 +26,11 @@ function setup() {
 describe("DeleteAccountUseCase", () => {
   it("verifies password and deletes the user (happy path with password)", async () => {
     const { users, audit, useCase } = setup();
-    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_secret" });
+    const user = await users.create({
+      email: "u@example.com",
+      name: "U",
+      passwordHash: "hashed_secret",
+    });
 
     await useCase.execute(user.id, "secret");
 
@@ -61,7 +65,11 @@ describe("DeleteAccountUseCase", () => {
 
   it("throws UnauthorizedError and audits the denial when user has password but null was passed", async () => {
     const { users, audit, useCase } = setup();
-    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_secret" });
+    const user = await users.create({
+      email: "u@example.com",
+      name: "U",
+      passwordHash: "hashed_secret",
+    });
 
     await assert.rejects(
       () => useCase.execute(user.id, null),
@@ -76,7 +84,11 @@ describe("DeleteAccountUseCase", () => {
 
   it("throws UnauthorizedError and audits the denial on wrong password", async () => {
     const { users, audit, useCase } = setup();
-    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_secret" });
+    const user = await users.create({
+      email: "u@example.com",
+      name: "U",
+      passwordHash: "hashed_secret",
+    });
 
     await assert.rejects(
       () => useCase.execute(user.id, "wrong"),
@@ -90,7 +102,11 @@ describe("DeleteAccountUseCase", () => {
 
   it("throws ConflictError and audits the denial when user owns shared workspaces", async () => {
     const { users, workspaces, audit, useCase } = setup();
-    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_secret" });
+    const user = await users.create({
+      email: "u@example.com",
+      name: "U",
+      passwordHash: "hashed_secret",
+    });
     const workspace = await workspaces.create({ name: "Team", ownerId: user.id });
     await workspaces.addMember(workspace.id, "other-user", "editor");
 
@@ -107,7 +123,11 @@ describe("DeleteAccountUseCase", () => {
 
   it("records the audit log BEFORE deleting the user", async () => {
     const { users, audit, useCase } = setup();
-    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_secret" });
+    const user = await users.create({
+      email: "u@example.com",
+      name: "U",
+      passwordHash: "hashed_secret",
+    });
 
     const originalDelete = users.delete.bind(users);
     let auditCountAtDelete = -1;

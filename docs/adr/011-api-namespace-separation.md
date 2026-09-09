@@ -10,6 +10,7 @@ Drawhaus needed both an internal API (used by the SPA) and a public API (used by
 ## Decision
 
 Separate namespaces:
+
 - `/api/` — internal, authenticated via session cookies.
 - `/v1/` — public, authenticated via API keys (`dhk_` prefix, SHA-256 hashed).
 

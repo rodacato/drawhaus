@@ -23,13 +23,7 @@ import type {
 import type { MermaidTheme } from "../theme/types.js";
 import { DEFAULT_THEME } from "../theme/default.js";
 import { parseMermaidERDiagram } from "../parser/er.js";
-import {
-  createRect,
-  createText,
-  createArrow,
-  createLine,
-  resetIdCounter,
-} from "../elements.js";
+import { createRect, createText, createArrow, createLine, resetIdCounter } from "../elements.js";
 import {
   layoutGraph,
   buildArrowPoints,
@@ -64,10 +58,7 @@ export async function convertERDiagram(
   };
 }
 
-export function mapERDiagram(
-  ast: ERDiagramAST,
-  theme: MermaidTheme,
-): ExcalidrawElementSkeleton[] {
+export function mapERDiagram(ast: ERDiagramAST, theme: MermaidTheme): ExcalidrawElementSkeleton[] {
   const skeletons: ExcalidrawElementSkeleton[] = [];
 
   if (ast.entities.length === 0) return skeletons;
@@ -105,13 +96,7 @@ export function mapERDiagram(
     if (!pos) continue;
 
     const dim = entityDimensions.get(entity.name)!;
-    const entitySkeletons = renderEntity(
-      entity,
-      pos.x,
-      pos.y,
-      dim,
-      theme,
-    );
+    const entitySkeletons = renderEntity(entity, pos.x, pos.y, dim, theme);
 
     if (entitySkeletons.length > 0 && entitySkeletons[0].id) {
       entityIdMap.set(entity.name, entitySkeletons[0].id as string);
@@ -145,10 +130,7 @@ export function mapERDiagram(
 
 // ── Entity measurement ──────────────────────────────────────────
 
-function measureEntity(
-  entity: EREntity,
-  theme: MermaidTheme,
-): { width: number; height: number } {
+function measureEntity(entity: EREntity, theme: MermaidTheme): { width: number; height: number } {
   // Header line
   const headerWidth = entity.name.length * CHAR_WIDTH;
 
@@ -159,10 +141,7 @@ function measureEntity(
     maxAttrWidth = Math.max(maxAttrWidth, attrText.length * CHAR_WIDTH);
   }
 
-  const width = Math.max(
-    Math.max(headerWidth, maxAttrWidth) + PADDING_X * 2,
-    MIN_WIDTH,
-  );
+  const width = Math.max(Math.max(headerWidth, maxAttrWidth) + PADDING_X * 2, MIN_WIDTH);
 
   // Height: header + separator + attributes
   let height = PADDING_Y + LINE_HEIGHT; // header
@@ -196,37 +175,43 @@ function renderEntity(
   const skeletons: ExcalidrawElementSkeleton[] = [];
 
   // Container rectangle
-  skeletons.push(createRect({
-    x,
-    y,
-    width: dim.width,
-    height: dim.height,
-    backgroundColor: style.fill,
-    strokeColor: style.stroke,
-    strokeStyle: style.strokeStyle,
-  }));
+  skeletons.push(
+    createRect({
+      x,
+      y,
+      width: dim.width,
+      height: dim.height,
+      backgroundColor: style.fill,
+      strokeColor: style.stroke,
+      strokeStyle: style.strokeStyle,
+    }),
+  );
 
   // Header text (entity name)
-  skeletons.push(createText({
-    x: x + PADDING_X,
-    y: y + PADDING_Y,
-    text: entity.name,
-    fontSize: theme.headerText.fontSize,
-    color: theme.headerText.color,
-    textAlign: "left",
-  }));
+  skeletons.push(
+    createText({
+      x: x + PADDING_X,
+      y: y + PADDING_Y,
+      text: entity.name,
+      fontSize: theme.headerText.fontSize,
+      color: theme.headerText.color,
+      textAlign: "left",
+    }),
+  );
 
   if (entity.attributes.length > 0) {
     // Separator line
     const sepY = y + PADDING_Y + LINE_HEIGHT + SEPARATOR_GAP / 2;
-    skeletons.push(createLine({
-      startX: x,
-      startY: sepY,
-      endX: x + dim.width,
-      endY: sepY,
-      strokeColor: theme.separator.stroke,
-      strokeWidth: theme.separator.strokeWidth,
-    }));
+    skeletons.push(
+      createLine({
+        startX: x,
+        startY: sepY,
+        endX: x + dim.width,
+        endY: sepY,
+        strokeColor: theme.separator.stroke,
+        strokeWidth: theme.separator.strokeWidth,
+      }),
+    );
 
     // Attribute lines
     let attrY = y + PADDING_Y + LINE_HEIGHT + SEPARATOR_GAP;
@@ -234,14 +219,16 @@ function renderEntity(
       const text = formatAttribute(attr);
       const isPK = attr.constraints.includes("PK");
 
-      skeletons.push(createText({
-        x: x + PADDING_X,
-        y: attrY,
-        text,
-        fontSize: theme.memberText.fontSize,
-        color: isPK ? theme.headerText.color : theme.memberText.color,
-        textAlign: "left",
-      }));
+      skeletons.push(
+        createText({
+          x: x + PADDING_X,
+          y: attrY,
+          text,
+          fontSize: theme.memberText.fontSize,
+          color: isPK ? theme.headerText.color : theme.memberText.color,
+          textAlign: "left",
+        }),
+      );
 
       attrY += LINE_HEIGHT;
     }
@@ -254,10 +241,14 @@ function renderEntity(
 
 function cardinalitySymbol(c: Cardinality): string {
   switch (c) {
-    case "one": return "1";
-    case "zeroOrOne": return "0..1";
-    case "many": return "0..*";
-    case "oneOrMore": return "1..*";
+    case "one":
+      return "1";
+    case "zeroOrOne":
+      return "0..1";
+    case "many":
+      return "0..*";
+    case "oneOrMore":
+      return "1..*";
   }
 }
 
@@ -273,9 +264,7 @@ function renderRelation(
   const skeletons: ExcalidrawElementSkeleton[] = [];
 
   const points = buildArrowPoints(source, target, dagrePoints);
-  const arrowTheme = rel.lineType === "nonIdentifying"
-    ? theme.erDashedRelation
-    : theme.erRelation;
+  const arrowTheme = rel.lineType === "nonIdentifying" ? theme.erDashedRelation : theme.erRelation;
 
   // Build label with cardinality and relationship name
   const leftCard = cardinalitySymbol(rel.leftCardinality);
@@ -286,17 +275,19 @@ function renderRelation(
   if (rightCard) labelParts.push(rightCard);
   const label = labelParts.join(" — ");
 
-  skeletons.push(createArrow({
-    points,
-    label: label || undefined,
-    startArrowhead: null,
-    endArrowhead: null,
-    strokeStyle: rel.lineType === "nonIdentifying" ? "dashed" : "solid",
-    strokeColor: arrowTheme.stroke,
-    strokeWidth: arrowTheme.strokeWidth,
-    startId: sourceId,
-    endId: targetId,
-  }));
+  skeletons.push(
+    createArrow({
+      points,
+      label: label || undefined,
+      startArrowhead: null,
+      endArrowhead: null,
+      strokeStyle: rel.lineType === "nonIdentifying" ? "dashed" : "solid",
+      strokeColor: arrowTheme.stroke,
+      strokeWidth: arrowTheme.strokeWidth,
+      startId: sourceId,
+      endId: targetId,
+    }),
+  );
 
   return skeletons;
 }

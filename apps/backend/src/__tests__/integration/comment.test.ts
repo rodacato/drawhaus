@@ -60,40 +60,80 @@ function createApp() {
   const invitations = new InMemoryInvitationRepository();
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
-  app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(userStore, sessions, hasher, new InMemorySiteSettingsRepository()),
-    login: new LoginUseCase(userStore, sessions, hasher, new NoopAuditLogger()),
-    logout: new LogoutUseCase(sessions),
-    getCurrentUser,
-    updateProfile: new UpdateProfileUseCase(userStore),
-    changePassword: new ChangePasswordUseCase(userStore, hasher),
-    acceptInvite: new AcceptInviteUseCase(userStore, sessions, invitations, hasher),
-    forgotPassword: new ForgotPasswordUseCase(userStore, passwordResets, emailService),
-    resetPassword: new ResetPasswordUseCase(userStore, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(userStore, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(userStore, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    githubAuth: new GitHubAuthUseCase(userStore, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    unlinkOAuth: new UnlinkOAuthUseCase(userStore, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
-  }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register: new RegisterUseCase(
+          userStore,
+          sessions,
+          hasher,
+          new InMemorySiteSettingsRepository(),
+        ),
+        login: new LoginUseCase(userStore, sessions, hasher, new NoopAuditLogger()),
+        logout: new LogoutUseCase(sessions),
+        getCurrentUser,
+        updateProfile: new UpdateProfileUseCase(userStore),
+        changePassword: new ChangePasswordUseCase(userStore, hasher),
+        acceptInvite: new AcceptInviteUseCase(userStore, sessions, invitations, hasher),
+        forgotPassword: new ForgotPasswordUseCase(userStore, passwordResets, emailService),
+        resetPassword: new ResetPasswordUseCase(userStore, sessions, passwordResets, hasher),
+        deleteAccount: new DeleteAccountUseCase(
+          userStore,
+          hasher,
+          new NoopAuditLogger(),
+          workspaces,
+        ),
+        googleAuth: new GoogleAuthUseCase(
+          userStore,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        githubAuth: new GitHubAuthUseCase(
+          userStore,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        unlinkOAuth: new UnlinkOAuthUseCase(
+          userStore,
+          new InMemoryOAuthTokenRepository(),
+          new InMemoryDriveBackupRepository(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
-  app.use("/api/diagrams/:diagramId/comments", createCommentRoutes({
-    list: new ListCommentsUseCase(comments, diagrams),
-    create: new CreateCommentUseCase(comments, diagrams),
-    reply: new ReplyCommentUseCase(comments, diagrams),
-    resolve: new ResolveCommentUseCase(comments, diagrams),
-    delete: new DeleteCommentUseCase(comments, diagrams),
-    toggleLike: new ToggleLikeUseCase(comments, diagrams),
-  }, requireAuth));
+  app.use(
+    "/api/diagrams/:diagramId/comments",
+    createCommentRoutes(
+      {
+        list: new ListCommentsUseCase(comments, diagrams),
+        create: new CreateCommentUseCase(comments, diagrams),
+        reply: new ReplyCommentUseCase(comments, diagrams),
+        resolve: new ResolveCommentUseCase(comments, diagrams),
+        delete: new DeleteCommentUseCase(comments, diagrams),
+        toggleLike: new ToggleLikeUseCase(comments, diagrams),
+      },
+      requireAuth,
+    ),
+  );
 
   return app;
 }
 
 async function registerAndGetUser(app: express.Express, email: string) {
-  const res = await request(app).post("/api/auth/register").send({
-    email,
-    name: email.split("@")[0],
-    password: "password123",
-  });
+  const res = await request(app)
+    .post("/api/auth/register")
+    .send({
+      email,
+      name: email.split("@")[0],
+      password: "password123",
+    });
   const cookie = res.headers["set-cookie"][0].split(";")[0];
   return { cookie, userId: res.body.user.id as string };
 }
@@ -226,9 +266,7 @@ test("GET /api/diagrams/:diagramId/comments lists threads with replies and like 
   await comments.addReply({ threadId: created.id, authorId: userId, body: "Reply 1" });
   await comments.toggleLike(created.id, userId);
 
-  const res = await request(app)
-    .get(`/api/diagrams/${diagram.id}/comments`)
-    .set("Cookie", cookie);
+  const res = await request(app).get(`/api/diagrams/${diagram.id}/comments`).set("Cookie", cookie);
 
   assert.equal(res.status, 200);
   assert.equal(res.body.threads.length, 1);
@@ -249,9 +287,27 @@ test("GET /api/diagrams/:diagramId/comments filters by sceneId", async () => {
 
   const sceneId = "11111111-1111-1111-1111-111111111111";
   const otherScene = "22222222-2222-2222-2222-222222222222";
-  await comments.createThread({ diagramId: diagram.id, sceneId, elementId: "e1", authorId: userId, body: "scene A" });
-  await comments.createThread({ diagramId: diagram.id, sceneId: otherScene, elementId: "e2", authorId: userId, body: "scene B" });
-  await comments.createThread({ diagramId: diagram.id, sceneId: null, elementId: "e3", authorId: userId, body: "global" });
+  await comments.createThread({
+    diagramId: diagram.id,
+    sceneId,
+    elementId: "e1",
+    authorId: userId,
+    body: "scene A",
+  });
+  await comments.createThread({
+    diagramId: diagram.id,
+    sceneId: otherScene,
+    elementId: "e2",
+    authorId: userId,
+    body: "scene B",
+  });
+  await comments.createThread({
+    diagramId: diagram.id,
+    sceneId: null,
+    elementId: "e3",
+    authorId: userId,
+    body: "global",
+  });
 
   const res = await request(app)
     .get(`/api/diagrams/${diagram.id}/comments?sceneId=${sceneId}`)
@@ -269,9 +325,7 @@ test("GET /api/diagrams/:diagramId/comments returns 404 when user lacks access",
   const { cookie } = await registerAndGetUser(app, "clistforbid@example.com");
   const diagram = await diagrams.create({ ownerId: "other-user-id", title: "D" });
 
-  const res = await request(app)
-    .get(`/api/diagrams/${diagram.id}/comments`)
-    .set("Cookie", cookie);
+  const res = await request(app).get(`/api/diagrams/${diagram.id}/comments`).set("Cookie", cookie);
 
   assert.equal(res.status, 404);
 });
@@ -449,8 +503,14 @@ test("DELETE /:threadId removes a thread (author)", async () => {
 
 test("DELETE /:threadId returns 403 when non-author editor tries to delete", async () => {
   const app = createApp();
-  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(app, "cdelowner@example.com");
-  const { cookie: editorCookie, userId: editorId } = await registerAndGetUser(app, "cdeleditor@example.com");
+  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(
+    app,
+    "cdelowner@example.com",
+  );
+  const { cookie: editorCookie, userId: editorId } = await registerAndGetUser(
+    app,
+    "cdeleditor@example.com",
+  );
 
   const diagram = await diagrams.create({ ownerId: ownerId, title: "D" });
   diagrams.members.push({ diagramId: diagram.id, userId: editorId, role: "editor" });
@@ -473,8 +533,14 @@ test("DELETE /:threadId returns 403 when non-author editor tries to delete", asy
 
 test("DELETE /:threadId allows diagram owner to delete a thread they did not author", async () => {
   const app = createApp();
-  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(app, "cdelowner2@example.com");
-  const { cookie: editorCookie, userId: editorId } = await registerAndGetUser(app, "cdeleditor2@example.com");
+  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(
+    app,
+    "cdelowner2@example.com",
+  );
+  const { cookie: editorCookie, userId: editorId } = await registerAndGetUser(
+    app,
+    "cdeleditor2@example.com",
+  );
 
   const diagram = await diagrams.create({ ownerId: ownerId, title: "D" });
   diagrams.members.push({ diagramId: diagram.id, userId: editorId, role: "editor" });

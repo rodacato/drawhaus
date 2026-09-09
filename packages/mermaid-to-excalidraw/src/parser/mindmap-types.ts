@@ -1,13 +1,7 @@
 /** AST types for Mermaid mindmap diagrams. */
 
 export type MindmapShape =
-  | "default"
-  | "square"
-  | "rounded"
-  | "circle"
-  | "bang"
-  | "cloud"
-  | "hexagon";
+  "default" | "square" | "rounded" | "circle" | "bang" | "cloud" | "hexagon";
 
 export interface MindmapNode {
   id: string;

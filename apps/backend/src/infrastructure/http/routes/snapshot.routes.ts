@@ -61,74 +61,102 @@ export function createSnapshotRoutes(
   router.use(requireAuth);
 
   // GET /api/diagrams/:diagramId/snapshots
-  router.get("/", validateParams(diagramIdParams), asyncRoute(async (req, res) => {
-    const snapshots = await useCases.list.execute(String(req.params.diagramId), req.authUser.id);
-    return res.json({ snapshots: snapshots.map(formatSnapshot) });
-  }));
+  router.get(
+    "/",
+    validateParams(diagramIdParams),
+    asyncRoute(async (req, res) => {
+      const snapshots = await useCases.list.execute(String(req.params.diagramId), req.authUser.id);
+      return res.json({ snapshots: snapshots.map(formatSnapshot) });
+    }),
+  );
 
   // POST /api/diagrams/:diagramId/snapshots
-  router.post("/", validateParams(diagramIdParams), validate(createSchema), asyncRoute(async (req, res) => {
-    const diagramId = String(req.params.diagramId);
-    const snapshot = await useCases.create.execute(
-      diagramId,
-      req.authUser.id,
-      "manual",
-      req.body.name,
-    );
-    if (!snapshot) {
-      return res.status(429).json({ error: "Snapshot creation throttled" });
-    }
-    ioHolder?.io?.to(diagramId).emit("snapshot-created", { diagramId, snapshot: formatSnapshot(snapshot) });
-    return res.status(201).json({ snapshot: formatSnapshot(snapshot) });
-  }));
+  router.post(
+    "/",
+    validateParams(diagramIdParams),
+    validate(createSchema),
+    asyncRoute(async (req, res) => {
+      const diagramId = String(req.params.diagramId);
+      const snapshot = await useCases.create.execute(
+        diagramId,
+        req.authUser.id,
+        "manual",
+        req.body.name,
+      );
+      if (!snapshot) {
+        return res.status(429).json({ error: "Snapshot creation throttled" });
+      }
+      ioHolder?.io
+        ?.to(diagramId)
+        .emit("snapshot-created", { diagramId, snapshot: formatSnapshot(snapshot) });
+      return res.status(201).json({ snapshot: formatSnapshot(snapshot) });
+    }),
+  );
 
   // GET /api/diagrams/:diagramId/snapshots/:snapshotId
-  router.get("/:snapshotId", validateParams(snapshotParams), asyncRoute(async (req, res) => {
-    const snapshot = await useCases.get.execute(String(req.params.snapshotId), req.authUser.id);
-    return res.json({ snapshot: formatSnapshotFull(snapshot) });
-  }));
+  router.get(
+    "/:snapshotId",
+    validateParams(snapshotParams),
+    asyncRoute(async (req, res) => {
+      const snapshot = await useCases.get.execute(String(req.params.snapshotId), req.authUser.id);
+      return res.json({ snapshot: formatSnapshotFull(snapshot) });
+    }),
+  );
 
   // POST /api/diagrams/:diagramId/snapshots/:snapshotId/restore
-  router.post("/:snapshotId/restore", validateParams(snapshotParams), asyncRoute(async (req, res) => {
-    const result = await useCases.restore.execute(String(req.params.snapshotId), req.authUser.id);
+  router.post(
+    "/:snapshotId/restore",
+    validateParams(snapshotParams),
+    asyncRoute(async (req, res) => {
+      const result = await useCases.restore.execute(String(req.params.snapshotId), req.authUser.id);
 
-    if (ioHolder?.io) {
-      const { diagramId } = result;
-      // Notify all users in the room about the restore
-      ioHolder.io.to(diagramId).emit("snapshot-restored", {
-        diagramId,
-        restoredBy: { userId: req.authUser.id, userName: req.authUser.name },
-        snapshotId: req.params.snapshotId,
-      });
-      // Broadcast restored scene to all users so their canvas updates
-      if (result.sceneId) {
-        ioHolder.io.to(diagramId).emit("scene-from-db", {
-          elements: result.elements,
-          appState: result.appState,
+      if (ioHolder?.io) {
+        const { diagramId } = result;
+        // Notify all users in the room about the restore
+        ioHolder.io.to(diagramId).emit("snapshot-restored", {
+          diagramId,
+          restoredBy: { userId: req.authUser.id, userName: req.authUser.name },
+          snapshotId: req.params.snapshotId,
         });
+        // Broadcast restored scene to all users so their canvas updates
+        if (result.sceneId) {
+          ioHolder.io.to(diagramId).emit("scene-from-db", {
+            elements: result.elements,
+            appState: result.appState,
+          });
+        }
+        // Trigger snapshot list refresh (pre-restore backup was created)
+        ioHolder.io.to(diagramId).emit("snapshot-created", { diagramId });
       }
-      // Trigger snapshot list refresh (pre-restore backup was created)
-      ioHolder.io.to(diagramId).emit("snapshot-created", { diagramId });
-    }
 
-    return res.json({ success: true, diagramId: result.diagramId });
-  }));
+      return res.json({ success: true, diagramId: result.diagramId });
+    }),
+  );
 
   // PATCH /api/diagrams/:diagramId/snapshots/:snapshotId
-  router.patch("/:snapshotId", validateParams(snapshotParams), validate(renameSchema), asyncRoute(async (req, res) => {
-    const snapshot = await useCases.rename.execute(
-      String(req.params.snapshotId),
-      req.authUser.id,
-      req.body.name,
-    );
-    return res.json({ snapshot: formatSnapshot(snapshot) });
-  }));
+  router.patch(
+    "/:snapshotId",
+    validateParams(snapshotParams),
+    validate(renameSchema),
+    asyncRoute(async (req, res) => {
+      const snapshot = await useCases.rename.execute(
+        String(req.params.snapshotId),
+        req.authUser.id,
+        req.body.name,
+      );
+      return res.json({ snapshot: formatSnapshot(snapshot) });
+    }),
+  );
 
   // DELETE /api/diagrams/:diagramId/snapshots/:snapshotId
-  router.delete("/:snapshotId", validateParams(snapshotParams), asyncRoute(async (req, res) => {
-    await useCases.delete.execute(String(req.params.snapshotId), req.authUser.id);
-    return res.json({ success: true });
-  }));
+  router.delete(
+    "/:snapshotId",
+    validateParams(snapshotParams),
+    asyncRoute(async (req, res) => {
+      await useCases.delete.execute(String(req.params.snapshotId), req.authUser.id);
+      return res.json({ success: true });
+    }),
+  );
 
   return router;
 }

@@ -11,7 +11,9 @@ vi.mock("@/api/auth", () => ({
 
 vi.mock("@/api/admin", () => ({
   adminApi: {
-    getMetrics: vi.fn().mockResolvedValue({ metrics: { totalUsers: 0, totalDiagrams: 0, activeSessions: 0 } }),
+    getMetrics: vi
+      .fn()
+      .mockResolvedValue({ metrics: { totalUsers: 0, totalDiagrams: 0, activeSessions: 0 } }),
     listUsers: vi.fn().mockResolvedValue({ users: [] }),
     getSettings: vi.fn().mockResolvedValue({ settings: {} }),
     getIntegrations: vi.fn().mockResolvedValue({ integrations: [] }),
@@ -26,16 +28,22 @@ vi.mock("@/api/admin", () => ({
 describe("admin pages — smoke (render without crashing)", () => {
   test("AdminOverview renders its heading", async () => {
     renderWithProviders(<AdminOverview onNavigate={() => {}} />);
-    await waitFor(() => expect(screen.getByRole("heading", { name: /admin dashboard/i })).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: /admin dashboard/i })).toBeTruthy(),
+    );
   });
 
   test("AdminUsers renders its heading", async () => {
     renderWithProviders(<AdminUsers />);
-    await waitFor(() => expect(screen.getByRole("heading", { name: /user management/i })).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: /user management/i })).toBeTruthy(),
+    );
   });
 
   test("AdminSettings renders once settings load", async () => {
     renderWithProviders(<AdminSettings />);
-    await waitFor(() => expect(screen.getByRole("heading", { name: /site settings/i })).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: /site settings/i })).toBeTruthy(),
+    );
   });
 });

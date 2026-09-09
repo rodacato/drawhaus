@@ -10,7 +10,11 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     return this.store.find((d) => d.id === id) ?? null;
   }
 
-  async findByUser(userId: string, folderId?: string | null, workspaceId?: string): Promise<Diagram[]> {
+  async findByUser(
+    userId: string,
+    folderId?: string | null,
+    workspaceId?: string,
+  ): Promise<Diagram[]> {
     const memberDiagramIds = new Set(
       this.members.filter((m) => m.userId === userId).map((m) => m.diagramId),
     );
@@ -32,7 +36,15 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     return member?.role ?? null;
   }
 
-  async create(data: { title: string; ownerId: string; workspaceId?: string | null; folderId?: string | null; elements?: unknown[]; appState?: Record<string, unknown>; createdVia?: string }): Promise<Diagram> {
+  async create(data: {
+    title: string;
+    ownerId: string;
+    workspaceId?: string | null;
+    folderId?: string | null;
+    elements?: unknown[];
+    appState?: Record<string, unknown>;
+    createdVia?: string;
+  }): Promise<Diagram> {
     const diagram: Diagram = {
       id: crypto.randomUUID(),
       ownerId: data.ownerId,
@@ -51,7 +63,10 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     return diagram;
   }
 
-  async update(id: string, data: Partial<Pick<Diagram, "title" | "elements" | "appState">>): Promise<Diagram | null> {
+  async update(
+    id: string,
+    data: Partial<Pick<Diagram, "title" | "elements" | "appState">>,
+  ): Promise<Diagram | null> {
     const diagram = this.store.find((d) => d.id === id);
     if (!diagram) return null;
     if (data.title !== undefined) diagram.title = data.title;
@@ -61,7 +76,11 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     return diagram;
   }
 
-  async updateScene(id: string, elements: unknown[], appState: Record<string, unknown>): Promise<void> {
+  async updateScene(
+    id: string,
+    elements: unknown[],
+    appState: Record<string, unknown>,
+  ): Promise<void> {
     const diagram = this.store.find((d) => d.id === id);
     if (diagram) {
       diagram.elements = elements;
@@ -77,14 +96,15 @@ export class InMemoryDiagramRepository implements DiagramRepository {
 
   async moveToWorkspace(id: string, workspaceId: string | null): Promise<void> {
     const diagram = this.store.find((d) => d.id === id);
-    if (diagram) { diagram.workspaceId = workspaceId; diagram.folderId = null; }
+    if (diagram) {
+      diagram.workspaceId = workspaceId;
+      diagram.folderId = null;
+    }
   }
 
   async search(userId: string, query: string): Promise<Diagram[]> {
     const lower = query.toLowerCase();
-    return this.store.filter(
-      (d) => (d.ownerId === userId) && d.title.toLowerCase().includes(lower),
-    );
+    return this.store.filter((d) => d.ownerId === userId && d.title.toLowerCase().includes(lower));
   }
 
   async updateThumbnail(id: string, thumbnail: string): Promise<void> {

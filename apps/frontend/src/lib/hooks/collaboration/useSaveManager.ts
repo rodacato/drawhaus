@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
-import { jsonSafe, getAdaptiveThrottleMs, diffElements, VIEWPORT_THROTTLE_MS, SAVE_DEBOUNCE_MS } from "@/lib/collaboration";
+import {
+  jsonSafe,
+  getAdaptiveThrottleMs,
+  diffElements,
+  VIEWPORT_THROTTLE_MS,
+  SAVE_DEBOUNCE_MS,
+} from "@/lib/collaboration";
 import type { SaveState, ExcalidrawApi } from "@/lib/types";
 import { deriveSaveLabel, deriveSaveColor } from "@/lib/save-state";
 import { diagramsApi } from "@/api/diagrams";
@@ -13,7 +19,11 @@ export interface UseSaveManagerParams {
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
   applyingRemoteCounter: React.MutableRefObject<number>;
   followingUserIdRef: React.MutableRefObject<string | null>;
-  followedViewportRef: React.MutableRefObject<{ scrollX: number; scrollY: number; zoom: number } | null>;
+  followedViewportRef: React.MutableRefObject<{
+    scrollX: number;
+    scrollY: number;
+    zoom: number;
+  } | null>;
   canEdit: boolean;
 }
 
@@ -66,7 +76,9 @@ export function useSaveManager({
       if (els.length === 0) return;
       const blob = await exportToBlob({
         elements: els,
-        appState: { ...apiRef.getAppState(), exportWithDarkMode: false } as Parameters<typeof exportToBlob>[0]["appState"],
+        appState: { ...apiRef.getAppState(), exportWithDarkMode: false } as Parameters<
+          typeof exportToBlob
+        >[0]["appState"],
         files: apiRef.getFiles() as Parameters<typeof exportToBlob>[0]["files"],
         maxWidthOrHeight: 300,
       });
@@ -76,25 +88,53 @@ export function useSaveManager({
         reader.readAsDataURL(blob);
       });
       await diagramsApi.updateThumbnail(diagramId, dataUrl);
-    } catch { /* thumbnail is best-effort */ }
+    } catch {
+      /* thumbnail is best-effort */
+    }
   }, [diagramId]);
 
   /* ─── persist scene ─── */
   const persistScene = useCallback(
-    async (elements: unknown[], appState: Record<string, unknown>, forSceneId: string | null): Promise<boolean> => {
+    async (
+      elements: unknown[],
+      appState: Record<string, unknown>,
+      forSceneId: string | null,
+    ): Promise<boolean> => {
       if (forSceneId && forSceneId !== activeSceneIdRef.current) return false;
       setSaveState("saving");
       try {
-        const { collaborators: _1, viewBackgroundColor: _2, gridModeEnabled: _3, gridSize: _4, objectsSnapModeEnabled: _5, ...restAppState } = appState; // eslint-disable-line @typescript-eslint/no-unused-vars
+        const {
+          collaborators: _1,
+          viewBackgroundColor: _2,
+          gridModeEnabled: _3,
+          gridSize: _4,
+          objectsSnapModeEnabled: _5,
+          ...restAppState
+        } = appState;
         const sanitizedAppState = jsonSafe(restAppState);
         const safeElements = jsonSafe(elements);
-        try { localStorage.setItem(cacheKey, JSON.stringify({ elements: safeElements, appState: sanitizedAppState })); } catch { /* quota exceeded */ }
+        try {
+          localStorage.setItem(
+            cacheKey,
+            JSON.stringify({ elements: safeElements, appState: sanitizedAppState }),
+          );
+        } catch {
+          /* quota exceeded */
+        }
         if (socketRef.current?.connected) {
-          socketRef.current.emit("save-scene", { roomId: diagramId, sceneId: activeSceneIdRef.current, elements: safeElements, appState: sanitizedAppState });
+          socketRef.current.emit("save-scene", {
+            roomId: diagramId,
+            sceneId: activeSceneIdRef.current,
+            elements: safeElements,
+            appState: sanitizedAppState,
+          });
           generateThumbnail();
           return true;
         }
-        await diagramsApi.update(diagramId, { elements: safeElements, appState: sanitizedAppState });
+        await diagramsApi.update(diagramId, {
+          elements: safeElements,
+          appState: sanitizedAppState,
+        });
         lastSavedAt.current = new Date().toLocaleTimeString();
         setSaveState("saved");
         generateThumbnail();
@@ -111,9 +151,14 @@ export function useSaveManager({
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket) return;
-    const handler = () => { lastSavedAt.current = new Date().toLocaleTimeString(); setSaveState("saved"); };
+    const handler = () => {
+      lastSavedAt.current = new Date().toLocaleTimeString();
+      setSaveState("saved");
+    };
     socket.on("scene-saved", handler);
-    return () => { socket.off("scene-saved", handler); };
+    return () => {
+      socket.off("scene-saved", handler);
+    };
   }, [socketGeneration]);
 
   /* ─── onChange handler ─── */
@@ -126,10 +171,18 @@ export function useSaveManager({
         const fv = followedViewportRef.current;
         if (fv) {
           const currentZoom = (appState.zoom as { value: number })?.value ?? 1;
-          if (appState.scrollX !== fv.scrollX || appState.scrollY !== fv.scrollY || currentZoom !== fv.zoom) {
+          if (
+            appState.scrollX !== fv.scrollX ||
+            appState.scrollY !== fv.scrollY ||
+            currentZoom !== fv.zoom
+          ) {
             applyingRemoteCounter.current += 1;
-            excalidrawApiRef.current?.updateScene({ appState: { scrollX: fv.scrollX, scrollY: fv.scrollY, zoom: { value: fv.zoom } } });
-            setTimeout(() => { applyingRemoteCounter.current -= 1; }, 0);
+            excalidrawApiRef.current?.updateScene({
+              appState: { scrollX: fv.scrollX, scrollY: fv.scrollY, zoom: { value: fv.zoom } },
+            });
+            setTimeout(() => {
+              applyingRemoteCounter.current -= 1;
+            }, 0);
           }
         }
         return; // Skip editing while following
@@ -137,7 +190,12 @@ export function useSaveManager({
       if (now - lastViewportEmitTime.current >= VIEWPORT_THROTTLE_MS) {
         lastViewportEmitTime.current = now;
         const zoom = (appState.zoom as { value: number })?.value ?? 1;
-        socketRef.current?.emit("viewport-update", { roomId: diagramId, scrollX: appState.scrollX, scrollY: appState.scrollY, zoom });
+        socketRef.current?.emit("viewport-update", {
+          roomId: diagramId,
+          scrollX: appState.scrollX,
+          scrollY: appState.scrollY,
+          zoom,
+        });
       }
       if (!canEdit) return;
       setSaveState("pending");
@@ -149,9 +207,18 @@ export function useSaveManager({
         // If delta covers >50% of the scene, send full state as fallback
         const totalPrev = prev.length || 1;
         if (delta.removedIds.length > totalPrev * 0.5) {
-          socketRef.current?.emit("scene-update", { roomId: diagramId, sceneId: activeSceneIdRef.current, elements: [...els] });
+          socketRef.current?.emit("scene-update", {
+            roomId: diagramId,
+            sceneId: activeSceneIdRef.current,
+            elements: [...els],
+          });
         } else if (delta.changed.length > 0 || delta.removedIds.length > 0) {
-          socketRef.current?.emit("scene-delta", { roomId: diagramId, sceneId: activeSceneIdRef.current, changed: delta.changed, removedIds: delta.removedIds });
+          socketRef.current?.emit("scene-delta", {
+            roomId: diagramId,
+            sceneId: activeSceneIdRef.current,
+            changed: delta.changed,
+            removedIds: delta.removedIds,
+          });
         }
       };
 
@@ -169,15 +236,23 @@ export function useSaveManager({
       }
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       const capturedSceneId = activeSceneIdRef.current;
-      debounceTimer.current = setTimeout(() => { persistScene([...elements], appState, capturedSceneId); }, SAVE_DEBOUNCE_MS);
+      debounceTimer.current = setTimeout(() => {
+        persistScene([...elements], appState, capturedSceneId);
+      }, SAVE_DEBOUNCE_MS);
     },
     [diagramId, persistScene, canEdit],
   );
 
   /* ─── cancel pending timers (used by scene manager) ─── */
   const cancelPendingTimers = useCallback(() => {
-    if (debounceTimer.current) { clearTimeout(debounceTimer.current); debounceTimer.current = null; }
-    if (throttleTimer.current) { clearTimeout(throttleTimer.current); throttleTimer.current = null; }
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+      debounceTimer.current = null;
+    }
+    if (throttleTimer.current) {
+      clearTimeout(throttleTimer.current);
+      throttleTimer.current = null;
+    }
   }, []);
 
   /* ─── flush save ─── */
@@ -193,5 +268,13 @@ export function useSaveManager({
   const saveLabel = deriveSaveLabel(saveState, lastSavedAt.current);
   const saveColor = deriveSaveColor(saveState);
 
-  return { saveState, saveLabel, saveColor, lastSavedAt: lastSavedAt.current, onChange, flushSave, cancelPendingTimers };
+  return {
+    saveState,
+    saveLabel,
+    saveColor,
+    lastSavedAt: lastSavedAt.current,
+    onChange,
+    flushSave,
+    cancelPendingTimers,
+  };
 }

@@ -1,4 +1,9 @@
-import { ALL_EXAMPLES, type Example, type ExampleSection, type SupportLevel } from "../examples/mermaid";
+import {
+  ALL_EXAMPLES,
+  type Example,
+  type ExampleSection,
+  type SupportLevel,
+} from "../examples/mermaid";
 
 interface ExamplesProps {
   activeCode: string;
@@ -112,20 +117,20 @@ function ExampleCard({
   active: boolean;
   onClick: () => void;
 }) {
-  const extraClass = supportLevel === "unsupported" ? " unsupported" : supportLevel === "fallback" ? " fallback" : "";
+  const extraClass =
+    supportLevel === "unsupported"
+      ? " unsupported"
+      : supportLevel === "fallback"
+        ? " fallback"
+        : "";
   return (
-    <div
-      className={`example-card${active ? " active" : ""}${extraClass}`}
-      onClick={onClick}
-    >
+    <div className={`example-card${active ? " active" : ""}${extraClass}`} onClick={onClick}>
       <div className="example-card-title">
         {example.title}
         {supportLevel === "unsupported" && <span className="badge badge-unsupported">soon</span>}
         {supportLevel === "fallback" && <span className="badge badge-fallback">fallback</span>}
       </div>
-      <div className="example-card-meta">
-        {example.description}
-      </div>
+      <div className="example-card-meta">{example.description}</div>
     </div>
   );
 }

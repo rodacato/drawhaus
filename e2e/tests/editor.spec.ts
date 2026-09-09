@@ -32,9 +32,7 @@ test.describe("Editor", () => {
   test("shows error for non-existent diagram", async ({ page }) => {
     await page.goto("/board/non-existent-id-12345");
 
-    await expect(
-      page.getByText(/not found/i),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/not found/i)).toBeVisible({ timeout: 10_000 });
   });
 
   test("diagram API CRUD works", async ({ page }) => {

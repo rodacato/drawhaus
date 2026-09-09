@@ -30,26 +30,51 @@ export function createFolderRoutes(
   const router = Router();
   router.use(requireAuth);
 
-  router.get("/", asyncRoute(async (req, res) => {
-    const workspaceId = typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
-    const folders = await useCases.list.execute(req.authUser.id, workspaceId);
-    return res.json({ folders });
-  }));
+  router.get(
+    "/",
+    asyncRoute(async (req, res) => {
+      const workspaceId =
+        typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
+      const folders = await useCases.list.execute(req.authUser.id, workspaceId);
+      return res.json({ folders });
+    }),
+  );
 
-  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
-    const folder = await useCases.create.execute(req.authUser.id, req.body.name, req.body.workspaceId);
-    return res.status(201).json({ folder });
-  }));
+  router.post(
+    "/",
+    validate(createSchema),
+    asyncRoute(async (req, res) => {
+      const folder = await useCases.create.execute(
+        req.authUser.id,
+        req.body.name,
+        req.body.workspaceId,
+      );
+      return res.status(201).json({ folder });
+    }),
+  );
 
-  router.patch("/:id", validateParams(uuidParams), validate(renameSchema), asyncRoute(async (req, res) => {
-    const folder = await useCases.rename.execute(String(req.params.id), req.authUser.id, req.body.name);
-    return res.json({ folder });
-  }));
+  router.patch(
+    "/:id",
+    validateParams(uuidParams),
+    validate(renameSchema),
+    asyncRoute(async (req, res) => {
+      const folder = await useCases.rename.execute(
+        String(req.params.id),
+        req.authUser.id,
+        req.body.name,
+      );
+      return res.json({ folder });
+    }),
+  );
 
-  router.delete("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
-    await useCases.delete.execute(String(req.params.id), req.authUser.id);
-    return res.json({ success: true });
-  }));
+  router.delete(
+    "/:id",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      await useCases.delete.execute(String(req.params.id), req.authUser.id);
+      return res.json({ success: true });
+    }),
+  );
 
   return router;
 }

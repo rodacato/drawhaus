@@ -40,10 +40,7 @@ describe("real diagram fixtures", () => {
 
       if (!result.valid) {
         const errorDetails = result.errors
-          .map(
-            (e) =>
-              `  [${e.elementIndex}] ${e.elementId ?? "?"}: ${e.field} — ${e.message}`,
-          )
+          .map((e) => `  [${e.elementIndex}] ${e.elementId ?? "?"}: ${e.field} — ${e.message}`)
           .join("\n");
         assert.fail(
           `Validator rejected real diagram ${file}:\n${errorDetails}\n\n` +
@@ -54,10 +51,7 @@ describe("real diagram fixtures", () => {
       // Warnings are OK but log them for visibility
       if (result.warnings.length > 0) {
         const warnDetails = result.warnings
-          .map(
-            (w) =>
-              `  [${w.elementIndex}] ${w.elementId ?? "?"}: ${w.field} — ${w.message}`,
-          )
+          .map((w) => `  [${w.elementIndex}] ${w.elementId ?? "?"}: ${w.field} — ${w.message}`)
           .join("\n");
         // eslint-disable-next-line no-console
         console.error(`Warnings for ${file}:\n${warnDetails}`);

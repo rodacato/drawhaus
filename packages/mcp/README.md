@@ -82,36 +82,36 @@ Add to `.vscode/mcp.json`:
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DRAWHAUS_URL` | Yes | URL of your Drawhaus instance |
-| `DRAWHAUS_API_KEY` | Yes | API key (starts with `dhk_`) |
+| Variable           | Required | Description                   |
+| ------------------ | -------- | ----------------------------- |
+| `DRAWHAUS_URL`     | Yes      | URL of your Drawhaus instance |
+| `DRAWHAUS_API_KEY` | Yes      | API key (starts with `dhk_`)  |
 
 ## Tools
 
-| Tool | Description |
-|------|-------------|
+| Tool             | Description                                            |
+| ---------------- | ------------------------------------------------------ |
 | `create_diagram` | Create a new diagram with optional Excalidraw elements |
-| `list_diagrams` | List diagrams in the workspace (with pagination) |
-| `get_diagram` | Get full diagram content including elements |
-| `update_diagram` | Update title, elements, or app state |
-| `delete_diagram` | Permanently delete a diagram |
+| `list_diagrams`  | List diagrams in the workspace (with pagination)       |
+| `get_diagram`    | Get full diagram content including elements            |
+| `update_diagram` | Update title, elements, or app state                   |
+| `delete_diagram` | Permanently delete a diagram                           |
 
 ## Resources
 
-| URI | Description |
-|-----|-------------|
-| `drawhaus://diagrams` | List of all diagrams in the workspace |
-| `drawhaus://diagrams/{id}` | Full diagram content by ID |
+| URI                        | Description                           |
+| -------------------------- | ------------------------------------- |
+| `drawhaus://diagrams`      | List of all diagrams in the workspace |
+| `drawhaus://diagrams/{id}` | Full diagram content by ID            |
 
 ## Prompts
 
-| Prompt | Description |
-|--------|-------------|
-| `db_schema_diagram` | Generate a database schema diagram |
-| `class_diagram` | Generate a class diagram |
-| `sequence_diagram` | Generate a sequence diagram |
-| `architecture_diagram` | Generate an architecture diagram |
+| Prompt                 | Description                        |
+| ---------------------- | ---------------------------------- |
+| `db_schema_diagram`    | Generate a database schema diagram |
+| `class_diagram`        | Generate a class diagram           |
+| `sequence_diagram`     | Generate a sequence diagram        |
+| `architecture_diagram` | Generate an architecture diagram   |
 
 ## Development
 

@@ -9,7 +9,10 @@ vi.mock("../lib/offline-storage", () => ({
   deleteOfflineSnapshot: vi.fn(async () => undefined),
 }));
 
-import { useOfflineSnapshot, type UseOfflineSnapshotParams } from "../lib/hooks/collaboration/useOfflineSnapshot";
+import {
+  useOfflineSnapshot,
+  type UseOfflineSnapshotParams,
+} from "../lib/hooks/collaboration/useOfflineSnapshot";
 import * as offlineStorage from "../lib/offline-storage";
 
 const OFFLINE_GRACE_MS = 5 * 60 * 1000;
@@ -29,11 +32,12 @@ type RenderOpts = {
 };
 
 function renderOffline(opts: RenderOpts = {}) {
-  const api = opts.api === null ? null : (opts.api ?? createExcalidrawApiStub({ elements: [{ id: "e1" }] }));
+  const api =
+    opts.api === null ? null : (opts.api ?? createExcalidrawApiStub({ elements: [{ id: "e1" }] }));
   const excalidrawApiRef = makeRef(api);
-  const selfUserId = "selfUserId" in opts ? opts.selfUserId ?? null : "user-1";
+  const selfUserId = "selfUserId" in opts ? (opts.selfUserId ?? null) : "user-1";
   const initialProps = {
-    connection: opts.initialConnection ?? "connected" as ConnectionState,
+    connection: opts.initialConnection ?? ("connected" as ConnectionState),
   };
   const hook = renderHook(
     ({ connection }) =>
@@ -71,7 +75,9 @@ describe("useOfflineSnapshot", () => {
 
   test("does not save anything while staying connected", () => {
     renderOffline({ initialConnection: "connected" });
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 1000); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 1000);
+    });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).not.toHaveBeenCalled();
   });
 
@@ -79,10 +85,14 @@ describe("useOfflineSnapshot", () => {
     const { rerender } = renderOffline({ initialConnection: "connected" });
     rerender({ connection: "disconnected" });
     // Before grace period: no save.
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS - 1000); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS - 1000);
+    });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).not.toHaveBeenCalled();
     // After grace period: save fires once.
-    act(() => { vi.advanceTimersByTime(2000); });
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).toHaveBeenCalledTimes(1);
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot).mock.calls[0][0]).toMatchObject({
       diagramId: "diag-1",
@@ -93,7 +103,9 @@ describe("useOfflineSnapshot", () => {
   test("connection 'error' also triggers the offline grace period save", () => {
     const { rerender } = renderOffline({ initialConnection: "connected" });
     rerender({ connection: "error" });
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100);
+    });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).toHaveBeenCalledTimes(1);
   });
 
@@ -101,10 +113,14 @@ describe("useOfflineSnapshot", () => {
     const { rerender } = renderOffline({ initialConnection: "connected" });
     rerender({ connection: "disconnected" });
     // Reconnect halfway through the grace window.
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS / 2); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS / 2);
+    });
     rerender({ connection: "connected" });
     // Advance past where the save would have fired — it must not.
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS);
+    });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).not.toHaveBeenCalled();
   });
 
@@ -112,9 +128,14 @@ describe("useOfflineSnapshot", () => {
     const onOfflineSave = vi.fn<OnOfflineSave>();
     const { rerender } = renderOffline({ initialConnection: "connected", onOfflineSave });
     rerender({ connection: "disconnected" });
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100);
+    });
     // Flush the awaited saveOfflineSnapshot promise.
-    for (let i = 0; i < 3; i++) await act(async () => { await Promise.resolve(); });
+    for (let i = 0; i < 3; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
     expect(onOfflineSave).toHaveBeenCalledTimes(1);
   });
 
@@ -132,11 +153,19 @@ describe("useOfflineSnapshot", () => {
     const { rerender } = renderOffline({ initialConnection: "connected", onConflict });
     // 1) go offline + wait grace -> snapshot saved + hasOfflineEdits=true
     rerender({ connection: "disconnected" });
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100); });
-    for (let i = 0; i < 3; i++) await act(async () => { await Promise.resolve(); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100);
+    });
+    for (let i = 0; i < 3; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
     // 2) reconnect -> reads snapshot from storage, calls onConflict
     rerender({ connection: "connected" });
-    for (let i = 0; i < 3; i++) await act(async () => { await Promise.resolve(); });
+    for (let i = 0; i < 3; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
     expect(vi.mocked(offlineStorage.getOfflineSnapshot)).toHaveBeenCalledWith("diag-1");
     expect(onConflict).toHaveBeenCalledTimes(1);
     expect(onConflict.mock.calls[0][0]).toEqual(snapshot);
@@ -147,9 +176,14 @@ describe("useOfflineSnapshot", () => {
     const { rerender } = renderOffline({ initialConnection: "connected", onConflict });
     // Brief disconnect that does not exceed the grace window — no offline save happens.
     rerender({ connection: "disconnected" });
-    act(() => { vi.advanceTimersByTime(1000); });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
     rerender({ connection: "connected" });
-    for (let i = 0; i < 3; i++) await act(async () => { await Promise.resolve(); });
+    for (let i = 0; i < 3; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
     expect(onConflict).not.toHaveBeenCalled();
     expect(vi.mocked(offlineStorage.getOfflineSnapshot)).not.toHaveBeenCalled();
   });
@@ -157,32 +191,52 @@ describe("useOfflineSnapshot", () => {
   test("offline save is a no-op when excalidraw api is not ready", async () => {
     const { rerender } = renderOffline({ initialConnection: "connected", api: null });
     rerender({ connection: "disconnected" });
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100); });
-    for (let i = 0; i < 3; i++) await act(async () => { await Promise.resolve(); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100);
+    });
+    for (let i = 0; i < 3; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).not.toHaveBeenCalled();
   });
 
   test("offline save is a no-op when selfUserId is null", async () => {
     const { rerender } = renderOffline({ initialConnection: "connected", selfUserId: null });
     rerender({ connection: "disconnected" });
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100); });
-    for (let i = 0; i < 3; i++) await act(async () => { await Promise.resolve(); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100);
+    });
+    for (let i = 0; i < 3; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).not.toHaveBeenCalled();
   });
 
   test("uses 'Unknown' as userName when selfUserName is not provided", async () => {
     const { rerender } = renderOffline({ initialConnection: "connected" });
     rerender({ connection: "disconnected" });
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100); });
-    for (let i = 0; i < 3; i++) await act(async () => { await Promise.resolve(); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100);
+    });
+    for (let i = 0; i < 3; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot).mock.calls[0][0].userName).toBe("Unknown");
   });
 
   test("uses selfUserName when provided", async () => {
     const { rerender } = renderOffline({ initialConnection: "connected", selfUserName: "Adrian" });
     rerender({ connection: "disconnected" });
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100); });
-    for (let i = 0; i < 3; i++) await act(async () => { await Promise.resolve(); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100);
+    });
+    for (let i = 0; i < 3; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot).mock.calls[0][0].userName).toBe("Adrian");
   });
 
@@ -190,7 +244,9 @@ describe("useOfflineSnapshot", () => {
     const { rerender } = renderOffline({ initialConnection: "connected" });
     rerender({ connection: "disconnected" });
     rerender({ connection: "error" });
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100);
+    });
     // Even though we transitioned through two offline states, only one save fires
     // because the second transition (disconnected->error) does not satisfy wasConnected.
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).toHaveBeenCalledTimes(1);
@@ -198,7 +254,9 @@ describe("useOfflineSnapshot", () => {
 
   test("clearOfflineSnapshot delegates to deleteOfflineSnapshot", async () => {
     const { result } = renderOffline();
-    await act(async () => { await result.current.clearOfflineSnapshot(); });
+    await act(async () => {
+      await result.current.clearOfflineSnapshot();
+    });
     expect(vi.mocked(offlineStorage.deleteOfflineSnapshot)).toHaveBeenCalledWith("diag-1");
   });
 
@@ -206,7 +264,9 @@ describe("useOfflineSnapshot", () => {
     const { rerender, unmount } = renderOffline({ initialConnection: "connected" });
     rerender({ connection: "disconnected" });
     unmount();
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 1000); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 1000);
+    });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).not.toHaveBeenCalled();
   });
 
@@ -214,29 +274,47 @@ describe("useOfflineSnapshot", () => {
     const { rerender } = renderOffline({ initialConnection: "connected" });
     rerender({ connection: "disconnected" });
     // Cross the grace window so disconnectedAt is old enough.
-    act(() => { vi.advanceTimersByTime(OFFLINE_GRACE_MS + 1000); });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 1000);
+    });
     // The grace-window setTimeout already fired one save; clear and re-arm.
     vi.mocked(offlineStorage.saveOfflineSnapshot).mockClear();
-    act(() => { window.dispatchEvent(new Event("beforeunload")); });
+    act(() => {
+      window.dispatchEvent(new Event("beforeunload"));
+    });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).toHaveBeenCalledTimes(1);
   });
 
   test("beforeunload while connected does NOT save anything", () => {
     renderOffline({ initialConnection: "connected" });
-    act(() => { window.dispatchEvent(new Event("beforeunload")); });
+    act(() => {
+      window.dispatchEvent(new Event("beforeunload"));
+    });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).not.toHaveBeenCalled();
   });
 
   test("custom graceMs overrides the default — fires sooner than 5 minutes", async () => {
     const onOfflineSave = vi.fn<OnOfflineSave>();
-    const { rerender } = renderOffline({ initialConnection: "connected", onOfflineSave, graceMs: 1000 });
-    await act(async () => { rerender({ connection: "disconnected" as ConnectionState }); });
+    const { rerender } = renderOffline({
+      initialConnection: "connected",
+      onOfflineSave,
+      graceMs: 1000,
+    });
+    await act(async () => {
+      rerender({ connection: "disconnected" as ConnectionState });
+    });
 
-    act(() => { vi.advanceTimersByTime(900); });
+    act(() => {
+      vi.advanceTimersByTime(900);
+    });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).not.toHaveBeenCalled();
 
-    act(() => { vi.advanceTimersByTime(200); });
-    await act(async () => { await Promise.resolve(); });
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
     expect(vi.mocked(offlineStorage.saveOfflineSnapshot)).toHaveBeenCalledTimes(1);
   });
 });

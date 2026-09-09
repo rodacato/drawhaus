@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 
 interface ConfirmOptions {
@@ -16,7 +24,9 @@ interface ConfirmContextValue {
 const ConfirmContext = createContext<ConfirmContextValue | null>(null);
 
 export function ConfirmProvider({ children }: { readonly children: React.ReactNode }) {
-  const [state, setState] = useState<(ConfirmOptions & { resolve: (v: boolean) => void }) | null>(null);
+  const [state, setState] = useState<(ConfirmOptions & { resolve: (v: boolean) => void }) | null>(
+    null,
+  );
   const confirmBtnRef = useRef<HTMLButtonElement>(null);
 
   const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
@@ -61,13 +71,32 @@ export function ConfirmProvider({ children }: { readonly children: React.ReactNo
       {children}
       {state &&
         createPortal(
-          <div className="fixed inset-0 z-[110] flex items-center justify-center" role="dialog" aria-modal="true">
-            <button type="button" aria-label="Cancel" className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleCancel} />
+          <div
+            className="fixed inset-0 z-[110] flex items-center justify-center"
+            role="dialog"
+            aria-modal="true"
+          >
+            <button
+              type="button"
+              aria-label="Cancel"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={handleCancel}
+            />
             <div className="relative z-10 w-full max-w-sm rounded-2xl border border-border bg-surface-raised p-6 shadow-2xl">
               <div className="mb-1 flex items-center gap-3">
                 {isDanger && (
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error/10">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-error">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-error"
+                    >
                       <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                       <line x1="12" y1="9" x2="12" y2="13" />
                       <line x1="12" y1="17" x2="12.01" y2="17" />

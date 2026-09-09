@@ -21,7 +21,9 @@ async function main() {
   const apiKey = process.env.DRAWHAUS_API_KEY;
 
   if (!url) {
-    fatal("DRAWHAUS_URL environment variable is required.\nExample: DRAWHAUS_URL=http://localhost:4000");
+    fatal(
+      "DRAWHAUS_URL environment variable is required.\nExample: DRAWHAUS_URL=http://localhost:4000",
+    );
   }
 
   if (!apiKey) {

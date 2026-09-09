@@ -18,7 +18,16 @@ type GeneralViewProps = DiagramActions & {
   activeWorkspaceId?: string | null;
 };
 
-export function GeneralView({ diagrams, folders, allTags, viewMode, emptyMessage, workspaces, activeWorkspaceId, ...actions }: GeneralViewProps) {
+export function GeneralView({
+  diagrams,
+  folders,
+  allTags,
+  viewMode,
+  emptyMessage,
+  workspaces,
+  activeWorkspaceId,
+  ...actions
+}: GeneralViewProps) {
   if (diagrams.length === 0) {
     return <div className={ui.empty}>{emptyMessage}</div>;
   }

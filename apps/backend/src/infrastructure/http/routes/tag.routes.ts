@@ -43,35 +43,61 @@ export function createTagRoutes(
   const router = Router();
   router.use(requireAuth);
 
-  router.get("/", asyncRoute(async (req, res) => {
-    const tags = await useCases.list.execute(req.authUser.id);
-    return res.json({ tags });
-  }));
+  router.get(
+    "/",
+    asyncRoute(async (req, res) => {
+      const tags = await useCases.list.execute(req.authUser.id);
+      return res.json({ tags });
+    }),
+  );
 
-  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
-    const tag = await useCases.create.execute(req.authUser.id, req.body.name, req.body.color);
-    return res.status(201).json({ tag });
-  }));
+  router.post(
+    "/",
+    validate(createSchema),
+    asyncRoute(async (req, res) => {
+      const tag = await useCases.create.execute(req.authUser.id, req.body.name, req.body.color);
+      return res.status(201).json({ tag });
+    }),
+  );
 
-  router.patch("/:id", validateParams(uuidParams), validate(updateSchema), asyncRoute(async (req, res) => {
-    const tag = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
-    return res.json({ tag });
-  }));
+  router.patch(
+    "/:id",
+    validateParams(uuidParams),
+    validate(updateSchema),
+    asyncRoute(async (req, res) => {
+      const tag = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
+      return res.json({ tag });
+    }),
+  );
 
-  router.delete("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
-    await useCases.delete.execute(String(req.params.id), req.authUser.id);
-    return res.json({ success: true });
-  }));
+  router.delete(
+    "/:id",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      await useCases.delete.execute(String(req.params.id), req.authUser.id);
+      return res.json({ success: true });
+    }),
+  );
 
-  router.post("/:id/assign", validateParams(uuidParams), validate(assignSchema), asyncRoute(async (req, res) => {
-    await useCases.assign.execute(String(req.params.id), req.body.diagramId, req.authUser.id);
-    return res.json({ success: true });
-  }));
+  router.post(
+    "/:id/assign",
+    validateParams(uuidParams),
+    validate(assignSchema),
+    asyncRoute(async (req, res) => {
+      await useCases.assign.execute(String(req.params.id), req.body.diagramId, req.authUser.id);
+      return res.json({ success: true });
+    }),
+  );
 
-  router.post("/:id/unassign", validateParams(uuidParams), validate(assignSchema), asyncRoute(async (req, res) => {
-    await useCases.unassign.execute(String(req.params.id), req.body.diagramId, req.authUser.id);
-    return res.json({ success: true });
-  }));
+  router.post(
+    "/:id/unassign",
+    validateParams(uuidParams),
+    validate(assignSchema),
+    asyncRoute(async (req, res) => {
+      await useCases.unassign.execute(String(req.params.id), req.body.diagramId, req.authUser.id);
+      return res.json({ success: true });
+    }),
+  );
 
   return router;
 }

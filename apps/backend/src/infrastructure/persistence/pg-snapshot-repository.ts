@@ -80,7 +80,8 @@ export class PgSnapshotRepository implements SnapshotRepository {
     let createdByName: string | null = null;
     if (data.createdBy) {
       const { rows: userRows } = await pool.query<{ name: string }>(
-        "SELECT name FROM users WHERE id = $1", [data.createdBy],
+        "SELECT name FROM users WHERE id = $1",
+        [data.createdBy],
       );
       createdByName = userRows[0]?.name ?? null;
     }
@@ -120,7 +121,8 @@ export class PgSnapshotRepository implements SnapshotRepository {
     );
     if (!rows[0]) return null;
     const { rows: userRows } = await pool.query<{ name: string }>(
-      "SELECT name FROM users WHERE id = $1", [rows[0].created_by],
+      "SELECT name FROM users WHERE id = $1",
+      [rows[0].created_by],
     );
     return toDomain({ ...rows[0], created_by_name: userRows[0]?.name ?? null });
   }

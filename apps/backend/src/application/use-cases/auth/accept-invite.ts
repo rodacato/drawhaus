@@ -25,7 +25,11 @@ export class AcceptInviteUseCase {
     if (existing) throw new ConflictError("A user with this email already exists");
 
     const passwordHash = await this.hasher.hash(input.password);
-    const user = await this.users.create({ email: invitation.email, name: input.name, passwordHash });
+    const user = await this.users.create({
+      email: invitation.email,
+      name: input.name,
+      passwordHash,
+    });
 
     if (invitation.role === "admin") {
       await this.users.adminUpdate(user.id, { role: "admin" });

@@ -30,7 +30,11 @@ import { ListWorkspacesUseCase } from "../application/use-cases/workspaces/list-
 import { GetWorkspaceUseCase } from "../application/use-cases/workspaces/get-workspace";
 import { UpdateWorkspaceUseCase } from "../application/use-cases/workspaces/update-workspace";
 import { DeleteWorkspaceUseCase } from "../application/use-cases/workspaces/delete-workspace";
-import { AddWorkspaceMemberUseCase, UpdateWorkspaceMemberRoleUseCase, RemoveWorkspaceMemberUseCase } from "../application/use-cases/workspaces/manage-members";
+import {
+  AddWorkspaceMemberUseCase,
+  UpdateWorkspaceMemberRoleUseCase,
+  RemoveWorkspaceMemberUseCase,
+} from "../application/use-cases/workspaces/manage-members";
 import { InviteToWorkspaceUseCase } from "../application/use-cases/workspaces/invite-to-workspace";
 import { AcceptWorkspaceInviteUseCase } from "../application/use-cases/workspaces/accept-workspace-invite";
 import { ResolveWorkspaceInviteUseCase } from "../application/use-cases/workspaces/resolve-workspace-invite";
@@ -61,7 +65,6 @@ import { InviteUserUseCase } from "../application/use-cases/admin/invite-user";
 // --- Scenes ---
 import { ListScenesUseCase } from "../application/use-cases/scenes/list-scenes";
 import { GetSceneUseCase } from "../application/use-cases/scenes/get-scene";
-
 
 // --- Tags ---
 import { CreateTagUseCase } from "../application/use-cases/tags/create-tag";
@@ -125,19 +128,64 @@ import type { Services } from "./services";
 
 export function createUseCases(repos: Repositories, services: Services) {
   // Auth
-  const register = new RegisterUseCase(repos.userRepo, repos.sessionRepo, services.hasher, repos.siteSettingsRepo);
-  const login = new LoginUseCase(repos.userRepo, repos.sessionRepo, services.hasher, services.auditLogger);
+  const register = new RegisterUseCase(
+    repos.userRepo,
+    repos.sessionRepo,
+    services.hasher,
+    repos.siteSettingsRepo,
+  );
+  const login = new LoginUseCase(
+    repos.userRepo,
+    repos.sessionRepo,
+    services.hasher,
+    services.auditLogger,
+  );
   const logout = new LogoutUseCase(repos.sessionRepo);
   const getCurrentUser = new GetCurrentUserUseCase(repos.sessionRepo);
   const updateProfile = new UpdateProfileUseCase(repos.userRepo);
   const changePassword = new ChangePasswordUseCase(repos.userRepo, services.hasher);
-  const acceptInvite = new AcceptInviteUseCase(repos.userRepo, repos.sessionRepo, repos.invitationRepo, services.hasher);
-  const forgotPassword = new ForgotPasswordUseCase(repos.userRepo, repos.passwordResetRepo, services.emailService);
-  const resetPassword = new ResetPasswordUseCase(repos.userRepo, repos.sessionRepo, repos.passwordResetRepo, services.hasher);
-  const deleteAccount = new DeleteAccountUseCase(repos.userRepo, services.hasher, services.auditLogger, repos.workspaceRepo);
-  const googleAuth = new GoogleAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo, services.googleOAuthProvider);
-  const githubAuth = new GitHubAuthUseCase(repos.userRepo, repos.sessionRepo, repos.oauthTokenRepo, repos.siteSettingsRepo, services.githubOAuthProvider);
-  const unlinkOAuth = new UnlinkOAuthUseCase(repos.userRepo, repos.oauthTokenRepo, repos.driveBackupRepo);
+  const acceptInvite = new AcceptInviteUseCase(
+    repos.userRepo,
+    repos.sessionRepo,
+    repos.invitationRepo,
+    services.hasher,
+  );
+  const forgotPassword = new ForgotPasswordUseCase(
+    repos.userRepo,
+    repos.passwordResetRepo,
+    services.emailService,
+  );
+  const resetPassword = new ResetPasswordUseCase(
+    repos.userRepo,
+    repos.sessionRepo,
+    repos.passwordResetRepo,
+    services.hasher,
+  );
+  const deleteAccount = new DeleteAccountUseCase(
+    repos.userRepo,
+    services.hasher,
+    services.auditLogger,
+    repos.workspaceRepo,
+  );
+  const googleAuth = new GoogleAuthUseCase(
+    repos.userRepo,
+    repos.sessionRepo,
+    repos.oauthTokenRepo,
+    repos.siteSettingsRepo,
+    services.googleOAuthProvider,
+  );
+  const githubAuth = new GitHubAuthUseCase(
+    repos.userRepo,
+    repos.sessionRepo,
+    repos.oauthTokenRepo,
+    repos.siteSettingsRepo,
+    services.githubOAuthProvider,
+  );
+  const unlinkOAuth = new UnlinkOAuthUseCase(
+    repos.userRepo,
+    repos.oauthTokenRepo,
+    repos.driveBackupRepo,
+  );
 
   // Diagrams
   const createDiagram = new CreateDiagramUseCase(repos.diagramRepo);
@@ -156,12 +204,27 @@ export function createUseCases(repos: Repositories, services: Services) {
   const getWorkspace = new GetWorkspaceUseCase(repos.workspaceRepo);
   const updateWorkspace = new UpdateWorkspaceUseCase(repos.workspaceRepo);
   const deleteWorkspace = new DeleteWorkspaceUseCase(repos.workspaceRepo);
-  const addWorkspaceMember = new AddWorkspaceMemberUseCase(repos.workspaceRepo, repos.siteSettingsRepo, services.auditLogger);
+  const addWorkspaceMember = new AddWorkspaceMemberUseCase(
+    repos.workspaceRepo,
+    repos.siteSettingsRepo,
+    services.auditLogger,
+  );
   const updateWorkspaceMemberRole = new UpdateWorkspaceMemberRoleUseCase(repos.workspaceRepo);
   const removeWorkspaceMember = new RemoveWorkspaceMemberUseCase(repos.workspaceRepo);
-  const inviteToWorkspace = new InviteToWorkspaceUseCase(repos.workspaceRepo, repos.workspaceInvitationRepo, repos.siteSettingsRepo, services.emailService);
-  const acceptWorkspaceInvite = new AcceptWorkspaceInviteUseCase(repos.workspaceRepo, repos.workspaceInvitationRepo);
-  const resolveWorkspaceInvite = new ResolveWorkspaceInviteUseCase(repos.workspaceRepo, repos.workspaceInvitationRepo);
+  const inviteToWorkspace = new InviteToWorkspaceUseCase(
+    repos.workspaceRepo,
+    repos.workspaceInvitationRepo,
+    repos.siteSettingsRepo,
+    services.emailService,
+  );
+  const acceptWorkspaceInvite = new AcceptWorkspaceInviteUseCase(
+    repos.workspaceRepo,
+    repos.workspaceInvitationRepo,
+  );
+  const resolveWorkspaceInvite = new ResolveWorkspaceInviteUseCase(
+    repos.workspaceRepo,
+    repos.workspaceInvitationRepo,
+  );
   const ensurePersonalWorkspace = new EnsurePersonalWorkspaceUseCase(repos.workspaceRepo);
 
   // Folders
@@ -169,7 +232,11 @@ export function createUseCases(repos: Repositories, services: Services) {
   const listFolders = new ListFoldersUseCase(repos.folderRepo, repos.workspaceRepo);
   const renameFolder = new RenameFolderUseCase(repos.folderRepo);
   const deleteFolder = new DeleteFolderUseCase(repos.folderRepo);
-  const moveDiagram = new MoveDiagramUseCase(repos.diagramRepo, repos.folderRepo, repos.workspaceRepo);
+  const moveDiagram = new MoveDiagramUseCase(
+    repos.diagramRepo,
+    repos.folderRepo,
+    repos.workspaceRepo,
+  );
 
   // Share
   const createLink = new CreateShareLinkUseCase(repos.shareRepo, repos.diagramRepo);
@@ -179,17 +246,29 @@ export function createUseCases(repos: Repositories, services: Services) {
 
   // Admin
   const listUsers = new ListUsersUseCase(repos.userRepo);
-  const adminUpdateUser = new AdminUpdateUserUseCase(repos.userRepo, repos.sessionRepo, services.auditLogger);
-  const adminDeleteUser = new AdminDeleteUserUseCase(repos.userRepo, repos.sessionRepo, services.auditLogger);
+  const adminUpdateUser = new AdminUpdateUserUseCase(
+    repos.userRepo,
+    repos.sessionRepo,
+    services.auditLogger,
+  );
+  const adminDeleteUser = new AdminDeleteUserUseCase(
+    repos.userRepo,
+    repos.sessionRepo,
+    services.auditLogger,
+  );
   const getSettings = new GetSiteSettingsUseCase(repos.siteSettingsRepo);
   const updateSettings = new UpdateSiteSettingsUseCase(repos.siteSettingsRepo);
   const getMetrics = new GetMetricsUseCase(repos.metricsRepo);
-  const inviteUser = new InviteUserUseCase(repos.userRepo, repos.invitationRepo, repos.siteSettingsRepo, services.emailService);
+  const inviteUser = new InviteUserUseCase(
+    repos.userRepo,
+    repos.invitationRepo,
+    repos.siteSettingsRepo,
+    services.emailService,
+  );
 
   // Scenes
   const listScenes = new ListScenesUseCase(repos.sceneRepo, repos.diagramRepo);
   const getScene = new GetSceneUseCase(repos.sceneRepo, repos.diagramRepo);
-
 
   // Tags
   const createTag = new CreateTagUseCase(repos.tagRepo);
@@ -209,17 +288,38 @@ export function createUseCases(repos: Repositories, services: Services) {
 
   // Realtime
   const joinRoom = new JoinRoomUseCase(repos.sessionRepo, repos.diagramRepo, repos.sceneRepo);
-  const joinRoomGuest = new JoinRoomGuestUseCase(repos.shareRepo, repos.diagramRepo, repos.sceneRepo);
+  const joinRoomGuest = new JoinRoomGuestUseCase(
+    repos.shareRepo,
+    repos.diagramRepo,
+    repos.sceneRepo,
+  );
   const saveScene = new SaveSceneUseCase(repos.sceneRepo);
 
   // Drive
-  const syncToDrive = new SyncToDriveUseCase(services.driveService, repos.driveBackupRepo, services.tokenRefresher, repos.diagramRepo, repos.folderRepo);
+  const syncToDrive = new SyncToDriveUseCase(
+    services.driveService,
+    repos.driveBackupRepo,
+    services.tokenRefresher,
+    repos.diagramRepo,
+    repos.folderRepo,
+  );
   const exportToDrive = new ExportToDriveUseCase(services.driveService, services.tokenRefresher);
   const getDriveStatus = new GetDriveStatusUseCase(repos.oauthTokenRepo, repos.driveBackupRepo);
-  const toggleDriveBackup = new ToggleDriveBackupUseCase(repos.driveBackupRepo, repos.oauthTokenRepo);
+  const toggleDriveBackup = new ToggleDriveBackupUseCase(
+    repos.driveBackupRepo,
+    repos.oauthTokenRepo,
+  );
   const disconnectDrive = new DisconnectDriveUseCase(repos.driveBackupRepo);
-  const listDriveFiles = new ListDriveFilesUseCase(services.driveService, repos.driveBackupRepo, services.tokenRefresher);
-  const importFromDrive = new ImportFromDriveUseCase(services.driveService, repos.diagramRepo, services.tokenRefresher);
+  const listDriveFiles = new ListDriveFilesUseCase(
+    services.driveService,
+    repos.driveBackupRepo,
+    services.tokenRefresher,
+  );
+  const importFromDrive = new ImportFromDriveUseCase(
+    services.driveService,
+    repos.diagramRepo,
+    services.tokenRefresher,
+  );
 
   // Templates
   const createTemplate = new CreateTemplateUseCase(repos.templateRepo);
@@ -230,10 +330,18 @@ export function createUseCases(repos: Repositories, services: Services) {
   const useTemplate = new UseTemplateUseCase(repos.templateRepo, repos.diagramRepo);
 
   // Snapshots
-  const createSnapshot = new CreateSnapshotUseCase(repos.snapshotRepo, repos.sceneRepo, repos.diagramRepo);
+  const createSnapshot = new CreateSnapshotUseCase(
+    repos.snapshotRepo,
+    repos.sceneRepo,
+    repos.diagramRepo,
+  );
   const listSnapshots = new ListSnapshotsUseCase(repos.snapshotRepo, repos.diagramRepo);
   const getSnapshot = new GetSnapshotUseCase(repos.snapshotRepo, repos.diagramRepo);
-  const restoreSnapshot = new RestoreSnapshotUseCase(repos.snapshotRepo, repos.sceneRepo, repos.diagramRepo);
+  const restoreSnapshot = new RestoreSnapshotUseCase(
+    repos.snapshotRepo,
+    repos.sceneRepo,
+    repos.diagramRepo,
+  );
   const renameSnapshot = new RenameSnapshotUseCase(repos.snapshotRepo, repos.diagramRepo);
   const deleteSnapshot = new DeleteSnapshotUseCase(repos.snapshotRepo, repos.diagramRepo);
 
@@ -244,45 +352,132 @@ export function createUseCases(repos: Repositories, services: Services) {
   const validateApiKey = new ValidateApiKeyUseCase(repos.apiKeyRepo, repos.userRepo);
 
   // Ownership Transfer
-  const transferWorkspaceOwnership = new TransferWorkspaceOwnershipUseCase(repos.workspaceRepo, repos.diagramRepo, repos.templateRepo, services.auditLogger);
-  const transferDiagramOwnership = new TransferDiagramOwnershipUseCase(repos.diagramRepo, repos.workspaceRepo, services.auditLogger);
-  const transferTemplateOwnership = new TransferTemplateOwnershipUseCase(repos.templateRepo, repos.workspaceRepo, services.auditLogger);
+  const transferWorkspaceOwnership = new TransferWorkspaceOwnershipUseCase(
+    repos.workspaceRepo,
+    repos.diagramRepo,
+    repos.templateRepo,
+    services.auditLogger,
+  );
+  const transferDiagramOwnership = new TransferDiagramOwnershipUseCase(
+    repos.diagramRepo,
+    repos.workspaceRepo,
+    services.auditLogger,
+  );
+  const transferTemplateOwnership = new TransferTemplateOwnershipUseCase(
+    repos.templateRepo,
+    repos.workspaceRepo,
+    services.auditLogger,
+  );
 
   return {
     // auth
-    register, login, logout, getCurrentUser, updateProfile, changePassword,
-    acceptInvite, forgotPassword, resetPassword, deleteAccount, googleAuth, githubAuth, unlinkOAuth,
+    register,
+    login,
+    logout,
+    getCurrentUser,
+    updateProfile,
+    changePassword,
+    acceptInvite,
+    forgotPassword,
+    resetPassword,
+    deleteAccount,
+    googleAuth,
+    githubAuth,
+    unlinkOAuth,
     // diagrams
-    createDiagram, getDiagram, listDiagrams, searchDiagrams, updateDiagram,
-    deleteDiagram, updateThumbnail, toggleStar, duplicateDiagram,
+    createDiagram,
+    getDiagram,
+    listDiagrams,
+    searchDiagrams,
+    updateDiagram,
+    deleteDiagram,
+    updateThumbnail,
+    toggleStar,
+    duplicateDiagram,
     // workspaces
-    createWorkspace, listWorkspaces, getWorkspace, updateWorkspace, deleteWorkspace,
-    addWorkspaceMember, updateWorkspaceMemberRole, removeWorkspaceMember,
-    inviteToWorkspace, acceptWorkspaceInvite, resolveWorkspaceInvite, ensurePersonalWorkspace,
+    createWorkspace,
+    listWorkspaces,
+    getWorkspace,
+    updateWorkspace,
+    deleteWorkspace,
+    addWorkspaceMember,
+    updateWorkspaceMemberRole,
+    removeWorkspaceMember,
+    inviteToWorkspace,
+    acceptWorkspaceInvite,
+    resolveWorkspaceInvite,
+    ensurePersonalWorkspace,
     // folders
-    createFolder, listFolders, renameFolder, deleteFolder, moveDiagram,
+    createFolder,
+    listFolders,
+    renameFolder,
+    deleteFolder,
+    moveDiagram,
     // share
-    createLink, resolveLink, listLinks, deleteLink,
+    createLink,
+    resolveLink,
+    listLinks,
+    deleteLink,
     // admin
-    listUsers, adminUpdateUser, adminDeleteUser, getSettings, updateSettings, getMetrics, inviteUser,
+    listUsers,
+    adminUpdateUser,
+    adminDeleteUser,
+    getSettings,
+    updateSettings,
+    getMetrics,
+    inviteUser,
     // scenes
-    listScenes, getScene,
+    listScenes,
+    getScene,
     // tags
-    createTag, listTags, deleteTag, updateTag, assignTag, unassignTag,
+    createTag,
+    listTags,
+    deleteTag,
+    updateTag,
+    assignTag,
+    unassignTag,
     // comments
-    listComments, createComment, replyComment, resolveComment, deleteComment, toggleLike,
+    listComments,
+    createComment,
+    replyComment,
+    resolveComment,
+    deleteComment,
+    toggleLike,
     // realtime
-    joinRoom, joinRoomGuest, saveScene,
+    joinRoom,
+    joinRoomGuest,
+    saveScene,
     // drive
-    syncToDrive, exportToDrive, getDriveStatus, toggleDriveBackup, disconnectDrive, listDriveFiles, importFromDrive,
+    syncToDrive,
+    exportToDrive,
+    getDriveStatus,
+    toggleDriveBackup,
+    disconnectDrive,
+    listDriveFiles,
+    importFromDrive,
     // templates
-    createTemplate, getTemplate, listTemplates, updateTemplate, deleteTemplate, useTemplate,
+    createTemplate,
+    getTemplate,
+    listTemplates,
+    updateTemplate,
+    deleteTemplate,
+    useTemplate,
     // snapshots
-    createSnapshot, listSnapshots, getSnapshot, restoreSnapshot, renameSnapshot, deleteSnapshot,
+    createSnapshot,
+    listSnapshots,
+    getSnapshot,
+    restoreSnapshot,
+    renameSnapshot,
+    deleteSnapshot,
     // api keys
-    createApiKey, listApiKeys, revokeApiKey, validateApiKey,
+    createApiKey,
+    listApiKeys,
+    revokeApiKey,
+    validateApiKey,
     // ownership transfer
-    transferWorkspaceOwnership, transferDiagramOwnership, transferTemplateOwnership,
+    transferWorkspaceOwnership,
+    transferDiagramOwnership,
+    transferTemplateOwnership,
   };
 }
 

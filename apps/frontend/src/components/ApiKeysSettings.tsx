@@ -6,12 +6,17 @@ import { getErrorMessage } from "@/lib/api-error";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  return new Date(iso).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function keyStatus(key: ApiKeyResponse): { label: string; className: string } {
   if (key.revokedAt) return { label: "Revoked", className: "text-text-muted" };
-  if (key.expiresAt && new Date(key.expiresAt) < new Date()) return { label: "Expired", className: "text-warning" };
+  if (key.expiresAt && new Date(key.expiresAt) < new Date())
+    return { label: "Expired", className: "text-warning" };
   return { label: "Active", className: "text-success" };
 }
 
@@ -45,10 +50,13 @@ export function ApiKeysSettings() {
 
   useEffect(() => {
     loadKeys();
-    workspacesApi.list().then((res) => {
-      setWorkspaces(res.workspaces);
-      if (res.workspaces.length > 0) setCreateWorkspaceId(res.workspaces[0].id);
-    }).catch(() => {});
+    workspacesApi
+      .list()
+      .then((res) => {
+        setWorkspaces(res.workspaces);
+        if (res.workspaces.length > 0) setCreateWorkspaceId(res.workspaces[0].id);
+      })
+      .catch(() => {});
   }, [loadKeys]);
 
   async function handleCreate(e: React.FormEvent) {
@@ -104,7 +112,10 @@ export function ApiKeysSettings() {
         </div>
         <button
           className={`${ui.btn} ${ui.btnPrimary}`}
-          onClick={() => { setShowCreate(true); setCreatedKey(null); }}
+          onClick={() => {
+            setShowCreate(true);
+            setCreatedKey(null);
+          }}
         >
           Create key
         </button>
@@ -115,7 +126,9 @@ export function ApiKeysSettings() {
       {/* Post-create: show the plain key once */}
       {createdKey && (
         <div className="rounded-lg border border-success/30 bg-success/5 p-4 space-y-2">
-          <p className="text-sm font-medium text-text-primary">Your API key was created. Copy it now — it won't be shown again.</p>
+          <p className="text-sm font-medium text-text-primary">
+            Your API key was created. Copy it now — it won't be shown again.
+          </p>
           <div className="flex items-center gap-2">
             <code className="flex-1 rounded bg-surface px-3 py-2 text-sm font-mono text-text-primary break-all border border-border">
               {createdKey}
@@ -152,7 +165,9 @@ export function ApiKeysSettings() {
                 required
               >
                 {workspaces.map((w) => (
-                  <option key={w.id} value={w.id}>{w.name}</option>
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
                 ))}
               </select>
             </label>
@@ -167,10 +182,18 @@ export function ApiKeysSettings() {
               />
             </label>
             <div className="flex gap-2 justify-end">
-              <button type="button" className={`${ui.btn} ${ui.btnSecondary}`} onClick={() => setShowCreate(false)}>
+              <button
+                type="button"
+                className={`${ui.btn} ${ui.btnSecondary}`}
+                onClick={() => setShowCreate(false)}
+              >
                 Cancel
               </button>
-              <button type="submit" className={`${ui.btn} ${ui.btnPrimary}`} disabled={creating || !createName.trim()}>
+              <button
+                type="submit"
+                className={`${ui.btn} ${ui.btnPrimary}`}
+                disabled={creating || !createName.trim()}
+              >
                 {creating ? "Creating..." : "Create key"}
               </button>
             </div>
@@ -182,7 +205,9 @@ export function ApiKeysSettings() {
       {keys.length === 0 && !showCreate ? (
         <div className={ui.empty}>
           <p className="font-medium">No API keys yet</p>
-          <p className="mt-1">Create an API key to access diagrams programmatically via the /v1/ API.</p>
+          <p className="mt-1">
+            Create an API key to access diagrams programmatically via the /v1/ API.
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -201,14 +226,17 @@ export function ApiKeysSettings() {
             <tbody>
               {keys.map((k) => {
                 const status = keyStatus(k);
-                const isActive = !k.revokedAt && (!k.expiresAt || new Date(k.expiresAt) >= new Date());
+                const isActive =
+                  !k.revokedAt && (!k.expiresAt || new Date(k.expiresAt) >= new Date());
                 return (
                   <tr key={k.id} className="border-b border-border/50">
                     <td className="py-3 text-text-primary">{k.name}</td>
                     <td className="py-3 text-text-secondary">{workspaceName(k.workspaceId)}</td>
                     <td className="py-3 font-mono text-text-muted">{k.keyPrefix}...</td>
                     <td className="py-3 text-text-secondary">{formatDate(k.lastUsedAt)}</td>
-                    <td className="py-3 text-text-secondary">{k.expiresAt ? formatDate(k.expiresAt) : "Never"}</td>
+                    <td className="py-3 text-text-secondary">
+                      {k.expiresAt ? formatDate(k.expiresAt) : "Never"}
+                    </td>
                     <td className={`py-3 font-medium ${status.className}`}>{status.label}</td>
                     <td className="py-3 text-right">
                       {isActive && (

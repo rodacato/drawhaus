@@ -136,21 +136,21 @@ describe("mergeElements", () => {
 
   test("complex merge scenario", () => {
     const local = [
-      { id: "a", version: 3, text: "local-edited" },  // local wins (higher version)
-      { id: "b", version: 1, text: "local-b" },        // remote wins (higher version)
-      { id: "d", version: 1, text: "new-local" },      // local-only, appended
+      { id: "a", version: 3, text: "local-edited" }, // local wins (higher version)
+      { id: "b", version: 1, text: "local-b" }, // remote wins (higher version)
+      { id: "d", version: 1, text: "new-local" }, // local-only, appended
     ];
     const remote = [
       { id: "b", version: 2, text: "remote-b" },
       { id: "a", version: 2, text: "remote-a" },
-      { id: "c", version: 1, text: "remote-only" },    // remote-only
+      { id: "c", version: 1, text: "remote-only" }, // remote-only
     ];
     const result = mergeElements(local, remote);
 
     // Remote order: b, a, c + local-only: d
     assert.equal(result.length, 4);
     assert.equal((result[0] as any).id, "b");
-    assert.equal((result[0] as any).text, "remote-b");  // remote wins
+    assert.equal((result[0] as any).text, "remote-b"); // remote wins
     assert.equal((result[1] as any).id, "a");
     assert.equal((result[1] as any).text, "local-edited"); // local wins
     assert.equal((result[2] as any).id, "c");

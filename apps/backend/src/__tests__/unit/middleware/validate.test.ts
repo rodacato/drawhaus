@@ -1,14 +1,20 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { z } from "zod";
-import { validate, validateQuery, validateParams } from "../../../infrastructure/http/middleware/validate";
+import {
+  validate,
+  validateQuery,
+  validateParams,
+} from "../../../infrastructure/http/middleware/validate";
 
 type CapturedResponse = {
   statusCode: number;
   body: unknown;
 };
 
-function makeRes(): { res: CapturedResponse & { status: (n: number) => unknown; json: (b: unknown) => unknown } } {
+function makeRes(): {
+  res: CapturedResponse & { status: (n: number) => unknown; json: (b: unknown) => unknown };
+} {
   const captured: CapturedResponse = { statusCode: 0, body: undefined };
   const res = {
     statusCode: captured.statusCode,
@@ -34,7 +40,9 @@ describe("validate middleware", () => {
     const { res } = makeRes();
     let nextCalled = false;
 
-    validate(schema)(req as never, res as never, () => { nextCalled = true; });
+    validate(schema)(req as never, res as never, () => {
+      nextCalled = true;
+    });
 
     assert.equal(nextCalled, true);
     assert.deepEqual(req.body, { name: "ada", age: 37 });
@@ -45,15 +53,23 @@ describe("validate middleware", () => {
     const req = { body: { name: "x", age: "not-a-number" } };
     const { res } = makeRes();
 
-    validate(schema)(req as never, res as never, () => { throw new Error("next should NOT be called"); });
+    validate(schema)(req as never, res as never, () => {
+      throw new Error("next should NOT be called");
+    });
 
     assert.equal(res.statusCode, 400);
-    const body = res.body as { error: string; details: Array<{ path: string; code: string; message: string }> };
+    const body = res.body as {
+      error: string;
+      details: Array<{ path: string; code: string; message: string }>;
+    };
     assert.equal(body.error, "Invalid request body");
     assert.ok(Array.isArray(body.details));
     assert.ok(body.details.length >= 1);
     const paths = body.details.map((d) => d.path);
-    assert.ok(paths.includes("name") || paths.includes("age"), "should include path of failing field");
+    assert.ok(
+      paths.includes("name") || paths.includes("age"),
+      "should include path of failing field",
+    );
     for (const d of body.details) {
       assert.equal(typeof d.path, "string");
       assert.equal(typeof d.code, "string");
@@ -68,7 +84,9 @@ describe("validateQuery middleware", () => {
     const req = { query: { page: "0" } };
     const { res } = makeRes();
 
-    validateQuery(schema)(req as never, res as never, () => { throw new Error("next should NOT be called"); });
+    validateQuery(schema)(req as never, res as never, () => {
+      throw new Error("next should NOT be called");
+    });
 
     assert.equal(res.statusCode, 400);
     const body = res.body as { error: string; details: unknown[] };
@@ -84,7 +102,9 @@ describe("validateParams middleware", () => {
     const req = { params: { id: "not-a-uuid" } };
     const { res } = makeRes();
 
-    validateParams(schema)(req as never, res as never, () => { throw new Error("next should NOT be called"); });
+    validateParams(schema)(req as never, res as never, () => {
+      throw new Error("next should NOT be called");
+    });
 
     assert.equal(res.statusCode, 400);
     const body = res.body as { error: string; details: unknown[] };
@@ -98,7 +118,9 @@ describe("validateParams middleware", () => {
     const { res } = makeRes();
     let nextCalled = false;
 
-    validateParams(schema)(req as never, res as never, () => { nextCalled = true; });
+    validateParams(schema)(req as never, res as never, () => {
+      nextCalled = true;
+    });
 
     assert.equal(nextCalled, true);
   });

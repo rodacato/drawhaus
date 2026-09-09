@@ -4,7 +4,9 @@ import { ConnectionBadge } from "../components/ConnectionBadge";
 
 describe("ConnectionBadge", () => {
   test("renders nothing when connected", () => {
-    const { container } = render(<ConnectionBadge connectionState="connected" connectionError={null} />);
+    const { container } = render(
+      <ConnectionBadge connectionState="connected" connectionError={null} />,
+    );
     expect(container.firstChild).toBeNull();
   });
 

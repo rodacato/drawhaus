@@ -26,13 +26,7 @@ import type {
 import type { MermaidTheme } from "../theme/types.js";
 import { DEFAULT_THEME } from "../theme/default.js";
 import { parseMermaidSequence } from "../parser/sequence.js";
-import {
-  createRect,
-  createText,
-  createArrow,
-  createLine,
-  resetIdCounter,
-} from "../elements.js";
+import { createRect, createText, createArrow, createLine, resetIdCounter } from "../elements.js";
 
 // ── Layout constants ────────────────────────────────────────────
 
@@ -205,15 +199,17 @@ export function mapSequenceDiagram(
 
   for (const p of ast.participants) {
     const cx = centerX(p.id);
-    skeletons.push(createLine({
-      startX: cx,
-      startY: lifelineTop,
-      endX: cx,
-      endY: lifelineBottom,
-      strokeStyle: "dashed",
-      strokeColor: theme.seqLifeline.stroke,
-      strokeWidth: theme.seqLifeline.strokeWidth,
-    }));
+    skeletons.push(
+      createLine({
+        startX: cx,
+        startY: lifelineTop,
+        endX: cx,
+        endY: lifelineBottom,
+        strokeStyle: "dashed",
+        strokeColor: theme.seqLifeline.stroke,
+        strokeWidth: theme.seqLifeline.strokeWidth,
+      }),
+    );
   }
 
   // ── Phase 6: Render participant boxes (bottom) ──────────────
@@ -223,17 +219,19 @@ export function mapSequenceDiagram(
     const style = p.type === "actor" ? theme.seqActor : theme.seqParticipant;
     const displayName = p.alias ?? p.id;
 
-    skeletons.push(createRect({
-      x,
-      y: lifelineBottom,
-      width: w,
-      height: PARTICIPANT_HEIGHT,
-      label: displayName,
-      roundness: 8,
-      backgroundColor: style.fill,
-      strokeColor: style.stroke,
-      strokeStyle: style.strokeStyle,
-    }));
+    skeletons.push(
+      createRect({
+        x,
+        y: lifelineBottom,
+        width: w,
+        height: PARTICIPANT_HEIGHT,
+        label: displayName,
+        roundness: 8,
+        backgroundColor: style.fill,
+        strokeColor: style.stroke,
+        strokeStyle: style.strokeStyle,
+      }),
+    );
   }
 
   // ── Phase 7: Render messages, notes, and blocks ─────────────
@@ -272,15 +270,18 @@ export function mapSequenceDiagram(
         { x: fromCx, y: currentY + 20 },
       ];
 
-      skeletons.push(createArrow({
-        points,
-        label: msg.text,
-        startArrowhead: null,
-        endArrowhead: msg.arrowType === "cross" ? "bar" : msg.arrowType === "open" ? null : "arrow",
-        strokeStyle: msg.style === "dashed" ? "dashed" : "solid",
-        strokeColor: arrowTheme.stroke,
-        strokeWidth: arrowTheme.strokeWidth,
-      }));
+      skeletons.push(
+        createArrow({
+          points,
+          label: msg.text,
+          startArrowhead: null,
+          endArrowhead:
+            msg.arrowType === "cross" ? "bar" : msg.arrowType === "open" ? null : "arrow",
+          strokeStyle: msg.style === "dashed" ? "dashed" : "solid",
+          strokeColor: arrowTheme.stroke,
+          strokeWidth: arrowTheme.strokeWidth,
+        }),
+      );
     } else {
       const points = [
         { x: fromCx, y: currentY },
@@ -291,15 +292,17 @@ export function mapSequenceDiagram(
       if (msg.arrowType === "cross") endArrowhead = "bar";
       if (msg.arrowType === "open") endArrowhead = null;
 
-      skeletons.push(createArrow({
-        points,
-        label: msg.text,
-        startArrowhead: null,
-        endArrowhead,
-        strokeStyle: msg.style === "dashed" ? "dashed" : "solid",
-        strokeColor: arrowTheme.stroke,
-        strokeWidth: arrowTheme.strokeWidth,
-      }));
+      skeletons.push(
+        createArrow({
+          points,
+          label: msg.text,
+          startArrowhead: null,
+          endArrowhead,
+          strokeStyle: msg.style === "dashed" ? "dashed" : "solid",
+          strokeColor: arrowTheme.stroke,
+          strokeWidth: arrowTheme.strokeWidth,
+        }),
+      );
     }
   }
 
@@ -326,16 +329,18 @@ export function mapSequenceDiagram(
       noteX = (participantX.get(note.participants[0]) ?? 0) - noteW - 10;
     }
 
-    skeletons.push(createRect({
-      x: noteX,
-      y: currentY - noteH / 2,
-      width: noteW,
-      height: noteH,
-      label: note.text,
-      backgroundColor: theme.seqNote.fill,
-      strokeColor: theme.seqNote.stroke,
-      strokeStyle: theme.seqNote.strokeStyle,
-    }));
+    skeletons.push(
+      createRect({
+        x: noteX,
+        y: currentY - noteH / 2,
+        width: noteW,
+        height: noteH,
+        label: note.text,
+        backgroundColor: theme.seqNote.fill,
+        strokeColor: theme.seqNote.stroke,
+        strokeStyle: theme.seqNote.strokeStyle,
+      }),
+    );
   }
 
   function renderBlock(block: SequenceBlock): void {
@@ -345,11 +350,14 @@ export function mapSequenceDiagram(
     // Determine X range: full participant width
     const allPIds = ast.participants.map((p) => p.id);
     const minX = Math.min(...allPIds.map((id) => participantX.get(id) ?? 0)) - BLOCK_PADDING_X;
-    const maxX = Math.max(...allPIds.map((id) => {
-      const x = participantX.get(id) ?? 0;
-      const w = participantWidths.get(id) ?? PARTICIPANT_MIN_WIDTH;
-      return x + w;
-    })) + BLOCK_PADDING_X;
+    const maxX =
+      Math.max(
+        ...allPIds.map((id) => {
+          const x = participantX.get(id) ?? 0;
+          const w = participantWidths.get(id) ?? PARTICIPANT_MIN_WIDTH;
+          return x + w;
+        }),
+      ) + BLOCK_PADDING_X;
 
     const sectionStartYs: number[] = [];
 
@@ -364,51 +372,59 @@ export function mapSequenceDiagram(
     const blockEndY = currentY + BLOCK_PADDING_Y;
 
     // Block container
-    skeletons.push(createRect({
-      x: minX,
-      y: blockStartY,
-      width: maxX - minX,
-      height: blockEndY - blockStartY,
-      backgroundColor: theme.seqLoop.fill,
-      strokeColor: theme.seqLoop.stroke,
-      strokeStyle: theme.seqLoop.strokeStyle,
-    }));
+    skeletons.push(
+      createRect({
+        x: minX,
+        y: blockStartY,
+        width: maxX - minX,
+        height: blockEndY - blockStartY,
+        backgroundColor: theme.seqLoop.fill,
+        strokeColor: theme.seqLoop.stroke,
+        strokeStyle: theme.seqLoop.strokeStyle,
+      }),
+    );
 
     // Block type label
     const typeLabel = block.type.toUpperCase() + (block.label ? ` [${block.label}]` : "");
-    skeletons.push(createText({
-      x: minX + 8,
-      y: blockStartY + 4,
-      text: typeLabel,
-      fontSize: theme.labelText.fontSize,
-      color: theme.seqLoop.stroke,
-      textAlign: "left",
-    }));
+    skeletons.push(
+      createText({
+        x: minX + 8,
+        y: blockStartY + 4,
+        text: typeLabel,
+        fontSize: theme.labelText.fontSize,
+        color: theme.seqLoop.stroke,
+        textAlign: "left",
+      }),
+    );
 
     // Section separator lines (for alt/else, par/and)
     for (let si = 0; si < sectionStartYs.length; si++) {
       const sepY = sectionStartYs[si];
-      skeletons.push(createLine({
-        startX: minX,
-        startY: sepY,
-        endX: maxX,
-        endY: sepY,
-        strokeStyle: "dashed",
-        strokeColor: theme.seqLoop.stroke,
-        strokeWidth: 1,
-      }));
+      skeletons.push(
+        createLine({
+          startX: minX,
+          startY: sepY,
+          endX: maxX,
+          endY: sepY,
+          strokeStyle: "dashed",
+          strokeColor: theme.seqLoop.stroke,
+          strokeWidth: 1,
+        }),
+      );
 
       // Section label
       const sectionLabel = block.sections[si + 1].label;
       if (sectionLabel) {
-        skeletons.push(createText({
-          x: minX + 8,
-          y: sepY + 4,
-          text: `[${sectionLabel}]`,
-          fontSize: theme.labelText.fontSize,
-          color: theme.seqLoop.stroke,
-          textAlign: "left",
-        }));
+        skeletons.push(
+          createText({
+            x: minX + 8,
+            y: sepY + 4,
+            text: `[${sectionLabel}]`,
+            fontSize: theme.labelText.fontSize,
+            color: theme.seqLoop.stroke,
+            textAlign: "left",
+          }),
+        );
       }
     }
 

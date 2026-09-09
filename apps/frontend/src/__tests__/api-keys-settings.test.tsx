@@ -21,8 +21,28 @@ import { workspacesApi } from "@/api/workspaces";
 import { ApiKeysSettings } from "@/components/ApiKeysSettings";
 
 const workspaces = [
-  { id: "ws-1", name: "Personal", description: "", ownerId: "u1", isPersonal: true, color: "#000", icon: "", createdAt: "", updatedAt: "" },
-  { id: "ws-2", name: "Team", description: "", ownerId: "u1", isPersonal: false, color: "#fff", icon: "", createdAt: "", updatedAt: "" },
+  {
+    id: "ws-1",
+    name: "Personal",
+    description: "",
+    ownerId: "u1",
+    isPersonal: true,
+    color: "#000",
+    icon: "",
+    createdAt: "",
+    updatedAt: "",
+  },
+  {
+    id: "ws-2",
+    name: "Team",
+    description: "",
+    ownerId: "u1",
+    isPersonal: false,
+    color: "#fff",
+    icon: "",
+    createdAt: "",
+    updatedAt: "",
+  },
 ];
 
 function mockWorkspaces() {
@@ -219,7 +239,9 @@ describe("ApiKeysSettings", () => {
       [makeKey({ id: "k1", name: "K1" })],
       [makeKey({ id: "k1", name: "K1", revokedAt: "2024-02-02T00:00:00.000Z" })],
     ];
-    vi.mocked(apiKeysApi.list).mockImplementation(() => Promise.resolve({ keys: calls.shift() ?? [] }));
+    vi.mocked(apiKeysApi.list).mockImplementation(() =>
+      Promise.resolve({ keys: calls.shift() ?? [] }),
+    );
     mockWorkspaces();
     vi.mocked(apiKeysApi.revoke).mockResolvedValue(undefined as never);
 

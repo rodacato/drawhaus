@@ -7,77 +7,77 @@ import type { MermaidTheme } from "./types.js";
 export const DEFAULT_THEME: MermaidTheme = {
   // ── Class Diagram ──────────────────────────────
   class: {
-    fill: "#f0f4f8",       // very light blue-grey
+    fill: "#f0f4f8", // very light blue-grey
     stroke: "#5b8fc9",
     strokeStyle: "solid",
   },
   abstractClass: {
-    fill: "#f4f0f7",       // very light lavender
+    fill: "#f4f0f7", // very light lavender
     stroke: "#9678b6",
     strokeStyle: "solid",
   },
   interface: {
-    fill: "#f0f5f0",       // very light sage
+    fill: "#f0f5f0", // very light sage
     stroke: "#6da670",
     strokeStyle: "dashed",
   },
   enumeration: {
-    fill: "#f5f3ee",       // very light warm grey
+    fill: "#f5f3ee", // very light warm grey
     stroke: "#c4a94d",
     strokeStyle: "solid",
   },
 
   // ── Flowchart ─────────────────────────────────
   flowNode: {
-    fill: "#f0f4f8",         // light blue-grey (process nodes)
+    fill: "#f0f4f8", // light blue-grey (process nodes)
     stroke: "#5b8fc9",
     strokeStyle: "solid",
   },
   flowDecision: {
-    fill: "#f5f3ee",         // warm grey (decision diamonds)
+    fill: "#f5f3ee", // warm grey (decision diamonds)
     stroke: "#c4a94d",
     strokeStyle: "solid",
   },
   flowDatabase: {
-    fill: "#f0f5f0",         // light sage (data stores)
+    fill: "#f0f5f0", // light sage (data stores)
     stroke: "#6da670",
     strokeStyle: "solid",
   },
   flowCircle: {
-    fill: "#f4f0f7",         // light lavender (terminators)
+    fill: "#f4f0f7", // light lavender (terminators)
     stroke: "#9678b6",
     strokeStyle: "solid",
   },
   flowSubgraph: {
     fill: "transparent",
-    stroke: "#8e9baa",       // muted blue-grey
+    stroke: "#8e9baa", // muted blue-grey
     strokeStyle: "dashed",
   },
 
   // ── Sequence Diagram ─────────────────────────────
   seqParticipant: {
-    fill: "#f0f4f8",         // light blue-grey (matches class/flowNode)
+    fill: "#f0f4f8", // light blue-grey (matches class/flowNode)
     stroke: "#5b8fc9",
     strokeStyle: "solid",
   },
   seqActor: {
-    fill: "#f4f0f7",         // light lavender
+    fill: "#f4f0f7", // light lavender
     stroke: "#9678b6",
     strokeStyle: "solid",
   },
   seqActivation: {
-    fill: "#e8eef6",         // slightly darker blue-grey
+    fill: "#e8eef6", // slightly darker blue-grey
     stroke: "#5b8fc9",
     strokeStyle: "solid",
   },
   seqNote: {
-    fill: "#fef9e7",         // light yellow
+    fill: "#fef9e7", // light yellow
     stroke: "#d4a843",
     strokeStyle: "solid",
   },
   seqLoop: {
     fill: "transparent",
-    stroke: "#8e9baa",       // muted blue-grey (matches subgraph)
+    stroke: "#8e9baa", // muted blue-grey (matches subgraph)
     strokeStyle: "dashed",
   },
   seqMessage: {
@@ -95,17 +95,17 @@ export const DEFAULT_THEME: MermaidTheme = {
 
   // ── Mindmap ────────────────────────────────────
   mindmapRoot: {
-    fill: "#e8eef6",         // slightly darker blue-grey for emphasis
+    fill: "#e8eef6", // slightly darker blue-grey for emphasis
     stroke: "#5b8fc9",
     strokeStyle: "solid",
   },
   mindmapNode: {
-    fill: "#f0f4f8",         // light blue-grey
+    fill: "#f0f4f8", // light blue-grey
     stroke: "#5b8fc9",
     strokeStyle: "solid",
   },
   mindmapLeaf: {
-    fill: "#f0f5f0",         // light sage
+    fill: "#f0f5f0", // light sage
     stroke: "#6da670",
     strokeStyle: "solid",
   },
@@ -116,12 +116,12 @@ export const DEFAULT_THEME: MermaidTheme = {
 
   // ── State Diagram ──────────────────────────────
   stateNode: {
-    fill: "#f0f4f8",         // light blue-grey
+    fill: "#f0f4f8", // light blue-grey
     stroke: "#5b8fc9",
     strokeStyle: "solid",
   },
   stateStart: {
-    fill: "#333333",         // dark filled circle
+    fill: "#333333", // dark filled circle
     stroke: "#333333",
     strokeStyle: "solid",
   },
@@ -131,22 +131,22 @@ export const DEFAULT_THEME: MermaidTheme = {
     strokeStyle: "solid",
   },
   stateChoice: {
-    fill: "#f5f3ee",         // warm grey (matches flowDecision)
+    fill: "#f5f3ee", // warm grey (matches flowDecision)
     stroke: "#c4a94d",
     strokeStyle: "solid",
   },
   stateForkJoin: {
-    fill: "#333333",         // solid bar
+    fill: "#333333", // solid bar
     stroke: "#333333",
     strokeStyle: "solid",
   },
   stateComposite: {
     fill: "transparent",
-    stroke: "#8e9baa",       // muted blue-grey (matches subgraph)
+    stroke: "#8e9baa", // muted blue-grey (matches subgraph)
     strokeStyle: "dashed",
   },
   stateNote: {
-    fill: "#fef9e7",         // light yellow (matches seqNote)
+    fill: "#fef9e7", // light yellow (matches seqNote)
     stroke: "#d4a843",
     strokeStyle: "solid",
   },
@@ -157,7 +157,7 @@ export const DEFAULT_THEME: MermaidTheme = {
 
   // ── ER Diagram ──────────────────────────────────
   erEntity: {
-    fill: "#f0f4f8",         // light blue-grey (matches class)
+    fill: "#f0f4f8", // light blue-grey (matches class)
     stroke: "#5b8fc9",
     strokeStyle: "solid",
   },

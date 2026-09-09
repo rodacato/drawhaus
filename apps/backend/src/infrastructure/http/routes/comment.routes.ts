@@ -73,55 +73,89 @@ export function createCommentRoutes(
   router.use(requireAuth);
 
   // GET /api/diagrams/:diagramId/comments?sceneId=xxx
-  router.get("/", validateParams(diagramIdParams), asyncRoute(async (req, res) => {
-    const sceneId = typeof req.query.sceneId === "string" ? req.query.sceneId : undefined;
-    const threads = await useCases.list.execute(String(req.params.diagramId), req.authUser.id, sceneId);
-    return res.json({ threads: threads.map(formatThread) });
-  }));
+  router.get(
+    "/",
+    validateParams(diagramIdParams),
+    asyncRoute(async (req, res) => {
+      const sceneId = typeof req.query.sceneId === "string" ? req.query.sceneId : undefined;
+      const threads = await useCases.list.execute(
+        String(req.params.diagramId),
+        req.authUser.id,
+        sceneId,
+      );
+      return res.json({ threads: threads.map(formatThread) });
+    }),
+  );
 
   // POST /api/diagrams/:diagramId/comments
-  router.post("/", validateParams(diagramIdParams), validate(createSchema), asyncRoute(async (req, res) => {
-    const thread = await useCases.create.execute(
-      String(req.params.diagramId),
-      req.authUser.id,
-      req.body.elementId,
-      req.body.body,
-      req.body.sceneId,
-    );
-    return res.status(201).json({ thread: formatThread(thread) });
-  }));
+  router.post(
+    "/",
+    validateParams(diagramIdParams),
+    validate(createSchema),
+    asyncRoute(async (req, res) => {
+      const thread = await useCases.create.execute(
+        String(req.params.diagramId),
+        req.authUser.id,
+        req.body.elementId,
+        req.body.body,
+        req.body.sceneId,
+      );
+      return res.status(201).json({ thread: formatThread(thread) });
+    }),
+  );
 
   // POST /api/diagrams/:diagramId/comments/:threadId/replies
-  router.post("/:threadId/replies", validateParams(threadParams), validate(replySchema), asyncRoute(async (req, res) => {
-    const reply = await useCases.reply.execute(
-      String(req.params.threadId),
-      req.authUser.id,
-      req.body.body,
-    );
-    return res.status(201).json({ reply: formatReply(reply) });
-  }));
+  router.post(
+    "/:threadId/replies",
+    validateParams(threadParams),
+    validate(replySchema),
+    asyncRoute(async (req, res) => {
+      const reply = await useCases.reply.execute(
+        String(req.params.threadId),
+        req.authUser.id,
+        req.body.body,
+      );
+      return res.status(201).json({ reply: formatReply(reply) });
+    }),
+  );
 
   // PATCH /api/diagrams/:diagramId/comments/:threadId/resolve
-  router.patch("/:threadId/resolve", validateParams(threadParams), validate(resolveSchema), asyncRoute(async (req, res) => {
-    const thread = await useCases.resolve.execute(
-      String(req.params.threadId),
-      req.authUser.id,
-      req.body.resolved,
-    );
-    return res.json({ thread: formatThread(thread) });
-  }));
+  router.patch(
+    "/:threadId/resolve",
+    validateParams(threadParams),
+    validate(resolveSchema),
+    asyncRoute(async (req, res) => {
+      const thread = await useCases.resolve.execute(
+        String(req.params.threadId),
+        req.authUser.id,
+        req.body.resolved,
+      );
+      return res.json({ thread: formatThread(thread) });
+    }),
+  );
 
   // DELETE /api/diagrams/:diagramId/comments/:threadId
-  router.delete("/:threadId", validateParams(threadParams), asyncRoute(async (req, res) => {
-    await useCases.delete.execute(String(req.params.threadId), req.authUser.id);
-    return res.json({ success: true });
-  }));
+  router.delete(
+    "/:threadId",
+    validateParams(threadParams),
+    asyncRoute(async (req, res) => {
+      await useCases.delete.execute(String(req.params.threadId), req.authUser.id);
+      return res.json({ success: true });
+    }),
+  );
 
   // POST /api/diagrams/:diagramId/comments/:threadId/like
-  router.post("/:threadId/like", validateParams(threadParams), asyncRoute(async (req, res) => {
-    const result = await useCases.toggleLike.execute(String(req.params.threadId), req.authUser.id);
-    return res.json(result);
-  }));
+  router.post(
+    "/:threadId/like",
+    validateParams(threadParams),
+    asyncRoute(async (req, res) => {
+      const result = await useCases.toggleLike.execute(
+        String(req.params.threadId),
+        req.authUser.id,
+      );
+      return res.json(result);
+    }),
+  );
 
   return router;
 }

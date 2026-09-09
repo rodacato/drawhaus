@@ -61,44 +61,88 @@ function createApp() {
   const invitations = new InMemoryInvitationRepository();
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
-  app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
-    login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
-    logout: new LogoutUseCase(sessions),
-    getCurrentUser,
-    updateProfile: new UpdateProfileUseCase(users),
-    changePassword: new ChangePasswordUseCase(users, hasher),
-    acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
-    forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
-    resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), new InMemoryWorkspaceRepository()),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
-  }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register: new RegisterUseCase(
+          users,
+          sessions,
+          hasher,
+          new InMemorySiteSettingsRepository(),
+        ),
+        login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
+        logout: new LogoutUseCase(sessions),
+        getCurrentUser,
+        updateProfile: new UpdateProfileUseCase(users),
+        changePassword: new ChangePasswordUseCase(users, hasher),
+        acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
+        forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
+        resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
+        deleteAccount: new DeleteAccountUseCase(
+          users,
+          hasher,
+          new NoopAuditLogger(),
+          new InMemoryWorkspaceRepository(),
+        ),
+        googleAuth: new GoogleAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        githubAuth: new GitHubAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        unlinkOAuth: new UnlinkOAuthUseCase(
+          users,
+          new InMemoryOAuthTokenRepository(),
+          new InMemoryDriveBackupRepository(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
   const folders = new InMemoryFolderRepository();
-  app.use("/api/diagrams", createDiagramRoutes({
-    create: new CreateDiagramUseCase(diagrams),
-    get: new GetDiagramUseCase(diagrams, new InMemorySceneRepository()),
-    list: new ListDiagramsUseCase(diagrams),
-    search: new SearchDiagramsUseCase(diagrams),
-    update: new UpdateDiagramUseCase(diagrams),
-    updateThumbnail: new UpdateThumbnailUseCase(diagrams),
-    delete: new DeleteDiagramUseCase(diagrams, new InMemoryWorkspaceRepository()),
-    toggleStar: new ToggleStarUseCase(diagrams),
-    duplicate: new DuplicateDiagramUseCase(diagrams),
-    move: new MoveDiagramUseCase(diagrams, folders, new InMemoryWorkspaceRepository()),
-    transferOwnership: new TransferDiagramOwnershipUseCase(diagrams, new InMemoryWorkspaceRepository(), new NoopAuditLogger()),
-  }, requireAuth));
+  app.use(
+    "/api/diagrams",
+    createDiagramRoutes(
+      {
+        create: new CreateDiagramUseCase(diagrams),
+        get: new GetDiagramUseCase(diagrams, new InMemorySceneRepository()),
+        list: new ListDiagramsUseCase(diagrams),
+        search: new SearchDiagramsUseCase(diagrams),
+        update: new UpdateDiagramUseCase(diagrams),
+        updateThumbnail: new UpdateThumbnailUseCase(diagrams),
+        delete: new DeleteDiagramUseCase(diagrams, new InMemoryWorkspaceRepository()),
+        toggleStar: new ToggleStarUseCase(diagrams),
+        duplicate: new DuplicateDiagramUseCase(diagrams),
+        move: new MoveDiagramUseCase(diagrams, folders, new InMemoryWorkspaceRepository()),
+        transferOwnership: new TransferDiagramOwnershipUseCase(
+          diagrams,
+          new InMemoryWorkspaceRepository(),
+          new NoopAuditLogger(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
   return app;
 }
 
 async function registerAndGetCookie(app: express.Express, email: string) {
-  const res = await request(app).post("/api/auth/register").send({
-    email,
-    name: email.split("@")[0],
-    password: "password123",
-  });
+  const res = await request(app)
+    .post("/api/auth/register")
+    .send({
+      email,
+      name: email.split("@")[0],
+      password: "password123",
+    });
   return res.headers["set-cookie"][0].split(";")[0];
 }
 
@@ -219,7 +263,10 @@ test("update thumbnail", async () => {
   const app = createApp();
   const cookie = await registerAndGetCookie(app, "thumb@example.com");
 
-  const createRes = await request(app).post("/api/diagrams").set("Cookie", cookie).send({ title: "Thumb" });
+  const createRes = await request(app)
+    .post("/api/diagrams")
+    .set("Cookie", cookie)
+    .send({ title: "Thumb" });
   const diagramId = createRes.body.diagram.id as string;
 
   const res = await request(app)
@@ -233,7 +280,10 @@ test("move diagram to folder", async () => {
   const app = createApp();
   const cookie = await registerAndGetCookie(app, "move@example.com");
 
-  const createRes = await request(app).post("/api/diagrams").set("Cookie", cookie).send({ title: "Movable" });
+  const createRes = await request(app)
+    .post("/api/diagrams")
+    .set("Cookie", cookie)
+    .send({ title: "Movable" });
   const diagramId = createRes.body.diagram.id as string;
 
   const res = await request(app)
@@ -247,7 +297,10 @@ test("toggle star", async () => {
   const app = createApp();
   const cookie = await registerAndGetCookie(app, "star@example.com");
 
-  const createRes = await request(app).post("/api/diagrams").set("Cookie", cookie).send({ title: "Starrable" });
+  const createRes = await request(app)
+    .post("/api/diagrams")
+    .set("Cookie", cookie)
+    .send({ title: "Starrable" });
   const diagramId = createRes.body.diagram.id as string;
 
   const starOn = await request(app)
@@ -267,7 +320,10 @@ test("toggle star without boolean returns 400", async () => {
   const app = createApp();
   const cookie = await registerAndGetCookie(app, "starbad@example.com");
 
-  const createRes = await request(app).post("/api/diagrams").set("Cookie", cookie).send({ title: "NoStar" });
+  const createRes = await request(app)
+    .post("/api/diagrams")
+    .set("Cookie", cookie)
+    .send({ title: "NoStar" });
   const diagramId = createRes.body.diagram.id as string;
 
   const res = await request(app)
@@ -281,7 +337,10 @@ test("duplicate diagram", async () => {
   const app = createApp();
   const cookie = await registerAndGetCookie(app, "dup@example.com");
 
-  const createRes = await request(app).post("/api/diagrams").set("Cookie", cookie).send({ title: "Original" });
+  const createRes = await request(app)
+    .post("/api/diagrams")
+    .set("Cookie", cookie)
+    .send({ title: "Original" });
   const originalId = createRes.body.diagram.id as string;
 
   const res = await request(app)
@@ -299,7 +358,10 @@ test("transfer ownership", async () => {
   const meRes = await request(app).get("/api/auth/me").set("Cookie", cookie2);
   const user2Id = meRes.body.user.id as string;
 
-  const createRes = await request(app).post("/api/diagrams").set("Cookie", cookie1).send({ title: "Transfer me" });
+  const createRes = await request(app)
+    .post("/api/diagrams")
+    .set("Cookie", cookie1)
+    .send({ title: "Transfer me" });
   const diagramId = createRes.body.diagram.id as string;
 
   const res = await request(app)

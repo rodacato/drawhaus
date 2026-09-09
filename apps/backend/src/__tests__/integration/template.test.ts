@@ -61,41 +61,80 @@ function createApp() {
   const invitations = new InMemoryInvitationRepository();
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
-  app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
-    login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
-    logout: new LogoutUseCase(sessions),
-    getCurrentUser,
-    updateProfile: new UpdateProfileUseCase(users),
-    changePassword: new ChangePasswordUseCase(users, hasher),
-    acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
-    forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
-    resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
-  }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register: new RegisterUseCase(
+          users,
+          sessions,
+          hasher,
+          new InMemorySiteSettingsRepository(),
+        ),
+        login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
+        logout: new LogoutUseCase(sessions),
+        getCurrentUser,
+        updateProfile: new UpdateProfileUseCase(users),
+        changePassword: new ChangePasswordUseCase(users, hasher),
+        acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
+        forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
+        resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
+        deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
+        googleAuth: new GoogleAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        githubAuth: new GitHubAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        unlinkOAuth: new UnlinkOAuthUseCase(
+          users,
+          new InMemoryOAuthTokenRepository(),
+          new InMemoryDriveBackupRepository(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
-  app.use("/api/templates", createTemplateRoutes({
-    create: new CreateTemplateUseCase(templates),
-    get: new GetTemplateUseCase(templates),
-    list: new ListTemplatesUseCase(templates),
-    update: new UpdateTemplateUseCase(templates),
-    delete: new DeleteTemplateUseCase(templates),
-    use: new UseTemplateUseCase(templates, diagrams),
-    transferOwnership: new TransferTemplateOwnershipUseCase(templates, workspaces, new NoopAuditLogger()),
-  }, requireAuth));
+  app.use(
+    "/api/templates",
+    createTemplateRoutes(
+      {
+        create: new CreateTemplateUseCase(templates),
+        get: new GetTemplateUseCase(templates),
+        list: new ListTemplatesUseCase(templates),
+        update: new UpdateTemplateUseCase(templates),
+        delete: new DeleteTemplateUseCase(templates),
+        use: new UseTemplateUseCase(templates, diagrams),
+        transferOwnership: new TransferTemplateOwnershipUseCase(
+          templates,
+          workspaces,
+          new NoopAuditLogger(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
   return app;
 }
 
 async function registerAndGetUser(app: express.Express, email: string) {
-  const res = await request(app).post("/api/auth/register").send({
-    email,
-    name: email.split("@")[0],
-    password: "password123",
-  });
+  const res = await request(app)
+    .post("/api/auth/register")
+    .send({
+      email,
+      name: email.split("@")[0],
+      password: "password123",
+    });
   const cookie = res.headers["set-cookie"][0].split(";")[0];
   return { cookie, userId: res.body.user.id as string };
 }
@@ -133,10 +172,14 @@ test("GET /api/templates lists user's templates", async () => {
   const { cookie } = await registerAndGetUser(app, "tpl2@example.com");
 
   await request(app).post("/api/templates").set("Cookie", cookie).send({
-    title: "A", elements: [], appState: {},
+    title: "A",
+    elements: [],
+    appState: {},
   });
   await request(app).post("/api/templates").set("Cookie", cookie).send({
-    title: "B", elements: [], appState: {},
+    title: "B",
+    elements: [],
+    appState: {},
   });
 
   const res = await request(app).get("/api/templates").set("Cookie", cookie);
@@ -220,10 +263,7 @@ test("PATCH /api/templates/:id rejects empty body with 400", async () => {
     .send({ title: "X", elements: [], appState: {} });
   const tplId = create.body.template.id as string;
 
-  const res = await request(app)
-    .patch(`/api/templates/${tplId}`)
-    .set("Cookie", cookie)
-    .send({});
+  const res = await request(app).patch(`/api/templates/${tplId}`).set("Cookie", cookie).send({});
 
   assert.equal(res.status, 400);
 });

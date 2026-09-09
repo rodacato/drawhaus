@@ -15,7 +15,11 @@ function setup() {
 describe("ChangePasswordUseCase", () => {
   it("verifies current password and stores the new hashed password", async () => {
     const { users, useCase } = setup();
-    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_oldpw" });
+    const user = await users.create({
+      email: "u@example.com",
+      name: "U",
+      passwordHash: "hashed_oldpw",
+    });
 
     await useCase.execute(user.id, { currentPassword: "oldpw", newPassword: "newpw1234" });
 
@@ -33,7 +37,11 @@ describe("ChangePasswordUseCase", () => {
 
   it("throws UnauthorizedError on wrong current password", async () => {
     const { users, useCase } = setup();
-    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_oldpw" });
+    const user = await users.create({
+      email: "u@example.com",
+      name: "U",
+      passwordHash: "hashed_oldpw",
+    });
 
     await assert.rejects(
       () => useCase.execute(user.id, { currentPassword: "wrong", newPassword: "newpw1234" }),
@@ -44,7 +52,11 @@ describe("ChangePasswordUseCase", () => {
 
   it("throws UnauthorizedError when user has password but currentPassword is missing", async () => {
     const { users, useCase } = setup();
-    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "hashed_oldpw" });
+    const user = await users.create({
+      email: "u@example.com",
+      name: "U",
+      passwordHash: "hashed_oldpw",
+    });
 
     await assert.rejects(
       () => useCase.execute(user.id, { newPassword: "newpw1234" }),

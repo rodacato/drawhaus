@@ -9,17 +9,29 @@ function addThreadIfNew(threads: CommentThread[], thread: CommentThread): Commen
   return [...threads, thread];
 }
 
-function addReplyToThread(threads: CommentThread[], threadId: string, reply: CommentReply): CommentThread[] {
+function addReplyToThread(
+  threads: CommentThread[],
+  threadId: string,
+  reply: CommentReply,
+): CommentThread[] {
   return threads.map((t) => addReplyIfMissing(t, threadId, reply));
 }
 
-function addReplyIfMissing(thread: CommentThread, threadId: string, reply: CommentReply): CommentThread {
+function addReplyIfMissing(
+  thread: CommentThread,
+  threadId: string,
+  reply: CommentReply,
+): CommentThread {
   if (thread.id !== threadId) return thread;
   if (thread.replies.some((r) => r.id === reply.id)) return thread;
   return { ...thread, replies: [...thread.replies, reply] };
 }
 
-function patchThread(threads: CommentThread[], threadId: string, patch: Partial<CommentThread>): CommentThread[] {
+function patchThread(
+  threads: CommentThread[],
+  threadId: string,
+  patch: Partial<CommentThread>,
+): CommentThread[] {
   return threads.map((t) => (t.id === threadId ? { ...t, ...patch } : t));
 }
 
@@ -45,7 +57,11 @@ export type UseCommentsState = {
   refresh: () => Promise<void>;
 };
 
-export function useComments({ diagramId, sceneId, socketRef }: UseCommentsOptions): UseCommentsState {
+export function useComments({
+  diagramId,
+  sceneId,
+  socketRef,
+}: UseCommentsOptions): UseCommentsState {
   const [threads, setThreads] = useState<CommentThread[]>([]);
   const [loading, setLoading] = useState(true);
   const diagramIdRef = useRef(diagramId);
@@ -81,12 +97,25 @@ export function useComments({ diagramId, sceneId, socketRef }: UseCommentsOption
       setThreads((prev) => addThreadIfNew(prev, thread));
     }
 
-    function onReplied({ threadId, reply }: { roomId: string; threadId: string; reply: CommentReply }) {
+    function onReplied({
+      threadId,
+      reply,
+    }: {
+      roomId: string;
+      threadId: string;
+      reply: CommentReply;
+    }) {
       setThreads((prev) => addReplyToThread(prev, threadId, reply));
     }
 
     function onResolved({ thread }: { roomId: string; thread: CommentThread }) {
-      setThreads((prev) => patchThread(prev, thread.id, { resolved: thread.resolved, resolvedBy: thread.resolvedBy, resolvedAt: thread.resolvedAt }));
+      setThreads((prev) =>
+        patchThread(prev, thread.id, {
+          resolved: thread.resolved,
+          resolvedBy: thread.resolvedBy,
+          resolvedAt: thread.resolvedAt,
+        }),
+      );
     }
 
     function onDeleted({ threadId }: { roomId: string; threadId: string }) {
@@ -119,54 +148,60 @@ export function useComments({ diagramId, sceneId, socketRef }: UseCommentsOption
     [socketRef],
   );
 
-  const createThread = useCallback(async (elementId: string, body: string) => {
-    const currentSceneId = sceneIdRef.current;
-    await emitOrFallback(
-      "comment-create",
-      { elementId, body, sceneId: currentSceneId },
-      async () => {
-        const data = await commentsApi.create(diagramIdRef.current, { elementId, body, sceneId: currentSceneId });
-        setThreads((prev) => [...prev, data.thread]);
-      },
-    );
-  }, [emitOrFallback]);
+  const createThread = useCallback(
+    async (elementId: string, body: string) => {
+      const currentSceneId = sceneIdRef.current;
+      await emitOrFallback(
+        "comment-create",
+        { elementId, body, sceneId: currentSceneId },
+        async () => {
+          const data = await commentsApi.create(diagramIdRef.current, {
+            elementId,
+            body,
+            sceneId: currentSceneId,
+          });
+          setThreads((prev) => [...prev, data.thread]);
+        },
+      );
+    },
+    [emitOrFallback],
+  );
 
-  const addReply = useCallback(async (threadId: string, body: string) => {
-    await emitOrFallback(
-      "comment-reply",
-      { threadId, body },
-      async () => {
+  const addReply = useCallback(
+    async (threadId: string, body: string) => {
+      await emitOrFallback("comment-reply", { threadId, body }, async () => {
         const data = await commentsApi.reply(diagramIdRef.current, threadId, { body });
         setThreads((prev) => addReplyToThread(prev, threadId, data.reply));
-      },
-    );
-  }, [emitOrFallback]);
+      });
+    },
+    [emitOrFallback],
+  );
 
-  const resolveThread = useCallback(async (threadId: string, resolved: boolean) => {
-    await emitOrFallback(
-      "comment-resolve",
-      { threadId, resolved },
-      async () => {
+  const resolveThread = useCallback(
+    async (threadId: string, resolved: boolean) => {
+      await emitOrFallback("comment-resolve", { threadId, resolved }, async () => {
         await commentsApi.resolve(diagramIdRef.current, threadId, resolved);
         setThreads((prev) => patchThread(prev, threadId, { resolved }));
-      },
-    );
-  }, [emitOrFallback]);
+      });
+    },
+    [emitOrFallback],
+  );
 
-  const deleteThread = useCallback(async (threadId: string) => {
-    await emitOrFallback(
-      "comment-delete",
-      { threadId },
-      async () => {
+  const deleteThread = useCallback(
+    async (threadId: string) => {
+      await emitOrFallback("comment-delete", { threadId }, async () => {
         await commentsApi.delete(diagramIdRef.current, threadId);
         setThreads((prev) => removeThread(prev, threadId));
-      },
-    );
-  }, [emitOrFallback]);
+      });
+    },
+    [emitOrFallback],
+  );
 
   const toggleLike = useCallback(async (threadId: string) => {
     const data = await commentsApi.toggleLike(diagramIdRef.current, threadId);
-    setThreads((prev) => patchThread(prev, threadId, { likeCount: data.likeCount, likedByMe: data.liked }));
+    setThreads((prev) =>
+      patchThread(prev, threadId, { likeCount: data.likeCount, likedByMe: data.liked }),
+    );
   }, []);
 
   // Derive elements with comments count

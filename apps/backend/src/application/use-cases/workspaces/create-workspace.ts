@@ -8,7 +8,13 @@ export class CreateWorkspaceUseCase {
     private readonly settings: SiteSettingsRepository,
   ) {}
 
-  async execute(input: { userId: string; name: string; description?: string; color?: string; icon?: string }) {
+  async execute(input: {
+    userId: string;
+    name: string;
+    description?: string;
+    color?: string;
+    icon?: string;
+  }) {
     const siteSettings = await this.settings.get();
     const count = await this.workspaces.countByOwner(input.userId);
     if (count >= siteSettings.maxWorkspacesPerUser) {

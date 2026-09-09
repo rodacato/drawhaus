@@ -6,12 +6,7 @@ import type {
 } from "../parser/types.js";
 import type { DiagramTheme } from "../theme/types.js";
 import { createRect, createText, createArrow, createEllipse } from "../elements.js";
-import {
-  layoutGraph,
-  buildArrowPoints,
-  type LayoutNode,
-  type LayoutEdge,
-} from "@drawhaus/helpers";
+import { layoutGraph, buildArrowPoints, type LayoutNode, type LayoutEdge } from "@drawhaus/helpers";
 
 // ── Layout constants ────────────────────────────────────────────
 
@@ -57,9 +52,7 @@ export function mapComponentDiagram(
   const componentNameMap = buildComponentNameMap(ast);
 
   for (const name of allNames) {
-    const isInterface = ast.interfaces.some(
-      (i) => (i.alias ?? i.name) === name,
-    );
+    const isInterface = ast.interfaces.some((i) => (i.alias ?? i.name) === name);
     if (isInterface) {
       nodeDimensions.set(name, {
         width: INTERFACE_SIZE,
@@ -67,10 +60,7 @@ export function mapComponentDiagram(
       });
     } else {
       const displayName = componentNameMap.get(name) ?? name;
-      const width = Math.max(
-        displayName.length * CHAR_WIDTH + PADDING_X * 2,
-        MIN_WIDTH,
-      );
+      const width = Math.max(displayName.length * CHAR_WIDTH + PADDING_X * 2, MIN_WIDTH);
       nodeDimensions.set(name, { width, height: MIN_HEIGHT });
     }
   }
@@ -91,12 +81,7 @@ export function mapComponentDiagram(
 
   // Render containers first (as background rectangles)
   for (const container of ast.containers) {
-    const containerEls = renderContainer(
-      container,
-      layout,
-      componentContainerMap,
-      theme,
-    );
+    const containerEls = renderContainer(container, layout, componentContainerMap, theme);
     skeletons.push(...containerEls);
   }
 
@@ -107,9 +92,7 @@ export function mapComponentDiagram(
     const pos = layout.nodes.get(name);
     if (!pos) continue;
 
-    const isInterface = ast.interfaces.some(
-      (i) => (i.alias ?? i.name) === name,
-    );
+    const isInterface = ast.interfaces.some((i) => (i.alias ?? i.name) === name);
 
     if (isInterface) {
       const el = createEllipse({
@@ -123,8 +106,7 @@ export function mapComponentDiagram(
       elementIds.set(name, el.id!);
       skeletons.push(el);
 
-      const displayName =
-        ast.interfaces.find((i) => (i.alias ?? i.name) === name)?.name ?? name;
+      const displayName = ast.interfaces.find((i) => (i.alias ?? i.name) === name)?.name ?? name;
       skeletons.push(
         createText({
           x: pos.x + INTERFACE_SIZE / 2,
@@ -265,9 +247,7 @@ function renderContainer(
 
   // Render nested child containers
   for (const child of container.childContainers) {
-    skeletons.push(
-      ...renderContainer(child, layout, componentContainerMap, theme),
-    );
+    skeletons.push(...renderContainer(child, layout, componentContainerMap, theme));
   }
 
   return skeletons;
@@ -293,10 +273,7 @@ function getContainerDepth(container: ComponentContainer): number {
   return 1 + Math.max(...container.childContainers.map(getContainerDepth));
 }
 
-function collectChildNames(
-  container: ComponentContainer,
-  names: string[],
-): void {
+function collectChildNames(container: ComponentContainer, names: string[]): void {
   for (const child of container.children) {
     names.push(child.alias ?? child.name);
   }
@@ -305,9 +282,7 @@ function collectChildNames(
   }
 }
 
-function buildComponentNameMap(
-  ast: ComponentDiagramAST,
-): Map<string, string> {
+function buildComponentNameMap(ast: ComponentDiagramAST): Map<string, string> {
   const map = new Map<string, string>();
   for (const c of ast.components) {
     const key = c.alias ?? c.name;

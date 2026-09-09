@@ -19,7 +19,18 @@ type WorkspaceViewProps = DiagramActions & {
   activeWorkspaceId?: string | null;
 };
 
-export function WorkspaceView({ diagrams, folders, allTags, viewMode, actionPending, onCreateDiagram, onDeleteFolder, workspaces, activeWorkspaceId, ...actions }: WorkspaceViewProps) {
+export function WorkspaceView({
+  diagrams,
+  folders,
+  allTags,
+  viewMode,
+  actionPending,
+  onCreateDiagram,
+  onDeleteFolder,
+  workspaces,
+  activeWorkspaceId,
+  ...actions
+}: WorkspaceViewProps) {
   const unfiled = diagrams.filter((d) => !d.folderId);
   const sortedFolders = [...folders].sort((a, b) => a.name.localeCompare(b.name));
 

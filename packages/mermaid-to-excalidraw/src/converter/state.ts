@@ -184,10 +184,7 @@ function flattenStates(
   }
 }
 
-function collectTransitions(
-  ast: StateDiagramAST,
-  allTransitions: StateTransition[],
-): void {
+function collectTransitions(ast: StateDiagramAST, allTransitions: StateTransition[]): void {
   allTransitions.push(...ast.transitions);
   for (const state of ast.states) {
     if (state.children) {
@@ -234,65 +231,75 @@ function renderState(
 
   switch (state.kind) {
     case "start": {
-      skeletons.push(createEllipse({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        backgroundColor: theme.stateStart.fill,
-        strokeColor: theme.stateStart.stroke,
-      }));
+      skeletons.push(
+        createEllipse({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          backgroundColor: theme.stateStart.fill,
+          strokeColor: theme.stateStart.stroke,
+        }),
+      );
       break;
     }
     case "end": {
       // End state: filled circle with outer ring
-      skeletons.push(createEllipse({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        backgroundColor: theme.stateEnd.fill,
-        strokeColor: theme.stateEnd.stroke,
-      }));
+      skeletons.push(
+        createEllipse({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          backgroundColor: theme.stateEnd.fill,
+          strokeColor: theme.stateEnd.stroke,
+        }),
+      );
       break;
     }
     case "choice": {
-      skeletons.push(createDiamond({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        backgroundColor: theme.stateChoice.fill,
-        strokeColor: theme.stateChoice.stroke,
-      }));
+      skeletons.push(
+        createDiamond({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          backgroundColor: theme.stateChoice.fill,
+          strokeColor: theme.stateChoice.stroke,
+        }),
+      );
       break;
     }
     case "fork":
     case "join": {
-      skeletons.push(createRect({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        backgroundColor: theme.stateForkJoin.fill,
-        strokeColor: theme.stateForkJoin.stroke,
-        fillStyle: "solid",
-      }));
+      skeletons.push(
+        createRect({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          backgroundColor: theme.stateForkJoin.fill,
+          strokeColor: theme.stateForkJoin.stroke,
+          fillStyle: "solid",
+        }),
+      );
       break;
     }
     default: {
       const label = state.label ?? state.description ?? state.id;
-      skeletons.push(createRect({
-        x,
-        y,
-        width: dim.width,
-        height: dim.height,
-        label,
-        roundness: 12,
-        backgroundColor: theme.stateNode.fill,
-        strokeColor: theme.stateNode.stroke,
-        strokeStyle: theme.stateNode.strokeStyle,
-      }));
+      skeletons.push(
+        createRect({
+          x,
+          y,
+          width: dim.width,
+          height: dim.height,
+          label,
+          roundness: 12,
+          backgroundColor: theme.stateNode.fill,
+          strokeColor: theme.stateNode.stroke,
+          strokeStyle: theme.stateNode.strokeStyle,
+        }),
+      );
       break;
     }
   }
@@ -331,27 +338,31 @@ function renderComposite(
   const skeletons: ExcalidrawElementSkeleton[] = [];
 
   // Container rectangle
-  skeletons.push(createRect({
-    x: minX - pad,
-    y: minY - pad - 20,
-    width: maxX - minX + pad * 2,
-    height: maxY - minY + pad * 2 + 20,
-    backgroundColor: theme.stateComposite.fill,
-    strokeColor: theme.stateComposite.stroke,
-    strokeStyle: theme.stateComposite.strokeStyle,
-    roundness: 12,
-  }));
+  skeletons.push(
+    createRect({
+      x: minX - pad,
+      y: minY - pad - 20,
+      width: maxX - minX + pad * 2,
+      height: maxY - minY + pad * 2 + 20,
+      backgroundColor: theme.stateComposite.fill,
+      strokeColor: theme.stateComposite.stroke,
+      strokeStyle: theme.stateComposite.strokeStyle,
+      roundness: 12,
+    }),
+  );
 
   // Label
   const label = state.label ?? state.id;
-  skeletons.push(createText({
-    x: minX - pad + 10,
-    y: minY - pad - 16,
-    text: label,
-    fontSize: theme.labelText.fontSize,
-    color: theme.labelText.color,
-    textAlign: "left",
-  }));
+  skeletons.push(
+    createText({
+      x: minX - pad + 10,
+      y: minY - pad - 16,
+      text: label,
+      fontSize: theme.labelText.fontSize,
+      color: theme.labelText.color,
+      textAlign: "left",
+    }),
+  );
 
   return skeletons;
 }

@@ -31,15 +31,15 @@ interface ShapeMatch {
 
 // Order matters: longer/more-specific patterns first
 const SHAPE_PATTERNS: ShapeMatch[] = [
-  { shape: "stadium",     open: "([", close: "])" },
-  { shape: "subroutine",  open: "[[", close: "]]" },
-  { shape: "database",    open: "[(", close: ")]" },
-  { shape: "circle",      open: "((", close: "))" },
-  { shape: "hexagon",     open: "{{", close: "}}" },
-  { shape: "diamond",     open: "{",  close: "}" },
-  { shape: "rounded",     open: "(",  close: ")" },
-  { shape: "asymmetric",  open: ">",  close: "]" },
-  { shape: "rectangle",   open: "[",  close: "]" },
+  { shape: "stadium", open: "([", close: "])" },
+  { shape: "subroutine", open: "[[", close: "]]" },
+  { shape: "database", open: "[(", close: ")]" },
+  { shape: "circle", open: "((", close: "))" },
+  { shape: "hexagon", open: "{{", close: "}}" },
+  { shape: "diamond", open: "{", close: "}" },
+  { shape: "rounded", open: "(", close: ")" },
+  { shape: "asymmetric", open: ">", close: "]" },
+  { shape: "rectangle", open: "[", close: "]" },
 ];
 
 function parseNodeDef(raw: string): { id: string; node: FlowNode } | null {
@@ -115,13 +115,13 @@ const EDGE_PATTERNS: EdgeMatch[] = [
   { pattern: /^-{2,}$/, style: "solid", hasArrow: false, labelGroup: 0 },
 ];
 
-function matchEdge(arrowStr: string): { style: EdgeStyle; hasArrow: boolean; inlineLabel: string | null } | null {
+function matchEdge(
+  arrowStr: string,
+): { style: EdgeStyle; hasArrow: boolean; inlineLabel: string | null } | null {
   for (const ep of EDGE_PATTERNS) {
     const m = arrowStr.match(ep.pattern);
     if (m) {
-      const inlineLabel = ep.labelGroup > 0 && m[ep.labelGroup]
-        ? m[ep.labelGroup].trim()
-        : null;
+      const inlineLabel = ep.labelGroup > 0 && m[ep.labelGroup] ? m[ep.labelGroup].trim() : null;
       return { style: ep.style, hasArrow: ep.hasArrow, inlineLabel };
     }
   }
@@ -132,11 +132,7 @@ function matchEdge(arrowStr: string): { style: EdgeStyle; hasArrow: boolean; inl
 
 // Split a line into tokens: node definitions and edges
 // Handles chains like: A[Start] --> B{Decision} -->|Yes| C[OK]
-function tokenizeLine(
-  line: string,
-  nodeMap: Map<string, FlowNode>,
-  edges: FlowEdge[],
-) {
+function tokenizeLine(line: string, nodeMap: Map<string, FlowNode>, edges: FlowEdge[]) {
   // Regex to split on edge arrows while preserving them
   // We look for patterns like -->, --->, -.-> , ==>, etc.
   // Also handle |label| after arrow
@@ -255,7 +251,15 @@ export function parseMermaidFlowchart(definition: string): FlowchartAST {
     const line = lines[i].trim();
     i++;
 
-    if (!line || line.startsWith("%%") || line.startsWith("style ") || line.startsWith("linkStyle ") || line.startsWith("classDef ") || line.startsWith("class ")) continue;
+    if (
+      !line ||
+      line.startsWith("%%") ||
+      line.startsWith("style ") ||
+      line.startsWith("linkStyle ") ||
+      line.startsWith("classDef ") ||
+      line.startsWith("class ")
+    )
+      continue;
 
     // Subgraph start
     const subgraphMatch = line.match(/^subgraph\s+(.+?)(?:\s*\[(.+?)\])?\s*$/);

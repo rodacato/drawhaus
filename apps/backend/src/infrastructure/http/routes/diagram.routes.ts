@@ -83,89 +83,149 @@ export function createDiagramRoutes(
   router.use(requireAuth);
 
   // Search must be registered before /:id to avoid "search" being parsed as UUID
-  router.get("/search", asyncRoute(async (req, res) => {
-    const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
-    if (!q) return res.status(400).json({ error: "Query parameter 'q' is required" });
-    const diagrams = await useCases.search.execute(req.authUser.id, q);
-    if (tagRepo && diagrams.length > 0) {
-      const tagsMap = await tagRepo.listForDiagrams(diagrams.map((d) => d.id));
-      return res.json({ diagrams: diagrams.map((d) => formatDiagram(d, tagsMap.get(d.id))) });
-    }
-    return res.json({ diagrams: diagrams.map((d) => formatDiagram(d)) });
-  }));
+  router.get(
+    "/search",
+    asyncRoute(async (req, res) => {
+      const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+      if (!q) return res.status(400).json({ error: "Query parameter 'q' is required" });
+      const diagrams = await useCases.search.execute(req.authUser.id, q);
+      if (tagRepo && diagrams.length > 0) {
+        const tagsMap = await tagRepo.listForDiagrams(diagrams.map((d) => d.id));
+        return res.json({ diagrams: diagrams.map((d) => formatDiagram(d, tagsMap.get(d.id))) });
+      }
+      return res.json({ diagrams: diagrams.map((d) => formatDiagram(d)) });
+    }),
+  );
 
-  router.get("/", asyncRoute(async (req, res) => {
-    const folderParam = req.query.folderId;
-    const folderId = parseFolderParam(folderParam);
-    const workspaceId = typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
-    const diagrams = await useCases.list.execute(req.authUser.id, folderId, workspaceId);
-    const ids = diagrams.map((d) => d.id);
-    const [tagsMap, snapshotCounts] = await Promise.all([
-      tagRepo && ids.length > 0 ? tagRepo.listForDiagrams(ids) : Promise.resolve(new Map<string, Tag[]>()),
-      snapshotRepo && ids.length > 0 ? snapshotRepo.countNamedBatch(ids) : Promise.resolve(new Map<string, number>()),
-    ]);
-    return res.json({
-      diagrams: diagrams.map((d) => ({
-        ...formatDiagram(d, tagsMap.get(d.id)),
-        namedSnapshotCount: snapshotCounts.get(d.id) ?? 0,
-      })),
-    });
-  }));
+  router.get(
+    "/",
+    asyncRoute(async (req, res) => {
+      const folderParam = req.query.folderId;
+      const folderId = parseFolderParam(folderParam);
+      const workspaceId =
+        typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
+      const diagrams = await useCases.list.execute(req.authUser.id, folderId, workspaceId);
+      const ids = diagrams.map((d) => d.id);
+      const [tagsMap, snapshotCounts] = await Promise.all([
+        tagRepo && ids.length > 0
+          ? tagRepo.listForDiagrams(ids)
+          : Promise.resolve(new Map<string, Tag[]>()),
+        snapshotRepo && ids.length > 0
+          ? snapshotRepo.countNamedBatch(ids)
+          : Promise.resolve(new Map<string, number>()),
+      ]);
+      return res.json({
+        diagrams: diagrams.map((d) => ({
+          ...formatDiagram(d, tagsMap.get(d.id)),
+          namedSnapshotCount: snapshotCounts.get(d.id) ?? 0,
+        })),
+      });
+    }),
+  );
 
-  router.get("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
-    const diagram = await useCases.get.execute(String(req.params.id), req.authUser.id);
-    if (tagRepo) {
-      const tags = await tagRepo.listForDiagram(diagram.id);
-      return res.json({ diagram: formatDiagram(diagram, tags) });
-    }
-    return res.json({ diagram: formatDiagram(diagram) });
-  }));
+  router.get(
+    "/:id",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      const diagram = await useCases.get.execute(String(req.params.id), req.authUser.id);
+      if (tagRepo) {
+        const tags = await tagRepo.listForDiagram(diagram.id);
+        return res.json({ diagram: formatDiagram(diagram, tags) });
+      }
+      return res.json({ diagram: formatDiagram(diagram) });
+    }),
+  );
 
-  router.post("/", validate(createSchema), asyncRoute(async (req, res) => {
-    const diagram = await useCases.create.execute({
-      ownerId: req.authUser.id,
-      title: req.body.title,
-      workspaceId: req.body.workspaceId,
-      folderId: req.body.folderId,
-      elements: req.body.elements,
-      appState: req.body.appState,
-    });
-    return res.status(201).json({ diagram: formatDiagram(diagram) });
-  }));
+  router.post(
+    "/",
+    validate(createSchema),
+    asyncRoute(async (req, res) => {
+      const diagram = await useCases.create.execute({
+        ownerId: req.authUser.id,
+        title: req.body.title,
+        workspaceId: req.body.workspaceId,
+        folderId: req.body.folderId,
+        elements: req.body.elements,
+        appState: req.body.appState,
+      });
+      return res.status(201).json({ diagram: formatDiagram(diagram) });
+    }),
+  );
 
   const thumbnailSchema = z.object({ thumbnail: z.string().min(1) });
 
-  router.put("/:id/thumbnail", validateParams(uuidParams), validate(thumbnailSchema), asyncRoute(async (req, res) => {
-    await useCases.updateThumbnail.execute(String(req.params.id), req.authUser.id, req.body.thumbnail);
-    return res.json({ success: true });
-  }));
+  router.put(
+    "/:id/thumbnail",
+    validateParams(uuidParams),
+    validate(thumbnailSchema),
+    asyncRoute(async (req, res) => {
+      await useCases.updateThumbnail.execute(
+        String(req.params.id),
+        req.authUser.id,
+        req.body.thumbnail,
+      );
+      return res.json({ success: true });
+    }),
+  );
 
-  router.post("/:id/move", validateParams(uuidParams), validate(moveSchema), asyncRoute(async (req, res) => {
-    await useCases.move.execute(String(req.params.id), req.authUser.id, req.body.folderId, req.body.workspaceId);
-    return res.json({ success: true });
-  }));
+  router.post(
+    "/:id/move",
+    validateParams(uuidParams),
+    validate(moveSchema),
+    asyncRoute(async (req, res) => {
+      await useCases.move.execute(
+        String(req.params.id),
+        req.authUser.id,
+        req.body.folderId,
+        req.body.workspaceId,
+      );
+      return res.json({ success: true });
+    }),
+  );
 
-  router.patch("/:id/star", validateParams(uuidParams), asyncRoute(async (req, res) => {
-    const starred = req.body?.starred;
-    if (typeof starred !== "boolean") return res.status(400).json({ error: "starred is required" });
-    await useCases.toggleStar.execute(String(req.params.id), req.authUser.id, starred);
-    return res.json({ success: true });
-  }));
+  router.patch(
+    "/:id/star",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      const starred = req.body?.starred;
+      if (typeof starred !== "boolean")
+        return res.status(400).json({ error: "starred is required" });
+      await useCases.toggleStar.execute(String(req.params.id), req.authUser.id, starred);
+      return res.json({ success: true });
+    }),
+  );
 
-  router.post("/:id/duplicate", validateParams(uuidParams), asyncRoute(async (req, res) => {
-    const diagram = await useCases.duplicate.execute(String(req.params.id), req.authUser.id);
-    return res.status(201).json({ diagram: formatDiagram(diagram) });
-  }));
+  router.post(
+    "/:id/duplicate",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      const diagram = await useCases.duplicate.execute(String(req.params.id), req.authUser.id);
+      return res.status(201).json({ diagram: formatDiagram(diagram) });
+    }),
+  );
 
-  router.patch("/:id", validateParams(uuidParams), validate(patchSchema), asyncRoute(async (req, res) => {
-    const diagram = await useCases.update.execute(String(req.params.id), req.authUser.id, req.body);
-    return res.json({ diagram: formatDiagram(diagram) });
-  }));
+  router.patch(
+    "/:id",
+    validateParams(uuidParams),
+    validate(patchSchema),
+    asyncRoute(async (req, res) => {
+      const diagram = await useCases.update.execute(
+        String(req.params.id),
+        req.authUser.id,
+        req.body,
+      );
+      return res.json({ diagram: formatDiagram(diagram) });
+    }),
+  );
 
-  router.delete("/:id", validateParams(uuidParams), asyncRoute(async (req, res) => {
-    await useCases.delete.execute(String(req.params.id), req.authUser.id);
-    return res.json({ success: true });
-  }));
+  router.delete(
+    "/:id",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      await useCases.delete.execute(String(req.params.id), req.authUser.id);
+      return res.json({ success: true });
+    }),
+  );
 
   // Transfer ownership (bulk)
   const transferSchema = z.object({
@@ -173,10 +233,18 @@ export function createDiagramRoutes(
     newOwnerId: z.uuid(),
   });
 
-  router.post("/transfer-ownership", validate(transferSchema), asyncRoute(async (req, res) => {
-    await useCases.transferOwnership.execute(req.body.diagramIds, req.authUser.id, req.body.newOwnerId);
-    return res.json({ success: true });
-  }));
+  router.post(
+    "/transfer-ownership",
+    validate(transferSchema),
+    asyncRoute(async (req, res) => {
+      await useCases.transferOwnership.execute(
+        req.body.diagramIds,
+        req.authUser.id,
+        req.body.newOwnerId,
+      );
+      return res.json({ success: true });
+    }),
+  );
 
   return router;
 }

@@ -1,17 +1,8 @@
 import type { ExcalidrawElementSkeleton } from "../types.js";
-import type {
-  StateDiagramAST,
-  StateNode,
-  StateTransition,
-} from "../parser/types.js";
+import type { StateDiagramAST, StateNode, StateTransition } from "../parser/types.js";
 import type { DiagramTheme } from "../theme/types.js";
 import { createRect, createText, createArrow, createEllipse } from "../elements.js";
-import {
-  layoutGraph,
-  buildArrowPoints,
-  type LayoutNode,
-  type LayoutEdge,
-} from "@drawhaus/helpers";
+import { layoutGraph, buildArrowPoints, type LayoutNode, type LayoutEdge } from "@drawhaus/helpers";
 
 // ── Layout constants ────────────────────────────────────────────
 
@@ -170,10 +161,7 @@ function assignPseudoIds(transitions: StateTransition[]): PseudoIdMap {
   };
 }
 
-function remapPseudoNodes(
-  allNames: string[],
-  pseudoIds: PseudoIdMap,
-): string[] {
+function remapPseudoNodes(allNames: string[], pseudoIds: PseudoIdMap): string[] {
   const result: string[] = [];
   for (const name of allNames) {
     if (name === "[*]") continue; // replaced by individual pseudo IDs
@@ -187,10 +175,7 @@ function remapPseudoNodes(
 
 // ── Node collection ─────────────────────────────────────────────
 
-function collectAllNodeNames(
-  states: StateNode[],
-  transitions: StateTransition[],
-): string[] {
+function collectAllNodeNames(states: StateNode[], transitions: StateTransition[]): string[] {
   const names = new Set<string>();
   for (const s of states) {
     if (s.kind === "pseudo") {
@@ -273,7 +258,10 @@ function measureCompositeInner(
   const layout = layoutGraph(layoutNodes, layoutEdges, "TB", 40, 60);
 
   // Compute bounding box of all inner nodes
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
   for (const [, pos] of layout.nodes) {
     minX = Math.min(minX, pos.x);
     minY = Math.min(minY, pos.y);
@@ -289,11 +277,7 @@ function measureCompositeInner(
 
 // ── Rendering ───────────────────────────────────────────────────
 
-function renderPseudoState(
-  x: number,
-  y: number,
-  theme: DiagramTheme,
-): ExcalidrawElementSkeleton {
+function renderPseudoState(x: number, y: number, theme: DiagramTheme): ExcalidrawElementSkeleton {
   return createEllipse({
     x,
     y,
@@ -432,7 +416,8 @@ function renderCompositeState(
   const innerLayout = layoutGraph(layoutNodes, layoutEdges, "TB", 40, 60);
 
   // Find bounding box to offset inner elements
-  let minX = Infinity, minY = Infinity;
+  let minX = Infinity,
+    minY = Infinity;
   for (const [, pos] of innerLayout.nodes) {
     minX = Math.min(minX, pos.x);
     minY = Math.min(minY, pos.y);

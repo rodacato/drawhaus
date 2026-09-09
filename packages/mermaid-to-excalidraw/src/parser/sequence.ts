@@ -30,8 +30,7 @@ const PARTICIPANT_RE = /^\s*(participant|actor)\s+(\S+?)(?:\s+as\s+(.+))?\s*$/i;
 
 // Message patterns — order matters (longest match first)
 // Activation/deactivation suffixes: + or - after arrow
-const MESSAGE_RE =
-  /^\s*(\S+?)\s*(--?>>?|--?>|--?x|-\))\s*([+-])?\s*(\S+?)\s*:\s*(.+)\s*$/i;
+const MESSAGE_RE = /^\s*(\S+?)\s*(--?>>?|--?>|--?x|-\))\s*([+-])?\s*(\S+?)\s*:\s*(.+)\s*$/i;
 
 // Note patterns
 const NOTE_OVER_RE = /^\s*Note\s+over\s+(\S+?)(?:\s*,\s*(\S+?))?\s*:\s*(.+)\s*$/i;
@@ -147,7 +146,15 @@ function parseLines(
     if (blockMatch) {
       const blockType = blockMatch[1].toLowerCase() as BlockType;
       const label = blockMatch[2]?.trim() || "";
-      const block = parseBlock(blockType, label, lines, i + 1, participants, participantSet, ensureParticipant);
+      const block = parseBlock(
+        blockType,
+        label,
+        lines,
+        i + 1,
+        participants,
+        participantSet,
+        ensureParticipant,
+      );
       items.push(block.block);
       i = block.nextLine;
       continue;

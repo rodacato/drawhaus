@@ -107,9 +107,7 @@ async function seed() {
   }
 
   // Ensure registration is open for development
-  await pool.query(
-    `UPDATE site_settings SET registration_open = true WHERE id = 1`,
-  ).catch(() => {
+  await pool.query(`UPDATE site_settings SET registration_open = true WHERE id = 1`).catch(() => {
     // site_settings may not have data yet
   });
 

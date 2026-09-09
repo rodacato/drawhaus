@@ -32,7 +32,9 @@ describe("useSnapshots", () => {
   beforeEach(() => vi.restoreAllMocks());
 
   test("loads snapshots on mount when a diagramId is set", async () => {
-    const listSpy = vi.spyOn(snapshotsApi, "list").mockResolvedValue({ snapshots: [makeMeta()] } as never);
+    const listSpy = vi
+      .spyOn(snapshotsApi, "list")
+      .mockResolvedValue({ snapshots: [makeMeta()] } as never);
     const { result } = renderHook(() => useSnapshots("d1"));
 
     await waitFor(() => expect(result.current.snapshots).toHaveLength(1));
@@ -43,7 +45,9 @@ describe("useSnapshots", () => {
     const listSpy = vi.spyOn(snapshotsApi, "list");
     const { result } = renderHook(() => useSnapshots(null));
 
-    await act(async () => { await result.current.refresh(); });
+    await act(async () => {
+      await result.current.refresh();
+    });
     expect(listSpy).not.toHaveBeenCalled();
     expect(result.current.loading).toBe(false);
   });
@@ -68,13 +72,17 @@ describe("useSnapshots", () => {
   });
 
   test("createSnapshot creates then refreshes", async () => {
-    const createSpy = vi.spyOn(snapshotsApi, "create").mockResolvedValue({ snapshot: makeMeta() } as never);
+    const createSpy = vi
+      .spyOn(snapshotsApi, "create")
+      .mockResolvedValue({ snapshot: makeMeta() } as never);
     const listSpy = vi.spyOn(snapshotsApi, "list").mockResolvedValue({ snapshots: [] } as never);
     const { result } = renderHook(() => useSnapshots("d1"));
     await waitFor(() => expect(result.current.loading).toBe(false));
     listSpy.mockClear();
 
-    await act(async () => { await result.current.createSnapshot("tag"); });
+    await act(async () => {
+      await result.current.createSnapshot("tag");
+    });
     expect(createSpy).toHaveBeenCalledWith("d1", "tag");
     expect(listSpy).toHaveBeenCalledTimes(1);
   });
@@ -83,18 +91,24 @@ describe("useSnapshots", () => {
     const createSpy = vi.spyOn(snapshotsApi, "create");
     const { result } = await renderLoaded(null);
 
-    await act(async () => { await result.current.createSnapshot("tag"); });
+    await act(async () => {
+      await result.current.createSnapshot("tag");
+    });
     expect(createSpy).not.toHaveBeenCalled();
   });
 
   test("restoreSnapshot fetches the full snapshot, restores, refreshes and returns it", async () => {
     const full = makeFull({ id: "s9", elements: [{ x: 1 }] });
     const getSpy = vi.spyOn(snapshotsApi, "get").mockResolvedValue({ snapshot: full } as never);
-    const restoreSpy = vi.spyOn(snapshotsApi, "restore").mockResolvedValue({ success: true, diagramId: "d1" } as never);
+    const restoreSpy = vi
+      .spyOn(snapshotsApi, "restore")
+      .mockResolvedValue({ success: true, diagramId: "d1" } as never);
     const { result } = await renderLoaded("d1");
 
     let returned: SnapshotFull | null = null;
-    await act(async () => { returned = await result.current.restoreSnapshot("s9"); });
+    await act(async () => {
+      returned = await result.current.restoreSnapshot("s9");
+    });
 
     expect(getSpy).toHaveBeenCalledWith("d1", "s9");
     expect(restoreSpy).toHaveBeenCalledWith("d1", "s9");
@@ -106,16 +120,22 @@ describe("useSnapshots", () => {
     const { result } = await renderLoaded(null);
 
     let returned: SnapshotFull | null = makeFull();
-    await act(async () => { returned = await result.current.restoreSnapshot("s9"); });
+    await act(async () => {
+      returned = await result.current.restoreSnapshot("s9");
+    });
     expect(returned).toBeNull();
     expect(restoreSpy).not.toHaveBeenCalled();
   });
 
   test("renameSnapshot renames then refreshes", async () => {
-    const renameSpy = vi.spyOn(snapshotsApi, "rename").mockResolvedValue({ snapshot: makeMeta() } as never);
+    const renameSpy = vi
+      .spyOn(snapshotsApi, "rename")
+      .mockResolvedValue({ snapshot: makeMeta() } as never);
     const { result } = await renderLoaded("d1");
 
-    await act(async () => { await result.current.renameSnapshot("s1", "v2"); });
+    await act(async () => {
+      await result.current.renameSnapshot("s1", "v2");
+    });
     expect(renameSpy).toHaveBeenCalledWith("d1", "s1", "v2");
   });
 
@@ -123,7 +143,9 @@ describe("useSnapshots", () => {
     const deleteSpy = vi.spyOn(snapshotsApi, "delete").mockResolvedValue({} as never);
     const { result } = await renderLoaded("d1");
 
-    await act(async () => { await result.current.deleteSnapshot("s1"); });
+    await act(async () => {
+      await result.current.deleteSnapshot("s1");
+    });
     expect(deleteSpy).toHaveBeenCalledWith("d1", "s1");
   });
 
@@ -133,12 +155,16 @@ describe("useSnapshots", () => {
 
     const withId = await renderLoaded("d1");
     let returned: SnapshotFull | null = null;
-    await act(async () => { returned = await withId.result.current.getSnapshot("s5"); });
+    await act(async () => {
+      returned = await withId.result.current.getSnapshot("s5");
+    });
     expect(returned).toEqual(full);
 
     const withoutId = renderHook(() => useSnapshots(null));
     let none: SnapshotFull | null = full;
-    await act(async () => { none = await withoutId.result.current.getSnapshot("s5"); });
+    await act(async () => {
+      none = await withoutId.result.current.getSnapshot("s5");
+    });
     expect(none).toBeNull();
   });
 });

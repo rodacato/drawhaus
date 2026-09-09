@@ -16,7 +16,10 @@ describe("authApi", () => {
   test("register posts name+email+password", async () => {
     const stub = vi.spyOn(api, "post").mockResolvedValue({ ok: true });
     await authApi.register("Adrian", "a@b.com", "pw");
-    assert.deepEqual(stub.mock.calls[0], ["/api/auth/register", { name: "Adrian", email: "a@b.com", password: "pw" }]);
+    assert.deepEqual(stub.mock.calls[0], [
+      "/api/auth/register",
+      { name: "Adrian", email: "a@b.com", password: "pw" },
+    ]);
   });
 
   test("logout posts with no body", async () => {
@@ -40,7 +43,10 @@ describe("authApi", () => {
   test("changePassword posts current+new", async () => {
     const stub = vi.spyOn(api, "post").mockResolvedValue({});
     await authApi.changePassword("old", "new");
-    assert.deepEqual(stub.mock.calls[0], ["/api/auth/change-password", { currentPassword: "old", newPassword: "new" }]);
+    assert.deepEqual(stub.mock.calls[0], [
+      "/api/auth/change-password",
+      { currentPassword: "old", newPassword: "new" },
+    ]);
   });
 
   test("getSetupStatus gets status endpoint", async () => {
@@ -59,7 +65,10 @@ describe("authApi", () => {
   test("acceptInvite posts token+name+password", async () => {
     const stub = vi.spyOn(api, "post").mockResolvedValue({});
     await authApi.acceptInvite("tok", "A", "pw");
-    assert.deepEqual(stub.mock.calls[0], ["/api/auth/accept-invite", { token: "tok", name: "A", password: "pw" }]);
+    assert.deepEqual(stub.mock.calls[0], [
+      "/api/auth/accept-invite",
+      { token: "tok", name: "A", password: "pw" },
+    ]);
   });
 
   test("forgotPassword posts email", async () => {
@@ -77,7 +86,10 @@ describe("authApi", () => {
   test("resetPassword posts token+newPassword", async () => {
     const stub = vi.spyOn(api, "post").mockResolvedValue({});
     await authApi.resetPassword("tok", "newpw");
-    assert.deepEqual(stub.mock.calls[0], ["/api/auth/reset-password", { token: "tok", newPassword: "newpw" }]);
+    assert.deepEqual(stub.mock.calls[0], [
+      "/api/auth/reset-password",
+      { token: "tok", newPassword: "newpw" },
+    ]);
   });
 
   test("deleteAccount sends password in body via data option", async () => {

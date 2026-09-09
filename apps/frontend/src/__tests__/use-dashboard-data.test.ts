@@ -7,25 +7,45 @@ import { tagsApi } from "../api/tags";
 import { workspacesApi, type Workspace } from "../api/workspaces";
 
 const personal: Workspace = {
-  id: "ws-personal", name: "Personal", description: "", ownerId: "u1",
-  isPersonal: true, color: "#fff", icon: "p", createdAt: "", updatedAt: "",
+  id: "ws-personal",
+  name: "Personal",
+  description: "",
+  ownerId: "u1",
+  isPersonal: true,
+  color: "#fff",
+  icon: "p",
+  createdAt: "",
+  updatedAt: "",
 };
 const team: Workspace = {
-  id: "ws-team", name: "Team", description: "", ownerId: "u1",
-  isPersonal: false, color: "#000", icon: "t", createdAt: "", updatedAt: "",
+  id: "ws-team",
+  name: "Team",
+  description: "",
+  ownerId: "u1",
+  isPersonal: false,
+  color: "#000",
+  icon: "t",
+  createdAt: "",
+  updatedAt: "",
 };
 
-function stubAllApis(overrides: {
-  workspaces?: Workspace[];
-  diagrams?: unknown;
-  folders?: unknown[];
-  tags?: unknown[];
-} = {}) {
-  vi.spyOn(workspacesApi, "list").mockResolvedValue({ workspaces: overrides.workspaces ?? [personal] });
+function stubAllApis(
+  overrides: {
+    workspaces?: Workspace[];
+    diagrams?: unknown;
+    folders?: unknown[];
+    tags?: unknown[];
+  } = {},
+) {
+  vi.spyOn(workspacesApi, "list").mockResolvedValue({
+    workspaces: overrides.workspaces ?? [personal],
+  });
   vi.spyOn(foldersApi, "list").mockResolvedValue({ folders: overrides.folders ?? [] } as never);
   vi.spyOn(tagsApi, "list").mockResolvedValue({ tags: (overrides.tags ?? []) as never });
   vi.spyOn(diagramsApi, "list").mockResolvedValue({ diagrams: overrides.diagrams ?? [] } as never);
-  vi.spyOn(diagramsApi, "search").mockResolvedValue({ diagrams: overrides.diagrams ?? [] } as never);
+  vi.spyOn(diagramsApi, "search").mockResolvedValue({
+    diagrams: overrides.diagrams ?? [],
+  } as never);
 }
 
 describe("useDashboardData", () => {
@@ -75,7 +95,15 @@ describe("useDashboardData", () => {
   });
 
   test("loadData populates diagrams, folders and tags after workspace is set", async () => {
-    const diagrams = [{ id: "d1", title: "One", folderId: null, thumbnail: null, updatedAt: "2026-06-01T00:00:00Z" }];
+    const diagrams = [
+      {
+        id: "d1",
+        title: "One",
+        folderId: null,
+        thumbnail: null,
+        updatedAt: "2026-06-01T00:00:00Z",
+      },
+    ];
     const folders = [{ id: "f1", name: "Inbox" }];
     const tags = [{ id: "t1", name: "Red", color: "#f00" }];
     stubAllApis({ diagrams, folders, tags });
@@ -155,7 +183,10 @@ describe("useDashboardData", () => {
 
   test("displayDiagrams: 'recent' sorts by updatedAt desc and caps at 10", async () => {
     const diagrams = Array.from({ length: 12 }, (_, i) => ({
-      id: `d${i}`, title: `D${i}`, folderId: null, thumbnail: null,
+      id: `d${i}`,
+      title: `D${i}`,
+      folderId: null,
+      thumbnail: null,
       updatedAt: new Date(2026, 0, i + 1).toISOString(),
     }));
     stubAllApis({ diagrams });

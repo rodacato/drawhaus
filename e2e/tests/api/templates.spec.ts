@@ -27,9 +27,7 @@ test.describe("Templates API", () => {
     templateId = template.id;
   });
 
-  test("GET /api/templates lists templates including the created one", async ({
-    request,
-  }) => {
+  test("GET /api/templates lists templates including the created one", async ({ request }) => {
     const response = await request.get("/api/templates");
     expect(response.ok()).toBeTruthy();
     const body = await response.json();
@@ -40,9 +38,7 @@ test.describe("Templates API", () => {
     expect(found.title).toBe("E2E Test Template");
   });
 
-  test("GET /api/templates/:id returns a single template", async ({
-    request,
-  }) => {
+  test("GET /api/templates/:id returns a single template", async ({ request }) => {
     const response = await request.get(`/api/templates/${templateId}`);
     expect(response.ok()).toBeTruthy();
     const body = await response.json();
@@ -62,13 +58,10 @@ test.describe("Templates API", () => {
     expect(template.description).toBe("Updated description");
   });
 
-  test("POST /api/templates/:id/use creates a diagram from template", async ({
-    request,
-  }) => {
-    const response = await request.post(
-      `/api/templates/${templateId}/use`,
-      { data: { title: "From Template" } },
-    );
+  test("POST /api/templates/:id/use creates a diagram from template", async ({ request }) => {
+    const response = await request.post(`/api/templates/${templateId}/use`, {
+      data: { title: "From Template" },
+    });
     expect(response.ok()).toBeTruthy();
     const body = await response.json();
     const diagram = body.diagram ?? body;
@@ -85,9 +78,7 @@ test.describe("Templates API", () => {
     expect(check.ok()).toBeFalsy();
   });
 
-  test("POST /api/templates validates required fields", async ({
-    request,
-  }) => {
+  test("POST /api/templates validates required fields", async ({ request }) => {
     const response = await request.post("/api/templates", {
       data: { description: "Missing title and elements" },
     });

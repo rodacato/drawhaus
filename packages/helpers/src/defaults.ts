@@ -20,7 +20,11 @@ export const DIAGRAM_STYLES = {
     participant: { backgroundColor: "#d0bfff" },
     lifeline: { strokeStyle: "dashed" as const, strokeColor: "#868e96" },
     message: { endArrowhead: "arrow" as const },
-    response: { endArrowhead: "arrow" as const, strokeStyle: "dashed" as const, strokeColor: "#868e96" },
+    response: {
+      endArrowhead: "arrow" as const,
+      strokeStyle: "dashed" as const,
+      strokeColor: "#868e96",
+    },
     activation: { backgroundColor: "#e3f2fd" },
   },
   architecture: {

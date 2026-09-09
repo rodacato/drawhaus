@@ -40,16 +40,23 @@ describe("metrics endpoint", () => {
   it("rejects requests without the bearer token", async () => {
     const app = appWith({ enabled: true, token: TOKEN });
     assert.equal((await request(app).get("/metrics")).status, 401);
-    assert.equal((await request(app).get("/metrics").set("Authorization", "Bearer wrong")).status, 401);
+    assert.equal(
+      (await request(app).get("/metrics").set("Authorization", "Bearer wrong")).status,
+      401,
+    );
   });
 
   it("hides the endpoint in production when no token is configured", async () => {
-    const res = await request(appWith({ enabled: true, token: "", isProduction: true })).get("/metrics");
+    const res = await request(appWith({ enabled: true, token: "", isProduction: true })).get(
+      "/metrics",
+    );
     assert.equal(res.status, 404);
   });
 
   it("serves openly in dev when no token is configured", async () => {
-    const res = await request(appWith({ enabled: true, token: "", isProduction: false })).get("/metrics");
+    const res = await request(appWith({ enabled: true, token: "", isProduction: false })).get(
+      "/metrics",
+    );
     assert.equal(res.status, 200);
   });
 });

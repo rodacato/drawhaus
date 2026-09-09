@@ -61,7 +61,10 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
   }
 
   function openFolder(folder: DriveFileItem) {
-    setFolderStack((prev) => [...prev, { id: currentFolderId, name: folderStack.length === 0 ? "Drawhaus Backups" : "" }]);
+    setFolderStack((prev) => [
+      ...prev,
+      { id: currentFolderId, name: folderStack.length === 0 ? "Drawhaus Backups" : "" },
+    ]);
     loadFiles(folder.id);
   }
 
@@ -109,29 +112,73 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
           </div>
           <div className="text-center">
             <p className="text-sm font-medium text-text-primary">Google Drive not connected</p>
-            <p className="mt-1 text-xs text-text-muted">Connect your Google Drive to import .excalidraw files.</p>
+            <p className="mt-1 text-xs text-text-muted">
+              Connect your Google Drive to import .excalidraw files.
+            </p>
           </div>
           <a
             href={`${API_URL}/api/auth/google/drive`}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition hover:bg-primary-hover"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
             Connect Google Drive
           </a>
         </div>
       );
     }
     if (sortedFiles.length === 0) {
-      return <p className="py-8 text-center text-sm text-text-muted">No .excalidraw files found in this folder.</p>;
+      return (
+        <p className="py-8 text-center text-sm text-text-muted">
+          No .excalidraw files found in this folder.
+        </p>
+      );
     }
     return (
       <div className="divide-y divide-border">
         {sortedFiles.map((file) => (
           <div key={file.id} className="flex items-center gap-3 py-3">
             {file.isFolder ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" /></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="shrink-0 text-primary"
+              >
+                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
+              </svg>
             ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-muted"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="shrink-0 text-text-muted"
+              >
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
             )}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-text-primary">{file.name}</p>
@@ -166,7 +213,12 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <button type="button" aria-label="Close" className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <button
+        type="button"
+        aria-label="Close"
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
       <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-surface-raised shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
@@ -178,16 +230,47 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
             </svg>
             <h2 className="text-lg font-semibold text-text-primary">Import from Google Drive</h2>
           </div>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 text-text-muted transition hover:bg-surface hover:text-text-primary">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1 text-text-muted transition hover:bg-surface hover:text-text-primary"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 
         {/* Breadcrumb / back */}
         {driveConnected && folderStack.length > 0 && (
           <div className="border-b border-border px-6 py-2">
-            <button type="button" onClick={goBack} className="flex items-center gap-1 text-sm text-primary hover:underline">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+            <button
+              type="button"
+              onClick={goBack}
+              className="flex items-center gap-1 text-sm text-primary hover:underline"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
               Back
             </button>
           </div>
@@ -196,7 +279,9 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
         {/* Content */}
         <div className="max-h-[400px] min-h-[200px] overflow-y-auto px-6 py-4">
           {error && (
-            <p className="mb-3 rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</p>
+            <p className="mb-3 rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">
+              {error}
+            </p>
           )}
 
           {renderContent()}
@@ -204,7 +289,9 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
 
         {/* Footer */}
         <div className="border-t border-border px-6 py-3">
-          <p className="text-xs text-text-muted">Only .excalidraw files can be imported as diagrams.</p>
+          <p className="text-xs text-text-muted">
+            Only .excalidraw files can be imported as diagrams.
+          </p>
         </div>
       </div>
     </div>

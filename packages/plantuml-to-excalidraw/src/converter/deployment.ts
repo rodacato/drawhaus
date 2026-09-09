@@ -1,17 +1,8 @@
 import type { ExcalidrawElementSkeleton } from "../types.js";
-import type {
-  DeploymentDiagramAST,
-  DeploymentNode,
-  DeploymentNodeKind,
-} from "../parser/types.js";
+import type { DeploymentDiagramAST, DeploymentNode, DeploymentNodeKind } from "../parser/types.js";
 import type { DiagramTheme, ShapeStyle } from "../theme/types.js";
 import { createRect, createText, createArrow } from "../elements.js";
-import {
-  layoutGraph,
-  buildArrowPoints,
-  type LayoutNode,
-  type LayoutEdge,
-} from "@drawhaus/helpers";
+import { layoutGraph, buildArrowPoints, type LayoutNode, type LayoutEdge } from "@drawhaus/helpers";
 
 // ── Layout constants ────────────────────────────────────────────
 
@@ -65,10 +56,7 @@ export function mapDeploymentDiagram(
   for (const [name, node] of leafNodes) {
     const displayName = node.label ?? name;
     const hasStereotype = getKindLabel(node.kind) !== null;
-    const width = Math.max(
-      displayName.length * CHAR_WIDTH + PADDING_X * 2,
-      MIN_WIDTH,
-    );
+    const width = Math.max(displayName.length * CHAR_WIDTH + PADDING_X * 2, MIN_WIDTH);
     const height = hasStereotype ? STEREOTYPE_HEIGHT : MIN_HEIGHT;
     nodeDimensions.set(name, { width, height });
   }
@@ -240,8 +228,7 @@ function renderContainer(
   const x = minX - pad;
   const y = minY - pad - CONTAINER_HEADER_HEIGHT;
   const width = maxX - minX + pad * 2;
-  const height =
-    maxY - minY + pad * 2 + CONTAINER_HEADER_HEIGHT;
+  const height = maxY - minY + pad * 2 + CONTAINER_HEADER_HEIGHT;
 
   skeletons.push(
     createRect({
@@ -274,7 +261,7 @@ function renderContainer(
 }
 
 function getNodeDepth(node: DeploymentNode): number {
-  const containerChildren = node.children.filter(c => c.children.length > 0);
+  const containerChildren = node.children.filter((c) => c.children.length > 0);
   if (containerChildren.length === 0) return 1;
   return 1 + Math.max(...containerChildren.map(getNodeDepth));
 }

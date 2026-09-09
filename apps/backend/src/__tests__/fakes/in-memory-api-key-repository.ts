@@ -4,7 +4,14 @@ import type { ApiKey } from "../../domain/entities/api-key";
 
 export class InMemoryApiKeyRepository implements ApiKeyRepository {
   store: ApiKey[] = [];
-  logs: { keyId: string; method: string; path: string; statusCode: number; ip: string | null; userAgent: string | null }[] = [];
+  logs: {
+    keyId: string;
+    method: string;
+    path: string;
+    statusCode: number;
+    ip: string | null;
+    userAgent: string | null;
+  }[] = [];
 
   async findByKeyHash(keyHash: string): Promise<ApiKey | null> {
     return this.store.find((k) => k.keyHash === keyHash) ?? null;

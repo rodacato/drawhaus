@@ -907,8 +907,8 @@ export interface FlatExample {
   example: Example;
 }
 
-export const FLAT_SUPPORTED_EXAMPLES: FlatExample[] = ALL_EXAMPLES
-  .filter((s) => s.supported)
-  .flatMap((s) => s.examples.map((e) => ({ sectionTitle: s.title, example: e })));
+export const FLAT_SUPPORTED_EXAMPLES: FlatExample[] = ALL_EXAMPLES.filter(
+  (s) => s.supported,
+).flatMap((s) => s.examples.map((e) => ({ sectionTitle: s.title, example: e })));
 
 export const DEFAULT_CODE = CLASS_BASICS.examples[0].code;

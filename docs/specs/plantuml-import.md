@@ -24,38 +24,38 @@ plantuml-parser.parse(text)
 ```typescript
 // frontend/src/lib/diagram-code/plantuml-to-excalidraw/index.ts
 export async function parsePlantUMLToExcalidraw(
-  definition: string
-): Promise<{ elements: ExcalidrawElementSkeleton[]; files?: BinaryFiles }>
+  definition: string,
+): Promise<{ elements: ExcalidrawElementSkeleton[]; files?: BinaryFiles }>;
 ```
 
 ## Supported Diagram Types
 
-| PlantUML Type | Layout | Excalidraw Elements Generated |
-|---------------|--------|-------------------------------|
-| **Class** | dagre (left→right) | Rectangles with sections (name, attributes, methods) + arrows with relation labels |
-| **Sequence** | Custom linear | Actor rectangles top, vertical lifelines, horizontal message arrows |
-| **Activity** | dagre (top→down) | Rounded rectangles + diamonds (decisions) + arrows |
-| Others | Kroki.io fallback | Embedded SVG image (not editable, with "Rendered via kroki.io" disclaimer) |
+| PlantUML Type | Layout             | Excalidraw Elements Generated                                                      |
+| ------------- | ------------------ | ---------------------------------------------------------------------------------- |
+| **Class**     | dagre (left→right) | Rectangles with sections (name, attributes, methods) + arrows with relation labels |
+| **Sequence**  | Custom linear      | Actor rectangles top, vertical lifelines, horizontal message arrows                |
+| **Activity**  | dagre (top→down)   | Rounded rectangles + diamonds (decisions) + arrows                                 |
+| Others        | Kroki.io fallback  | Embedded SVG image (not editable, with "Rendered via kroki.io" disclaimer)         |
 
 ## Dependencies to Install
 
-| Package | Version | Purpose | Size |
-|---------|---------|---------|------|
-| `plantuml-parser` | 0.4.0 | Parse PlantUML text → structured AST | ~15KB |
-| `dagre` | 0.8.5 | Directed graph layout engine (already used internally by mermaid) | ~30KB |
-| `@types/dagre` | latest | TypeScript types for dagre | dev dep |
+| Package           | Version | Purpose                                                           | Size    |
+| ----------------- | ------- | ----------------------------------------------------------------- | ------- |
+| `plantuml-parser` | 0.4.0   | Parse PlantUML text → structured AST                              | ~15KB   |
+| `dagre`           | 0.8.5   | Directed graph layout engine (already used internally by mermaid) | ~30KB   |
+| `@types/dagre`    | latest  | TypeScript types for dagre                                        | dev dep |
 
 ## Files to Create
 
-| File | Purpose |
-|------|---------|
-| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/index.ts` | Entry point: detect diagram type, dispatch to mapper |
-| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/class.ts` | Class diagram AST → ExcalidrawElementSkeleton[] |
-| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/sequence.ts` | Sequence diagram AST → ExcalidrawElementSkeleton[] |
-| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/activity.ts` | Activity diagram AST → ExcalidrawElementSkeleton[] |
-| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/layout.ts` | dagre wrapper: nodes + edges → positioned (x, y, width, height) |
-| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/elements.ts` | Helpers: create rect, arrow, text, diamond skeletons |
-| `frontend/src/lib/diagram-code/plantuml-renderer.ts` | PlantUML preview: custom render or Kroki.io fallback |
+| File                                                               | Purpose                                                         |
+| ------------------------------------------------------------------ | --------------------------------------------------------------- |
+| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/index.ts`    | Entry point: detect diagram type, dispatch to mapper            |
+| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/class.ts`    | Class diagram AST → ExcalidrawElementSkeleton[]                 |
+| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/sequence.ts` | Sequence diagram AST → ExcalidrawElementSkeleton[]              |
+| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/activity.ts` | Activity diagram AST → ExcalidrawElementSkeleton[]              |
+| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/layout.ts`   | dagre wrapper: nodes + edges → positioned (x, y, width, height) |
+| `frontend/src/lib/diagram-code/plantuml-to-excalidraw/elements.ts` | Helpers: create rect, arrow, text, diamond skeletons            |
+| `frontend/src/lib/diagram-code/plantuml-renderer.ts`               | PlantUML preview: custom render or Kroki.io fallback            |
 
 ## Changes to CodeImportPanel
 

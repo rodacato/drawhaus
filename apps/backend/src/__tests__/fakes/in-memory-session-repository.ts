@@ -30,7 +30,17 @@ export class InMemorySessionRepository implements SessionRepository {
     const linkedProviders: string[] = [];
     if (user.googleId) linkedProviders.push("google");
     if (user.githubId) linkedProviders.push("github");
-    return { id: user.id, email: user.email, name: user.name, role: user.role, disabled: user.disabled, avatarUrl: user.avatarUrl, hasPassword: !!user.passwordHash, linkedProviders, githubUsername: user.githubUsername };
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      disabled: user.disabled,
+      avatarUrl: user.avatarUrl,
+      hasPassword: !!user.passwordHash,
+      linkedProviders,
+      githubUsername: user.githubUsername,
+    };
   }
 
   async delete(token: string): Promise<void> {

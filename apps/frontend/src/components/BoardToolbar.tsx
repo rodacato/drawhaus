@@ -15,14 +15,21 @@ export function BoardToolbarTrigger({
       onMouseDown={(e) => e.stopPropagation()}
       onClick={onToggle}
       className={`pointer-events-auto flex items-center gap-1.5 rounded-lg px-3 text-xs font-medium shadow-sm transition ${
-        open
-          ? "bg-indigo-600 text-white"
-          : "bg-white/90 text-[#1b1b1f] hover:bg-indigo-50"
+        open ? "bg-indigo-600 text-white" : "bg-white/90 text-[#1b1b1f] hover:bg-indigo-50"
       }`}
       title="Collaboration menu"
       type="button"
     >
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M23 21v-2a4 4 0 00-3-3.87" />
@@ -93,26 +100,29 @@ export function BoardToolbarPanel({
     };
   }, [onClose]);
 
-  const handleShare = useCallback(async (role: "viewer" | "editor") => {
-    setShareLoading(true);
-    setShareCopied(false);
-    setShareError(null);
-    try {
-      const url = await onCreateShareLink(role);
-      if (url) {
-        setShareUrl(url);
-        await navigator.clipboard.writeText(url);
-        setShareCopied(true);
-        setTimeout(() => setShareCopied(false), 2000);
-      } else {
-        setShareError("Failed to create link. Check you have permission.");
+  const handleShare = useCallback(
+    async (role: "viewer" | "editor") => {
+      setShareLoading(true);
+      setShareCopied(false);
+      setShareError(null);
+      try {
+        const url = await onCreateShareLink(role);
+        if (url) {
+          setShareUrl(url);
+          await navigator.clipboard.writeText(url);
+          setShareCopied(true);
+          setTimeout(() => setShareCopied(false), 2000);
+        } else {
+          setShareError("Failed to create link. Check you have permission.");
+        }
+      } catch {
+        setShareError("Something went wrong creating the link.");
+      } finally {
+        setShareLoading(false);
       }
-    } catch {
-      setShareError("Something went wrong creating the link.");
-    } finally {
-      setShareLoading(false);
-    }
-  }, [onCreateShareLink]);
+    },
+    [onCreateShareLink],
+  );
 
   const selfUser = presenceUsers.find((u) => u.isSelf);
   const otherUsers = presenceUsers.filter((u) => !u.isSelf);
@@ -179,15 +189,20 @@ export function BoardToolbarPanel({
                   <div>
                     <p className="text-sm font-medium text-gray-900">
                       {user.name}
-                      {raisedHands?.has(user.userId) && <span className="ml-1" title="Mano levantada">✋</span>}
+                      {raisedHands?.has(user.userId) && (
+                        <span className="ml-1" title="Mano levantada">
+                          ✋
+                        </span>
+                      )}
                     </p>
-                    {user.isGuest && (
-                      <p className="text-[10px] text-gray-400">Guest</p>
-                    )}
+                    {user.isGuest && <p className="text-[10px] text-gray-400">Guest</p>}
                   </div>
                 </div>
                 <button
-                  onClick={() => { onFollow(isFollowing ? null : user.userId); if (!isFollowing) onClose(); }}
+                  onClick={() => {
+                    onFollow(isFollowing ? null : user.userId);
+                    if (!isFollowing) onClose();
+                  }}
                   className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                     isFollowing
                       ? "bg-indigo-600 text-white hover:bg-indigo-700"
@@ -215,9 +230,7 @@ export function BoardToolbarPanel({
       {/* Share tab */}
       {tab === "share" && showShare && (
         <div className="p-4 space-y-3">
-          <p className="text-xs text-gray-500">
-            Create a link to share this diagram with anyone.
-          </p>
+          <p className="text-xs text-gray-500">Create a link to share this diagram with anyone.</p>
           <div className="flex gap-2">
             <button
               onClick={() => handleShare("viewer")}
@@ -225,7 +238,16 @@ export function BoardToolbarPanel({
               className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-gray-50 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-50"
               type="button"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                 <circle cx="12" cy="12" r="3" />
               </svg>
@@ -237,20 +259,29 @@ export function BoardToolbarPanel({
               className="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-50 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-50"
               type="button"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                 <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
               Can edit
             </button>
           </div>
-          {shareError && (
-            <p className="text-xs font-medium text-red-600">{shareError}</p>
-          )}
+          {shareError && <p className="text-xs font-medium text-red-600">{shareError}</p>}
           {shareUrl && (
             <div className="rounded-xl bg-gray-50 p-3 space-y-1.5">
               <p className="break-all text-xs text-gray-500 font-mono">{shareUrl}</p>
-              <p className={`text-xs font-medium ${shareCopied ? "text-emerald-600" : "text-gray-400"}`}>
+              <p
+                className={`text-xs font-medium ${shareCopied ? "text-emerald-600" : "text-gray-400"}`}
+              >
                 {shareCopied ? "Copied to clipboard!" : ""}
               </p>
             </div>
@@ -274,9 +305,7 @@ export function FollowingBanner({
   return (
     <div className="fixed bottom-6 left-1/2 z-30 -translate-x-1/2 flex items-center gap-3 rounded-full bg-indigo-600 px-4 py-2 text-white shadow-lg">
       <span className="flex h-2 w-2 rounded-full bg-white animate-pulse" />
-      <span className="text-sm font-medium">
-        Following {user?.name ?? "user"}
-      </span>
+      <span className="text-sm font-medium">Following {user?.name ?? "user"}</span>
       <button
         onClick={onStop}
         className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium hover:bg-white/30 transition"

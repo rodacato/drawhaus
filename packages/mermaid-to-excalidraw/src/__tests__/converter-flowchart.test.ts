@@ -143,10 +143,7 @@ describe("convertFlowchart", () => {
 
     for (let i = 0; i < examples.length; i++) {
       const result = await convertFlowchart(examples[i]);
-      assert.ok(
-        result.elements.length > 0,
-        `Example ${i + 1} should produce elements`,
-      );
+      assert.ok(result.elements.length > 0, `Example ${i + 1} should produce elements`);
       assert.equal(result.diagramType, "flowchart");
     }
   });
@@ -180,10 +177,7 @@ describe("convertFlowchart", () => {
 
     for (let i = 0; i < examples.length; i++) {
       const result = await convertFlowchart(examples[i]);
-      assert.ok(
-        result.elements.length > 0,
-        `Subgraph example ${i + 1} should produce elements`,
-      );
+      assert.ok(result.elements.length > 0, `Subgraph example ${i + 1} should produce elements`);
     }
   });
 
@@ -214,10 +208,7 @@ describe("convertFlowchart", () => {
 
     for (let i = 0; i < examples.length; i++) {
       const result = await convertFlowchart(examples[i]);
-      assert.ok(
-        result.elements.length > 0,
-        `Pattern example ${i + 1} should produce elements`,
-      );
+      assert.ok(result.elements.length > 0, `Pattern example ${i + 1} should produce elements`);
     }
   });
 });

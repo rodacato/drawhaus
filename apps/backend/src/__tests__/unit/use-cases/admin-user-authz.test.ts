@@ -24,7 +24,10 @@ describe("admin user use cases — actor must be an admin", () => {
     const actor = await users.create({ email: "actor@x.com", name: "Actor", passwordHash: "h" });
     const target = await users.create({ email: "target@x.com", name: "Target", passwordHash: "h" });
 
-    await assert.rejects(() => deleteUser.execute(target.id, actor.id), (e: unknown) => e instanceof ForbiddenError);
+    await assert.rejects(
+      () => deleteUser.execute(target.id, actor.id),
+      (e: unknown) => e instanceof ForbiddenError,
+    );
     assert.equal(users.store.length, 2);
   });
 
@@ -46,6 +49,9 @@ describe("admin user use cases — actor must be an admin", () => {
     const target = await users.create({ email: "target@x.com", name: "Target", passwordHash: "h" });
 
     await deleteUser.execute(target.id, actor.id);
-    assert.equal(users.store.find((u) => u.id === target.id), undefined);
+    assert.equal(
+      users.store.find((u) => u.id === target.id),
+      undefined,
+    );
   });
 });

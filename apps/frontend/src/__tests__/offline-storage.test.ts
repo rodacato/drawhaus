@@ -18,7 +18,10 @@ class FakeRequest {
 }
 
 class FakeObjectStore {
-  constructor(private readonly store: Map<string, unknown>, private readonly tx: FakeTransaction) {}
+  constructor(
+    private readonly store: Map<string, unknown>,
+    private readonly tx: FakeTransaction,
+  ) {}
   put(value: { diagramId: string }) {
     if (this.tx.failPut) {
       queueMicrotask(() => this.tx.onerror?.());
@@ -69,14 +72,19 @@ type FakeDBOptions = {
 class FakeDatabase {
   objectStoreNames: { contains: (n: string) => boolean };
   createObjectStoreCalled = false;
-  constructor(public store: Map<string, unknown>, private readonly opts: FakeDBOptions) {
+  constructor(
+    public store: Map<string, unknown>,
+    private readonly opts: FakeDBOptions,
+  ) {
     this.objectStoreNames = { contains: () => opts.containsStore ?? true };
   }
   createObjectStore() {
     this.createObjectStoreCalled = true;
   }
   transaction() {
-    const tx = this.opts.txFactory ? this.opts.txFactory(this.store) : new FakeTransaction(this.store);
+    const tx = this.opts.txFactory
+      ? this.opts.txFactory(this.store)
+      : new FakeTransaction(this.store);
     queueMicrotask(() => {
       if (!tx.failPut && !tx.failGet && !tx.failDelete) tx.oncomplete?.();
     });
@@ -163,29 +171,35 @@ describe("offline-storage", () => {
   });
 
   test("rejects with fallback Error when get request fails", async () => {
-    installFakeIDB({ txFactory: (store) => {
-      const tx = new FakeTransaction(store);
-      tx.failGet = true;
-      return tx;
-    } });
+    installFakeIDB({
+      txFactory: (store) => {
+        const tx = new FakeTransaction(store);
+        tx.failGet = true;
+        return tx;
+      },
+    });
     await assert.rejects(() => getOfflineSnapshot("d1"), /read failure/);
   });
 
   test("rejects when save transaction errors", async () => {
-    installFakeIDB({ txFactory: (store) => {
-      const tx = new FakeTransaction(store);
-      tx.failPut = true;
-      return tx;
-    } });
+    installFakeIDB({
+      txFactory: (store) => {
+        const tx = new FakeTransaction(store);
+        tx.failPut = true;
+        return tx;
+      },
+    });
     await assert.rejects(() => saveOfflineSnapshot(sample()), /Failed to save offline snapshot/);
   });
 
   test("rejects when delete transaction errors", async () => {
-    installFakeIDB({ txFactory: (store) => {
-      const tx = new FakeTransaction(store);
-      tx.failDelete = true;
-      return tx;
-    } });
+    installFakeIDB({
+      txFactory: (store) => {
+        const tx = new FakeTransaction(store);
+        tx.failDelete = true;
+        return tx;
+      },
+    });
     await assert.rejects(() => deleteOfflineSnapshot("d1"), /Failed to delete offline snapshot/);
   });
 });

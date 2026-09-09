@@ -1,7 +1,8 @@
 import { api } from "./client";
 
 export const siteApi = {
-  getStatus: () => api.get("/api/site/status") as Promise<{ maintenanceMode: boolean; instanceName: string }>,
+  getStatus: () =>
+    api.get("/api/site/status") as Promise<{ maintenanceMode: boolean; instanceName: string }>,
 };
 
 export const adminApi = {
@@ -12,19 +13,25 @@ export const adminApi = {
   updateUser: (id: string, data: { role?: string; disabled?: boolean }) =>
     api.patch(`/api/admin/users/${id}`, data),
 
-  deleteUser: (id: string) =>
-    api.delete(`/api/admin/users/${id}`),
+  deleteUser: (id: string) => api.delete(`/api/admin/users/${id}`),
 
   getSettings: () => api.get("/api/admin/settings"),
 
-  updateSettings: (data: { instanceName?: string; registrationOpen?: boolean; maintenanceMode?: boolean; maxWorkspacesPerUser?: number; maxMembersPerWorkspace?: number; backupEnabled?: boolean; backupCron?: string; backupRetentionDays?: number }) =>
-    api.patch("/api/admin/settings", data),
+  updateSettings: (data: {
+    instanceName?: string;
+    registrationOpen?: boolean;
+    maintenanceMode?: boolean;
+    maxWorkspacesPerUser?: number;
+    maxMembersPerWorkspace?: number;
+    backupEnabled?: boolean;
+    backupCron?: string;
+    backupRetentionDays?: number;
+  }) => api.patch("/api/admin/settings", data),
 
   inviteUser: (email: string, role: string = "user") =>
     api.post("/api/admin/invite", { email, role }),
 
-  listInvitations: () =>
-    api.get("/api/admin/invitations"),
+  listInvitations: () => api.get("/api/admin/invitations"),
 
   getIntegrations: () =>
     api.get("/api/admin/integrations") as Promise<{

@@ -1,4 +1,7 @@
-import type { GoogleDriveService, DriveFileListItem } from "../../../domain/ports/google-drive-service";
+import type {
+  GoogleDriveService,
+  DriveFileListItem,
+} from "../../../domain/ports/google-drive-service";
 import type { DriveBackupRepository } from "../../../domain/ports/drive-backup-repository";
 import type { TokenRefresherPort } from "../../../domain/ports/token-refresher";
 
@@ -11,7 +14,10 @@ export class ListDriveFilesUseCase {
     private readonly tokenRefresher: TokenRefresherPort,
   ) {}
 
-  async execute(userId: string, folderId?: string): Promise<{ files: DriveFileBrowseItem[]; currentFolderId: string }> {
+  async execute(
+    userId: string,
+    folderId?: string,
+  ): Promise<{ files: DriveFileBrowseItem[]; currentFolderId: string }> {
     const accessToken = await this.tokenRefresher.getValidAccessToken(userId);
 
     // Default to the Drawhaus Backups root folder

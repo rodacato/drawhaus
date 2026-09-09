@@ -57,38 +57,73 @@ function createApp() {
   const invitations = new InMemoryInvitationRepository();
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();
-  app.use("/api/auth", createAuthRoutes({
-    register: new RegisterUseCase(users, sessions, hasher, new InMemorySiteSettingsRepository()),
-    login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
-    logout: new LogoutUseCase(sessions),
-    getCurrentUser,
-    updateProfile: new UpdateProfileUseCase(users),
-    changePassword: new ChangePasswordUseCase(users, hasher),
-    acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
-    forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
-    resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-    deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
-    googleAuth: new GoogleAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    githubAuth: new GitHubAuthUseCase(users, sessions, new InMemoryOAuthTokenRepository(), new InMemorySiteSettingsRepository(), new FakeOAuthProvider()),
-    unlinkOAuth: new UnlinkOAuthUseCase(users, new InMemoryOAuthTokenRepository(), new InMemoryDriveBackupRepository()),
-  }, requireAuth));
+  app.use(
+    "/api/auth",
+    createAuthRoutes(
+      {
+        register: new RegisterUseCase(
+          users,
+          sessions,
+          hasher,
+          new InMemorySiteSettingsRepository(),
+        ),
+        login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
+        logout: new LogoutUseCase(sessions),
+        getCurrentUser,
+        updateProfile: new UpdateProfileUseCase(users),
+        changePassword: new ChangePasswordUseCase(users, hasher),
+        acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
+        forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
+        resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
+        deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
+        googleAuth: new GoogleAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        githubAuth: new GitHubAuthUseCase(
+          users,
+          sessions,
+          new InMemoryOAuthTokenRepository(),
+          new InMemorySiteSettingsRepository(),
+          new FakeOAuthProvider(),
+        ),
+        unlinkOAuth: new UnlinkOAuthUseCase(
+          users,
+          new InMemoryOAuthTokenRepository(),
+          new InMemoryDriveBackupRepository(),
+        ),
+      },
+      requireAuth,
+    ),
+  );
 
-  app.use("/api/share", createShareRoutes({
-    createLink: new CreateShareLinkUseCase(shares, diagrams),
-    resolveLink: new ResolveLinkUseCase(shares, diagrams),
-    listLinks: new ListLinksUseCase(shares, diagrams),
-    deleteLink: new DeleteLinkUseCase(shares),
-  }, requireAuth));
+  app.use(
+    "/api/share",
+    createShareRoutes(
+      {
+        createLink: new CreateShareLinkUseCase(shares, diagrams),
+        resolveLink: new ResolveLinkUseCase(shares, diagrams),
+        listLinks: new ListLinksUseCase(shares, diagrams),
+        deleteLink: new DeleteLinkUseCase(shares),
+      },
+      requireAuth,
+    ),
+  );
 
   return app;
 }
 
 async function registerAndGetUser(app: express.Express, email: string) {
-  const res = await request(app).post("/api/auth/register").send({
-    email,
-    name: email.split("@")[0],
-    password: "password123",
-  });
+  const res = await request(app)
+    .post("/api/auth/register")
+    .send({
+      email,
+      name: email.split("@")[0],
+      password: "password123",
+    });
   const cookie = res.headers["set-cookie"][0].split(";")[0];
   return { cookie, userId: res.body.user.id as string };
 }
@@ -103,10 +138,7 @@ test("POST /api/share/:diagramId creates a viewer link by default", async () => 
   const { cookie, userId } = await registerAndGetUser(app, "sh1@example.com");
   const diagram = await diagrams.create({ ownerId: userId, title: "D" });
 
-  const res = await request(app)
-    .post(`/api/share/${diagram.id}`)
-    .set("Cookie", cookie)
-    .send({});
+  const res = await request(app).post(`/api/share/${diagram.id}`).set("Cookie", cookie).send({});
 
   assert.equal(res.status, 201);
   assert.equal(res.body.shareLink.diagramId, diagram.id);
@@ -148,10 +180,7 @@ test("POST /api/share/:diagramId returns 403 when viewer tries to create link", 
   const diagram = await diagrams.create({ ownerId: "owner-id", title: "D" });
   diagrams.members.push({ diagramId: diagram.id, userId, role: "viewer" });
 
-  const res = await request(app)
-    .post(`/api/share/${diagram.id}`)
-    .set("Cookie", cookie)
-    .send({});
+  const res = await request(app).post(`/api/share/${diagram.id}`).set("Cookie", cookie).send({});
 
   assert.equal(res.status, 403);
 });
@@ -187,8 +216,14 @@ test("GET /api/share/:diagramId/links lists owner's links", async () => {
   const { cookie, userId } = await registerAndGetUser(app, "sh7@example.com");
   const diagram = await diagrams.create({ ownerId: userId, title: "D" });
 
-  await request(app).post(`/api/share/${diagram.id}`).set("Cookie", cookie).send({ role: "editor" });
-  await request(app).post(`/api/share/${diagram.id}`).set("Cookie", cookie).send({ role: "viewer" });
+  await request(app)
+    .post(`/api/share/${diagram.id}`)
+    .set("Cookie", cookie)
+    .send({ role: "editor" });
+  await request(app)
+    .post(`/api/share/${diagram.id}`)
+    .set("Cookie", cookie)
+    .send({ role: "viewer" });
 
   const res = await request(app).get(`/api/share/${diagram.id}/links`).set("Cookie", cookie);
   assert.equal(res.status, 200);
@@ -197,7 +232,10 @@ test("GET /api/share/:diagramId/links lists owner's links", async () => {
 
 test("GET /api/share/:diagramId/links returns 404 for non-owner", async () => {
   const app = createApp();
-  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(app, "shown@example.com");
+  const { cookie: ownerCookie, userId: ownerId } = await registerAndGetUser(
+    app,
+    "shown@example.com",
+  );
   const { cookie: otherCookie } = await registerAndGetUser(app, "shoth@example.com");
   const diagram = await diagrams.create({ ownerId, title: "D" });
   await request(app).post(`/api/share/${diagram.id}`).set("Cookie", ownerCookie).send({});
@@ -211,7 +249,10 @@ test("GET /api/share/link/:token resolves public link", async () => {
   const { cookie, userId } = await registerAndGetUser(app, "sh8@example.com");
   const diagram = await diagrams.create({ ownerId: userId, title: "Public Doc" });
 
-  const createRes = await request(app).post(`/api/share/${diagram.id}`).set("Cookie", cookie).send({});
+  const createRes = await request(app)
+    .post(`/api/share/${diagram.id}`)
+    .set("Cookie", cookie)
+    .send({});
   const token = createRes.body.shareLink.token as string;
 
   const res = await request(app).get(`/api/share/link/${token}`);
@@ -232,7 +273,10 @@ test("GET /api/share/link/:token returns 410 for expired link", async () => {
   const { cookie, userId } = await registerAndGetUser(app, "sh9@example.com");
   const diagram = await diagrams.create({ ownerId: userId, title: "Expired" });
 
-  const createRes = await request(app).post(`/api/share/${diagram.id}`).set("Cookie", cookie).send({});
+  const createRes = await request(app)
+    .post(`/api/share/${diagram.id}`)
+    .set("Cookie", cookie)
+    .send({});
   const token = createRes.body.shareLink.token as string;
 
   // Force expiration
@@ -248,23 +292,35 @@ test("DELETE /api/share/link/:token deletes a link created by user", async () =>
   const { cookie, userId } = await registerAndGetUser(app, "shd1@example.com");
   const diagram = await diagrams.create({ ownerId: userId, title: "D" });
 
-  const createRes = await request(app).post(`/api/share/${diagram.id}`).set("Cookie", cookie).send({});
+  const createRes = await request(app)
+    .post(`/api/share/${diagram.id}`)
+    .set("Cookie", cookie)
+    .send({});
   const token = createRes.body.shareLink.token as string;
 
   const res = await request(app).delete(`/api/share/link/${token}`).set("Cookie", cookie);
   assert.equal(res.status, 200);
   assert.equal(res.body.success, true);
 
-  assert.equal(shares.store.find((l) => l.token === token), undefined);
+  assert.equal(
+    shares.store.find((l) => l.token === token),
+    undefined,
+  );
 });
 
 test("DELETE /api/share/link/:token returns 404 when user did not create the link", async () => {
   const app = createApp();
-  const { cookie: aliceCookie, userId: aliceId } = await registerAndGetUser(app, "shdela@example.com");
+  const { cookie: aliceCookie, userId: aliceId } = await registerAndGetUser(
+    app,
+    "shdela@example.com",
+  );
   const { cookie: bobCookie } = await registerAndGetUser(app, "shdelb@example.com");
   const diagram = await diagrams.create({ ownerId: aliceId, title: "D" });
 
-  const createRes = await request(app).post(`/api/share/${diagram.id}`).set("Cookie", aliceCookie).send({});
+  const createRes = await request(app)
+    .post(`/api/share/${diagram.id}`)
+    .set("Cookie", aliceCookie)
+    .send({});
   const token = createRes.body.shareLink.token as string;
 
   const res = await request(app).delete(`/api/share/link/${token}`).set("Cookie", bobCookie);

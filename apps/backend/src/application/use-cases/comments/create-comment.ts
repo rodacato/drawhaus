@@ -9,9 +9,21 @@ export class CreateCommentUseCase {
     private readonly diagrams: DiagramRepository,
   ) {}
 
-  async execute(diagramId: string, userId: string, elementId: string, body: string, sceneId?: string | null): Promise<CommentThread> {
+  async execute(
+    diagramId: string,
+    userId: string,
+    elementId: string,
+    body: string,
+    sceneId?: string | null,
+  ): Promise<CommentThread> {
     const role = await this.diagrams.findAccessRole(diagramId, userId);
     requireAccess(role);
-    return this.comments.createThread({ diagramId, sceneId: sceneId ?? null, elementId, authorId: userId, body });
+    return this.comments.createThread({
+      diagramId,
+      sceneId: sceneId ?? null,
+      elementId,
+      authorId: userId,
+      body,
+    });
   }
 }

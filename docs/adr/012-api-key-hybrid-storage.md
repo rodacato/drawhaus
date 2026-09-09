@@ -10,6 +10,7 @@ Drawhaus stores two kinds of secrets: infrastructure secrets (DB credentials, se
 ## Decision
 
 **Hybrid approach:**
+
 - Infrastructure secrets → environment variables (required at boot).
 - Feature/integration secrets → encrypted in database (AES-256-GCM), manageable via admin UI.
 

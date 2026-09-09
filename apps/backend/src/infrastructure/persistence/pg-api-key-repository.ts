@@ -16,7 +16,8 @@ type ApiKeyRow = {
   created_at: string;
 };
 
-const SELECT_COLS = "id, user_id, workspace_id, name, key_prefix, key_hash, expires_at, revoked_at, last_used_at, created_at";
+const SELECT_COLS =
+  "id, user_id, workspace_id, name, key_prefix, key_hash, expires_at, revoked_at, last_used_at, created_at";
 
 function toDomain(row: ApiKeyRow): ApiKey {
   return {
@@ -76,10 +77,7 @@ export class PgApiKeyRepository implements ApiKeyRepository {
   }
 
   async revoke(id: string): Promise<void> {
-    await pool.query(
-      `UPDATE api_keys SET revoked_at = now() WHERE id = $1`,
-      [id],
-    );
+    await pool.query(`UPDATE api_keys SET revoked_at = now() WHERE id = $1`, [id]);
   }
 
   async updateLastUsed(id: string): Promise<void> {
@@ -110,12 +108,14 @@ export class PgApiKeyRepository implements ApiKeyRepository {
     userAgent: string | null;
   }): void {
     // Fire-and-forget: don't block the response
-    pool.query(
-      `INSERT INTO api_request_logs (key_id, method, path, status_code, ip, user_agent)
+    pool
+      .query(
+        `INSERT INTO api_request_logs (key_id, method, path, status_code, ip, user_agent)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [data.keyId, data.method, data.path, data.statusCode, data.ip, data.userAgent],
-    ).catch((err) => {
-      logger.warn({ err }, "Failed to log API request");
-    });
+        [data.keyId, data.method, data.path, data.statusCode, data.ip, data.userAgent],
+      )
+      .catch((err) => {
+        logger.warn({ err }, "Failed to log API request");
+      });
   }
 }

@@ -7,10 +7,7 @@ import { type SocketData, canEdit } from "../helpers";
  * `request-edit-lock` always responds with `acquired: true`.
  * Raise hand signaling is preserved (not tied to locking).
  */
-export function registerLockHandlers(
-  io: Server,
-  socket: Socket,
-) {
+export function registerLockHandlers(io: Server, socket: Socket) {
   socket.on("request-edit-lock", ({ roomId }: { roomId: string }) => {
     if (!socket.rooms.has(roomId)) return;
     if (!canEdit(socket, roomId)) return;

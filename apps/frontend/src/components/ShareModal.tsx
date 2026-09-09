@@ -43,11 +43,7 @@ interface ShareModalProps {
 
 /* ── Component ───────────────────────────────────────────── */
 
-export function ShareModal({
-  open,
-  onClose,
-  diagramId,
-}: ShareModalProps) {
+export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
   const [selectedRole, setSelectedRole] = useState("viewer");
   const [expiresIn, setExpiresIn] = useState("");
   const [copied, setCopied] = useState(false);
@@ -113,14 +109,17 @@ export function ShareModal({
     }
   }, [creating, diagramId, selectedRole, expiresIn, loadLinks]);
 
-  const handleDeleteLink = useCallback(async (token: string) => {
-    try {
-      await shareApi.deleteLink(token);
-      await loadLinks();
-    } catch {
-      // silently fail
-    }
-  }, [loadLinks]);
+  const handleDeleteLink = useCallback(
+    async (token: string) => {
+      try {
+        await shareApi.deleteLink(token);
+        await loadLinks();
+      } catch {
+        // silently fail
+      }
+    },
+    [loadLinks],
+  );
 
   const handleCopyExistingLink = useCallback(async (token: string) => {
     const url = `${globalThis.location.origin}/share/${token}`;
@@ -143,10 +142,15 @@ export function ShareModal({
 
   if (!open) return null;
 
-  const sectionLabel =
-    "mb-3 text-[11px] font-semibold uppercase tracking-widest text-text-muted";
+  const sectionLabel = "mb-3 text-[11px] font-semibold uppercase tracking-widest text-text-muted";
 
-  function renderCopyButtonContent({ copied: isCopied, creating: isCreating }: { copied: boolean; creating: boolean }) {
+  function renderCopyButtonContent({
+    copied: isCopied,
+    creating: isCreating,
+  }: {
+    copied: boolean;
+    creating: boolean;
+  }) {
     if (isCopied) {
       return (
         <>
@@ -185,9 +189,7 @@ export function ShareModal({
         {/* Icon circle */}
         <div
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-            isEditor
-              ? "bg-primary/10 text-primary"
-              : "bg-accent-coral/10 text-accent-coral"
+            isEditor ? "bg-primary/10 text-primary" : "bg-accent-coral/10 text-accent-coral"
           }`}
         >
           {isEditor ? <IconEdit size={14} /> : <IconEye size={14} />}
@@ -205,9 +207,7 @@ export function ShareModal({
               {badgeText}
             </span>
           </div>
-          <p className="mt-0.5 text-xs text-text-muted">
-            {formatRelativeDate(link.createdAt)}
-          </p>
+          <p className="mt-0.5 text-xs text-text-muted">{formatRelativeDate(link.createdAt)}</p>
         </div>
 
         {/* Actions */}
@@ -282,9 +282,7 @@ export function ShareModal({
               <div className="grid grid-cols-2 gap-3">
                 {/* Role selector */}
                 <label className="block space-y-1.5">
-                  <span className="text-xs font-medium text-text-secondary">
-                    Role
-                  </span>
+                  <span className="text-xs font-medium text-text-secondary">Role</span>
                   <select
                     value={selectedRole}
                     onChange={(e) => setSelectedRole(e.target.value)}
@@ -297,9 +295,7 @@ export function ShareModal({
 
                 {/* Expiration input */}
                 <label className="block space-y-1.5">
-                  <span className="text-xs font-medium text-text-secondary">
-                    Expires in (days)
-                  </span>
+                  <span className="text-xs font-medium text-text-secondary">Expires in (days)</span>
                   <div className="relative">
                     <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
                       <IconCalendar size={14} />
@@ -339,18 +335,13 @@ export function ShareModal({
             <section>
               <p className={sectionLabel}>Active Links</p>
 
-              <div className="space-y-2">
-                {renderLinksList()}
-              </div>
+              <div className="space-y-2">{renderLinksList()}</div>
             </section>
           </div>
 
           {/* ── Footer ──────────────────────────────────── */}
           <div className="flex justify-end border-t border-border px-6 py-4">
-            <button
-              onClick={onClose}
-              className={`${ui.btn} ${ui.btnPrimary}`}
-            >
+            <button onClick={onClose} className={`${ui.btn} ${ui.btnPrimary}`}>
               Done
             </button>
           </div>

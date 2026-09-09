@@ -34,13 +34,22 @@ function baseProps() {
 }
 
 // Helper to create a rectangle element
-function rect(id: string, x: number, y: number, w: number, h: number, label: string, color = "#a5d8ff"): unknown[] {
+function rect(
+  id: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  label: string,
+  color = "#a5d8ff",
+): unknown[] {
   return [
     {
       ...baseProps(),
       id,
       type: "rectangle",
-      x, y,
+      x,
+      y,
       width: w,
       height: h,
       strokeColor: "#1e1e1e",
@@ -75,7 +84,14 @@ function rect(id: string, x: number, y: number, w: number, h: number, label: str
 }
 
 // Helper to create an arrow
-function arrow(id: string, startX: number, startY: number, endX: number, endY: number, label?: string): unknown[] {
+function arrow(
+  id: string,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  label?: string,
+): unknown[] {
   const elements: unknown[] = [
     {
       ...baseProps(),
@@ -85,7 +101,10 @@ function arrow(id: string, startX: number, startY: number, endX: number, endY: n
       y: startY,
       width: endX - startX,
       height: endY - startY,
-      points: [[0, 0], [endX - startX, endY - startY]],
+      points: [
+        [0, 0],
+        [endX - startX, endY - startY],
+      ],
       strokeColor: "#1e1e1e",
       backgroundColor: "transparent",
       fillStyle: "solid",
@@ -140,10 +159,42 @@ const systemArchitectureElements = [
 
 // ── ER Diagram ──
 const erDiagramElements = [
-  ...rect("users_tbl", 50, 50, 220, 160, "Users\n─────────\nid: UUID PK\nname: TEXT\nemail: TEXT\ncreated_at: TIMESTAMP", "#a5d8ff"),
-  ...rect("orders_tbl", 400, 50, 220, 160, "Orders\n─────────\nid: UUID PK\nuser_id: UUID FK\ntotal: DECIMAL\nstatus: TEXT", "#b2f2bb"),
-  ...rect("products_tbl", 400, 300, 220, 160, "Products\n─────────\nid: UUID PK\nname: TEXT\nprice: DECIMAL\nstock: INTEGER", "#ffd8a8"),
-  ...rect("order_items", 750, 150, 220, 140, "Order Items\n─────────\norder_id: UUID FK\nproduct_id: UUID FK\nquantity: INTEGER", "#d0bfff"),
+  ...rect(
+    "users_tbl",
+    50,
+    50,
+    220,
+    160,
+    "Users\n─────────\nid: UUID PK\nname: TEXT\nemail: TEXT\ncreated_at: TIMESTAMP",
+    "#a5d8ff",
+  ),
+  ...rect(
+    "orders_tbl",
+    400,
+    50,
+    220,
+    160,
+    "Orders\n─────────\nid: UUID PK\nuser_id: UUID FK\ntotal: DECIMAL\nstatus: TEXT",
+    "#b2f2bb",
+  ),
+  ...rect(
+    "products_tbl",
+    400,
+    300,
+    220,
+    160,
+    "Products\n─────────\nid: UUID PK\nname: TEXT\nprice: DECIMAL\nstock: INTEGER",
+    "#ffd8a8",
+  ),
+  ...rect(
+    "order_items",
+    750,
+    150,
+    220,
+    140,
+    "Order Items\n─────────\norder_id: UUID FK\nproduct_id: UUID FK\nquantity: INTEGER",
+    "#d0bfff",
+  ),
   ...arrow("rel1", 270, 130, 400, 130, "1:N"),
   ...arrow("rel2", 620, 130, 750, 200, "1:N"),
   ...arrow("rel3", 620, 380, 750, 290, "1:N"),
@@ -182,9 +233,33 @@ const sprintRetroElements = [
 // ── ADR Visual ──
 const adrElements = [
   ...rect("adr_title", 200, 30, 400, 50, "ADR: [Decision Title]", "#d0bfff"),
-  ...rect("adr_context", 50, 120, 300, 100, "Context\n─────────\nDescribe the situation\nand forces at play", "#ffec99"),
-  ...rect("adr_decision", 400, 120, 300, 100, "Decision\n─────────\nWhat was decided\nand why", "#b2f2bb"),
-  ...rect("adr_cons", 200, 280, 400, 100, "Consequences\n─────────\nPositive and negative outcomes\nof this decision", "#ffc9c9"),
+  ...rect(
+    "adr_context",
+    50,
+    120,
+    300,
+    100,
+    "Context\n─────────\nDescribe the situation\nand forces at play",
+    "#ffec99",
+  ),
+  ...rect(
+    "adr_decision",
+    400,
+    120,
+    300,
+    100,
+    "Decision\n─────────\nWhat was decided\nand why",
+    "#b2f2bb",
+  ),
+  ...rect(
+    "adr_cons",
+    200,
+    280,
+    400,
+    100,
+    "Consequences\n─────────\nPositive and negative outcomes\nof this decision",
+    "#ffc9c9",
+  ),
   ...arrow("adr_a1", 200, 220, 300, 280),
   ...arrow("adr_a2", 550, 220, 500, 280),
 ];

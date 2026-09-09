@@ -50,7 +50,10 @@ export class InMemoryTemplateRepository implements TemplateRepository {
     return template;
   }
 
-  async update(id: string, data: Partial<Pick<Template, "title" | "description" | "category" | "thumbnail">>): Promise<Template | null> {
+  async update(
+    id: string,
+    data: Partial<Pick<Template, "title" | "description" | "category" | "thumbnail">>,
+  ): Promise<Template | null> {
     const template = this.store.find((t) => t.id === id);
     if (!template) return null;
     if (data.title !== undefined) template.title = data.title;

@@ -49,7 +49,10 @@ describe("createRect", () => {
 
   it("accepts custom styles", () => {
     const rect = createRect({
-      x: 0, y: 0, width: 100, height: 50,
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
       backgroundColor: "#a5d8ff",
       strokeStyle: "dashed",
       fillStyle: "hachure",
@@ -72,7 +75,14 @@ describe("createText", () => {
   });
 
   it("accepts custom font settings", () => {
-    const text = createText({ x: 0, y: 0, text: "Code", fontSize: 14, fontFamily: 3, textAlign: "center" });
+    const text = createText({
+      x: 0,
+      y: 0,
+      text: "Code",
+      fontSize: 14,
+      fontFamily: 3,
+      textAlign: "center",
+    });
     assert.equal(text.fontSize, 14);
     assert.equal(text.fontFamily, 3);
     assert.equal(text.textAlign, "center");
@@ -82,19 +92,29 @@ describe("createText", () => {
 describe("createArrow", () => {
   it("creates arrow with relative points", () => {
     const arrow = createArrow({
-      points: [{ x: 100, y: 200 }, { x: 300, y: 200 }],
+      points: [
+        { x: 100, y: 200 },
+        { x: 300, y: 200 },
+      ],
     });
     assert.equal(arrow.type, "arrow");
     assert.equal(arrow.x, 100);
     assert.equal(arrow.y, 200);
-    assert.deepEqual(arrow.points, [[0, 0], [200, 0]]);
+    assert.deepEqual(arrow.points, [
+      [0, 0],
+      [200, 0],
+    ]);
     assert.equal(arrow.startArrowhead, null);
     assert.equal(arrow.endArrowhead, "arrow");
   });
 
   it("adds label at midpoint", () => {
     const arrow = createArrow({
-      points: [{ x: 0, y: 0 }, { x: 200, y: 0 }, { x: 200, y: 100 }],
+      points: [
+        { x: 0, y: 0 },
+        { x: 200, y: 0 },
+        { x: 200, y: 100 },
+      ],
       label: "FK",
     });
     // midIdx = floor(3/2) = 1 → midPoint is {x:200, y:0}
@@ -103,7 +123,10 @@ describe("createArrow", () => {
 
   it("supports bindings", () => {
     const arrow = createArrow({
-      points: [{ x: 0, y: 0 }, { x: 100, y: 0 }],
+      points: [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+      ],
       startBinding: { elementId: "rect-1" },
       endBinding: { elementId: "rect-2" },
     });
@@ -113,7 +136,10 @@ describe("createArrow", () => {
 
   it("supports custom arrowheads", () => {
     const arrow = createArrow({
-      points: [{ x: 0, y: 0 }, { x: 100, y: 0 }],
+      points: [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+      ],
       startArrowhead: "diamond",
       endArrowhead: "triangle",
       strokeStyle: "dashed",
@@ -130,7 +156,10 @@ describe("createLine", () => {
     assert.equal(line.type, "line");
     assert.equal(line.x, 10);
     assert.equal(line.y, 20);
-    assert.deepEqual(line.points, [[0, 0], [100, 0]]);
+    assert.deepEqual(line.points, [
+      [0, 0],
+      [100, 0],
+    ]);
   });
 });
 
@@ -160,7 +189,12 @@ describe("unique IDs", () => {
   it("generates unique ids across builders", () => {
     const r = createRect({ x: 0, y: 0, width: 10, height: 10 });
     const t = createText({ x: 0, y: 0, text: "hi" });
-    const a = createArrow({ points: [{ x: 0, y: 0 }, { x: 1, y: 0 }] });
+    const a = createArrow({
+      points: [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+      ],
+    });
     assert.notEqual(r.id, t.id);
     assert.notEqual(t.id, a.id);
   });
