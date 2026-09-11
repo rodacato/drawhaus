@@ -105,7 +105,7 @@ The Decision Log in `docs/ROADMAP.md` serves as an executive summary. ADRs hold 
 - Backend tests: `npm test --workspace=backend`
 - Frontend tests: `npm test --workspace=frontend`
 - Lint, typecheck, format: `npm run lint && npm run typecheck && npm run format:check`
-- E2E tests: `cd e2e && npm test` (currently disabled in CI)
+- E2E tests: `cd e2e && npm test` (also runs in CI; local setup in `e2e/README.md`)
 - Follow `docs/guides/releasing.md` for version bump, changelog, tag, and deploy.
 
 ---
