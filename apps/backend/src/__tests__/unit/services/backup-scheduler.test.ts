@@ -1,16 +1,20 @@
 import { describe, it, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
-import cron from "node-cron";
+import cron, { type ScheduledTask } from "node-cron";
 import {
   startBackupScheduler,
   stopBackupScheduler,
 } from "../../../infrastructure/services/backup-scheduler";
 import { logger } from "../../../infrastructure/logger";
 
-type FakeTask = { stop: ReturnType<typeof mock.fn>; start: ReturnType<typeof mock.fn> };
+type FakeTask = {
+  stop: ReturnType<typeof mock.fn>;
+  start: ReturnType<typeof mock.fn>;
+  destroy: ReturnType<typeof mock.fn>;
+};
 
 function makeFakeTask(): FakeTask {
-  return { stop: mock.fn(() => {}), start: mock.fn(() => {}) };
+  return { stop: mock.fn(() => {}), start: mock.fn(() => {}), destroy: mock.fn(() => {}) };
 }
 
 const ENV_BACKUP: Record<string, string | undefined> = {};
@@ -46,7 +50,7 @@ describe("startBackupScheduler — disabled config", () => {
     const scheduleMock = mock.method(
       cron,
       "schedule",
-      () => makeFakeTask() as unknown as cron.ScheduledTask,
+      () => makeFakeTask() as unknown as ScheduledTask,
     );
     // Re-mock info to capture calls
     const infoMock = mock.method(logger, "info", () => {});
@@ -73,7 +77,7 @@ describe("startBackupScheduler — invalid cron expression", () => {
     const scheduleMock = mock.method(
       cron,
       "schedule",
-      () => makeFakeTask() as unknown as cron.ScheduledTask,
+      () => makeFakeTask() as unknown as ScheduledTask,
     );
     const errorMock = mock.method(logger, "error", () => {});
 
@@ -102,11 +106,7 @@ describe("startBackupScheduler — valid config", () => {
     process.env.BACKUP_CRON = "*/15 * * * *";
     mock.method(cron, "validate", () => true);
     const fakeTask = makeFakeTask();
-    const scheduleMock = mock.method(
-      cron,
-      "schedule",
-      () => fakeTask as unknown as cron.ScheduledTask,
-    );
+    const scheduleMock = mock.method(cron, "schedule", () => fakeTask as unknown as ScheduledTask);
 
     await startBackupScheduler();
 
@@ -127,21 +127,21 @@ describe("startBackupScheduler — restart with existing task", () => {
     let callCount = 0;
     const scheduleMock = mock.method(cron, "schedule", () => {
       callCount += 1;
-      return (callCount === 1 ? firstTask : secondTask) as unknown as cron.ScheduledTask;
+      return (callCount === 1 ? firstTask : secondTask) as unknown as ScheduledTask;
     });
 
     await startBackupScheduler();
     assert.equal(scheduleMock.mock.calls.length, 1);
-    assert.equal(firstTask.stop.mock.calls.length, 0);
+    assert.equal(firstTask.destroy.mock.calls.length, 0);
 
     await startBackupScheduler();
     assert.equal(scheduleMock.mock.calls.length, 2);
     assert.equal(
-      firstTask.stop.mock.calls.length,
+      firstTask.destroy.mock.calls.length,
       1,
-      "first task must be stopped before second schedule",
+      "first task must be destroyed before second schedule",
     );
-    assert.equal(secondTask.stop.mock.calls.length, 0);
+    assert.equal(secondTask.destroy.mock.calls.length, 0);
   });
 });
 
@@ -156,16 +156,31 @@ describe("stopBackupScheduler", () => {
     process.env.BACKUP_CRON = "0 3 * * *";
     mock.method(cron, "validate", () => true);
     const task = makeFakeTask();
-    mock.method(cron, "schedule", () => task as unknown as cron.ScheduledTask);
+    mock.method(cron, "schedule", () => task as unknown as ScheduledTask);
 
     await startBackupScheduler();
-    assert.equal(task.stop.mock.calls.length, 0);
+    assert.equal(task.destroy.mock.calls.length, 0);
 
     stopBackupScheduler();
-    assert.equal(task.stop.mock.calls.length, 1);
+    assert.equal(task.destroy.mock.calls.length, 1);
 
-    // Subsequent stop must NOT call task.stop again
+    // Subsequent stop must NOT destroy the task again
     stopBackupScheduler();
-    assert.equal(task.stop.mock.calls.length, 1);
+    assert.equal(task.destroy.mock.calls.length, 1);
+  });
+});
+
+describe("stopBackupScheduler — real node-cron", () => {
+  it("removes the task from node-cron's registry, so restarts do not accumulate tasks", async () => {
+    process.env.BACKUP_ENABLED = "true";
+    process.env.BACKUP_CRON = "0 3 * * *";
+    const before = cron.getTasks().size;
+
+    await startBackupScheduler();
+    await startBackupScheduler();
+    assert.equal(cron.getTasks().size, before + 1, "a restart must replace the task, not add one");
+
+    stopBackupScheduler();
+    assert.equal(cron.getTasks().size, before);
   });
 });

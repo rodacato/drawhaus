@@ -1,8 +1,8 @@
-import cron from "node-cron";
+import cron, { type ScheduledTask } from "node-cron";
 import { createBackup, cleanupOldBackups, getBackupConfig } from "./backup-service";
 import { logger } from "../logger";
 
-let task: cron.ScheduledTask | null = null;
+let task: ScheduledTask | null = null;
 
 export async function startBackupScheduler(): Promise<void> {
   // Stop existing scheduler if running (for restarts on config change)
@@ -44,7 +44,8 @@ export async function startBackupScheduler(): Promise<void> {
 
 export function stopBackupScheduler(): void {
   if (task) {
-    task.stop();
+    // destroy(), not stop(): v4 keeps stopped tasks in its registry, so every restart would leak one.
+    void task.destroy();
     task = null;
   }
 }
