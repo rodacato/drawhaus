@@ -5,8 +5,8 @@ import { createMockSocket, type MockSocket } from "./_helpers/mock-socket";
 
 let nextSocket: MockSocket;
 
-// The real ExcalidrawCanvas pulls in @excalidraw/excalidraw (+ roughjs + CSS),
-// which hangs under jsdom. Stub the local wrapper so canvas pages can mount.
+// Importing @excalidraw/excalidraw under vitest fails fast: it loads open-color's JSON
+// without an import attribute ("type: json"). Stub the wrapper so canvas pages can mount.
 vi.mock("@/components/ExcalidrawCanvas", () => ({
   ExcalidrawCanvas: () => <div data-testid="excalidraw-canvas" />,
 }));
