@@ -20,7 +20,7 @@
     "@drawhaus/mermaid-to-excalidraw": "*",
     "@drawhaus/plantuml-to-excalidraw": "*",
     "@excalidraw/excalidraw": "^0.18.0",
-    "@sentry/react": "^10.49.0",
+    "@sentry/react": "^10.74.0",
     "axios": "^1.13.6",
     "dagre": "^0.8.5",
     "react": "^18",
