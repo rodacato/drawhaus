@@ -41,10 +41,18 @@ let _generalHandler = createLimiter(
   "Too many requests, please try again later",
   "general",
 );
+// kamal-proxy polls /health every 10s; 120/min leaves room for monitors behind one IP.
+let _healthHandler = createLimiter(
+  60_000,
+  120,
+  "Too many requests, please try again later",
+  "health",
+);
 
 // Stable wrapper references for app.use()
 export const authLimiter: RequestHandler = (req, res, next) => _authHandler(req, res, next);
 export const generalLimiter: RequestHandler = (req, res, next) => _generalHandler(req, res, next);
+export const healthLimiter: RequestHandler = (req, res, next) => _healthHandler(req, res, next);
 
 /** Call after Redis connects to upgrade limiters to shared Redis store */
 export function upgradeRateLimiters(redisClient: Redis): void {
@@ -61,6 +69,13 @@ export function upgradeRateLimiters(redisClient: Redis): void {
     60,
     "Too many requests, please try again later",
     "general",
+    redisClient,
+  );
+  _healthHandler = createLimiter(
+    60_000,
+    120,
+    "Too many requests, please try again later",
+    "health",
     redisClient,
   );
 }
