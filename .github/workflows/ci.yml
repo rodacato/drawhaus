@@ -19,6 +19,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: drawhaus_test
+          POSTGRES_USER: drawhaus
+          POSTGRES_PASSWORD: drawhaus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -68,6 +83,11 @@ jobs:
 
       - name: Backend tests
         run: npm run test --workspace=backend
+
+      - name: Backend Postgres tests
+        run: npm run test:pg --workspace=backend
+        env:
+          DATABASE_URL: postgres://drawhaus:drawhaus@localhost:5432/drawhaus_test
 
       - name: Package tests
         run: npm run test:packages
