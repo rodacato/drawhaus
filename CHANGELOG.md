@@ -37,6 +37,8 @@ All notable changes to Drawhaus are documented here.
 
 ### Changed
 
+- **Vitest 4 → 5** (`vitest`, `@vitest/coverage-v8`, frontend only). No test or config changes were needed: none of v5's breaking patterns occur here (nested `vi.mock`/`vi.hoisted`, unawaited `resolves`/`rejects`, `toThrow("")`, removed `vitest/*` entry points), and 516/516 pass. Coverage matches master's CI artifact exactly — 118 files, 1812/3323 lines — so v5's stricter `include`/`exclude` matching left the hand-tuned denominator untouched. Vite stays on 7, which v5's peer range allows.
+
 - **`node-cron` 3 → 4.** Closes the two `uuid` findings (`node-cron@3` depended on a vulnerable `uuid`). v4 ships its own types, so `@types/node-cron` is dropped and `ScheduledTask` becomes a named type import. `stopBackupScheduler` now calls `destroy()` instead of `stop()`: v4 keeps stopped tasks in a global registry, so every scheduler restart on a settings change would have left one behind. A new test checks that registry against real node-cron instead of a mock.
 
 - **In-range dependency bumps.** `@sentry/node` / `@sentry/react` 10.74, `zod` 4.6.2 in the backend (`helpers` and `mcp` stay on zod 3), `resend` 6.27. `@sentry/bundler-plugins` moves to 10.74.0 alongside them: it pins `@sentry/core` exactly, and left at 10.73.0 it split the tree into eleven copies of `@sentry/core`. The root now declares `typescript: ~5.9.3` — a plain `npm update` re-resolves `@typescript-eslint`'s peer range (`<6.1.0`) to TypeScript 6.0.3 at the root, the condition that broke the frontend image's dts build fixed in #143.
