@@ -19,7 +19,7 @@ describe("ResolveLinkUseCase", () => {
       new InMemoryFolderRepository(),
     );
     const createLink = new CreateShareLinkUseCase(shares, diagrams);
-    const resolve = new ResolveLinkUseCase(shares, diagrams);
+    const resolve = new ResolveLinkUseCase(shares, diagrams, diagrams.scenes);
 
     const diagram = await createDiagram.execute({ ownerId: "user-1", title: "Test" });
     const link = await createLink.execute({ diagramId: diagram.id, userId: "user-1" });
@@ -32,7 +32,7 @@ describe("ResolveLinkUseCase", () => {
   it("rejects unknown token", async () => {
     const diagrams = new InMemoryDiagramRepository();
     const shares = new InMemoryShareRepository();
-    const resolve = new ResolveLinkUseCase(shares, diagrams);
+    const resolve = new ResolveLinkUseCase(shares, diagrams, diagrams.scenes);
 
     await assert.rejects(
       () => resolve.execute("nonexistent"),
@@ -48,7 +48,7 @@ describe("ResolveLinkUseCase", () => {
       new InMemoryWorkspaceRepository(),
       new InMemoryFolderRepository(),
     );
-    const resolve = new ResolveLinkUseCase(shares, diagrams);
+    const resolve = new ResolveLinkUseCase(shares, diagrams, diagrams.scenes);
 
     const diagram = await createDiagram.execute({ ownerId: "user-1" });
     // Manually insert an expired link
@@ -65,5 +65,28 @@ describe("ResolveLinkUseCase", () => {
       () => resolve.execute("expired-token"),
       (err: unknown) => err instanceof ExpiredError,
     );
+  });
+
+  it("serves the board's content, not the diagram row's stale copy", async () => {
+    const diagrams = new InMemoryDiagramRepository();
+    const shares = new InMemoryShareRepository();
+    const resolve = new ResolveLinkUseCase(shares, diagrams, diagrams.scenes);
+    const stale = [{ id: "row-1", type: "rectangle" }];
+    const board = [{ id: "board-1", type: "ellipse" }];
+    const diagram = await diagrams.create({ ownerId: "user-1", title: "T", elements: stale });
+    await diagrams.scenes.create({
+      diagramId: diagram.id,
+      name: "Scene 1",
+      sortOrder: 0,
+      elements: board,
+    });
+    const link = await new CreateShareLinkUseCase(shares, diagrams).execute({
+      diagramId: diagram.id,
+      userId: "user-1",
+    });
+
+    const result = await resolve.execute(link.token);
+
+    assert.deepEqual(result.diagram.elements, board);
   });
 });

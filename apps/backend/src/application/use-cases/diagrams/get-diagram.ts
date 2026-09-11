@@ -2,6 +2,7 @@ import type { DiagramRepository } from "../../../domain/ports/diagram-repository
 import type { SceneRepository } from "../../../domain/ports/scene-repository";
 import { NotFoundError } from "../../../domain/errors";
 import { requireAccess } from "../../helpers/require-access";
+import { withSceneContent } from "../../helpers/scene-content";
 
 export class GetDiagramUseCase {
   constructor(
@@ -16,12 +17,6 @@ export class GetDiagramUseCase {
     const diagram = await this.diagrams.findById(diagramId);
     if (!diagram) throw new NotFoundError("Diagram");
 
-    // Return first scene's data when available — it's the source of truth
-    const scenes = await this.scenes.findByDiagram(diagramId);
-    if (scenes.length > 0) {
-      return { ...diagram, elements: scenes[0].elements, appState: scenes[0].appState };
-    }
-
-    return diagram;
+    return withSceneContent(diagram, this.scenes);
   }
 }

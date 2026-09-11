@@ -14,11 +14,12 @@ export interface DiagramRepository {
     thumbnail?: string | null;
     createdVia?: string;
   }): Promise<Diagram>;
+  // Content goes to the first scene (created if missing), mirrored on the row in one transaction;
+  // a title-only update never touches the scene (ADR-025).
   update(
     id: string,
     data: Partial<Pick<Diagram, "title" | "elements" | "appState">>,
   ): Promise<Diagram | null>;
-  updateScene(id: string, elements: unknown[], appState: Record<string, unknown>): Promise<void>;
   moveTo(id: string, folderId: string | null): Promise<void>;
   moveToWorkspace(id: string, workspaceId: string | null): Promise<void>;
   updateThumbnail(id: string, thumbnail: string): Promise<void>;

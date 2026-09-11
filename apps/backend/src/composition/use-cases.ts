@@ -196,11 +196,11 @@ export function createUseCases(repos: Repositories, services: Services) {
   const getDiagram = new GetDiagramUseCase(repos.diagramRepo, repos.sceneRepo);
   const listDiagrams = new ListDiagramsUseCase(repos.diagramRepo);
   const searchDiagrams = new SearchDiagramsUseCase(repos.diagramRepo);
-  const updateDiagram = new UpdateDiagramUseCase(repos.diagramRepo);
+  const updateDiagram = new UpdateDiagramUseCase(repos.diagramRepo, repos.sceneRepo);
   const deleteDiagram = new DeleteDiagramUseCase(repos.diagramRepo, repos.workspaceRepo);
   const updateThumbnail = new UpdateThumbnailUseCase(repos.diagramRepo);
   const toggleStar = new ToggleStarUseCase(repos.diagramRepo);
-  const duplicateDiagram = new DuplicateDiagramUseCase(repos.diagramRepo);
+  const duplicateDiagram = new DuplicateDiagramUseCase(repos.diagramRepo, repos.sceneRepo);
 
   // Workspaces
   const createWorkspace = new CreateWorkspaceUseCase(repos.workspaceRepo, repos.siteSettingsRepo);
@@ -244,7 +244,7 @@ export function createUseCases(repos: Repositories, services: Services) {
 
   // Share
   const createLink = new CreateShareLinkUseCase(repos.shareRepo, repos.diagramRepo);
-  const resolveLink = new ResolveLinkUseCase(repos.shareRepo, repos.diagramRepo);
+  const resolveLink = new ResolveLinkUseCase(repos.shareRepo, repos.diagramRepo, repos.sceneRepo);
   const listLinks = new ListLinksUseCase(repos.shareRepo, repos.diagramRepo);
   const deleteLink = new DeleteLinkUseCase(repos.shareRepo);
 
