@@ -126,13 +126,15 @@ export function diffElements(prev: readonly unknown[], current: readonly unknown
  *   and orphaned groupIds, on copies: the input elements are never modified.
  *
  * Returns: { elements, conflictIds, deletedIds }
- * - conflictIds: element IDs where the remote version overwrote a local edit
+ * - conflictIds: elements in `editedIds` (edited locally, not yet saved) that a different
+ *   remote copy replaced
  * - deletedIds: element IDs that were removed by the delta
  */
 export function mergeDelta(
   localElements: readonly unknown[],
   changed: readonly unknown[],
   removedIds: readonly string[],
+  editedIds: ReadonlySet<string> = new Set(),
 ): { elements: unknown[]; conflictIds: string[]; deletedIds: string[] } {
   const removedSet = new Set(removedIds);
   const changedMap = byId(changed);
@@ -154,7 +156,8 @@ export function mergeDelta(
     const remote = changedMap.get(local.id);
     changedMap.delete(local.id);
     if (remote && remoteWins(local, remote)) {
-      if (versionOf(local) > 0) conflictIds.push(local.id);
+      const replaced = versionOf(remote) !== versionOf(local) || nonceOf(remote) !== nonceOf(local);
+      if (replaced && editedIds.has(local.id)) conflictIds.push(local.id);
       merged.push(remote);
     } else {
       merged.push(local);

@@ -126,7 +126,18 @@ describe("mergeDelta", () => {
     const { elements, conflictIds } = mergeDelta(local, changed, []);
     assert.equal(elements.length, 1);
     assert.equal((elements[0] as { x: number }).x, 50);
-    assert.equal(conflictIds.length, 1);
+    assert.deepEqual(conflictIds, [], "nothing was edited here, so no edit was lost");
+  });
+
+  it("reports a conflict when a remote copy replaces an element edited here", () => {
+    const { conflictIds } = mergeDelta([el("a", 4)], [el("a", 6)], [], new Set(["a"]));
+    assert.deepEqual(conflictIds, ["a"]);
+  });
+
+  it("an edited element that survives, or an identical copy, is no conflict", () => {
+    const edited = new Set(["a"]);
+    assert.deepEqual(mergeDelta([el("a", 6)], [el("a", 4)], [], edited).conflictIds, []);
+    assert.deepEqual(mergeDelta([el("a", 6)], [el("a", 6)], [], edited).conflictIds, []);
   });
 
   it("keeps local element when version is higher", () => {

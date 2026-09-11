@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { applyRemoteScene, type ExcalidrawApi } from "@/lib/excalidraw";
+import { SceneSync } from "@/lib/scene-sync";
 
 // Re-export types for consumers
 export type { JoinMode, CollaborationOptions, CollaborationState } from "./collaboration/types";
@@ -26,9 +27,9 @@ export function useCollaboration({
   /* ─── toolbar state (owned by parent, not a sub-hook concern) ─── */
   const [toolbarOpen, setToolbarOpen] = useState(false);
 
-  /* ─── shared refs created in parent, passed to sub-hooks ─── */
+  /* ─── shared state created in parent, passed to sub-hooks ─── */
   const excalidrawApiRef = useRef<ExcalidrawApi | null>(null);
-  const applyingRemoteCounter = useRef(0);
+  const [sync] = useState(() => new SceneSync());
   const activeSceneIdRef = useRef<string | null>(null);
   const followingUserIdRef = useRef<string | null>(null);
   const followedViewportRef = useRef<{ scrollX: number; scrollY: number; zoom: number } | null>(
@@ -93,7 +94,7 @@ export function useCollaboration({
     diagramId,
     activeSceneIdRef,
     excalidrawApiRef,
-    applyingRemoteCounter,
+    sync,
     followingUserIdRef,
     followedViewportRef,
     canEdit,
@@ -124,7 +125,6 @@ export function useCollaboration({
     socketGeneration,
     diagramId,
     excalidrawApiRef,
-    applyingRemoteCounter,
     followingUserIdRef,
     followedViewportRef,
     selfUserId,
@@ -135,7 +135,7 @@ export function useCollaboration({
     socketRef,
     socketGeneration,
     excalidrawApiRef,
-    applyingRemoteCounter,
+    sync,
     activeSceneIdRef,
     pendingSceneRef,
     onConflict,
@@ -153,13 +153,7 @@ export function useCollaboration({
     if (pendingSceneRef.current) {
       const pending = pendingSceneRef.current;
       pendingSceneRef.current = null;
-      setTimeout(() => {
-        applyingRemoteCounter.current += 1;
-        applyRemoteScene(excalidrawApi, { elements: pending.elements });
-        setTimeout(() => {
-          applyingRemoteCounter.current -= 1;
-        }, 0);
-      }, 0);
+      setTimeout(() => applyRemoteScene(excalidrawApi, pending), 0);
     }
   }, []);
 

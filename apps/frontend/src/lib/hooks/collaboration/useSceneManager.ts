@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { mergeElements, mergeDelta } from "@/lib/collaboration";
 import { applyRemoteScene, type ExcalidrawApi } from "@/lib/excalidraw";
+import type { SceneSync } from "@/lib/scene-sync";
 
 // Lazy-loaded restoreElements to normalise raw DB elements that may be
 // missing Excalidraw-internal fields (seed, version, opacity, …).
@@ -19,7 +20,7 @@ export interface UseSceneManagerParams {
   socketRef: React.MutableRefObject<Socket | null>;
   socketGeneration: number;
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
-  applyingRemoteCounter: React.MutableRefObject<number>;
+  sync: SceneSync;
   activeSceneIdRef: React.MutableRefObject<string | null>;
   pendingSceneRef: React.MutableRefObject<{ elements: unknown[] } | null>;
   onConflict?: (conflictIds: string[], fromUserId: string) => void;
@@ -30,11 +31,17 @@ export interface UseSceneManagerReturn {
   activeSceneId: string | null;
 }
 
+/** The copies a merge took from the room rather than kept from the local scene. */
+function takenFrom(merged: unknown[], incoming: readonly unknown[]): unknown[] {
+  const remote = new Set(incoming);
+  return merged.filter((el) => remote.has(el));
+}
+
 export function useSceneManager({
   socketRef,
   socketGeneration,
   excalidrawApiRef,
-  applyingRemoteCounter,
+  sync,
   activeSceneIdRef,
   pendingSceneRef,
   onConflict,
@@ -52,14 +59,6 @@ export function useSceneManager({
     const socket = socketRef.current;
     if (!socket) return;
 
-    const applyRemote = (api: ExcalidrawApi, elements: unknown[]) => {
-      applyingRemoteCounter.current += 1;
-      applyRemoteScene(api, { elements });
-      setTimeout(() => {
-        applyingRemoteCounter.current -= 1;
-      }, 0);
-    };
-
     const handleSceneFromDb = ({
       elements,
       activeSceneId: sceneId,
@@ -69,17 +68,22 @@ export function useSceneManager({
     }) => {
       if (sceneId) setActiveSceneId(sceneId);
 
-      // Normalise elements — DB rows may lack Excalidraw-internal fields
-      // (seed, version, opacity …) which causes updateScene to render blanks.
-      const apply = (els: unknown[]) => {
+      const apply = (serverElements: unknown[]) => {
         const api = excalidrawApiRef.current;
+        const localEdits = sync.localEdits(api?.getSceneElementsIncludingDeleted() ?? []);
+        sync.reset(serverElements);
+        // After a reconnect, edits the server has not seen stay on top, still pending a save.
+        const scene =
+          localEdits.length > 0 ? mergeElements(localEdits, serverElements) : serverElements;
         if (!api) {
-          pendingSceneRef.current = { elements: els };
+          pendingSceneRef.current = { elements: scene };
           return;
         }
-        applyRemote(api, els);
+        applyRemoteScene(api, { elements: scene });
       };
 
+      // Normalise elements — DB rows may lack Excalidraw-internal fields
+      // (seed, version, opacity …) which causes updateScene to render blanks.
       getRestoreElements()
         .then((restore) => apply(restore(elements, null)))
         .catch(() => apply(elements)); // fallback: apply raw if import fails
@@ -94,7 +98,10 @@ export function useSceneManager({
     }) => {
       const api = excalidrawApiRef.current;
       if (fromSocketId === socket.id || !api) return;
-      applyRemote(api, mergeElements(api.getSceneElementsIncludingDeleted(), remoteElements));
+      const merged = mergeElements(api.getSceneElementsIncludingDeleted(), remoteElements);
+      applyRemoteScene(api, { elements: merged });
+      // Read after applying: Excalidraw may re-index, and so re-version, what it was given.
+      sync.markShared(takenFrom(merged, remoteElements));
     };
 
     const handleSceneDeltaReceived = ({
@@ -110,14 +117,15 @@ export function useSceneManager({
     }) => {
       const api = excalidrawApiRef.current;
       if (fromSocketId === socket.id || !api) return;
-      const {
-        elements: merged,
-        conflictIds,
-        deletedIds,
-      } = mergeDelta(api.getSceneElementsIncludingDeleted(), changed, removedIds);
-      applyRemote(api, merged);
+      const local = api.getSceneElementsIncludingDeleted();
+      const edited = sync.editedIds(local);
+      const { elements, conflictIds, deletedIds } = mergeDelta(local, changed, removedIds, edited);
+      applyRemoteScene(api, { elements });
+      sync.markShared(takenFrom(elements, changed));
+      sync.forget(deletedIds);
       if (conflictIds.length > 0) onConflict?.(conflictIds, fromUserId);
-      if (deletedIds.length > 0) onRemoteDelete?.(deletedIds, fromUserId);
+      const deletedWhileEdited = deletedIds.filter((id) => edited.has(id));
+      if (deletedWhileEdited.length > 0) onRemoteDelete?.(deletedWhileEdited, fromUserId);
     };
 
     socket.on("scene-from-db", handleSceneFromDb);

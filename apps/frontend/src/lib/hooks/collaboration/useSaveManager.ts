@@ -3,14 +3,16 @@ import type { Socket } from "socket.io-client";
 import {
   jsonSafe,
   getAdaptiveThrottleMs,
-  diffElements,
   VIEWPORT_THROTTLE_MS,
   SAVE_DEBOUNCE_MS,
 } from "@/lib/collaboration";
-import type { SaveState, ExcalidrawApi } from "@/lib/types";
-import { applyRemoteScene } from "@/lib/excalidraw";
+import type { SaveState } from "@/lib/types";
+import { applyRemoteScene, type ExcalidrawApi } from "@/lib/excalidraw";
+import type { SceneSync } from "@/lib/scene-sync";
 import { deriveSaveLabel, deriveSaveColor } from "@/lib/save-state";
 import { diagramsApi } from "@/api/diagrams";
+
+type LatestScene = { elements: readonly unknown[]; appState: Record<string, unknown> };
 
 export interface UseSaveManagerParams {
   socketRef: React.MutableRefObject<Socket | null>;
@@ -18,7 +20,7 @@ export interface UseSaveManagerParams {
   diagramId: string;
   activeSceneIdRef: React.MutableRefObject<string | null>;
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
-  applyingRemoteCounter: React.MutableRefObject<number>;
+  sync: SceneSync;
   followingUserIdRef: React.MutableRefObject<string | null>;
   followedViewportRef: React.MutableRefObject<{
     scrollX: number;
@@ -44,7 +46,7 @@ export function useSaveManager({
   diagramId,
   activeSceneIdRef,
   excalidrawApiRef,
-  applyingRemoteCounter,
+  sync,
   followingUserIdRef,
   followedViewportRef,
   canEdit,
@@ -55,7 +57,8 @@ export function useSaveManager({
   const lastEmitTime = useRef(0);
   const lastViewportEmitTime = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
-  const previousElementsRef = useRef<readonly unknown[]>([]);
+  // The elements array Excalidraw last handed to onChange; its elements are the live ones.
+  const latestRef = useRef<LatestScene | null>(null);
 
   const cacheKey = `drawhaus_scene_${diagramId}`;
 
@@ -103,6 +106,7 @@ export function useSaveManager({
     ): Promise<boolean> => {
       if (forSceneId && forSceneId !== activeSceneIdRef.current) return false;
       setSaveState("saving");
+      sync.markSaved();
       try {
         const {
           collaborators: _1,
@@ -162,6 +166,63 @@ export function useSaveManager({
     };
   }, [socketGeneration]);
 
+  /* ─── send the room what changed here since the last broadcast ─── */
+  const broadcast = useCallback(() => {
+    const scene = latestRef.current;
+    if (!scene) return;
+    const sharedBefore = sync.sharedCount;
+    const { changed, removedIds } = sync.takeChanges(scene.elements);
+    if (changed.length === 0 && removedIds.length === 0) return;
+    lastEmitTime.current = Date.now();
+    const target = { roomId: diagramId, sceneId: activeSceneIdRef.current };
+    // If delta covers >50% of the scene, send full state as fallback
+    if (removedIds.length > Math.max(sharedBefore, 1) * 0.5) {
+      socketRef.current?.emit("scene-update", {
+        ...target,
+        elements: jsonSafe([...scene.elements]),
+      });
+    } else {
+      socketRef.current?.emit("scene-delta", {
+        ...target,
+        changed: jsonSafe(changed),
+        removedIds,
+      });
+    }
+  }, [diagramId]);
+
+  const flushBroadcast = useCallback(() => {
+    if (throttleTimer.current) {
+      clearTimeout(throttleTimer.current);
+      throttleTimer.current = null;
+    }
+    broadcast();
+  }, [broadcast]);
+
+  const throttledBroadcast = useCallback(() => {
+    const throttleMs = getAdaptiveThrottleMs(latestRef.current?.elements.length ?? 0);
+    const elapsed = Date.now() - lastEmitTime.current;
+    if (elapsed >= throttleMs) {
+      broadcast();
+    } else if (!throttleTimer.current) {
+      throttleTimer.current = setTimeout(() => {
+        throttleTimer.current = null;
+        broadcast();
+      }, throttleMs - elapsed);
+    }
+  }, [broadcast]);
+
+  const scheduleSave = useCallback(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    const capturedSceneId = activeSceneIdRef.current;
+    debounceTimer.current = setTimeout(() => {
+      debounceTimer.current = null;
+      flushBroadcast();
+      const scene = latestRef.current;
+      if (!scene || !sync.hasUnsaved()) return;
+      persistScene([...scene.elements], scene.appState, capturedSceneId);
+    }, SAVE_DEBOUNCE_MS);
+  }, [flushBroadcast, persistScene]);
+
   /* ─── while following, hold the viewport on the followed user's ─── */
   const snapToFollowedViewport = useCallback((appState: Record<string, unknown>) => {
     const fv = followedViewportRef.current;
@@ -171,78 +232,41 @@ export function useSaveManager({
     if (appState.scrollX === fv.scrollX && appState.scrollY === fv.scrollY && zoom === fv.zoom) {
       return;
     }
-    applyingRemoteCounter.current += 1;
     applyRemoteScene(api, {
       appState: { scrollX: fv.scrollX, scrollY: fv.scrollY, zoom: { value: fv.zoom } },
     });
-    setTimeout(() => {
-      applyingRemoteCounter.current -= 1;
-    }, 0);
   }, []);
+
+  const emitViewport = useCallback(
+    (appState: Record<string, unknown>) => {
+      const now = Date.now();
+      if (now - lastViewportEmitTime.current < VIEWPORT_THROTTLE_MS) return;
+      lastViewportEmitTime.current = now;
+      socketRef.current?.emit("viewport-update", {
+        roomId: diagramId,
+        scrollX: appState.scrollX,
+        scrollY: appState.scrollY,
+        zoom: (appState.zoom as { value: number })?.value ?? 1,
+      });
+    },
+    [diagramId],
+  );
 
   /* ─── onChange handler ─── */
   const onChange = useCallback(
     (elements: readonly unknown[], appState: Record<string, unknown>) => {
-      if (applyingRemoteCounter.current > 0) return;
-      const now = Date.now();
+      latestRef.current = { elements, appState };
       if (followingUserIdRef.current) {
         snapToFollowedViewport(appState);
         return; // Skip editing while following
       }
-      if (now - lastViewportEmitTime.current >= VIEWPORT_THROTTLE_MS) {
-        lastViewportEmitTime.current = now;
-        const zoom = (appState.zoom as { value: number })?.value ?? 1;
-        socketRef.current?.emit("viewport-update", {
-          roomId: diagramId,
-          scrollX: appState.scrollX,
-          scrollY: appState.scrollY,
-          zoom,
-        });
-      }
-      if (!canEdit) return;
+      emitViewport(appState);
+      if (!canEdit || !sync.hasChanges(elements)) return;
       setSaveState("pending");
-
-      const emitDelta = (els: readonly unknown[]) => {
-        const prev = previousElementsRef.current;
-        const delta = diffElements(prev, els);
-        previousElementsRef.current = els;
-        // If delta covers >50% of the scene, send full state as fallback
-        const totalPrev = prev.length || 1;
-        if (delta.removedIds.length > totalPrev * 0.5) {
-          socketRef.current?.emit("scene-update", {
-            roomId: diagramId,
-            sceneId: activeSceneIdRef.current,
-            elements: [...els],
-          });
-        } else if (delta.changed.length > 0 || delta.removedIds.length > 0) {
-          socketRef.current?.emit("scene-delta", {
-            roomId: diagramId,
-            sceneId: activeSceneIdRef.current,
-            changed: delta.changed,
-            removedIds: delta.removedIds,
-          });
-        }
-      };
-
-      const throttleMs = getAdaptiveThrottleMs(elements.length);
-      const elapsed = now - lastEmitTime.current;
-      if (elapsed >= throttleMs) {
-        lastEmitTime.current = now;
-        emitDelta(elements);
-      } else if (!throttleTimer.current) {
-        throttleTimer.current = setTimeout(() => {
-          throttleTimer.current = null;
-          lastEmitTime.current = Date.now();
-          emitDelta(excalidrawApiRef.current?.getSceneElements?.() ?? elements);
-        }, throttleMs - elapsed);
-      }
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      const capturedSceneId = activeSceneIdRef.current;
-      debounceTimer.current = setTimeout(() => {
-        persistScene([...elements], appState, capturedSceneId);
-      }, SAVE_DEBOUNCE_MS);
+      throttledBroadcast();
+      scheduleSave();
     },
-    [diagramId, persistScene, canEdit],
+    [canEdit, snapToFollowedViewport, emitViewport, throttledBroadcast, scheduleSave],
   );
 
   /* ─── cancel pending timers (used by scene manager) ─── */
@@ -259,12 +283,14 @@ export function useSaveManager({
 
   /* ─── flush save ─── */
   const flushSave = useCallback(async (): Promise<boolean> => {
-    const a = excalidrawApiRef.current;
-    if (!a || !canEdit) return true;
-    const elements = a.getSceneElements();
-    const appState = a.getAppState();
-    return persistScene([...elements], appState, activeSceneIdRef.current);
-  }, [persistScene, canEdit]);
+    const api = excalidrawApiRef.current;
+    if (!api || !canEdit) return true;
+    // Deleted elements too: the tombstone is what outranks older copies on the server.
+    const scene = { elements: api.getSceneElementsIncludingDeleted(), appState: api.getAppState() };
+    latestRef.current = scene;
+    flushBroadcast();
+    return persistScene([...scene.elements], scene.appState, activeSceneIdRef.current);
+  }, [canEdit, flushBroadcast, persistScene]);
 
   /* ─── derived values ─── */
   const saveLabel = deriveSaveLabel(saveState, lastSavedAt.current);
