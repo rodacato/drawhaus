@@ -1,95 +1,63 @@
-import { test, expect } from "@playwright/test";
-import { loginAsUser, ADMIN_USER } from "../../fixtures/multi-user.fixture";
+import type { APIRequestContext } from "@playwright/test";
+import { test, expect, ADMIN_USER, PRIMARY_USER } from "../../fixtures/test";
 
-const BASE_URL = "http://localhost:5173";
+type AdminUserRow = { id: string; email: string; role: string };
+
+async function listUsers(adminApi: APIRequestContext) {
+  const res = await adminApi.get("/api/admin/users");
+  expect(res.ok()).toBeTruthy();
+  return ((await res.json()) as { users: AdminUserRow[] }).users;
+}
+
+async function setRole(adminApi: APIRequestContext, userId: string, role: "admin" | "user") {
+  const res = await adminApi.patch(`/api/admin/users/${userId}`, { data: { role } });
+  expect(res.ok(), `set role ${role}`).toBeTruthy();
+}
 
 test.describe("Admin Users", () => {
-  let adminCtx: Awaited<ReturnType<typeof loginAsUser>>;
+  test("lists the admin and the primary user with their roles", async ({ adminApi }) => {
+    const users = await listUsers(adminApi);
 
-  test.beforeAll(async () => {
-    adminCtx = await loginAsUser(BASE_URL, ADMIN_USER.email, ADMIN_USER.password);
+    expect(users.find((u) => u.email === ADMIN_USER.email)?.role).toBe("admin");
+    expect(users.find((u) => u.email === PRIMARY_USER.email)?.role).toBe("user");
   });
 
-  test.afterAll(async () => {
-    await adminCtx?.dispose();
+  test("promoting a user grants admin access and demoting revokes it", async ({
+    adminApi,
+    createUser,
+  }) => {
+    const user = await createUser("promoted");
+    expect((await user.api.get("/api/admin/users")).status()).toBe(403);
+
+    await setRole(adminApi, user.id, "admin");
+    expect((await user.api.get("/api/admin/users")).status()).toBe(200);
+
+    await setRole(adminApi, user.id, "user");
+    expect((await user.api.get("/api/admin/users")).status()).toBe(403);
   });
 
-  test("can list all users", async () => {
-    const res = await adminCtx.get("/api/admin/users");
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const users = body.users ?? body;
-    expect(Array.isArray(users)).toBeTruthy();
-    expect(users.length).toBeGreaterThanOrEqual(2); // admin + e2e user
-  });
+  test("the admin sees the user table in settings", async ({ adminApi, openAs }) => {
+    const page = await openAs(await adminApi.storageState());
 
-  test("user list contains expected users", async () => {
-    const res = await adminCtx.get("/api/admin/users");
-    const users = (await res.json()).users ?? (await res.json());
-    const admin = users.find((u: any) => u.email === ADMIN_USER.email);
-    expect(admin).toBeTruthy();
-    expect(admin.role).toBe("admin");
-  });
-
-  test("can update user role", async () => {
-    const res = await adminCtx.get("/api/admin/users");
-    const users = (await res.json()).users ?? (await res.json());
-    const testUser = users.find((u: any) => u.email === "e2e@drawhaus.test");
-    if (!testUser) {
-      test.skip(true, "Test user not found");
-      return;
-    }
-
-    // Verify the user's current role
-    expect(testUser.role).toBe("user");
-
-    // We won't actually change the role since it could break other tests
-    // Just verify the endpoint exists and returns properly
-    const updateRes = await adminCtx.patch(`/api/admin/users/${testUser.id}`, {
-      data: { role: "user" }, // same role, no actual change
-    });
-    expect(updateRes.ok()).toBeTruthy();
-  });
-
-  test("admin page loads in UI", async ({ browser }) => {
-    const ctx = await browser.newContext({
-      storageState: { cookies: [], origins: [] },
-    });
-    const page = await ctx.newPage();
-
-    // Login as admin
-    await page.goto("/login");
-    await page.locator('input[name="email"]').fill(ADMIN_USER.email);
-    await page.locator('input[name="password"]').fill(ADMIN_USER.password);
-    await page.locator('input[name="password"]').press("Enter");
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
-
-    // Navigate to admin users
     await page.goto("/settings?tab=admin-users");
+
+    await expect(page.getByText(PRIMARY_USER.email).first()).toBeVisible();
+  });
+
+  test("a regular user gets no admin navigation or user data", async ({ page }) => {
+    await page.goto("/settings?tab=admin-users");
+    await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
     await page.waitForLoadState("networkidle");
 
-    // Should show user table or user list
-    await expect(page.getByText(/users/i).first()).toBeVisible({ timeout: 10_000 });
-    await ctx.close();
+    await expect(page.getByText("Admin", { exact: true })).toHaveCount(0);
+    await expect(page.getByText(ADMIN_USER.email)).toHaveCount(0);
   });
 
-  test("non-admin cannot access admin users page", async ({ page }) => {
-    await page.goto("/settings?tab=admin-users");
-    await page.waitForLoadState("networkidle");
-    // Regular user (e2e@drawhaus.test) should not see admin content
-    // The page might redirect, show empty, or show an error
-    // Just verify it doesn't show the user table with admin data
-    const adminEmail = page.getByText("admin@drawhaus.test");
-    const isVisible = await adminEmail.isVisible().catch(() => false);
-    // Regular user might or might not see admin email depending on implementation
-    // The key test is the API boundary (tested in permissions suite)
-  });
-
-  test("admin metrics endpoint returns data", async () => {
-    const res = await adminCtx.get("/api/admin/metrics");
+  test("metrics count every registered user", async ({ adminApi }) => {
+    const res = await adminApi.get("/api/admin/metrics");
     expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    // Should have some metrics
-    expect(body).toBeTruthy();
+    const { metrics } = (await res.json()) as { metrics: { totalUsers: number } };
+
+    expect(metrics.totalUsers).toBe((await listUsers(adminApi)).length);
   });
 });

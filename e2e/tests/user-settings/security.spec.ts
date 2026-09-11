@@ -1,34 +1,57 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, newApiContext } from "../../fixtures/test";
+
+async function loginStatus(email: string, password: string) {
+  const api = await newApiContext();
+  const res = await api.post("/api/auth/login", { data: { email, password } });
+  await api.dispose();
+  return res.status();
+}
 
 test.describe("User Security Settings", () => {
-  test("POST /api/auth/change-password succeeds with same password", async ({ request }) => {
-    const response = await request.post("/api/auth/change-password", {
-      data: {
-        currentPassword: "Test1234!pass",
-        newPassword: "Test1234!pass",
-      },
+  test("after a password change only the new password works", async ({ createUser }) => {
+    const user = await createUser("security");
+
+    const res = await user.api.post("/api/auth/change-password", {
+      data: { currentPassword: user.password, newPassword: "Changed1234!pass" },
     });
-    expect(response.ok()).toBeTruthy();
+    expect(res.ok()).toBeTruthy();
+
+    expect(await loginStatus(user.email, "Changed1234!pass")).toBe(200);
+    expect(await loginStatus(user.email, user.password)).toBe(401);
   });
 
-  test("POST /api/auth/change-password fails with wrong current password", async ({ request }) => {
-    const response = await request.post("/api/auth/change-password", {
-      data: {
-        currentPassword: "WrongPassword123!",
-        newPassword: "NewPassword123!",
-      },
+  test("a wrong current password leaves the password unchanged", async ({ createUser }) => {
+    const user = await createUser("security");
+
+    const res = await user.api.post("/api/auth/change-password", {
+      data: { currentPassword: "WrongPassword123!", newPassword: "NewPassword123!" },
     });
-    expect(response.ok()).toBeFalsy();
-    expect(response.status()).toBeGreaterThanOrEqual(400);
+
+    expect(res.status()).toBeGreaterThanOrEqual(400);
+    expect(res.status()).toBeLessThan(500);
+    expect(await loginStatus(user.email, user.password)).toBe(200);
   });
 
-  test("DELETE /api/auth/account fails with wrong password", async ({ request }) => {
-    const response = await request.delete("/api/auth/account", {
-      data: {
-        password: "WrongPassword123!",
-      },
+  test("deleting the account with a wrong password keeps it", async ({ createUser }) => {
+    const user = await createUser("security");
+
+    const res = await user.api.delete("/api/auth/account", {
+      data: { password: "WrongPassword123!" },
     });
-    expect(response.ok()).toBeFalsy();
-    expect(response.status()).toBeGreaterThanOrEqual(400);
+
+    expect(res.status()).toBeGreaterThanOrEqual(400);
+    expect(res.status()).toBeLessThan(500);
+    expect(await loginStatus(user.email, user.password)).toBe(200);
+  });
+
+  test("deleting the account with the right password removes it", async ({ createUser }) => {
+    const user = await createUser("security");
+
+    const res = await user.api.delete("/api/auth/account", {
+      data: { password: user.password },
+    });
+
+    expect(res.ok()).toBeTruthy();
+    expect(await loginStatus(user.email, user.password)).toBe(401);
   });
 });

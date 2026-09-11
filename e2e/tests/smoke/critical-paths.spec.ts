@@ -1,10 +1,8 @@
-import { test, expect } from "@playwright/test";
-import { createDiagram } from "../../fixtures/data.fixture";
-import { loginAsUser, ADMIN_USER } from "../../fixtures/multi-user.fixture";
+import { randomUUID } from "node:crypto";
+import { test, expect, loginApi, PRIMARY_USER, SIGNED_OUT } from "../../fixtures/test";
+import { createDiagram, createShareLink } from "../../fixtures/api";
 
 test.describe("Smoke Tests @smoke", () => {
-  test.describe.configure({ mode: "serial" });
-
   test("health check returns version and db status", async ({ request }) => {
     const res = await request.get("/health");
     expect(res.ok()).toBeTruthy();
@@ -24,87 +22,67 @@ test.describe("Smoke Tests @smoke", () => {
     expect(body.deployedAt).toBeTruthy();
   });
 
-  test("login → dashboard", async ({ browser }) => {
-    const context = await browser.newContext({
-      storageState: { cookies: [], origins: [] },
-    });
-    const page = await context.newPage();
+  test("login → dashboard", async ({ openAs }) => {
+    const page = await openAs(SIGNED_OUT);
     await page.goto("/login");
-    await page.locator('input[name="email"]').fill("e2e@drawhaus.test");
-    await page.locator('input[name="password"]').fill("Test1234!pass");
+    await page.locator('input[name="email"]').fill(PRIMARY_USER.email);
+    await page.locator('input[name="password"]').fill(PRIMARY_USER.password);
     await page.locator('input[name="password"]').press("Enter");
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
-    await context.close();
   });
 
   test("create diagram → open board", async ({ request, page }) => {
-    const diagram = await createDiagram(request, "Smoke Board Test");
-    expect(diagram.id).toBeTruthy();
+    const diagram = await createDiagram(request, { title: "Smoke Board Test" });
 
-    const res = await request.get(`/api/diagrams/${diagram.id}`);
-    expect(res.ok()).toBeTruthy();
-
-    // Navigate to board and verify it loads
     await page.goto(`/board/${diagram.id}`);
-    await expect(page.locator(".excalidraw")).toBeVisible({ timeout: 15_000 });
+
+    await expect(page.locator(".excalidraw canvas").first()).toBeVisible({ timeout: 30_000 });
   });
 
-  test("list workspaces", async ({ request }) => {
+  test("the user has a personal workspace", async ({ request }) => {
     const res = await request.get("/api/workspaces");
     expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const workspaces = body.workspaces ?? body;
-    expect(Array.isArray(workspaces)).toBeTruthy();
-    expect(workspaces.length).toBeGreaterThan(0);
+    const { workspaces } = (await res.json()) as { workspaces: { isPersonal: boolean }[] };
+    expect(workspaces.some((w) => w.isPersonal)).toBe(true);
   });
 
-  test("share diagram → guest sees join form", async ({ request, browser }) => {
-    const diagram = await createDiagram(request, "Smoke Share");
-    const shareRes = await request.post(`/api/share/${diagram.id}`, {
-      data: { role: "viewer" },
-    });
-    expect(shareRes.ok()).toBeTruthy();
-    const shareBody = await shareRes.json();
-    const token = shareBody.shareLink?.token ?? shareBody.token;
+  test("share diagram → guest sees join form", async ({ request, openAs }) => {
+    const diagram = await createDiagram(request, { title: "Smoke Share" });
+    const token = await createShareLink(request, diagram.id, "viewer");
 
-    const guestContext = await browser.newContext();
-    const page = await guestContext.newPage();
+    const page = await openAs(SIGNED_OUT);
     await page.goto(`/share/${token}`);
+
     await expect(page.getByText(/your name/i)).toBeVisible({ timeout: 10_000 });
-    await guestContext.close();
   });
 
-  test("search diagrams", async ({ request }) => {
-    await createDiagram(request, "SmokeSearchTarget");
-    const res = await request.get("/api/diagrams/search?q=SmokeSearchTarget");
+  test("search finds a diagram by title", async ({ request }) => {
+    const title = `SmokeSearch_${randomUUID().slice(0, 8)}`;
+    await createDiagram(request, { title });
+
+    const res = await request.get(`/api/diagrams/search?q=${title}`);
     expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    expect(body.diagrams).toBeDefined();
+    const { diagrams } = (await res.json()) as { diagrams: { title: string }[] };
+    expect(diagrams.map((d) => d.title)).toContain(title);
   });
 
-  test("admin settings accessible", async () => {
-    const admin = await loginAsUser("http://localhost:5173", ADMIN_USER.email, ADMIN_USER.password);
-    const res = await admin.get("/api/admin/settings");
-    expect(res.ok()).toBeTruthy();
-    await admin.dispose();
+  test("admin settings accessible", async ({ adminApi }) => {
+    expect((await adminApi.get("/api/admin/settings")).ok()).toBeTruthy();
   });
 
   test("setup status reports completed", async ({ request }) => {
     const res = await request.get("/api/auth/setup-status");
     expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    expect(body.needsSetup).toBe(false);
+    expect((await res.json()).needsSetup).toBe(false);
   });
 
-  test("logout clears session", async ({ browser }) => {
-    const context = await browser.newContext({
-      storageState: "tests/.auth/user.json",
-    });
-    const page = await context.newPage();
-    await page.request.post("/api/auth/logout");
-    const meRes = await page.request.get("/api/auth/me");
-    const meBody = await meRes.json();
-    expect(meBody.user).toBeFalsy();
-    await context.close();
+  test("logout ends that session only", async ({ request }) => {
+    const session = await loginApi(PRIMARY_USER.email, PRIMARY_USER.password);
+
+    expect((await session.post("/api/auth/logout")).ok()).toBeTruthy();
+
+    expect((await (await session.get("/api/auth/me")).json()).user).toBeFalsy();
+    expect((await (await request.get("/api/auth/me")).json()).user.email).toBe(PRIMARY_USER.email);
+    await session.dispose();
   });
 });

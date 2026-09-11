@@ -1,122 +1,79 @@
-import { test, expect } from "@playwright/test";
-import { createDiagram } from "../../fixtures/data.fixture";
+import type { APIRequestContext } from "@playwright/test";
+import { test, expect } from "../../fixtures/test";
+import { createDiagram, createFolder, personalWorkspaceId } from "../../fixtures/api";
+
+async function folderNames(api: APIRequestContext, workspaceId: string) {
+  const res = await api.get(`/api/folders?workspaceId=${workspaceId}`);
+  expect(res.ok()).toBeTruthy();
+  const { folders } = (await res.json()) as { folders: { name: string }[] };
+  return folders.map((f) => f.name);
+}
+
+async function diagramIds(api: APIRequestContext, query: string) {
+  const res = await api.get(`/api/diagrams?${query}`);
+  expect(res.ok()).toBeTruthy();
+  const { diagrams } = (await res.json()) as { diagrams: { id: string }[] };
+  return diagrams.map((d) => d.id);
+}
+
+async function moveToFolder(api: APIRequestContext, diagramId: string, folderId: string | null) {
+  const res = await api.post(`/api/diagrams/${diagramId}/move`, { data: { folderId } });
+  expect(res.ok()).toBeTruthy();
+}
 
 test.describe("Folders", () => {
-  let workspaceId: string;
+  test("a created folder is listed in its workspace", async ({ createUser }) => {
+    const user = await createUser("folders");
+    const workspaceId = await personalWorkspaceId(user.api);
 
-  test.beforeAll(async ({ request }) => {
-    // Get the user's personal workspace
-    const res = await request.get("/api/workspaces");
-    const workspaces = (await res.json()).workspaces ?? (await res.json());
-    const personal = workspaces.find((w: any) => w.is_personal || w.isPersonal);
-    workspaceId = personal?.id ?? workspaces[0]?.id;
+    await createFolder(user.api, workspaceId, "Test Folder");
+
+    expect(await folderNames(user.api, workspaceId)).toContain("Test Folder");
   });
 
-  test("can create folder", async ({ request }) => {
-    test.skip(!workspaceId, "No workspace found");
+  test("renaming a folder persists", async ({ createUser }) => {
+    const user = await createUser("folders");
+    const workspaceId = await personalWorkspaceId(user.api);
+    const folder = await createFolder(user.api, workspaceId, "Rename Me");
 
-    const res = await request.post("/api/folders", {
-      data: { name: "Test Folder", workspaceId },
-    });
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const folder = body.folder ?? body;
-    expect(folder.name).toBe("Test Folder");
-
-    // Cleanup
-    await request.delete(`/api/folders/${folder.id}`);
-  });
-
-  test("can list folders", async ({ request }) => {
-    test.skip(!workspaceId, "No workspace found");
-
-    const res = await request.get(`/api/folders?workspaceId=${workspaceId}`);
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const folders = body.folders ?? body;
-    expect(Array.isArray(folders)).toBeTruthy();
-  });
-
-  test("can rename folder", async ({ request }) => {
-    test.skip(!workspaceId, "No workspace found");
-
-    const createRes = await request.post("/api/folders", {
-      data: { name: "Rename Me", workspaceId },
-    });
-    const folder = (await createRes.json()).folder ?? (await createRes.json());
-
-    const renameRes = await request.patch(`/api/folders/${folder.id}`, {
+    const res = await user.api.patch(`/api/folders/${folder.id}`, {
       data: { name: "Renamed Folder" },
     });
-    expect(renameRes.ok()).toBeTruthy();
-
-    await request.delete(`/api/folders/${folder.id}`);
-  });
-
-  test("can delete empty folder", async ({ request }) => {
-    test.skip(!workspaceId, "No workspace found");
-
-    const createRes = await request.post("/api/folders", {
-      data: { name: "Delete Me Folder", workspaceId },
-    });
-    const folder = (await createRes.json()).folder ?? (await createRes.json());
-
-    const deleteRes = await request.delete(`/api/folders/${folder.id}`);
-    expect(deleteRes.ok()).toBeTruthy();
-  });
-
-  test("can move diagram to folder", async ({ request }) => {
-    test.skip(!workspaceId, "No workspace found");
-
-    const folderRes = await request.post("/api/folders", {
-      data: { name: "Move Target Folder", workspaceId },
-    });
-    const folder = (await folderRes.json()).folder ?? (await folderRes.json());
-    const diagram = await createDiagram(request, "Move Me Diagram");
-
-    const moveRes = await request.post(`/api/diagrams/${diagram.id}/move`, {
-      data: { folderId: folder.id },
-    });
-    expect(moveRes.ok()).toBeTruthy();
-
-    // Cleanup
-    // Move diagram out first (to uncategorized) then delete folder
-    await request.post(`/api/diagrams/${diagram.id}/move`, {
-      data: { folderId: null },
-    });
-    await request.delete(`/api/folders/${folder.id}`);
-  });
-
-  test("can filter diagrams by folder", async ({ request }) => {
-    test.skip(!workspaceId, "No workspace found");
-
-    const folderRes = await request.post("/api/folders", {
-      data: { name: "Filter Folder", workspaceId },
-    });
-    const folder = (await folderRes.json()).folder ?? (await folderRes.json());
-    const diagram = await createDiagram(request, "Filtered Diagram");
-
-    await request.post(`/api/diagrams/${diagram.id}/move`, {
-      data: { folderId: folder.id },
-    });
-
-    const listRes = await request.get(`/api/diagrams?folderId=${folder.id}`);
-    expect(listRes.ok()).toBeTruthy();
-
-    // Cleanup
-    await request.post(`/api/diagrams/${diagram.id}/move`, {
-      data: { folderId: null },
-    });
-    await request.delete(`/api/folders/${folder.id}`);
-  });
-
-  test("diagrams filtered by workspace", async ({ request }) => {
-    test.skip(!workspaceId, "No workspace found");
-
-    const res = await request.get(`/api/diagrams?workspaceId=${workspaceId}`);
     expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const diagrams = body.diagrams ?? body;
-    expect(Array.isArray(diagrams)).toBeTruthy();
+
+    const names = await folderNames(user.api, workspaceId);
+    expect(names).toContain("Renamed Folder");
+    expect(names).not.toContain("Rename Me");
+  });
+
+  test("deleting an empty folder removes it", async ({ createUser }) => {
+    const user = await createUser("folders");
+    const workspaceId = await personalWorkspaceId(user.api);
+    const folder = await createFolder(user.api, workspaceId, "Delete Me Folder");
+
+    expect((await user.api.delete(`/api/folders/${folder.id}`)).ok()).toBeTruthy();
+
+    expect(await folderNames(user.api, workspaceId)).not.toContain("Delete Me Folder");
+  });
+
+  test("a diagram is listed under the folder it was moved into", async ({ createUser }) => {
+    const user = await createUser("folders");
+    const workspaceId = await personalWorkspaceId(user.api);
+    const folder = await createFolder(user.api, workspaceId, "Move Target Folder");
+    const diagram = await createDiagram(user.api, { title: "Move Me Diagram", workspaceId });
+
+    await moveToFolder(user.api, diagram.id, folder.id);
+    expect(await diagramIds(user.api, `folderId=${folder.id}`)).toContain(diagram.id);
+
+    await moveToFolder(user.api, diagram.id, null);
+    expect(await diagramIds(user.api, `folderId=${folder.id}`)).not.toContain(diagram.id);
+  });
+
+  test("diagrams are listed under their workspace", async ({ createUser }) => {
+    const user = await createUser("folders");
+    const workspaceId = await personalWorkspaceId(user.api);
+    const diagram = await createDiagram(user.api, { title: "Workspace Diagram", workspaceId });
+
+    expect(await diagramIds(user.api, `workspaceId=${workspaceId}`)).toContain(diagram.id);
   });
 });

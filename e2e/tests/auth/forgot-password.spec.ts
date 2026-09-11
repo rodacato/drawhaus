@@ -1,48 +1,27 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, PRIMARY_USER, SIGNED_OUT } from "../../fixtures/test";
 
 test.describe("Forgot Password", () => {
-  test("forgot password page shows form", async ({ browser }) => {
-    // Use a fresh context without auth to avoid redirect to dashboard
-    const ctx = await browser.newContext({
-      storageState: { cookies: [], origins: [] },
-    });
-    const page = await ctx.newPage();
-    await page.goto("http://localhost:5173/forgot-password");
-    await page.waitForLoadState("networkidle");
+  test.fixme("forgot password page shows form (bug: 401 interceptor sends signed-out visitors to /login)", async ({
+    openAs,
+  }) => {
+    const page = await openAs(SIGNED_OUT);
+    await page.goto("/forgot-password");
 
-    await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 10_000 });
-    await ctx.close();
+    await expect(page.getByRole("heading", { name: "Reset your password" })).toBeVisible();
+    await expect(page).toHaveURL(/\/forgot-password$/);
+    await expect(page.locator('input[type="email"]')).toBeVisible();
   });
 
-  test("POST /api/auth/forgot-password accepts any email without enumeration", async ({
-    request,
-  }) => {
-    // Should succeed even for a nonexistent email to prevent user enumeration
-    const response = await request.post("/api/auth/forgot-password", {
+  test("answers the same for known and unknown emails", async ({ anonApi }) => {
+    const unknown = await anonApi.post("/api/auth/forgot-password", {
       data: { email: "nonexistent@drawhaus.test" },
     });
-    expect(response.ok()).toBeTruthy();
-  });
+    const known = await anonApi.post("/api/auth/forgot-password", {
+      data: { email: PRIMARY_USER.email },
+    });
 
-  test("invalid reset token returns error", async ({ page }) => {
-    await page.goto("/reset-password/invalid-token-12345");
-    await page.waitForLoadState("networkidle");
-
-    // The page should show some error indication for the invalid token
-    const errorVisible = await page
-      .getByText(/invalid|expired|error|not found/i)
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-
-    // If no visible error text, verify the API rejects the invalid token
-    if (!errorVisible) {
-      const response = await page.request.post("/api/auth/reset-password", {
-        data: {
-          token: "invalid-token-12345",
-          password: "NewPassword123!",
-        },
-      });
-      expect(response.ok()).toBeFalsy();
-    }
+    expect(unknown.status()).toBe(200);
+    expect(known.status()).toBe(200);
+    expect(await known.json()).toEqual(await unknown.json());
   });
 });

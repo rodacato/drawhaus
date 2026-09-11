@@ -1,50 +1,31 @@
-import { test, expect } from "@playwright/test";
-import { loginAsUser, ADMIN_USER } from "../../fixtures/multi-user.fixture";
-
-const BASE_URL = "http://localhost:5173";
+import { test, expect, uniqueEmail } from "../../fixtures/test";
+import { createUserInvite } from "../../fixtures/api";
 
 test.describe("Admin Invitations", () => {
-  let adminCtx: Awaited<ReturnType<typeof loginAsUser>>;
+  test("an invitation is listed as pending", async ({ adminApi }) => {
+    const email = uniqueEmail("invite");
+    await createUserInvite(adminApi, email);
 
-  test.beforeAll(async () => {
-    adminCtx = await loginAsUser(BASE_URL, ADMIN_USER.email, ADMIN_USER.password);
-  });
-
-  test.afterAll(async () => {
-    await adminCtx?.dispose();
-  });
-
-  test("can invite user by email", async () => {
-    const unique = `invite_${Date.now()}@test.com`;
-    const res = await adminCtx.post("/api/admin/invite", {
-      data: { email: unique },
-    });
+    const res = await adminApi.get("/api/admin/invitations");
     expect(res.ok()).toBeTruthy();
+    const { invitations } = (await res.json()) as { invitations: { email: string }[] };
+    expect(invitations.map((i) => i.email)).toContain(email);
   });
 
-  test("can list pending invitations", async () => {
-    const res = await adminCtx.get("/api/admin/invitations");
+  test("an invitation token resolves to the invited email", async ({ adminApi, anonApi }) => {
+    const email = uniqueEmail("token");
+    const token = await createUserInvite(adminApi, email);
+
+    const res = await anonApi.get(`/api/auth/invite/${token}`);
     expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const invitations = body.invitations ?? body;
-    expect(Array.isArray(invitations)).toBeTruthy();
+    expect((await res.json()).email).toBe(email);
   });
 
-  test("duplicate invite is handled gracefully", async () => {
-    const email = `dup_${Date.now()}@test.com`;
-    await adminCtx.post("/api/admin/invite", { data: { email } });
-    const res = await adminCtx.post("/api/admin/invite", { data: { email } });
-    // Should either succeed (resend) or return a non-500 error
+  test("duplicate invite does not crash the server", async ({ adminApi }) => {
+    const email = uniqueEmail("dup");
+    await createUserInvite(adminApi, email);
+
+    const res = await adminApi.post("/api/admin/invite", { data: { email } });
     expect(res.status()).toBeLessThan(500);
-  });
-
-  test("invite creates a valid token", async () => {
-    const email = `token_${Date.now()}@test.com`;
-    const res = await adminCtx.post("/api/admin/invite", { data: { email } });
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const token = body.token ?? body.invitation?.token;
-    // Token may or may not be returned in response depending on implementation
-    // Just verify the invite was created successfully
   });
 });

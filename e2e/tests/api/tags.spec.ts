@@ -1,78 +1,61 @@
-import { test, expect } from "@playwright/test";
-import { createDiagram } from "../../fixtures/data.fixture";
-import { API_TESTS_USER } from "../../fixtures/multi-user.fixture";
+import { randomUUID } from "node:crypto";
+import type { APIRequestContext } from "@playwright/test";
+import { test, expect } from "../../fixtures/test";
+import { createDiagram, createTag, getDiagram } from "../../fixtures/api";
 
-// Use a dedicated user for API tests to avoid resource conflicts
-test.use({ storageState: API_TESTS_USER.authFile });
+const tagName = () => `e2e-tag-${randomUUID().slice(0, 8)}`;
+
+async function listTags(api: APIRequestContext) {
+  const res = await api.get("/api/tags");
+  expect(res.ok()).toBeTruthy();
+  return ((await res.json()) as { tags: { id: string; name: string; color: string }[] }).tags;
+}
 
 test.describe("Tags API", () => {
-  test.describe.configure({ mode: "serial" });
+  test("a created tag is listed with its color", async ({ request }) => {
+    const name = tagName();
 
-  let tagId: string;
-  let diagramId: string;
-  const tagName = `e2e-tag-${Date.now()}`;
+    const tag = await createTag(request, name, "#ff5733");
 
-  test.beforeAll(async ({ request }) => {
-    const diagram = await createDiagram(request, "Tags Test Diagram");
-    diagramId = diagram.id;
-  });
-
-  test("POST /api/tags creates a new tag", async ({ request }) => {
-    const response = await request.post("/api/tags", {
-      data: { name: tagName, color: "#ff5733" },
+    expect((await listTags(request)).find((t) => t.id === tag.id)).toMatchObject({
+      name,
+      color: "#ff5733",
     });
-    expect(response.ok()).toBeTruthy();
-    const body = await response.json();
-    const tag = body.tag ?? body;
-    expect(tag).toHaveProperty("id");
-    expect(tag.name).toBe(tagName);
-    expect(tag.color).toBe("#ff5733");
-    tagId = tag.id;
   });
 
-  test("GET /api/tags lists all tags", async ({ request }) => {
-    const response = await request.get("/api/tags");
-    expect(response.ok()).toBeTruthy();
-    const body = await response.json();
-    const tags = body.tags ?? body;
-    expect(Array.isArray(tags)).toBeTruthy();
-    const found = tags.find((t: any) => t.id === tagId);
-    expect(found).toBeTruthy();
+  test("renaming a tag persists", async ({ request }) => {
+    const tag = await createTag(request, tagName());
+    const renamed = `${tag.name}-updated`;
+
+    const res = await request.patch(`/api/tags/${tag.id}`, { data: { name: renamed } });
+    expect(res.ok()).toBeTruthy();
+
+    expect((await listTags(request)).find((t) => t.id === tag.id)?.name).toBe(renamed);
   });
 
-  test("PATCH /api/tags/:id updates a tag", async ({ request }) => {
-    const response = await request.patch(`/api/tags/${tagId}`, {
-      data: { name: `${tagName}-updated` },
+  test("assigning and unassigning a tag updates the diagram", async ({ request }) => {
+    const tag = await createTag(request, tagName());
+    const diagram = await createDiagram(request, { title: "Tags Test Diagram" });
+    const tagIds = async () => (await getDiagram(request, diagram.id)).tags.map((t) => t.id);
+
+    const assign = await request.post(`/api/tags/${tag.id}/assign`, {
+      data: { diagramId: diagram.id },
     });
-    expect(response.ok()).toBeTruthy();
-    const body = await response.json();
-    const tag = body.tag ?? body;
-    expect(tag.name).toBe(`${tagName}-updated`);
-  });
+    expect(assign.ok()).toBeTruthy();
+    expect(await tagIds()).toContain(tag.id);
 
-  test("POST /api/tags/:id/assign assigns tag to diagram", async ({ request }) => {
-    const response = await request.post(`/api/tags/${tagId}/assign`, {
-      data: { diagramId },
+    const unassign = await request.post(`/api/tags/${tag.id}/unassign`, {
+      data: { diagramId: diagram.id },
     });
-    expect(response.ok()).toBeTruthy();
+    expect(unassign.ok()).toBeTruthy();
+    expect(await tagIds()).not.toContain(tag.id);
   });
 
-  test("POST /api/tags/:id/unassign removes tag from diagram", async ({ request }) => {
-    const response = await request.post(`/api/tags/${tagId}/unassign`, {
-      data: { diagramId },
-    });
-    expect(response.ok()).toBeTruthy();
-  });
+  test("a deleted tag is gone", async ({ request }) => {
+    const tag = await createTag(request, tagName());
 
-  test("DELETE /api/tags/:id deletes a tag", async ({ request }) => {
-    const response = await request.delete(`/api/tags/${tagId}`);
-    expect(response.ok()).toBeTruthy();
+    expect((await request.delete(`/api/tags/${tag.id}`)).ok()).toBeTruthy();
 
-    // Verify deletion
-    const list = await request.get("/api/tags");
-    const body = await list.json();
-    const tags = body.tags ?? body;
-    const found = tags.find((t: any) => t.id === tagId);
-    expect(found).toBeFalsy();
+    expect((await listTags(request)).map((t) => t.id)).not.toContain(tag.id);
   });
 });

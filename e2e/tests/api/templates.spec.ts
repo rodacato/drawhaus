@@ -1,88 +1,75 @@
-import { test, expect } from "@playwright/test";
-import { API_TESTS_USER } from "../../fixtures/multi-user.fixture";
+import { test, expect } from "../../fixtures/test";
+import { createTemplate, getDiagram } from "../../fixtures/api";
 
-test.use({ storageState: API_TESTS_USER.authFile });
+type Template = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  elements: unknown[];
+};
 
 test.describe("Templates API", () => {
-  test.describe.configure({ mode: "serial" });
-
-  let templateId: string;
-
-  test("POST /api/templates creates a template", async ({ request }) => {
-    const response = await request.post("/api/templates", {
-      data: {
-        title: "E2E Test Template",
-        description: "Created by e2e test",
-        category: "architecture",
-        elements: [{ type: "rectangle", id: "r1", x: 0, y: 0, width: 100, height: 100 }],
-        appState: { zoom: 1 },
-      },
+  test("a created template is listed and readable", async ({ request }) => {
+    const created = await createTemplate(request, {
+      title: "E2E Test Template",
+      category: "architecture",
+      description: "Created by e2e test",
     });
-    expect(response.ok()).toBeTruthy();
-    const body = await response.json();
-    const template = body.template ?? body;
-    expect(template).toHaveProperty("id");
-    expect(template.title).toBe("E2E Test Template");
+
+    const list = await request.get("/api/templates");
+    expect(list.ok()).toBeTruthy();
+    const { templates } = (await list.json()) as { templates: Template[] };
+    expect(templates.find((t) => t.id === created.id)?.title).toBe("E2E Test Template");
+
+    const one = await request.get(`/api/templates/${created.id}`);
+    expect(one.ok()).toBeTruthy();
+    const { template } = (await one.json()) as { template: Template };
     expect(template.category).toBe("architecture");
-    templateId = template.id;
-  });
-
-  test("GET /api/templates lists templates including the created one", async ({ request }) => {
-    const response = await request.get("/api/templates");
-    expect(response.ok()).toBeTruthy();
-    const body = await response.json();
-    const templates = body.templates ?? body;
-    expect(Array.isArray(templates)).toBeTruthy();
-    const found = templates.find((t: any) => t.id === templateId);
-    expect(found).toBeTruthy();
-    expect(found.title).toBe("E2E Test Template");
-  });
-
-  test("GET /api/templates/:id returns a single template", async ({ request }) => {
-    const response = await request.get(`/api/templates/${templateId}`);
-    expect(response.ok()).toBeTruthy();
-    const body = await response.json();
-    const template = body.template ?? body;
-    expect(template.id).toBe(templateId);
     expect(template.elements).toHaveLength(1);
   });
 
-  test("PATCH /api/templates/:id updates a template", async ({ request }) => {
-    const response = await request.patch(`/api/templates/${templateId}`, {
+  test("updating a template persists its title and description", async ({ request }) => {
+    const created = await createTemplate(request, { title: "Before Update" });
+
+    const res = await request.patch(`/api/templates/${created.id}`, {
       data: { title: "Updated Template", description: "Updated description" },
     });
-    expect(response.ok()).toBeTruthy();
-    const body = await response.json();
-    const template = body.template ?? body;
+    expect(res.ok()).toBeTruthy();
+
+    const { template } = (await (await request.get(`/api/templates/${created.id}`)).json()) as {
+      template: Template;
+    };
     expect(template.title).toBe("Updated Template");
     expect(template.description).toBe("Updated description");
   });
 
-  test("POST /api/templates/:id/use creates a diagram from template", async ({ request }) => {
-    const response = await request.post(`/api/templates/${templateId}/use`, {
+  test("using a template creates a diagram with its elements", async ({ request }) => {
+    const created = await createTemplate(request, { title: "Seed Template" });
+
+    const res = await request.post(`/api/templates/${created.id}/use`, {
       data: { title: "From Template" },
     });
-    expect(response.ok()).toBeTruthy();
-    const body = await response.json();
-    const diagram = body.diagram ?? body;
-    expect(diagram).toHaveProperty("id");
-    expect(diagram.title).toBe("From Template");
+    expect(res.status()).toBe(201);
+    const { diagram } = (await res.json()) as { diagram: { id: string } };
+
+    const full = await getDiagram(request, diagram.id);
+    expect(full.title).toBe("From Template");
+    expect(full.elements.map((e) => e.type)).toEqual(["rectangle"]);
   });
 
-  test("DELETE /api/templates/:id deletes a template", async ({ request }) => {
-    const response = await request.delete(`/api/templates/${templateId}`);
-    expect(response.ok()).toBeTruthy();
+  test("a deleted template can no longer be read", async ({ request }) => {
+    const created = await createTemplate(request, { title: "Delete Me" });
 
-    // Verify deletion
-    const check = await request.get(`/api/templates/${templateId}`);
-    expect(check.ok()).toBeFalsy();
+    expect((await request.delete(`/api/templates/${created.id}`)).ok()).toBeTruthy();
+
+    expect((await request.get(`/api/templates/${created.id}`)).ok()).toBeFalsy();
   });
 
-  test("POST /api/templates validates required fields", async ({ request }) => {
+  test("creating a template without title and elements is rejected", async ({ request }) => {
     const response = await request.post("/api/templates", {
       data: { description: "Missing title and elements" },
     });
-    expect(response.ok()).toBeFalsy();
     expect(response.status()).toBe(400);
   });
 });

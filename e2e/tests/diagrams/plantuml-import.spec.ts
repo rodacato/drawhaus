@@ -1,30 +1,41 @@
-import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { test, expect } from "../../fixtures/test";
+
+const CONVERTER = "/src/lib/diagram-code/convert-to-excalidraw.ts";
+
+type Conversion = {
+  threw: boolean;
+  message?: string;
+  diagramType?: string;
+  types: string[];
+};
+
+// Runs the real converter inside the Vite-served app, where its browser-only imports resolve.
+async function convert(page: Page, code: string): Promise<Conversion> {
+  await page.goto("/");
+  return page.evaluate(
+    async ({ modulePath, source }) => {
+      const { plantumlToElements } = await import(/* @vite-ignore */ modulePath);
+      try {
+        const { elements, diagramType } = await plantumlToElements(source);
+        return {
+          threw: false,
+          diagramType,
+          types: elements.map((e: { type: string }) => e.type),
+        };
+      } catch (err) {
+        return { threw: true, message: (err as Error).message, types: [] };
+      }
+    },
+    { modulePath: CONVERTER, source: code },
+  );
+}
 
 test.describe("PlantUML Import — Integration", () => {
-  test.setTimeout(60_000);
-
-  let diagramId: string;
-
-  test.beforeEach(async ({ page }) => {
-    const res = await page.request.post("/api/diagrams", {
-      data: { title: "PlantUML Test" },
-    });
-    if (res.ok()) {
-      const body = await res.json();
-      diagramId = body.diagram?.id ?? body.id;
-    }
-  });
-
-  test("converts a basic PlantUML class diagram to Excalidraw elements", async ({ page }) => {
-    test.skip(!diagramId, "Could not create test diagram");
-
-    await page.goto(`/board/${diagramId}`);
-    await page.waitForTimeout(3000);
-
-    // Execute conversion in browser context where all imports are available
-    const result = await page.evaluate(async () => {
-      const { plantumlToElements } = await import("/src/lib/diagram-code/convert-to-excalidraw.ts");
-      const code = `@startuml
+  test("converts a basic class diagram into boxes and arrows", async ({ page }) => {
+    const result = await convert(
+      page,
+      `@startuml
 class User {
   +name: string
   -email: string
@@ -35,36 +46,19 @@ class Order {
   +total: number
 }
 User --> Order : places
-@enduml`;
+@enduml`,
+    );
 
-      const { elements, diagramType, isFallback } = plantumlToElements(code);
-      return {
-        elementCount: elements.length,
-        diagramType,
-        isFallback,
-        hasElements: elements.length > 0,
-        elementTypes: elements.map((e: { type: string }) => e.type),
-      };
-    });
-
+    expect(result.threw).toBe(false);
     expect(result.diagramType).toBe("class");
-    expect(result.isFallback).toBe(false);
-    expect(result.hasElements).toBe(true);
-    expect(result.elementCount).toBeGreaterThan(0);
-    // Should have rectangles (class boxes), text, lines (separators), and arrows
-    expect(result.elementTypes).toContain("rectangle");
-    expect(result.elementTypes).toContain("arrow");
+    expect(result.types).toContain("rectangle");
+    expect(result.types).toContain("arrow");
   });
 
   test("converts class diagram with inheritance and interfaces", async ({ page }) => {
-    test.skip(!diagramId, "Could not create test diagram");
-
-    await page.goto(`/board/${diagramId}`);
-    await page.waitForTimeout(3000);
-
-    const result = await page.evaluate(async () => {
-      const { plantumlToElements } = await import("/src/lib/diagram-code/convert-to-excalidraw.ts");
-      const code = `@startuml
+    const result = await convert(
+      page,
+      `@startuml
 interface Serializable {
   +serialize(): string
 }
@@ -78,120 +72,64 @@ class Dog {
 }
 Dog --|> Animal
 Dog ..|> Serializable
-@enduml`;
-
-      const { elements, diagramType, isFallback } = plantumlToElements(code);
-      return {
-        elementCount: elements.length,
-        diagramType,
-        isFallback,
-        elementTypes: elements.map((e: { type: string }) => e.type),
-      };
-    });
+@enduml`,
+    );
 
     expect(result.diagramType).toBe("class");
-    expect(result.isFallback).toBe(false);
-    // 3 entities (each with rect + text + lines) + 2 arrows
-    expect(result.elementCount).toBeGreaterThan(5);
+    expect(result.types.filter((t) => t === "arrow")).toHaveLength(2);
+    expect(result.types.length).toBeGreaterThan(5);
   });
 
   test("handles PlantUML without @startuml wrapper", async ({ page }) => {
-    test.skip(!diagramId, "Could not create test diagram");
-
-    await page.goto(`/board/${diagramId}`);
-    await page.waitForTimeout(3000);
-
-    const result = await page.evaluate(async () => {
-      const { plantumlToElements } = await import("/src/lib/diagram-code/convert-to-excalidraw.ts");
-      const code = `class Foo {
+    const result = await convert(
+      page,
+      `class Foo {
   +bar: string
 }
 class Baz {
   +qux: number
 }
-Foo --> Baz`;
-
-      const { elements, diagramType } = plantumlToElements(code);
-      return {
-        elementCount: elements.length,
-        diagramType,
-        hasElements: elements.length > 0,
-      };
-    });
+Foo --> Baz`,
+    );
 
     expect(result.diagramType).toBe("class");
-    expect(result.hasElements).toBe(true);
+    expect(result.types.length).toBeGreaterThan(0);
   });
 
-  test("throws PlantUMLParseError for invalid syntax with line info", async ({ page }) => {
-    test.skip(!diagramId, "Could not create test diagram");
-
-    await page.goto(`/board/${diagramId}`);
-    await page.waitForTimeout(3000);
-
-    const result = await page.evaluate(async () => {
-      const { plantumlToElements } = await import("/src/lib/diagram-code/convert-to-excalidraw.ts");
-      try {
-        plantumlToElements(`@startuml
-class {{{ invalid syntax
-@enduml`);
-        return { threw: false };
-      } catch (err: unknown) {
-        const error = err as { name?: string; message?: string };
-        return {
-          threw: true,
-          errorName: error.name,
-          hasMessage: typeof error.message === "string" && error.message.length > 0,
-        };
-      }
-    });
-
-    expect(result.threw).toBe(true);
-    expect(result.hasMessage).toBe(true);
-  });
-
-  test("throws PlantUMLUnsupportedError for sequence diagrams", async ({ page }) => {
-    test.skip(!diagramId, "Could not create test diagram");
-
-    await page.goto(`/board/${diagramId}`);
-    await page.waitForTimeout(3000);
-
-    const result = await page.evaluate(async () => {
-      const { plantumlToElements } = await import("/src/lib/diagram-code/convert-to-excalidraw.ts");
-      try {
-        plantumlToElements(`@startuml
+  test("converts sequence diagrams", async ({ page }) => {
+    const result = await convert(
+      page,
+      `@startuml
 participant Alice
 participant Bob
 Alice -> Bob: Hello
-@enduml`);
-        return { threw: false };
-      } catch (err: unknown) {
-        const error = err as { name?: string; message?: string };
-        return {
-          threw: true,
-          errorName: error.name,
-          message: error.message,
-        };
-      }
-    });
+@enduml`,
+    );
+
+    expect(result.threw).toBe(false);
+    expect(result.diagramType).toBe("sequence");
+    expect(result.types.length).toBeGreaterThan(0);
+  });
+
+  test("rejects invalid syntax with a message", async ({ page }) => {
+    const result = await convert(page, `@startuml\nclass {{{ invalid syntax\n@enduml`);
 
     expect(result.threw).toBe(true);
-    expect(result.message).toContain("sequence");
+    expect(result.message).toBeTruthy();
+  });
+
+  test("rejects diagram types it cannot convert", async ({ page }) => {
+    const result = await convert(page, `@startuml\nstart\n:Hello world;\nstop\n@enduml`);
+
+    expect(result.threw).toBe(true);
+    expect(result.message).toBe("Unsupported diagram type: activity");
   });
 
   test("returns empty elements for empty input", async ({ page }) => {
-    test.skip(!diagramId, "Could not create test diagram");
+    const result = await convert(page, "   ");
 
-    await page.goto(`/board/${diagramId}`);
-    await page.waitForTimeout(3000);
-
-    const result = await page.evaluate(async () => {
-      const { plantumlToElements } = await import("/src/lib/diagram-code/convert-to-excalidraw.ts");
-      const { elements, diagramType } = plantumlToElements("   ");
-      return { elementCount: elements.length, diagramType };
-    });
-
-    expect(result.elementCount).toBe(0);
+    expect(result.threw).toBe(false);
+    expect(result.types).toHaveLength(0);
     expect(result.diagramType).toBe("unknown");
   });
 });

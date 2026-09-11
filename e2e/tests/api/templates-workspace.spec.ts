@@ -1,94 +1,67 @@
-import { test, expect } from "@playwright/test";
-import { API_TESTS_USER } from "../../fixtures/multi-user.fixture";
+import type { APIRequestContext } from "@playwright/test";
+import { test, expect } from "../../fixtures/test";
+import { addWorkspaceMember, createTemplate, createWorkspace } from "../../fixtures/api";
 
-test.use({ storageState: API_TESTS_USER.authFile });
+async function templateIds(api: APIRequestContext, query = "") {
+  const res = await api.get(`/api/templates${query}`);
+  expect(res.ok()).toBeTruthy();
+  const { templates } = (await res.json()) as { templates: { id: string }[] };
+  return templates.map((t) => t.id);
+}
 
 test.describe("Templates API — workspace scoping", () => {
-  test.describe.configure({ mode: "serial" });
+  test("a workspace template records its workspace", async ({ createUser }) => {
+    const user = await createUser("templates");
+    const workspace = await createWorkspace(user.api, "Template Workspace");
 
-  let personalTemplateId: string;
-  let workspaceTemplateId: string;
-  let workspaceId: string;
-
-  test("setup: get or create a workspace", async ({ request }) => {
-    const res = await request.get("/api/workspaces");
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const workspaces = body.workspaces ?? body;
-    // Use the first non-personal workspace, or personal if none
-    const ws = workspaces.find((w: any) => !w.isPersonal) ?? workspaces[0];
-    expect(ws).toBeTruthy();
-    workspaceId = ws.id;
-  });
-
-  test("create a personal template (no workspaceId)", async ({ request }) => {
-    const res = await request.post("/api/templates", {
-      data: {
-        title: "Personal Only Template",
-        category: "general",
-        elements: [{ type: "rectangle", id: "p1", x: 0, y: 0, width: 50, height: 50 }],
-        appState: {},
-      },
+    const template = await createTemplate(user.api, {
+      title: "Workspace Shared Template",
+      workspaceId: workspace.id,
     });
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    personalTemplateId = (body.template ?? body).id;
+
+    expect(template.workspaceId).toBe(workspace.id);
   });
 
-  test("create a workspace template (with workspaceId)", async ({ request }) => {
-    test.skip(!workspaceId, "No workspace available");
-
-    const res = await request.post("/api/templates", {
-      data: {
-        title: "Workspace Shared Template",
-        category: "architecture",
-        workspaceId,
-        elements: [{ type: "rectangle", id: "w1", x: 0, y: 0, width: 50, height: 50 }],
-        appState: {},
-      },
+  test("the template list includes personal and workspace templates", async ({ createUser }) => {
+    const user = await createUser("templates");
+    const workspace = await createWorkspace(user.api, "Template Workspace");
+    const personal = await createTemplate(user.api, { title: "Personal Only Template" });
+    const shared = await createTemplate(user.api, {
+      title: "Workspace Shared Template",
+      workspaceId: workspace.id,
     });
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    workspaceTemplateId = (body.template ?? body).id;
-    expect((body.template ?? body).workspaceId).toBe(workspaceId);
+
+    const ids = await templateIds(user.api);
+
+    expect(ids).toContain(personal.id);
+    expect(ids).toContain(shared.id);
   });
 
-  test("GET /api/templates returns both personal and workspace templates", async ({ request }) => {
-    test.skip(!personalTemplateId || !workspaceTemplateId, "Templates not created");
+  test("filtering by workspace lists its template exactly once", async ({ createUser }) => {
+    const user = await createUser("templates");
+    const workspace = await createWorkspace(user.api, "Template Workspace");
+    const shared = await createTemplate(user.api, {
+      title: "Workspace Shared Template",
+      workspaceId: workspace.id,
+    });
 
-    const res = await request.get("/api/templates");
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const templates = body.templates ?? body;
+    const ids = await templateIds(user.api, `?workspaceId=${workspace.id}`);
 
-    const personal = templates.find((t: any) => t.id === personalTemplateId);
-    const workspace = templates.find((t: any) => t.id === workspaceTemplateId);
-
-    expect(personal).toBeTruthy();
-    expect(workspace).toBeTruthy();
+    expect(ids.filter((id) => id === shared.id)).toHaveLength(1);
   });
 
-  test("GET /api/templates?workspaceId= includes workspace templates without duplication", async ({
-    request,
-  }) => {
-    test.skip(!workspaceId || !workspaceTemplateId, "No workspace template");
+  test("workspace members see its templates and outsiders do not", async ({ createUser }) => {
+    const owner = await createUser("owner");
+    const member = await createUser("member");
+    const outsider = await createUser("outsider");
+    const workspace = await createWorkspace(owner.api, "Template Workspace");
+    await addWorkspaceMember(owner.api, workspace.id, member, "editor");
+    const shared = await createTemplate(owner.api, {
+      title: "Team Template",
+      workspaceId: workspace.id,
+    });
 
-    const res = await request.get(`/api/templates?workspaceId=${workspaceId}`);
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const templates = body.templates ?? body;
-
-    // Workspace template should appear exactly once (no duplicates from dedup logic)
-    const wsTemplates = templates.filter((t: any) => t.id === workspaceTemplateId);
-    expect(wsTemplates).toHaveLength(1);
-  });
-
-  test("cleanup: delete test templates", async ({ request }) => {
-    if (personalTemplateId) {
-      await request.delete(`/api/templates/${personalTemplateId}`);
-    }
-    if (workspaceTemplateId) {
-      await request.delete(`/api/templates/${workspaceTemplateId}`);
-    }
+    expect(await templateIds(member.api, `?workspaceId=${workspace.id}`)).toContain(shared.id);
+    expect(await templateIds(outsider.api)).not.toContain(shared.id);
   });
 });
