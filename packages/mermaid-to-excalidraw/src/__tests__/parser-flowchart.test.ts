@@ -171,4 +171,91 @@ describe("parseMermaidFlowchart", () => {
     assert.equal(yesEdge.sourceId, "B");
     assert.equal(yesEdge.targetId, "C");
   });
+  it("parses arrows written without surrounding whitespace", () => {
+    const ast = parseMermaidFlowchart(`graph TD
+    A-->B`);
+
+    assert.deepEqual(
+      ast.nodes.map((n) => n.id),
+      ["A", "B"],
+    );
+    assert.equal(ast.edges.length, 1);
+    assert.equal(ast.edges[0].sourceId, "A");
+    assert.equal(ast.edges[0].targetId, "B");
+    assert.equal(ast.edges[0].hasArrow, true);
+  });
+
+  it("parses labeled nodes glued to an arrow", () => {
+    const ast = parseMermaidFlowchart(`graph TD
+    A[Start]-->B{Decision}`);
+
+    assert.equal(ast.nodes[0].label, "Start");
+    assert.equal(ast.nodes[1].shape, "diamond");
+    assert.equal(ast.edges.length, 1);
+  });
+
+  it("parses every edge style without whitespace", () => {
+    const ast = parseMermaidFlowchart(`graph TD
+    A-.->B
+    C==>D
+    E---F
+    G-.-H`);
+
+    const styles = ast.edges.map((e) => `${e.style}${e.hasArrow ? "" : "-open"}`);
+    assert.deepEqual(styles, ["dotted", "thick", "solid-open", "dotted-open"]);
+  });
+
+  it("parses chains and edge labels without whitespace", () => {
+    const ast = parseMermaidFlowchart(`graph TD
+    A-->B-->C
+    D--text-->E
+    F-->|Yes|G
+    H==thick==>I
+    J-.dot.->K`);
+
+    assert.equal(ast.edges.length, 6);
+    assert.deepEqual(
+      ast.edges.slice(2).map((e) => e.label),
+      ["text", "Yes", "thick", "dot"],
+    );
+    assert.equal(ast.edges[1].sourceId, "B");
+    assert.equal(ast.edges[1].targetId, "C");
+  });
+
+  it("keeps single hyphens inside node ids and treats runs of two or more as edges", () => {
+    const ast = parseMermaidFlowchart(`graph TD
+    A-B-->C-D
+    E-F---G-H`);
+
+    assert.deepEqual(
+      ast.nodes.map((n) => n.id),
+      ["A-B", "C-D", "E-F", "G-H"],
+    );
+    assert.equal(ast.edges[0].sourceId, "A-B");
+    assert.equal(ast.edges[0].targetId, "C-D");
+    assert.equal(ast.edges[1].hasArrow, false);
+  });
+
+  it("does not split a hyphenated node id that has no edge", () => {
+    const ast = parseMermaidFlowchart(`graph TD
+    order-service`);
+
+    assert.deepEqual(
+      ast.nodes.map((n) => n.id),
+      ["order-service"],
+    );
+    assert.equal(ast.edges.length, 0);
+  });
+
+  it("does not read arrow syntax inside a node label as an edge", () => {
+    const ast = parseMermaidFlowchart(`graph TD
+    A[a--b]-->C
+    D{e-.-f}-->G`);
+
+    assert.equal(ast.nodes.length, 4);
+    assert.equal(ast.nodes[0].label, "a--b");
+    assert.equal(ast.nodes[2].label, "e-.-f");
+    assert.equal(ast.edges.length, 2);
+    assert.equal(ast.edges[0].targetId, "C");
+  });
 });

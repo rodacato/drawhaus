@@ -80,7 +80,7 @@ test.describe("Code Import Panel", () => {
     expect((await liveElementIds(request, diagram.id)).sort()).toEqual(imported);
   });
 
-  test.fixme("Add to Canvas imports a flowchart whose nodes have no labels (bug: `A-->B` converts to zero elements)", async ({
+  test("Add to Canvas imports a flowchart whose arrows have no surrounding whitespace", async ({
     page,
     request,
   }) => {

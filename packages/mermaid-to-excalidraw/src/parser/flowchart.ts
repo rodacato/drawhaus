@@ -130,12 +130,41 @@ function matchEdge(
 
 // ── Line tokenizer ────────────────────────────────────────────
 
+const ARROW_AT_START = /^(-+->|--[^-].*?-->|={2,}>|==.*?==>|-\.+->|-\..*?\.-+>|-{2,}|={2,}|-\.+-)/;
+
+// A run of 2+ dashes or equals, or `-.`, is link syntax; a lone dash belongs to the node id
+function startsArrow(text: string, i: number): boolean {
+  if (text[i] === "-") return text[i + 1] === "-" || text[i + 1] === ".";
+  if (text[i] === "=") return text[i + 1] === "=";
+  return false;
+}
+
+// Index of the next arrow outside shape delimiters and quoted labels, or -1 when the line has none
+function findArrowStart(text: string): number {
+  let depth = 0;
+  let quoted = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch === '"') quoted = false;
+    } else if (ch === '"') {
+      quoted = true;
+    } else if (ch === "[" || ch === "(" || ch === "{") {
+      depth++;
+    } else if (ch === "]" || ch === ")" || ch === "}") {
+      depth = Math.max(0, depth - 1);
+    } else if (depth === 0 && startsArrow(text, i)) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
 // Split a line into tokens: node definitions and edges
 // Handles chains like: A[Start] --> B{Decision} -->|Yes| C[OK]
 function tokenizeLine(line: string, nodeMap: Map<string, FlowNode>, edges: FlowEdge[]) {
-  // Regex to split on edge arrows while preserving them
-  // We look for patterns like -->, --->, -.-> , ==>, etc.
-  // Also handle |label| after arrow
   const tokens: string[] = [];
   let remaining = line;
 
@@ -143,10 +172,7 @@ function tokenizeLine(line: string, nodeMap: Map<string, FlowNode>, edges: FlowE
     remaining = remaining.trimStart();
     if (!remaining) break;
 
-    // Try to match an edge arrow at current position
-    const edgeMatch = remaining.match(
-      /^(-+->|--[^-].*?-->|={2,}>|==.*?==>|-\.+->|-\..*?\.-+>|-{2,}|={2,}|-\.+-)/,
-    );
+    const edgeMatch = remaining.match(ARROW_AT_START);
 
     if (edgeMatch) {
       tokens.push(edgeMatch[0]);
@@ -162,9 +188,7 @@ function tokenizeLine(line: string, nodeMap: Map<string, FlowNode>, edges: FlowE
       continue;
     }
 
-    // Otherwise consume until next edge arrow or end
-    // Find the next arrow start
-    const nextArrow = remaining.search(/\s+(-{2,}|={2,}|-\.)/);
+    const nextArrow = findArrowStart(remaining);
     if (nextArrow > 0) {
       tokens.push(remaining.slice(0, nextArrow).trim());
       remaining = remaining.slice(nextArrow);
