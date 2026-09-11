@@ -28,6 +28,7 @@ When making changes that affect any of the following, update the corresponding d
 ```bash
 npm run dev              # Start frontend + backend
 npm test --workspace=backend  # Backend tests
+npm run test:pg --workspace=backend  # Backend tests against real Postgres (*_test database only)
 npm test --workspace=frontend  # Frontend tests (vitest + jsdom)
 npm test --workspace=frontend -- <pattern>  # Targeted frontend run, e.g. -- use-socket
 npm run lint             # Lint all workspaces

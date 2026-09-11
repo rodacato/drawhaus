@@ -35,7 +35,7 @@ export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>)
   }
 }
 
-export async function runMigrations(): Promise<void> {
+export async function runMigrations(databaseUrl = config.databaseUrl): Promise<void> {
   if (config.nodeEnv === "production") {
     try {
       const { createBackup } = await import("./services/backup-service");
@@ -47,7 +47,7 @@ export async function runMigrations(): Promise<void> {
   }
 
   await runner({
-    databaseUrl: config.databaseUrl,
+    databaseUrl,
     dir: path.resolve(__dirname, "../migrations"),
     migrationsTable: "schema_migrations",
     direction: "up",

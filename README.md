@@ -133,6 +133,7 @@ troubleshooting.
 | `npm run lint`                                     | Lint all workspaces                                                        |
 | `npm run typecheck`                                | Type-check all workspaces                                                  |
 | `npm test --workspace=backend`                     | Run backend unit & integration tests                                       |
+| `npm run test:pg --workspace=backend`              | Run backend repository tests against a real PostgreSQL (`*_test` database) |
 | `cd e2e && npm test`                               | Run Playwright end-to-end tests (requires running backend + frontend + PG) |
 | `cd e2e && npm run test:ui`                        | Open Playwright test runner UI                                             |
 | `npm run db:seed`                                  | Seed database with test data                                               |
@@ -608,6 +609,16 @@ See [packages/mcp/README.md](packages/mcp/README.md) for full setup instructions
 ```bash
 npm test --workspace=backend
 ```
+
+These run without a database, over in-memory fakes.
+
+### PostgreSQL Tests
+
+```bash
+npm run test:pg --workspace=backend
+```
+
+Runs the `src/__tests__/postgres/*.pg-test.ts` suite against the database in `DATABASE_URL`, defaulting to `postgres://drawhaus:drawhaus@db:5432/drawhaus_test` (the devcontainer's Postgres). The run refuses any database whose name does not end in `_test`, creates it if missing, rebuilds its schema from the migrations, and truncates every table between tests.
 
 ### End-to-End Tests (Playwright)
 

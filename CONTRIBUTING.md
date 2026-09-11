@@ -48,7 +48,9 @@ drawhaus/
    ```bash
    npm test --workspace=backend
    npm test --workspace=frontend
+   npm run test:pg --workspace=backend
    ```
+   `test:pg` needs PostgreSQL. The devcontainer has it; elsewhere, point `DATABASE_URL` at a database whose name ends in `_test`.
 5. (Optional) Run the E2E test suite (requires running backend + frontend + PostgreSQL; currently disabled in CI):
    ```bash
    cd e2e && npm test
