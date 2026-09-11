@@ -16,6 +16,7 @@
     "test": "DATABASE_URL=postgres://drawhaus:drawhaus@127.0.0.1:1/unused tsx --test --test-concurrency=1 --test-force-exit --test-timeout=30000 'src/__tests__/**/*.test.ts'",
     "test:unit": "DATABASE_URL=postgres://drawhaus:drawhaus@127.0.0.1:1/unused tsx --test --test-concurrency=1 --test-force-exit --test-timeout=30000 'src/__tests__/unit/**/*.test.ts'",
     "test:integration": "DATABASE_URL=postgres://drawhaus:drawhaus@127.0.0.1:1/unused tsx --test --test-concurrency=1 --test-force-exit --test-timeout=30000 'src/__tests__/integration/**/*.test.ts'",
+    "test:pg": "export DATABASE_URL=${DATABASE_URL:-postgres://drawhaus:drawhaus@db:5432/drawhaus_test} NODE_ENV=test LOG_LEVEL=warn && tsx src/__tests__/postgres/prepare.ts && tsx --test --test-concurrency=1 --test-force-exit --test-timeout=30000 'src/__tests__/postgres/**/*.pg-test.ts'",
     "test:coverage": "DATABASE_URL=postgres://drawhaus:drawhaus@127.0.0.1:1/unused c8 --all --include='src/**' --exclude='src/__tests__/**' --exclude='src/migrations/**' --exclude='src/domain/ports/**' --exclude='src/**/*.d.ts' --reporter=text --reporter=lcov --reports-dir=coverage tsx --test --test-concurrency=1 --test-force-exit --test-timeout=30000 'src/__tests__/**/*.test.ts'",
     "db:backup": "tsx --env-file=../../.env src/scripts/db-backup.ts",
     "db:restore": "tsx --env-file=../../.env src/scripts/db-restore.ts",
