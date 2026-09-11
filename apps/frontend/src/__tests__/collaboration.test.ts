@@ -87,11 +87,11 @@ describe("mergeElements", () => {
     assert.equal((result[0] as any).text, "remote");
   });
 
-  test("keeps local element when versions are equal", () => {
-    const local = [{ id: "a", version: 2, text: "local" }];
-    const remote = [{ id: "a", version: 2, text: "remote" }];
-    const result = mergeElements(local, remote);
-    assert.equal((result[0] as any).text, "local");
+  test("on equal versions keeps the lower versionNonce, whichever side holds it", () => {
+    const low = { id: "a", version: 2, versionNonce: 1, text: "low" };
+    const high = { id: "a", version: 2, versionNonce: 9, text: "high" };
+    assert.equal((mergeElements([low], [high])[0] as any).text, "low");
+    assert.equal((mergeElements([high], [low])[0] as any).text, "low");
   });
 
   test("appends local-only elements at the end", () => {

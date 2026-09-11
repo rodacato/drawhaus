@@ -226,4 +226,50 @@ describe("useSceneManager", () => {
     const captures = api.updateScene.mock.calls.map(([scene]) => scene.captureUpdate);
     expect(captures).toEqual(["NEVER", "NEVER", "NEVER"]);
   });
+
+  test("a stale copy of an element deleted here does not bring it back", () => {
+    const api = createExcalidrawApiStub({
+      elements: [
+        { id: "kept", version: 1 },
+        { id: "gone", version: 3, isDeleted: true },
+      ],
+    });
+    renderScene({ socket, api });
+
+    act(() => {
+      triggerSocketEvent(socket, "scene-delta-received", {
+        fromSocketId: "other",
+        fromUserId: "user-other",
+        changed: [{ id: "gone", version: 2 }],
+        removedIds: [],
+      });
+      triggerSocketEvent(socket, "scene-updated", {
+        fromSocketId: "other",
+        elements: [
+          { id: "kept", version: 1 },
+          { id: "gone", version: 2 },
+        ],
+      });
+    });
+
+    expect(api.getSceneElements()).toEqual([{ id: "kept", version: 1 }]);
+  });
+
+  test("a newer copy of an element deleted here restores it", () => {
+    const api = createExcalidrawApiStub({
+      elements: [{ id: "gone", version: 3, isDeleted: true }],
+    });
+    renderScene({ socket, api });
+
+    act(() => {
+      triggerSocketEvent(socket, "scene-delta-received", {
+        fromSocketId: "other",
+        fromUserId: "user-other",
+        changed: [{ id: "gone", version: 4 }],
+        removedIds: [],
+      });
+    });
+
+    expect(api.getSceneElements()).toEqual([{ id: "gone", version: 4 }]);
+  });
 });

@@ -116,7 +116,10 @@ export function createExcalidrawApiStub(
         if (scene.appState) state.appState = { ...state.appState, ...scene.appState };
       },
     ),
-    getSceneElements: vi.fn(() => state.elements as readonly unknown[]),
+    getSceneElements: vi.fn(() =>
+      (state.elements as { isDeleted?: boolean }[]).filter((e) => !e.isDeleted),
+    ),
+    getSceneElementsIncludingDeleted: vi.fn(() => state.elements as readonly unknown[]),
     getAppState: vi.fn(() => state.appState),
     getFiles: vi.fn(() => state.files),
     _state: state,

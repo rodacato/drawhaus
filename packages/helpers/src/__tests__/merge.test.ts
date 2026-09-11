@@ -371,3 +371,100 @@ describe("mergeDelta", () => {
     assert.deepEqual(remaining.groupIds, []);
   });
 });
+
+const el = (id: string, version: number, extra: Record<string, unknown> = {}) => ({
+  id,
+  type: "rectangle",
+  version,
+  versionNonce: 0,
+  ...extra,
+});
+
+const label = (elements: unknown[]) =>
+  (elements as { id: string; version: number }[]).map((e) => `${e.id}@${e.version}`);
+
+function permutations<T>(items: T[]): T[][] {
+  if (items.length <= 1) return [items];
+  return items.flatMap((item, i) =>
+    permutations([...items.slice(0, i), ...items.slice(i + 1)]).map((rest) => [item, ...rest]),
+  );
+}
+
+describe("replicas settle on the same copy", () => {
+  it("on equal versions both sides keep the copy with the lower versionNonce", () => {
+    const low = el("x", 3, { versionNonce: 10, x: 1 });
+    const high = el("x", 3, { versionNonce: 20, x: 2 });
+
+    assert.deepEqual(mergeElements([low], [high]), [low]);
+    assert.deepEqual(mergeElements([high], [low]), [low]);
+    assert.deepEqual(mergeDelta([low], [high], []).elements, [low]);
+    assert.deepEqual(mergeDelta([high], [low], []).elements, [low]);
+  });
+
+  it("a higher version wins however high its nonce", () => {
+    const older = el("x", 2, { versionNonce: 1 });
+    const newer = el("x", 3, { versionNonce: 999 });
+
+    assert.deepEqual(mergeElements([older], [newer]), [newer]);
+    assert.deepEqual(mergeElements([newer], [older]), [newer]);
+    assert.deepEqual(mergeDelta([newer], [older], []).elements, [newer]);
+  });
+
+  it("replicas that apply the same updates in any order end up identical", () => {
+    const updates = [
+      [el("a", 2, { versionNonce: 50, index: "a0" })],
+      [el("a", 2, { versionNonce: 7, index: "a2" }), el("b", 1, { versionNonce: 3, index: "a1" })],
+      [el("b", 4, { versionNonce: 9, index: "a3" }), el("c", 1, { versionNonce: 1, index: "a1" })],
+      [el("a", 1, { versionNonce: 0, index: "a0" }), el("c", 1, { versionNonce: 4, index: "a4" })],
+    ];
+
+    const viaFullScenes = permutations(updates).map((order) =>
+      order.reduce<unknown[]>((scene, update) => mergeElements(scene, update), []),
+    );
+    const viaDeltas = permutations(updates).map((order) =>
+      order.reduce<unknown[]>((scene, update) => mergeDelta(scene, update, []).elements, []),
+    );
+
+    for (const replica of [...viaFullScenes, ...viaDeltas]) {
+      assert.deepEqual(replica, viaFullScenes[0]);
+    }
+    assert.deepEqual(label(viaFullScenes[0]), ["c@1", "a@2", "b@4"]);
+  });
+
+  it("orders by fractional index, then id, once every element has one", () => {
+    const local = [el("b", 1, { index: "a1" })];
+    const remote = [el("a", 1, { index: "a1" }), el("c", 1, { index: "a0" })];
+
+    assert.deepEqual(label(mergeElements(local, remote)), ["c@1", "a@1", "b@1"]);
+  });
+});
+
+describe("mergeDelta cleanup", () => {
+  it("returns cleaned copies one version up and leaves the local elements untouched", () => {
+    const rect = el("rect1", 1, { groupIds: ["g1"] });
+    const arrow = el("arrow1", 4, {
+      startBinding: { elementId: "rect1", focus: 0, gap: 5 },
+      groupIds: ["g1"],
+    });
+    const bystander = el("other", 2);
+    const local = [rect, arrow, bystander];
+    const before = structuredClone(local);
+
+    const { elements } = mergeDelta(local, [], ["rect1"]);
+
+    assert.deepEqual(local, before);
+    const cleaned = elements.find((e) => (e as { id: string }).id === "arrow1") as Record<
+      string,
+      unknown
+    >;
+    assert.notEqual(cleaned, arrow);
+    assert.equal(cleaned.version, 5);
+    assert.equal(cleaned.startBinding, undefined);
+    assert.deepEqual(cleaned.groupIds, []);
+    assert.equal(
+      elements.find((e) => (e as { id: string }).id === "other"),
+      bystander,
+      "an element with nothing to clean is passed through as is",
+    );
+  });
+});
