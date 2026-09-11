@@ -1,4 +1,4 @@
-# ADR-027: Acknowledged Saves over Fire-and-Forget
+# ADR-028: Acknowledged Saves over Fire-and-Forget
 
 **Status:** accepted
 **Date:** 2026-09-11

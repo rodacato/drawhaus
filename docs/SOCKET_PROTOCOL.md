@@ -53,7 +53,7 @@ it at most once with `{ ok: true, ... }` or `{ ok: false, reason }`, where `reas
 `invalid-payload` for a payload the schema rejected and `server-error` for a handler that threw.
 Only `save-scene` answers its own outcomes today; every other handler leaves the callback to the
 wrapper, so a client that acks them waits for its own timeout. See
-[ADR-027](adr/027-save-acknowledgement.md).
+[ADR-028](adr/028-save-acknowledgement.md).
 
 ### Scene Sync
 
