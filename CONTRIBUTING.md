@@ -38,16 +38,18 @@ drawhaus/
    git checkout -b feat/your-feature
    ```
 2. Make your changes.
-3. Run linting and type checks:
+3. Run the checks CI runs:
    ```bash
    npm run lint
    npm run typecheck
+   npm run format:check
    ```
-4. Run backend tests:
+4. Run the tests:
    ```bash
    npm test --workspace=backend
+   npm test --workspace=frontend
    ```
-5. (Optional) Run the E2E test suite (requires running backend + frontend + PostgreSQL):
+5. (Optional) Run the E2E test suite (requires running backend + frontend + PostgreSQL; currently disabled in CI):
    ```bash
    cd e2e && npm test
    ```
@@ -72,6 +74,8 @@ Open an issue with:
 - Expected vs. actual behavior.
 - Environment details (OS, browser, Node version).
 
+**Security vulnerabilities:** do not open a public issue — follow [SECURITY.md](SECURITY.md).
+
 ## Suggesting Features
 
 Open an issue describing:
@@ -80,11 +84,13 @@ Open an issue describing:
 - Your proposed solution.
 - Any alternatives you've considered.
 
+Planned work is tracked in the maintainer's private GitHub Project; issues you open are triaged into it.
+
 ## Pull Request Guidelines
 
 - Keep PRs small and focused.
 - Include a description of **what** changed and **why**.
-- Make sure all checks pass (lint, typecheck, E2E tests).
+- Make sure all checks pass (lint, typecheck, format, tests).
 - Update documentation if your change affects user-facing behavior.
 
 ## License

@@ -14,20 +14,21 @@ This workflow is tool-agnostic — it works with Claude Code, Cursor, Windsurf, 
 
 ## Documentation Map
 
-| Document         | Location           | Purpose                                                          | When to read                                                       |
-| ---------------- | ------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **CLAUDE.md**    | `/CLAUDE.md`       | Agent instructions, commands, conventions                        | Auto-loaded by Claude Code on every conversation                   |
-| **AGENTS.md**    | `/AGENTS.md`       | AI agent behavior rules, identity, expert panel                  | Auto-loaded or referenced by any AI tool                           |
-| **VISION.md**    | `docs/VISION.md`   | Product vision, architecture principles, competitive positioning | When making scope or direction decisions                           |
-| **IDENTITY.md**  | `docs/IDENTITY.md` | Build persona, decision style, quality bar                       | When calibrating agent responses to project standards              |
-| **EXPERTS.md**   | `docs/EXPERTS.md`  | Virtual advisory board — 6 expert personas                       | When facing tradeoffs or cross-cutting decisions                   |
-| **ROADMAP.md**   | `docs/ROADMAP.md`  | What's built, what's next, backlog, decision log                 | Before starting any new feature work                               |
-| **BRANDING.md**  | `docs/BRANDING.md` | Colors, typography, logo, UI patterns                            | When building or modifying UI components                           |
-| **CHANGELOG.md** | `/CHANGELOG.md`    | Full version history                                             | When writing release notes or checking what shipped                |
-| **ADRs**         | `docs/adr/`        | Architecture Decision Records with context and consequences      | When revisiting past decisions or making new architectural choices |
-| **Specs**        | `docs/specs/`      | Feature implementation blueprints                                | Before building a roadmap feature                                  |
-| **Guides**       | `docs/guides/`     | Operational guides (deploy, release)                             | When deploying or cutting a release                                |
-| **API docs**     | `docs/api/`        | OpenAPI 3.1 spec + Redocly config                                | When modifying `/v1/` public API endpoints                         |
+| Document         | Location                                                                 | Purpose                                                                  | When to read                                                       |
+| ---------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| **CLAUDE.md**    | `/CLAUDE.md`                                                             | Agent instructions, commands, conventions                                | Auto-loaded by Claude Code on every conversation                   |
+| **AGENTS.md**    | `/AGENTS.md`                                                             | AI agent behavior rules, identity, expert panel                          | Auto-loaded or referenced by any AI tool                           |
+| **VISION.md**    | `docs/VISION.md`                                                         | Product vision, architecture principles, competitive positioning         | When making scope or direction decisions                           |
+| **IDENTITY.md**  | `docs/IDENTITY.md`                                                       | Build persona, decision style, quality bar                               | When calibrating agent responses to project standards              |
+| **EXPERTS.md**   | `docs/EXPERTS.md`                                                        | Virtual advisory board — 7 expert personas                               | When facing tradeoffs or cross-cutting decisions                   |
+| **ROADMAP.md**   | `docs/ROADMAP.md`                                                        | Strategy: intent, principles, what's built, not doing, decision log      | Before scope or direction decisions                                |
+| **Backlog**      | [GitHub Project](https://github.com/users/rodacato/projects/8) (private) | Single source of truth for planned work: features, bugs, debt, decisions | Before starting any work                                           |
+| **BRANDING.md**  | `docs/BRANDING.md`                                                       | Colors, typography, logo, UI patterns                                    | When building or modifying UI components                           |
+| **CHANGELOG.md** | `/CHANGELOG.md`                                                          | Full version history                                                     | When writing release notes or checking what shipped                |
+| **ADRs**         | `docs/adr/`                                                              | Architecture Decision Records with context and consequences              | When revisiting past decisions or making new architectural choices |
+| **Specs**        | `docs/specs/`                                                            | Feature implementation blueprints                                        | Before building a roadmap feature                                  |
+| **Guides**       | `docs/guides/`                                                           | Operational guides (deploy, release)                                     | When deploying or cutting a release                                |
+| **API docs**     | `docs/api/`                                                              | OpenAPI 3.1 spec + Redocly config                                        | When modifying `/v1/` public API endpoints                         |
 
 ---
 
@@ -36,14 +37,14 @@ This workflow is tool-agnostic — it works with Claude Code, Cursor, Windsurf, 
 Every feature follows this path:
 
 ```
-Idea → Roadmap → Spec → Implement → Test → Release
+Idea → Project item → Spec → Implement → Test → Release
          ↑                   ↓
          └── ADR (if architectural decision needed)
 ```
 
 ### 1. Capture the idea
 
-Add it to the **Backlog** section of `docs/ROADMAP.md` with a one-line summary and effort estimate.
+Add a draft item to the GitHub Project with Status `Todo`, Priority, Area and Kind, a one-line summary, an effort estimate (Sizing Key in `docs/ROADMAP.md`) and acceptance criteria that include a negative case. Items are private drafts; security findings never go to public issues ([SECURITY.md](../SECURITY.md)).
 
 ### 2. Write a spec (when ready to build)
 
@@ -54,7 +55,7 @@ Create `docs/specs/<feature-name>.md` with:
 - **File-by-file plan** — specific files to create or modify.
 - **Verification steps** — concrete steps to confirm it works.
 
-Move the item to "What's Next" in the roadmap with status `backlog`.
+Link the spec from the Project item.
 
 ### 3. Consult the expert panel (when uncertain)
 
@@ -97,13 +98,14 @@ The Decision Log in `docs/ROADMAP.md` serves as an executive summary. ADRs hold 
 
 - Follow the spec. Reference `CLAUDE.md` for conventions.
 - Keep changes small, reviewable, and reversible.
-- Update status to `in-progress` in the roadmap.
+- Move the Project item to `In Progress`, and to `Done` once merged.
 
 ### 6. Test & ship
 
-- Backend unit tests: `npm test --workspace=backend`
-- E2E tests: `cd e2e && npm test`
-- Lint + typecheck: `npm run lint && npm run typecheck`
+- Backend tests: `npm test --workspace=backend`
+- Frontend tests: `npm test --workspace=frontend`
+- Lint, typecheck, format: `npm run lint && npm run typecheck && npm run format:check`
+- E2E tests: `cd e2e && npm test` (currently disabled in CI)
 - Follow `docs/guides/releasing.md` for version bump, changelog, tag, and deploy.
 
 ---
@@ -130,9 +132,10 @@ When making changes, update corresponding docs **in the same commit**:
 
 - New/changed API endpoints → `README.md` API Overview table + `docs/api/`
 - New/changed env vars → `README.md` env vars table + `.env.example`
-- New features shipped → `CHANGELOG.md` + mark done in `docs/ROADMAP.md`
+- New features shipped → `CHANGELOG.md` + "What's Been Built" in `docs/ROADMAP.md` + Project item to `Done`
 - New frontend routes → `README.md` Routes table
 - Architectural decisions → `docs/adr/` + Decision Log in `docs/ROADMAP.md`
+- New work or findings → draft item in the GitHub Project
 
 ---
 

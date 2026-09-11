@@ -7,8 +7,9 @@ When making changes that affect any of the following, update the corresponding d
 - **New/changed API endpoints** → Update the API Overview table in `README.md`
 - **New/changed env vars** → Update `README.md` env vars table and `.env.example`
 - **New/changed CLI commands** → Update the Commands table in `README.md`
-- **New features shipped** → Add entry to `CHANGELOG.md` under the current version
-- **Completed roadmap items** → Mark as done in `docs/ROADMAP.md`
+- **New features shipped** → Add entry to `CHANGELOG.md` under the current version, and add the capability to "What's Been Built" in `docs/ROADMAP.md`
+- **Completed work** → Move its item to Done in the [GitHub Project](https://github.com/users/rodacato/projects/8) — the backlog; `docs/ROADMAP.md` keeps strategy only
+- **New work or findings** → Capture as a draft item in the GitHub Project (private; never a public issue for security findings)
 - **Architectural decisions** → Add ADR in `docs/adr/` and update Decision Log in `docs/ROADMAP.md`
 - **New frontend routes** → Update the Routes table in `README.md`
 
@@ -18,7 +19,7 @@ When making changes that affect any of the following, update the corresponding d
 - **Commits**: Do not add co-author lines unless explicitly asked.
 - **Backend architecture**: Clean Architecture — `application/` (use cases), `domain/` (entities), `infrastructure/` (routes, repos, services, sockets).
 - **Validation**: Use Zod schemas for all route input validation.
-- **Tests**: Backend unit tests in `apps/backend/src/**/*.test.ts`. E2E tests in `e2e/` with Playwright.
+- **Tests**: Backend tests in `apps/backend/src/__tests__/` (`node --test` via tsx). Frontend tests in `apps/frontend/src/__tests__/` (Vitest + jsdom). E2E tests in `e2e/` with Playwright (currently disabled in CI).
 - **Rate limiting**: Disabled in `NODE_ENV=test` to prevent flaky e2e tests.
 - **Setup flow**: First registered user becomes admin and auto-completes setup.
 
