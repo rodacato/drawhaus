@@ -81,7 +81,9 @@ export function createTemplateRoutes(
         typeof req.query.workspaceId === "string" ? req.query.workspaceId : undefined;
       const [mine, workspace] = await Promise.all([
         useCases.list.executeMine(req.authUser.id),
-        workspaceId ? useCases.list.executeByWorkspace(workspaceId) : Promise.resolve([]),
+        workspaceId
+          ? useCases.list.executeByWorkspace(workspaceId, req.authUser.id)
+          : Promise.resolve([]),
       ]);
       // Deduplicate (user might be creator of workspace templates)
       const seen = new Set<string>();

@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { CreateDiagramUseCase } from "../../../application/use-cases/diagrams/create-diagram";
 import { CreateShareLinkUseCase } from "../../../application/use-cases/share/create-link";
 import { InMemoryDiagramRepository } from "../../fakes/in-memory-diagram-repository";
+import { InMemoryFolderRepository } from "../../fakes/in-memory-folder-repository";
+import { InMemoryWorkspaceRepository } from "../../fakes/in-memory-workspace-repository";
 import { InMemoryShareRepository } from "../../fakes/in-memory-share-repository";
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
@@ -10,7 +12,11 @@ describe("CreateShareLinkUseCase", () => {
   it("owner can create share link", async () => {
     const diagrams = new InMemoryDiagramRepository();
     const shares = new InMemoryShareRepository();
-    const createDiagram = new CreateDiagramUseCase(diagrams);
+    const createDiagram = new CreateDiagramUseCase(
+      diagrams,
+      new InMemoryWorkspaceRepository(),
+      new InMemoryFolderRepository(),
+    );
     const createLink = new CreateShareLinkUseCase(shares, diagrams);
 
     const diagram = await createDiagram.execute({ ownerId: "user-1" });
@@ -28,7 +34,11 @@ describe("CreateShareLinkUseCase", () => {
   it("viewer cannot create share link", async () => {
     const diagrams = new InMemoryDiagramRepository();
     const shares = new InMemoryShareRepository();
-    const createDiagram = new CreateDiagramUseCase(diagrams);
+    const createDiagram = new CreateDiagramUseCase(
+      diagrams,
+      new InMemoryWorkspaceRepository(),
+      new InMemoryFolderRepository(),
+    );
     const createLink = new CreateShareLinkUseCase(shares, diagrams);
 
     const diagram = await createDiagram.execute({ ownerId: "user-1" });
@@ -54,7 +64,11 @@ describe("CreateShareLinkUseCase", () => {
   it("sets expiration when expiresInHours provided", async () => {
     const diagrams = new InMemoryDiagramRepository();
     const shares = new InMemoryShareRepository();
-    const createDiagram = new CreateDiagramUseCase(diagrams);
+    const createDiagram = new CreateDiagramUseCase(
+      diagrams,
+      new InMemoryWorkspaceRepository(),
+      new InMemoryFolderRepository(),
+    );
     const createLink = new CreateShareLinkUseCase(shares, diagrams);
 
     const diagram = await createDiagram.execute({ ownerId: "user-1" });

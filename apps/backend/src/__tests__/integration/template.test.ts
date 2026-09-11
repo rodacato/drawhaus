@@ -29,6 +29,7 @@ import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../fakes/in-memory-session-repository";
 import { InMemoryTemplateRepository } from "../fakes/in-memory-template-repository";
 import { InMemoryDiagramRepository } from "../fakes/in-memory-diagram-repository";
+import { InMemoryFolderRepository } from "../fakes/in-memory-folder-repository";
 import { InMemoryInvitationRepository } from "../fakes/in-memory-invitation-repository";
 import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-reset-repository";
 import { InMemoryOAuthTokenRepository } from "../fakes/in-memory-oauth-token-repository";
@@ -108,12 +109,17 @@ function createApp() {
     "/api/templates",
     createTemplateRoutes(
       {
-        create: new CreateTemplateUseCase(templates),
+        create: new CreateTemplateUseCase(templates, workspaces),
         get: new GetTemplateUseCase(templates),
-        list: new ListTemplatesUseCase(templates),
+        list: new ListTemplatesUseCase(templates, workspaces),
         update: new UpdateTemplateUseCase(templates),
         delete: new DeleteTemplateUseCase(templates),
-        use: new UseTemplateUseCase(templates, diagrams),
+        use: new UseTemplateUseCase(
+          templates,
+          diagrams,
+          workspaces,
+          new InMemoryFolderRepository(),
+        ),
         transferOwnership: new TransferTemplateOwnershipUseCase(
           templates,
           workspaces,

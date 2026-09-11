@@ -3,12 +3,18 @@ import assert from "node:assert/strict";
 import { CreateDiagramUseCase } from "../../../application/use-cases/diagrams/create-diagram";
 import { UpdateDiagramUseCase } from "../../../application/use-cases/diagrams/update-diagram";
 import { InMemoryDiagramRepository } from "../../fakes/in-memory-diagram-repository";
+import { InMemoryFolderRepository } from "../../fakes/in-memory-folder-repository";
+import { InMemoryWorkspaceRepository } from "../../fakes/in-memory-workspace-repository";
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
 describe("UpdateDiagramUseCase", () => {
   it("owner can update title", async () => {
     const diagrams = new InMemoryDiagramRepository();
-    const create = new CreateDiagramUseCase(diagrams);
+    const create = new CreateDiagramUseCase(
+      diagrams,
+      new InMemoryWorkspaceRepository(),
+      new InMemoryFolderRepository(),
+    );
     const update = new UpdateDiagramUseCase(diagrams);
 
     const diagram = await create.execute({ ownerId: "user-1", title: "Old" });
@@ -19,7 +25,11 @@ describe("UpdateDiagramUseCase", () => {
 
   it("editor can update", async () => {
     const diagrams = new InMemoryDiagramRepository();
-    const create = new CreateDiagramUseCase(diagrams);
+    const create = new CreateDiagramUseCase(
+      diagrams,
+      new InMemoryWorkspaceRepository(),
+      new InMemoryFolderRepository(),
+    );
     const update = new UpdateDiagramUseCase(diagrams);
 
     const diagram = await create.execute({ ownerId: "user-1" });
@@ -31,7 +41,11 @@ describe("UpdateDiagramUseCase", () => {
 
   it("viewer cannot update", async () => {
     const diagrams = new InMemoryDiagramRepository();
-    const create = new CreateDiagramUseCase(diagrams);
+    const create = new CreateDiagramUseCase(
+      diagrams,
+      new InMemoryWorkspaceRepository(),
+      new InMemoryFolderRepository(),
+    );
     const update = new UpdateDiagramUseCase(diagrams);
 
     const diagram = await create.execute({ ownerId: "user-1" });
@@ -45,7 +59,11 @@ describe("UpdateDiagramUseCase", () => {
 
   it("stranger gets not found", async () => {
     const diagrams = new InMemoryDiagramRepository();
-    const create = new CreateDiagramUseCase(diagrams);
+    const create = new CreateDiagramUseCase(
+      diagrams,
+      new InMemoryWorkspaceRepository(),
+      new InMemoryFolderRepository(),
+    );
     const update = new UpdateDiagramUseCase(diagrams);
 
     const diagram = await create.execute({ ownerId: "user-1" });
