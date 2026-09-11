@@ -1,50 +1,79 @@
 import type { ExcalidrawElement } from "./types.js";
 
+function versionOf(el: ExcalidrawElement): number {
+  return el.version ?? 0;
+}
+
+function nonceOf(el: ExcalidrawElement): number {
+  return typeof el.versionNonce === "number" ? el.versionNonce : 0;
+}
+
 /**
- * Merge remote elements with local elements at the element level.
- * For each element, keep whichever has the higher version.
- * Preserves local in-progress edits while accepting remote changes
- * for elements the local user hasn't touched.
- *
- * Iterates the remote array directly (instead of a Map) to preserve
- * the canonical element order — critical for z-index, arrow bindings,
- * and group relationships in Excalidraw.
+ * Whether the remote copy of an element replaces the local one. Same rule as Excalidraw's
+ * `reconcileElements`: the higher version wins, and on equal versions the lower `versionNonce`,
+ * so every replica settles on the same copy whatever order the updates arrive in.
+ */
+export function remoteWins(local: ExcalidrawElement, remote: ExcalidrawElement): boolean {
+  if (versionOf(local) !== versionOf(remote)) return versionOf(remote) > versionOf(local);
+  return nonceOf(remote) <= nonceOf(local);
+}
+
+function compareFractionalIndex(a: ExcalidrawElement, b: ExcalidrawElement): number {
+  const ai = a.index as string;
+  const bi = b.index as string;
+  if (ai !== bi) return ai < bi ? -1 : 1;
+  if (a.id === b.id) return 0;
+  return a.id < b.id ? -1 : 1;
+}
+
+/**
+ * Excalidraw orders the scene by fractional `index`, as its own reconcile does. Elements saved
+ * before indices existed have none, and then the array order is all there is to keep.
+ */
+function inFractionalOrder(elements: ExcalidrawElement[]): ExcalidrawElement[] {
+  if (!elements.every((e) => typeof e.index === "string")) return elements;
+  return elements.sort(compareFractionalIndex);
+}
+
+function byId(elements: readonly unknown[]): Map<string, ExcalidrawElement> {
+  const map = new Map<string, ExcalidrawElement>();
+  for (const el of elements) {
+    const e = el as ExcalidrawElement;
+    if (e.id) map.set(e.id, e);
+  }
+  return map;
+}
+
+/**
+ * Merge remote elements with local elements at the element level: for each element the copy
+ * `remoteWins` picks, plus the elements only one side has. Remote order is kept unless every
+ * element carries a fractional index.
  */
 export function mergeElements(
   localElements: readonly unknown[],
   remoteElements: unknown[],
 ): unknown[] {
-  const localMap = new Map<string, ExcalidrawElement>();
-  for (const el of localElements) {
-    const e = el as ExcalidrawElement;
-    if (e.id) localMap.set(e.id, e);
-  }
-
+  const localMap = byId(localElements);
   const seen = new Set<string>();
   const merged: ExcalidrawElement[] = [];
 
-  // Walk remote array in order — preserves canonical z-order
   for (const el of remoteElements) {
     const remote = el as ExcalidrawElement;
-    if (!remote.id) continue;
+    if (!remote.id || seen.has(remote.id)) continue;
     seen.add(remote.id);
     const local = localMap.get(remote.id);
-    if (local && (local.version ?? 0) >= (remote.version ?? 0)) {
-      merged.push(local);
-    } else {
-      merged.push(remote);
-    }
+    merged.push(local && !remoteWins(local, remote) ? local : remote);
   }
 
-  // Append local-only elements (newly created by the local user)
   for (const el of localElements) {
     const e = el as ExcalidrawElement;
     if (e.id && !seen.has(e.id)) {
+      seen.add(e.id);
       merged.push(e);
     }
   }
 
-  return merged;
+  return inFractionalOrder(merged);
 }
 
 /**
@@ -92,9 +121,9 @@ export function diffElements(prev: readonly unknown[], current: readonly unknown
 /**
  * Apply a delta (changed elements + removed IDs) to a local element array.
  * - Delete wins: if an ID is in removedIds, it's removed regardless of version.
- * - For changed elements, higher version wins.
+ * - For changed elements, `remoteWins` decides.
  * - Cleans up orphaned bindings (arrows pointing to deleted elements)
- *   and orphaned groupIds.
+ *   and orphaned groupIds, on copies: the input elements are never modified.
  *
  * Returns: { elements, conflictIds, deletedIds }
  * - conflictIds: element IDs where the remote version overwrote a local edit
@@ -106,18 +135,11 @@ export function mergeDelta(
   removedIds: readonly string[],
 ): { elements: unknown[]; conflictIds: string[]; deletedIds: string[] } {
   const removedSet = new Set(removedIds);
-
-  // Build map of incoming changes
-  const changedMap = new Map<string, ExcalidrawElement>();
-  for (const el of changed) {
-    const e = el as ExcalidrawElement;
-    if (e.id) changedMap.set(e.id, e);
-  }
+  const changedMap = byId(changed);
 
   const conflictIds: string[] = [];
   const deletedIds: string[] = [];
   const merged: ExcalidrawElement[] = [];
-  const survivingIds = new Set<string>();
 
   for (const el of localElements) {
     const local = el as ExcalidrawElement;
@@ -130,72 +152,52 @@ export function mergeDelta(
     }
 
     const remote = changedMap.get(local.id);
-    if (remote) {
-      changedMap.delete(local.id);
-      if ((remote.version ?? 0) > (local.version ?? 0)) {
-        // Remote wins — check if local had edits (conflict)
-        if ((local.version ?? 0) > 0) {
-          conflictIds.push(local.id);
-        }
-        merged.push(remote);
-        survivingIds.add(remote.id);
-      } else {
-        merged.push(local);
-        survivingIds.add(local.id);
-      }
+    changedMap.delete(local.id);
+    if (remote && remoteWins(local, remote)) {
+      if (versionOf(local) > 0) conflictIds.push(local.id);
+      merged.push(remote);
     } else {
       merged.push(local);
-      survivingIds.add(local.id);
     }
   }
 
-  // Append new elements from delta (not seen locally)
-  for (const [, el] of changedMap) {
-    merged.push(el);
-    survivingIds.add(el.id);
+  for (const el of changedMap.values()) {
+    if (!removedSet.has(el.id)) merged.push(el);
   }
 
-  // Cleanup orphaned bindings and groupIds
-  if (deletedIds.length > 0) {
-    cleanupOrphanedBindings(merged, survivingIds);
-  }
-
-  return { elements: merged, conflictIds, deletedIds };
+  const elements = deletedIds.length > 0 ? withoutOrphans(merged) : merged;
+  return { elements: inFractionalOrder(elements), conflictIds, deletedIds };
 }
 
 /**
- * Clean up arrows with bindings to deleted elements,
- * and groupIds referencing groups that no longer have enough members.
+ * Arrows bound to a deleted element lose that binding, and groups left with fewer than two
+ * members dissolve. Each changed element is a new object one version up; its nonce and
+ * timestamp stay, so every replica running the same cleanup produces the identical copy.
  */
-function cleanupOrphanedBindings(elements: ExcalidrawElement[], survivingIds: Set<string>): void {
-  for (const el of elements) {
-    // Clean arrow bindings pointing to deleted elements
-    if (el.startBinding && !survivingIds.has(el.startBinding.elementId)) {
-      el.startBinding = undefined;
-    }
-    if (el.endBinding && !survivingIds.has(el.endBinding.elementId)) {
-      el.endBinding = undefined;
-    }
-  }
+function withoutOrphans(elements: ExcalidrawElement[]): ExcalidrawElement[] {
+  const survivingIds = new Set(elements.map((e) => e.id));
 
-  // Clean orphaned groupIds — groups with <2 members
   const groupCounts = new Map<string, number>();
   for (const el of elements) {
-    if (el.groupIds) {
-      for (const gid of el.groupIds) {
-        groupCounts.set(gid, (groupCounts.get(gid) ?? 0) + 1);
-      }
+    for (const gid of el.groupIds ?? []) {
+      groupCounts.set(gid, (groupCounts.get(gid) ?? 0) + 1);
     }
   }
-  const orphanedGroups = new Set<string>();
-  for (const [gid, count] of groupCounts) {
-    if (count < 2) orphanedGroups.add(gid);
-  }
-  if (orphanedGroups.size > 0) {
-    for (const el of elements) {
-      if (el.groupIds) {
-        el.groupIds = el.groupIds.filter((gid) => !orphanedGroups.has(gid));
-      }
-    }
-  }
+  const orphanedGroups = new Set(
+    [...groupCounts].filter(([, count]) => count < 2).map(([gid]) => gid),
+  );
+
+  return elements.map((el) => {
+    const dropStart = !!el.startBinding && !survivingIds.has(el.startBinding.elementId);
+    const dropEnd = !!el.endBinding && !survivingIds.has(el.endBinding.elementId);
+    const groupIds = el.groupIds?.filter((gid) => !orphanedGroups.has(gid));
+    const dropGroups = groupIds !== undefined && groupIds.length !== el.groupIds?.length;
+    if (!dropStart && !dropEnd && !dropGroups) return el;
+
+    const cleaned: ExcalidrawElement = { ...el, version: versionOf(el) + 1 };
+    if (dropStart) cleaned.startBinding = undefined;
+    if (dropEnd) cleaned.endBinding = undefined;
+    if (dropGroups) cleaned.groupIds = groupIds;
+    return cleaned;
+  });
 }

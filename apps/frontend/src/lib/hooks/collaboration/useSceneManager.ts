@@ -94,7 +94,7 @@ export function useSceneManager({
     }) => {
       const api = excalidrawApiRef.current;
       if (fromSocketId === socket.id || !api) return;
-      applyRemote(api, mergeElements(api.getSceneElements(), remoteElements));
+      applyRemote(api, mergeElements(api.getSceneElementsIncludingDeleted(), remoteElements));
     };
 
     const handleSceneDeltaReceived = ({
@@ -114,7 +114,7 @@ export function useSceneManager({
         elements: merged,
         conflictIds,
         deletedIds,
-      } = mergeDelta(api.getSceneElements(), changed, removedIds);
+      } = mergeDelta(api.getSceneElementsIncludingDeleted(), changed, removedIds);
       applyRemote(api, merged);
       if (conflictIds.length > 0) onConflict?.(conflictIds, fromUserId);
       if (deletedIds.length > 0) onRemoteDelete?.(deletedIds, fromUserId);
