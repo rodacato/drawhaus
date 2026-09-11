@@ -13,16 +13,39 @@ export class SceneSync {
   // Until the server's scene arrives there is no baseline, so nothing counts as a local edit.
   private ready = false;
 
+  /** The server's scene revision this baseline belongs to; null while unknown (ADR-026). */
+  private currentRevision: number | null = null;
+
   get sharedCount(): number {
     return this.shared.size;
   }
 
+  get revision(): number | null {
+    return this.currentRevision;
+  }
+
   /** The server's full scene becomes the baseline. */
-  reset(elements: readonly unknown[]): void {
+  reset(elements: readonly unknown[], revision: number | null = null): void {
     this.shared.clear();
     this.unsaved.clear();
     this.ready = true;
+    this.currentRevision = revision;
     this.markShared(elements);
+  }
+
+  /** Whether a scene tagged `revision` replaced the one this baseline belongs to. */
+  isReplacedBy(revision: number | null | undefined): boolean {
+    return revision != null && this.currentRevision !== null && revision !== this.currentRevision;
+  }
+
+  /** A payload tagged with an older revision was computed before a replace applied here. */
+  isStale(revision: number | null | undefined): boolean {
+    return revision != null && this.currentRevision !== null && revision < this.currentRevision;
+  }
+
+  /** A REST save replaced the scene under a revision this client never learns. */
+  forgetRevision(): void {
+    this.currentRevision = null;
   }
 
   /** Elements the room already has, such as a teammate's change that was just applied. */

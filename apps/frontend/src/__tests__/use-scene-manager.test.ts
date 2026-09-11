@@ -28,6 +28,8 @@ function renderScene(opts: {
   api?: ReturnType<typeof createExcalidrawApiStub> | null;
   /** What the room already had; defaults to the stub's scene, i.e. no local edits. */
   shared?: unknown[];
+  /** The scene revision that baseline came with. */
+  revision?: number | null;
   onConflict?: Mock<OnConflict>;
   onRemoteDelete?: Mock<OnRemoteDelete>;
   pendingSceneRef?: { current: { elements: unknown[] } | null };
@@ -36,7 +38,7 @@ function renderScene(opts: {
   const api = opts.api === null ? null : (opts.api ?? createExcalidrawApiStub());
   const apiRef = makeRef(api);
   const sync = new SceneSync();
-  sync.reset(opts.shared ?? api?._state.elements ?? []);
+  sync.reset(opts.shared ?? api?._state.elements ?? [], opts.revision ?? null);
   const activeSceneIdRef = makeRef<string | null>(null);
   const pendingSceneRef = opts.pendingSceneRef ?? makeRef<{ elements: unknown[] } | null>(null);
 
@@ -60,13 +62,19 @@ function renderScene(opts: {
   };
 }
 
-function receiveDelta(socket: MockSocket, changed: unknown[], removedIds: string[] = []) {
+function receiveDelta(
+  socket: MockSocket,
+  changed: unknown[],
+  removedIds: string[] = [],
+  revision?: number,
+) {
   act(() => {
     triggerSocketEvent(socket, "scene-delta-received", {
       fromSocketId: "other",
       fromUserId: "user-other",
       changed,
       removedIds,
+      revision,
     });
   });
 }
@@ -130,7 +138,12 @@ describe("useSceneManager", () => {
 
   test("after a reconnect, edits the server has not seen stay on the canvas and pending", async () => {
     const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 3 }] });
-    const { sync } = renderScene({ socket, api, shared: [{ id: "a", version: 1 }] });
+    const { sync } = renderScene({
+      socket,
+      api,
+      shared: [{ id: "a", version: 1 }],
+      revision: 1,
+    });
 
     act(() => {
       triggerSocketEvent(socket, "scene-from-db", {
@@ -138,6 +151,7 @@ describe("useSceneManager", () => {
           { id: "a", version: 1 },
           { id: "b", version: 1 },
         ],
+        revision: 1,
       });
     });
 
@@ -145,6 +159,49 @@ describe("useSceneManager", () => {
     const scene = api.getSceneElementsIncludingDeleted() as { id: string; version: number }[];
     expect(scene.map((e) => `${e.id}@${e.version}`)).toEqual(["a@3", "b@1"]);
     expect(sync.editedIds(scene)).toEqual(new Set(["a"]));
+  });
+
+  test("a scene from a new revision replaces edits computed before it", async () => {
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 3 }] });
+    const { sync } = renderScene({
+      socket,
+      api,
+      shared: [{ id: "a", version: 1 }],
+      revision: 1,
+    });
+
+    act(() => {
+      triggerSocketEvent(socket, "scene-from-db", {
+        elements: [{ id: "a", version: 1 }],
+        revision: 2,
+      });
+    });
+
+    await waitFor(() => expect(api.updateScene).toHaveBeenCalled());
+    const scene = api.getSceneElementsIncludingDeleted() as { id: string; version: number }[];
+    expect(scene.map((e) => `${e.id}@${e.version}`)).toEqual(["a@1"]);
+    expect(sync.editedIds(scene)).toEqual(new Set());
+  });
+
+  test("a delta computed on an older revision is ignored", () => {
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });
+    renderScene({ socket, api, revision: 2 });
+
+    receiveDelta(socket, [{ id: "stale", version: 1 }], [], 1);
+
+    expect(api.updateScene).not.toHaveBeenCalled();
+  });
+
+  test("a delta on the current revision is applied", () => {
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });
+    renderScene({ socket, api, revision: 2 });
+
+    receiveDelta(socket, [{ id: "fresh", version: 1 }], [], 2);
+
+    expect(api.getSceneElements()).toEqual([
+      { id: "a", version: 1 },
+      { id: "fresh", version: 1 },
+    ]);
   });
 
   test("scene-updated ignores events that originate from the current socket", () => {

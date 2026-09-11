@@ -47,19 +47,43 @@ limits as their REST routes: `body` 1–5000 characters (trimmed), `elementId` u
 
 ### Scene Sync
 
-| Direction | Event                  | Payload                                                              | Description                                               |
-| --------- | ---------------------- | -------------------------------------------------------------------- | --------------------------------------------------------- |
-| S → C     | `scene-from-db`        | `{ elements, appState, scenes, activeSceneId }`                      | Initial scene data on join                                |
-| C → S     | `scene-update`         | `{ roomId, sceneId?, elements }`                                     | Broadcast full element state (fallback for large changes) |
-| S → Room  | `scene-updated`        | `{ roomId, sceneId, fromUserId, fromSocketId, elements }`            | Relayed full element state                                |
-| C → S     | `scene-delta`          | `{ roomId, sceneId?, changed, removedIds }`                          | Incremental element changes (preferred)                   |
-| S → Room  | `scene-delta-received` | `{ roomId, sceneId, fromUserId, fromSocketId, changed, removedIds }` | Relayed incremental changes                               |
-| C → S     | `save-scene`           | `{ roomId, sceneId?, elements, appState }`                           | Persist scene to database (server-side merge)             |
-| S → C     | `scene-saved`          | `{ roomId, sceneId }`                                                | Confirms save succeeded                                   |
+| Direction | Event                  | Payload                                                                        | Description                                               |
+| --------- | ---------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| S → C     | `scene-from-db`        | `{ elements, appState, scenes?, activeSceneId, revision }`                     | Scene data (see below)                                    |
+| C → S     | `scene-update`         | `{ roomId, sceneId?, elements, revision? }`                                    | Broadcast full element state (fallback for large changes) |
+| S → Room  | `scene-updated`        | `{ roomId, sceneId, fromUserId, fromSocketId, elements, revision }`            | Relayed full element state                                |
+| C → S     | `scene-delta`          | `{ roomId, sceneId?, changed, removedIds, revision? }`                         | Incremental element changes (preferred)                   |
+| S → Room  | `scene-delta-received` | `{ roomId, sceneId, fromUserId, fromSocketId, changed, removedIds, revision }` | Relayed incremental changes                               |
+| C → S     | `save-scene`           | `{ roomId, sceneId?, elements, appState, revision? }`                          | Persist scene to database (server-side merge)             |
+| S → C     | `scene-saved`          | `{ roomId, sceneId }`                                                          | Confirms save succeeded                                   |
+
+`scene-from-db` is sent in three situations: on join, to the whole room after a snapshot restore,
+and to a single client whose `save-scene` was refused as stale. It always carries the scene's
+current `revision`.
+
+### Scene Revisions
+
+A scene's `revision` counts the writes that **replaced** it — a snapshot restore, or a content
+`PATCH` through the API or MCP (ADR-025). A merged `save-scene` never moves it.
+
+Clients tag `save-scene`, `scene-delta` and `scene-update` with the revision their copy is based
+on, the one they last received in `scene-from-db`:
+
+- The server refuses a `save-scene` whose revision is not the scene's current one, writes nothing,
+  and answers that client with `scene-from-db` instead of `scene-saved`. Without this, a save
+  computed before a restore and arriving after it merges the removed elements back in.
+- A client drops a relayed `scene-delta-received` / `scene-updated` tagged with a revision older
+  than its own.
+- On `scene-from-db` with a different revision, a client replaces its canvas and drops its unsaved
+  edits; on the same revision (a reconnect) it keeps them.
+- A payload with no revision is accepted unchecked, so a tab that predates this contract keeps
+  working until it reloads.
+
+See [ADR-026](adr/026-scene-revisions.md).
 
 ### Edit Lock (deprecated — no-op)
 
-**Concurrent editing** replaced the global edit lock. Multiple users can edit simultaneously. Conflicts are resolved via element-level merge (higher `version` wins). Events are preserved for backwards compatibility but have no functional effect — `request-edit-lock` always responds with `acquired: true`.
+**Concurrent editing** replaced the global edit lock. Multiple users can edit simultaneously. Conflicts are resolved via element-level merge (higher `version` wins, then the lower `versionNonce`). Events are preserved for backwards compatibility but have no functional effect — `request-edit-lock` always responds with `acquired: true`.
 
 | Direction | Event                | Payload                                            | Description                           |
 | --------- | -------------------- | -------------------------------------------------- | ------------------------------------- |

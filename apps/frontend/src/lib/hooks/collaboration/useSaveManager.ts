@@ -132,6 +132,7 @@ export function useSaveManager({
             sceneId: activeSceneIdRef.current,
             elements: safeElements,
             appState: sanitizedAppState,
+            revision: sync.revision,
           });
           generateThumbnail();
           return true;
@@ -140,6 +141,8 @@ export function useSaveManager({
           elements: safeElements,
           appState: sanitizedAppState,
         });
+        // That PATCH replaced the scene under a revision only the server knows now.
+        sync.forgetRevision();
         lastSavedAt.current = new Date().toLocaleTimeString();
         setSaveState("saved");
         generateThumbnail();
@@ -174,7 +177,11 @@ export function useSaveManager({
     const { changed, removedIds } = sync.takeChanges(scene.elements);
     if (changed.length === 0 && removedIds.length === 0) return;
     lastEmitTime.current = Date.now();
-    const target = { roomId: diagramId, sceneId: activeSceneIdRef.current };
+    const target = {
+      roomId: diagramId,
+      sceneId: activeSceneIdRef.current,
+      revision: sync.revision,
+    };
     // If delta covers >50% of the scene, send full state as fallback
     if (removedIds.length > Math.max(sharedBefore, 1) * 0.5) {
       socketRef.current?.emit("scene-update", {

@@ -119,6 +119,8 @@ export function createSnapshotRoutes(
           ioHolder.io.to(diagramId).emit("scene-from-db", {
             elements: result.elements,
             appState: result.appState,
+            activeSceneId: result.sceneId,
+            revision: result.revision,
           });
         }
         // Trigger snapshot list refresh (pre-restore backup was created)

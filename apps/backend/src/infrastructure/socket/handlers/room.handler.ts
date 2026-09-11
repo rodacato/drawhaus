@@ -61,6 +61,7 @@ export function registerRoomHandlers(io: Server, socket: Socket, useCases: RoomU
         appState: result.appState,
         scenes: result.scenes.map(formatScene),
         activeSceneId: firstScene?.id ?? null,
+        revision: firstScene?.revision ?? 0,
       });
 
       socket.emit("room-joined", { roomId, role: result.role, userId: result.user.id });
@@ -110,6 +111,7 @@ export function registerRoomHandlers(io: Server, socket: Socket, useCases: RoomU
         appState: result.appState,
         scenes: result.scenes.map(formatScene),
         activeSceneId: firstScene?.id ?? null,
+        revision: firstScene?.revision ?? 0,
       });
 
       socket.emit("room-joined", { roomId, role: result.role, userId: guestId });

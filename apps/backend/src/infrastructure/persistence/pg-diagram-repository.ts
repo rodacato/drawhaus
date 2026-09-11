@@ -63,7 +63,7 @@ async function writeFirstScene(
   const { rows: updated } = await client.query<{ id: string }>(
     `UPDATE scenes
      SET elements = COALESCE($2::jsonb, elements), app_state = COALESCE($3::jsonb, app_state),
-         updated_at = now()
+         revision = revision + 1, updated_at = now()
      WHERE id = (SELECT id FROM scenes WHERE diagram_id = $1 ORDER BY sort_order, created_at LIMIT 1)
      RETURNING id`,
     [diagramId, elements, appState],

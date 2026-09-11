@@ -19,6 +19,7 @@ export class RestoreSnapshotUseCase {
     elements: unknown[];
     appState: Record<string, unknown>;
     sceneId: string | null;
+    revision: number | null;
   }> {
     const snapshot = await this.snapshots.findById(snapshotId);
     if (!snapshot) throw new NotFoundError("Snapshot");
@@ -28,6 +29,7 @@ export class RestoreSnapshotUseCase {
 
     const scenes = await this.scenes.findByDiagram(snapshot.diagramId);
     const currentScene = scenes[0];
+    let revision: number | null = null;
     if (currentScene) {
       // No backup, no restore: overwriting without one would lose the current content for good.
       await this.snapshots.create({
@@ -39,7 +41,11 @@ export class RestoreSnapshotUseCase {
         appState: currentScene.appState,
       });
 
-      await this.scenes.updateScene(currentScene.id, snapshot.elements, snapshot.appState);
+      revision = await this.scenes.updateScene(
+        currentScene.id,
+        snapshot.elements,
+        snapshot.appState,
+      );
     }
 
     return {
@@ -47,6 +53,7 @@ export class RestoreSnapshotUseCase {
       elements: snapshot.elements,
       appState: snapshot.appState,
       sceneId: currentScene?.id ?? null,
+      revision,
     };
   }
 }

@@ -119,7 +119,7 @@ async function joinAsOwner(h: ReturnType<typeof setup>) {
   return { user, diagram, scene };
 }
 
-function eventsNamed(list: { event: string }[], name: string) {
+function eventsNamed<T extends { event: string }>(list: T[], name: string): T[] {
   return list.filter((e) => e.event === name);
 }
 
@@ -267,6 +267,86 @@ describe("socket handlers — scene binding", () => {
     assert.deepEqual(eventsNamed(h.socket.emitted, "room-error"), [
       { event: "room-error", payload: { message: "Save failed" } },
     ]);
+  });
+});
+
+describe("socket handlers — scene revisions (ADR-026)", () => {
+  it("join-room sends the scene's revision with scene-from-db", async () => {
+    const h = setup();
+    const { diagram, scene } = await joinAsOwner(h);
+    await h.scenes.updateScene(scene.id, [{ id: "restored", version: 1 }], {});
+
+    await h.socket.receive("join-room", { roomId: diagram.id });
+
+    const [fromDb] = eventsNamed(h.socket.emitted, "scene-from-db");
+    assert.equal((fromDb.payload as { revision: number }).revision, 1);
+  });
+
+  it("a save computed before a replace persists nothing and gets the current scene back", async () => {
+    const h = setup();
+    const { diagram, scene } = await joinAsOwner(h);
+    const seen = scene.revision;
+    await h.scenes.updateScene(scene.id, [{ id: "restored", version: 1 }], {});
+
+    await h.socket.receive("save-scene", {
+      roomId: diagram.id,
+      sceneId: scene.id,
+      elements: [{ id: "edited-before-restore", version: 1 }],
+      appState: {},
+      revision: seen,
+    });
+
+    const stored = await h.scenes.findById(scene.id);
+    assert.deepEqual(stored!.elements, [{ id: "restored", version: 1 }]);
+    assert.deepEqual(eventsNamed(h.socket.emitted, "scene-saved"), []);
+    assert.deepEqual(eventsNamed(h.socket.emitted, "scene-from-db"), [
+      {
+        event: "scene-from-db",
+        payload: {
+          elements: [{ id: "restored", version: 1 }],
+          appState: {},
+          activeSceneId: scene.id,
+          revision: seen + 1,
+        },
+      },
+    ]);
+  });
+
+  it("a save on the current revision is merged and confirmed", async () => {
+    const h = setup();
+    const { diagram, scene } = await joinAsOwner(h);
+
+    await h.socket.receive("save-scene", {
+      roomId: diagram.id,
+      sceneId: scene.id,
+      elements: [{ id: "el1", version: 1 }],
+      appState: {},
+      revision: scene.revision,
+    });
+
+    const stored = await h.scenes.findById(scene.id);
+    assert.deepEqual(stored!.elements, [{ id: "el1", version: 1 }]);
+    assert.equal(eventsNamed(h.socket.emitted, "scene-saved").length, 1);
+    assert.equal(eventsNamed(h.socket.emitted, "scene-from-db").length, 0);
+  });
+
+  it("deltas and full updates are relayed with the sender's revision", async () => {
+    const h = setup();
+    const { diagram } = await joinAsOwner(h);
+
+    await h.socket.receive("scene-delta", {
+      roomId: diagram.id,
+      changed: [{ id: "a", version: 2 }],
+      removedIds: [],
+      revision: 3,
+    });
+    await h.socket.receive("scene-update", { roomId: diagram.id, elements: [], revision: 3 });
+
+    const relayed = [
+      ...eventsNamed(h.socket.broadcasts, "scene-delta-received"),
+      ...eventsNamed(h.socket.broadcasts, "scene-updated"),
+    ].map((b) => (b.payload as { revision: number }).revision);
+    assert.deepEqual(relayed, [3, 3]);
   });
 });
 

@@ -55,6 +55,36 @@ describe("SceneSync", () => {
     expect(sync.hasChanges([el("a", 1)])).toBe(false);
   });
 
+  test("a scene from another revision replaces this baseline, the same revision does not", () => {
+    const sync = new SceneSync();
+    sync.reset([el("a", 1)], 4);
+
+    expect(sync.isReplacedBy(5)).toBe(true);
+    expect(sync.isReplacedBy(4)).toBe(false);
+    expect(sync.isReplacedBy(null)).toBe(false);
+  });
+
+  test("payloads computed on an older revision are stale, later ones are not", () => {
+    const sync = new SceneSync();
+    sync.reset([], 4);
+
+    expect(sync.isStale(3)).toBe(true);
+    expect(sync.isStale(4)).toBe(false);
+    expect(sync.isStale(undefined)).toBe(false);
+  });
+
+  test("with no known revision nothing is stale or replaced", () => {
+    const sync = new SceneSync();
+    expect(sync.isStale(3)).toBe(false);
+
+    sync.reset([], 4);
+    sync.forgetRevision();
+
+    expect(sync.revision).toBeNull();
+    expect(sync.isStale(3)).toBe(false);
+    expect(sync.isReplacedBy(9)).toBe(false);
+  });
+
   test("a new server scene drops edits it replaced", () => {
     const sync = new SceneSync();
     sync.reset([el("a", 1)]);
