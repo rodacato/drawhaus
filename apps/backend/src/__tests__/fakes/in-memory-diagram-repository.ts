@@ -1,14 +1,40 @@
 import crypto from "crypto";
 import type { DiagramRepository } from "../../domain/ports/diagram-repository";
 import type { Diagram, DiagramRole } from "../../domain/entities/diagram";
+import type { WorkspaceRole } from "../../domain/entities/workspace";
 import { InMemorySceneRepository } from "./in-memory-scene-repository";
+import { InMemoryWorkspaceRepository } from "./in-memory-workspace-repository";
 
 export class InMemoryDiagramRepository implements DiagramRepository {
   store: Diagram[] = [];
   members: { diagramId: string; userId: string; role: "editor" | "viewer" }[] = [];
 
   // Content writes land in the scene store, as in Postgres; share it with readers under test.
-  constructor(readonly scenes: InMemorySceneRepository = new InMemorySceneRepository()) {}
+  // Workspace members reach the workspace's diagrams, as in Postgres; share that store too.
+  constructor(
+    readonly scenes: InMemorySceneRepository = new InMemorySceneRepository(),
+    readonly workspaces: InMemoryWorkspaceRepository = new InMemoryWorkspaceRepository(),
+  ) {}
+
+  private diagramRole(diagramId: string, userId: string): "editor" | "viewer" | null {
+    return this.members.find((m) => m.diagramId === diagramId && m.userId === userId)?.role ?? null;
+  }
+
+  private workspaceRole(diagram: Diagram, userId: string): WorkspaceRole | null {
+    if (!diagram.workspaceId) return null;
+    const member = this.workspaces.members.find(
+      (m) => m.workspaceId === diagram.workspaceId && m.userId === userId,
+    );
+    return member?.role ?? null;
+  }
+
+  private canSee(diagram: Diagram, userId: string): boolean {
+    return (
+      diagram.ownerId === userId ||
+      this.diagramRole(diagram.id, userId) !== null ||
+      this.workspaceRole(diagram, userId) !== null
+    );
+  }
 
   async findById(id: string): Promise<Diagram | null> {
     return this.store.find((d) => d.id === id) ?? null;
@@ -19,10 +45,7 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     folderId?: string | null,
     workspaceId?: string,
   ): Promise<Diagram[]> {
-    const memberDiagramIds = new Set(
-      this.members.filter((m) => m.userId === userId).map((m) => m.diagramId),
-    );
-    let results = this.store.filter((d) => d.ownerId === userId || memberDiagramIds.has(d.id));
+    let results = this.store.filter((d) => this.canSee(d, userId));
     if (workspaceId) {
       results = results.filter((d) => d.workspaceId === workspaceId);
     }
@@ -36,8 +59,11 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     const diagram = this.store.find((d) => d.id === diagramId);
     if (!diagram) return null;
     if (diagram.ownerId === userId) return "owner";
-    const member = this.members.find((m) => m.diagramId === diagramId && m.userId === userId);
-    return member?.role ?? null;
+    const diagramRole = this.diagramRole(diagramId, userId);
+    if (diagramRole) return diagramRole;
+    const workspaceRole = this.workspaceRole(diagram, userId);
+    if (workspaceRole === "admin" || workspaceRole === "editor") return "editor";
+    return workspaceRole;
   }
 
   async create(data: {
@@ -111,7 +137,9 @@ export class InMemoryDiagramRepository implements DiagramRepository {
 
   async search(userId: string, query: string): Promise<Diagram[]> {
     const lower = query.toLowerCase();
-    return this.store.filter((d) => d.ownerId === userId && d.title.toLowerCase().includes(lower));
+    return this.store.filter(
+      (d) => this.canSee(d, userId) && d.title.toLowerCase().includes(lower),
+    );
   }
 
   async updateThumbnail(id: string, thumbnail: string): Promise<void> {
