@@ -366,7 +366,7 @@ async function startServer(): Promise<void> {
   await runMigrations();
 
   // Connect shared Redis client and upgrade rate limiters
-  const { getRedisClient } = await import("./infrastructure/redis-client");
+  const { getRedisClient, disconnectRedis } = await import("./infrastructure/redis-client");
   const redisClient = await getRedisClient();
   if (redisClient) {
     const { upgradeRateLimiters } = await import("./infrastructure/http/middleware/rate-limit");
@@ -390,12 +390,32 @@ async function startServer(): Promise<void> {
   });
 
   // Start backup scheduler (cron-based, reads config from DB, no-op if disabled)
-  const { startBackupScheduler } = await import("./infrastructure/services/backup-scheduler");
+  const { startBackupScheduler, stopBackupScheduler } =
+    await import("./infrastructure/services/backup-scheduler");
   await startBackupScheduler();
 
   httpServer.listen(config.port, () => {
     logger.info({ port: config.port }, `Backend running on http://localhost:${config.port}`);
   });
+
+  // Kamal stops the old container with Docker's default 10s before SIGKILL (proxy roles pass no -t).
+  const SHUTDOWN_TIMEOUT_MS = 8_000;
+  const { createShutdown, onShutdownSignals } = await import("./infrastructure/shutdown");
+  const { disconnectRedisAdapter } = await import("./infrastructure/socket/redis-adapter");
+  onShutdownSignals(
+    createShutdown({
+      timeoutMs: SHUTDOWN_TIMEOUT_MS,
+      logger,
+      exit: (code) => process.exit(code),
+      steps: [
+        // io.close() also closes the HTTP server, waiting for in-flight requests.
+        { name: "socket.io + http", run: () => ioHolder.io?.close() },
+        { name: "backup scheduler", run: stopBackupScheduler },
+        { name: "postgres", run: () => pool.end() },
+        { name: "redis", run: () => Promise.all([disconnectRedis(), disconnectRedisAdapter()]) },
+      ],
+    }),
+  );
 }
 
 startServer().catch((error: unknown) => {
