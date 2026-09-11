@@ -29,7 +29,7 @@ Each diagram is a Socket.IO room. Scenes are sub-rooms scoped to `{roomId}:{scen
 | C → S     | `join-room`       | `{ roomId }`                        | Join as authenticated user (uses session cookie) |
 | C → S     | `join-room-guest` | `{ shareToken, guestName }`         | Join as guest via share link                     |
 | S → C     | `room-joined`     | `{ roomId, role, userId }`          | Confirms successful join                         |
-| S → C     | `room-error`      | `{ message }`                       | Join or operation failed                         |
+| S → C     | `room-error`      | `{ message }`                       | Join failed (never a save outcome)               |
 | S → C     | `event-error`     | `{ event, message }`                | Payload of `event` failed validation (see below) |
 | S → Room  | `room-presence`   | `{ roomId, users: PresenceUser[] }` | Updated user list on join/leave                  |
 | S → Room  | `cursor-left`     | `{ userId }`                        | User disconnected from room                      |
@@ -45,6 +45,16 @@ process. Optional `sceneId` fields accept `null` as well as omission. Comment ev
 limits as their REST routes: `body` 1–5000 characters (trimmed), `elementId` up to 200, and
 `threadId` / `sceneId` must be UUIDs.
 
+### Acknowledgements
+
+A client may pass a Socket.IO ack callback after the payload of any client → server event. It is
+optional: an event sent without one behaves exactly as before. When one is sent, `onEvent` answers
+it at most once with `{ ok: true, ... }` or `{ ok: false, reason }`, where `reason` is
+`invalid-payload` for a payload the schema rejected and `server-error` for a handler that threw.
+Only `save-scene` answers its own outcomes today; every other handler leaves the callback to the
+wrapper, so a client that acks them waits for its own timeout. See
+[ADR-027](adr/027-save-acknowledgement.md).
+
 ### Scene Sync
 
 | Direction | Event                  | Payload                                                                        | Description                                               |
@@ -55,12 +65,30 @@ limits as their REST routes: `body` 1–5000 characters (trimmed), `elementId` u
 | C → S     | `scene-delta`          | `{ roomId, sceneId?, changed, removedIds, revision? }`                         | Incremental element changes (preferred)                   |
 | S → Room  | `scene-delta-received` | `{ roomId, sceneId, fromUserId, fromSocketId, changed, removedIds, revision }` | Relayed incremental changes                               |
 | C → S     | `save-scene`           | `{ roomId, sceneId?, elements, appState, revision? }`                          | Persist scene to database (server-side merge)             |
-| S → C     | `scene-saved`          | `{ roomId, sceneId }`                                                          | Confirms save succeeded                                   |
+| S → C     | `scene-saved`          | `{ roomId, sceneId }`                                                          | Confirms save succeeded (kept for clients without an ack) |
 
 `scene-from-db` is sent in four situations: on join, to the whole room after a snapshot restore,
 to the whole room after a content `PATCH` (REST save fallback, public API, MCP), and to a single
 client whose `save-scene` was refused as stale. It always carries the scene's current `revision`.
 The three room-wide cases go through the `RealtimeNotifier` port ([ADR-027](adr/027-realtime-notifier-port.md)).
+
+### Save Outcomes
+
+`save-scene` answers the sender's ack callback on every path:
+
+| Response                                | When                                                   |
+| --------------------------------------- | ------------------------------------------------------ |
+| `{ ok: true, sceneId }`                 | Written and merged; `scene-saved` is emitted too       |
+| `{ ok: false, reason: "not-in-room" }`  | The socket never joined `roomId`                       |
+| `{ ok: false, reason: "forbidden" }`    | The sender cannot edit the room                        |
+| `{ ok: false, reason: "no-scene" }`     | No `sceneId` given and no active scene to fall back on |
+| `{ ok: false, reason: "stale" }`        | Refused by the revision check; `scene-from-db` follows |
+| `{ ok: false, reason: "server-error" }` | The save threw                                         |
+
+A failed save is never reported as `room-error`, which clients treat as a lost connection. The
+client emits with a 5 s ack timeout and reports the board as saved only on `{ ok: true }`; a
+refusal and a timeout both show `Error`. A client that sends no callback still saves and still
+receives `scene-saved`.
 
 ### Scene Revisions
 
@@ -173,9 +201,9 @@ type Role = "owner" | "editor" | "viewer";
 
 ## Throttling (Client-Side)
 
-| Event             | Throttle                      | Notes                                  |
-| ----------------- | ----------------------------- | -------------------------------------- |
-| `scene-update`    | 50ms (100ms if >200 elements) | Adaptive based on scene complexity     |
-| `cursor-move`     | 30ms                          |                                        |
-| `viewport-update` | 100ms                         |                                        |
-| `save-scene`      | 1200ms debounce               | Falls back to REST API if disconnected |
+| Event             | Throttle                      | Notes                                                  |
+| ----------------- | ----------------------------- | ------------------------------------------------------ |
+| `scene-update`    | 50ms (100ms if >200 elements) | Adaptive based on scene complexity                     |
+| `cursor-move`     | 30ms                          |                                                        |
+| `viewport-update` | 100ms                         |                                                        |
+| `save-scene`      | 1200ms debounce               | 5s ack timeout; falls back to REST API if disconnected |

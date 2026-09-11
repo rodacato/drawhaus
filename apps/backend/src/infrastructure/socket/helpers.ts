@@ -24,21 +24,39 @@ export function accountUserId(data: SocketData): string | null {
 
 export const EVENT_ERROR = "event-error";
 
+export type AckResponse = { ok: true; [key: string]: unknown } | { ok: false; reason: string };
+export type SocketAck = (response: AckResponse) => void;
+
 export function onEvent<S extends z.ZodType>(
   socket: Socket,
   event: string,
   schema: S,
-  handler: (payload: z.output<S>) => unknown,
+  handler: (payload: z.output<S>, ack?: SocketAck) => unknown,
 ): void {
-  socket.on(event, (payload: unknown) => {
-    const parsed = schema.safeParse(payload);
+  socket.on(event, async (...args: unknown[]) => {
+    const ack = takeAck(args);
+    const parsed = schema.safeParse(args[0]);
     if (!parsed.success) {
       logger.warn({ event, socketId: socket.id }, "socket payload rejected");
       socket.emit(EVENT_ERROR, { event, message: "Invalid payload" });
+      ack?.({ ok: false, reason: "invalid-payload" });
       return;
     }
-    return runSafely(socket, event, () => handler(parsed.data));
+    const completed = await runSafely(socket, event, () => handler(parsed.data, ack));
+    if (!completed) ack?.({ ok: false, reason: "server-error" });
   });
+}
+
+/** Clients that want an outcome pass a callback after the payload; older ones send none. */
+function takeAck(args: unknown[]): SocketAck | undefined {
+  if (typeof args.at(-1) !== "function") return undefined;
+  const respond = args.pop() as SocketAck;
+  let answered = false;
+  return (response) => {
+    if (answered) return;
+    answered = true;
+    respond(response);
+  };
 }
 
 // socket.io dispatches listeners outside any caller that could catch, so a throw here would crash the process.
@@ -46,11 +64,13 @@ export async function runSafely(
   socket: Pick<Socket, "id">,
   event: string,
   fn: () => unknown,
-): Promise<void> {
+): Promise<boolean> {
   try {
     await fn();
+    return true;
   } catch (error: unknown) {
     logger.error({ err: error, event, socketId: socket.id }, "socket handler failed");
+    return false;
   }
 }
 
