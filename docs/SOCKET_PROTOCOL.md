@@ -113,9 +113,9 @@ Cursor and viewport events use `socket.volatile` — messages may be dropped und
 
 ### Drive Sync
 
-| Direction | Event               | Payload                       | Description              |
-| --------- | ------------------- | ----------------------------- | ------------------------ |
-| S → C     | `drive-sync-status` | `{ sceneId, synced, error? }` | Google Drive sync result |
+| Direction | Event               | Payload                       | Description                                                            |
+| --------- | ------------------- | ----------------------------- | ---------------------------------------------------------------------- |
+| S → C     | `drive-sync-status` | `{ sceneId, synced, error? }` | Google Drive sync result for the signed-in saver; never sent to guests |
 
 ---
 

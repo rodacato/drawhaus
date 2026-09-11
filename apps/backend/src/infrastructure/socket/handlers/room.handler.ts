@@ -7,6 +7,7 @@ import type { CreateSnapshotUseCase } from "../../../application/use-cases/snaps
 import {
   type SocketData,
   type PresenceUser,
+  accountUserId,
   canEdit,
   getRoomPresenceUsers,
   onEvent,
@@ -184,7 +185,7 @@ async function maybeSnapshotOnLastEditorLeaving(
   if (hasRemainingEditors || !myData.userId) return;
 
   const activeCount = futureUsers.length + 1;
-  const actorId = myData.userId.startsWith("guest_") ? null : myData.userId;
+  const actorId = accountUserId(myData);
 
   try {
     const snap = await useCases.createSnapshot.createAutomatic(

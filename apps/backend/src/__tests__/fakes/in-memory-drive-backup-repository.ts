@@ -1,12 +1,14 @@
 import crypto from "crypto";
 import type { DriveBackupRepository } from "../../domain/ports/drive-backup-repository";
 import type { DriveBackupSettings, DriveFileMapping } from "../../domain/entities/drive-backup";
+import { assertUuidColumn } from "./pg-uuid";
 
 export class InMemoryDriveBackupRepository implements DriveBackupRepository {
   settings = new Map<string, DriveBackupSettings>();
   mappings: DriveFileMapping[] = [];
 
   async getSettings(userId: string): Promise<DriveBackupSettings | null> {
+    assertUuidColumn(userId);
     return this.settings.get(userId) ?? null;
   }
 
@@ -14,6 +16,7 @@ export class InMemoryDriveBackupRepository implements DriveBackupRepository {
     userId: string,
     data: { enabled: boolean; rootFolderId?: string | null },
   ): Promise<DriveBackupSettings> {
+    assertUuidColumn(userId);
     const existing = this.settings.get(userId);
     const next: DriveBackupSettings = {
       userId,
@@ -28,6 +31,7 @@ export class InMemoryDriveBackupRepository implements DriveBackupRepository {
   }
 
   async deleteSettings(userId: string): Promise<void> {
+    assertUuidColumn(userId);
     this.settings.delete(userId);
     this.mappings = this.mappings.filter((m) => m.userId !== userId);
   }
@@ -37,6 +41,7 @@ export class InMemoryDriveBackupRepository implements DriveBackupRepository {
     diagramId: string,
     sceneId: string | null,
   ): Promise<DriveFileMapping | null> {
+    assertUuidColumn(userId);
     return (
       this.mappings.find(
         (m) => m.userId === userId && m.diagramId === diagramId && m.sceneId === sceneId,
@@ -51,6 +56,7 @@ export class InMemoryDriveBackupRepository implements DriveBackupRepository {
     driveFileId: string;
     driveFolderId: string;
   }): Promise<DriveFileMapping> {
+    assertUuidColumn(data.userId);
     const existing = this.mappings.find(
       (m) =>
         m.userId === data.userId && m.diagramId === data.diagramId && m.sceneId === data.sceneId,
@@ -71,6 +77,7 @@ export class InMemoryDriveBackupRepository implements DriveBackupRepository {
   }
 
   async deleteFileMappings(userId: string, diagramId: string): Promise<void> {
+    assertUuidColumn(userId);
     this.mappings = this.mappings.filter(
       (m) => !(m.userId === userId && m.diagramId === diagramId),
     );

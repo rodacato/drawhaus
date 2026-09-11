@@ -14,6 +14,7 @@ class FlakySnapshotRepository extends InMemorySnapshotRepository {
   }
 }
 
+const OWNER_ID = "8f14e45f-ceea-4e7a-9b1f-0c5b8d6a1e21";
 const CURRENT = [{ id: "current-1", type: "rectangle" }];
 const FROZEN = [{ id: "frozen-1", type: "ellipse" }];
 
@@ -21,7 +22,7 @@ async function setup() {
   const diagrams = new InMemoryDiagramRepository();
   const scenes = new InMemorySceneRepository();
   const snapshots = new FlakySnapshotRepository();
-  const diagram = await diagrams.create({ ownerId: "user-1", title: "D" });
+  const diagram = await diagrams.create({ ownerId: OWNER_ID, title: "D" });
   const scene = await scenes.create({
     diagramId: diagram.id,
     name: "Scene 1",
@@ -31,7 +32,7 @@ async function setup() {
   });
   const snapshot = await snapshots.create({
     diagramId: diagram.id,
-    createdBy: "user-1",
+    createdBy: OWNER_ID,
     trigger: "manual",
     name: "Frozen",
     elements: FROZEN,
@@ -49,7 +50,7 @@ describe("RestoreSnapshotUseCase", () => {
   it("backs up the current scene, then overwrites it with the snapshot", async () => {
     const { scene, snapshot, snapshots, restore } = await setup();
 
-    await restore.execute(snapshot.id, "user-1");
+    await restore.execute(snapshot.id, OWNER_ID);
 
     assert.deepEqual(scene.elements, FROZEN);
     const backup = snapshots.store.find((s) => s.name === "Pre-restore backup");
@@ -61,7 +62,7 @@ describe("RestoreSnapshotUseCase", () => {
     snapshots.failCreates = true;
 
     await assert.rejects(
-      () => restore.execute(snapshot.id, "user-1"),
+      () => restore.execute(snapshot.id, OWNER_ID),
       /snapshot storage unavailable/,
     );
 

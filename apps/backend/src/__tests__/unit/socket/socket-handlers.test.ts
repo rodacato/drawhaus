@@ -15,6 +15,7 @@ import { CreateCommentUseCase } from "../../../application/use-cases/comments/cr
 import { ReplyCommentUseCase } from "../../../application/use-cases/comments/reply-comment";
 import { ResolveCommentUseCase } from "../../../application/use-cases/comments/resolve-comment";
 import { DeleteCommentUseCase } from "../../../application/use-cases/comments/delete-comment";
+import { SyncToDriveUseCase } from "../../../application/use-cases/drive/sync-to-drive";
 import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { InMemoryDiagramRepository } from "../../fakes/in-memory-diagram-repository";
@@ -22,6 +23,10 @@ import { InMemorySceneRepository } from "../../fakes/in-memory-scene-repository"
 import { InMemoryCommentRepository } from "../../fakes/in-memory-comment-repository";
 import { InMemoryShareRepository } from "../../fakes/in-memory-share-repository";
 import { InMemorySnapshotRepository } from "../../fakes/in-memory-snapshot-repository";
+import { InMemoryDriveBackupRepository } from "../../fakes/in-memory-drive-backup-repository";
+import { InMemoryFolderRepository } from "../../fakes/in-memory-folder-repository";
+import { FakeGoogleDriveService } from "../../fakes/fake-google-drive-service";
+import { FakeTokenRefresher } from "../../fakes/fake-token-refresher";
 import { FakeIo, FakeSocket } from "../../fakes/fake-socket";
 
 const CLIENT_EVENTS = [
@@ -51,11 +56,12 @@ function setup() {
   const diagrams = new InMemoryDiagramRepository();
   const scenes = new InMemorySceneRepository();
   const comments = new InMemoryCommentRepository(() => users.store);
-  const createSnapshot = new CreateSnapshotUseCase(
-    new InMemorySnapshotRepository(),
-    scenes,
-    diagrams,
-  );
+  const shares = new InMemoryShareRepository();
+  const snapshots = new InMemorySnapshotRepository();
+  const createSnapshot = new CreateSnapshotUseCase(snapshots, scenes, diagrams);
+  const drive = new FakeGoogleDriveService();
+  const driveBackups = new InMemoryDriveBackupRepository();
+  const tokens = new FakeTokenRefresher();
 
   const socket = new FakeSocket();
   const io = new FakeIo([socket]);
@@ -64,11 +70,18 @@ function setup() {
 
   registerRoomHandlers(server, client, {
     joinRoom: new JoinRoomUseCase(sessions, diagrams, scenes),
-    joinRoomGuest: new JoinRoomGuestUseCase(new InMemoryShareRepository(), diagrams, scenes),
+    joinRoomGuest: new JoinRoomGuestUseCase(shares, diagrams, scenes),
     createSnapshot,
   });
   registerSceneHandlers(server, client, {
     saveScene: new SaveSceneUseCase(scenes),
+    syncToDrive: new SyncToDriveUseCase(
+      drive,
+      driveBackups,
+      tokens,
+      diagrams,
+      new InMemoryFolderRepository(),
+    ),
     createSnapshot,
   });
   registerLockHandlers(server, client);
@@ -80,7 +93,19 @@ function setup() {
     deleteComment: new DeleteCommentUseCase(comments, diagrams),
   });
 
-  return { socket, io, users, sessions, diagrams, scenes };
+  return {
+    socket,
+    io,
+    users,
+    sessions,
+    diagrams,
+    scenes,
+    shares,
+    snapshots,
+    drive,
+    driveBackups,
+    tokens,
+  };
 }
 
 async function joinAsOwner(h: ReturnType<typeof setup>) {
@@ -242,5 +267,83 @@ describe("socket handlers — scene binding", () => {
     assert.deepEqual(eventsNamed(h.socket.emitted, "room-error"), [
       { event: "room-error", payload: { message: "Save failed" } },
     ]);
+  });
+});
+
+async function joinAsGuestEditor(h: ReturnType<typeof setup>) {
+  const owner = await h.users.create({ email: "owner@test.com", name: "Owner", passwordHash: "h" });
+  const diagram = await h.diagrams.create({ title: "Board", ownerId: owner.id });
+  const link = await h.shares.create({
+    diagramId: diagram.id,
+    createdBy: owner.id,
+    role: "editor",
+    expiresAt: null,
+  });
+  await h.socket.receive("join-room-guest", { shareToken: link.token, guestName: "Gus" });
+  h.socket.emitted = [];
+  return { diagram };
+}
+
+async function joinAsEditor(h: ReturnType<typeof setup>) {
+  const owner = await h.users.create({ email: "owner@test.com", name: "Owner", passwordHash: "h" });
+  const editor = await h.users.create({ email: "ed@test.com", name: "Editor", passwordHash: "h" });
+  const diagram = await h.diagrams.create({ title: "Board", ownerId: owner.id });
+  h.diagrams.members.push({ diagramId: diagram.id, userId: editor.id, role: "editor" });
+  const session = await h.sessions.create(editor.id);
+  h.socket.handshake.headers.cookie = `drawhaus_session=${session.token}`;
+  await h.socket.receive("join-room", { roomId: diagram.id });
+  h.socket.emitted = [];
+  return { editor, diagram };
+}
+
+async function saveAndFlushSideEffects(h: ReturnType<typeof setup>, roomId: string) {
+  await h.socket.receive("save-scene", {
+    roomId,
+    sceneId: null,
+    elements: [{ id: "el1", version: 1 }],
+    appState: {},
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+}
+
+describe("socket handlers — save-scene side effects", () => {
+  it("a guest editor's save records the interval snapshot without an author", async () => {
+    const h = setup();
+    const { diagram } = await joinAsGuestEditor(h);
+
+    await saveAndFlushSideEffects(h, diagram.id);
+
+    assert.deepEqual(
+      h.snapshots.store.map((s) => ({ trigger: s.trigger, createdBy: s.createdBy })),
+      [{ trigger: "interval", createdBy: null }],
+    );
+    assert.equal(eventsNamed(h.io.broadcasts, "snapshot-created").length, 1);
+  });
+
+  it("a guest editor's save does not run Drive sync", async () => {
+    const h = setup();
+    const { diagram } = await joinAsGuestEditor(h);
+
+    await saveAndFlushSideEffects(h, diagram.id);
+
+    assert.deepEqual(eventsNamed(h.socket.emitted, "drive-sync-status"), []);
+  });
+
+  it("a signed-in editor's save is still attributed to them and synced to their Drive", async () => {
+    const h = setup();
+    const { editor, diagram } = await joinAsEditor(h);
+    await h.driveBackups.upsertSettings(editor.id, { enabled: true });
+    h.tokens.setToken(editor.id, "editor-token");
+
+    await saveAndFlushSideEffects(h, diagram.id);
+
+    assert.deepEqual(
+      h.snapshots.store.map((s) => s.createdBy),
+      [editor.id],
+    );
+    assert.deepEqual(
+      h.driveBackups.mappings.map((m) => ({ userId: m.userId, diagramId: m.diagramId })),
+      [{ userId: editor.id, diagramId: diagram.id }],
+    );
   });
 });
