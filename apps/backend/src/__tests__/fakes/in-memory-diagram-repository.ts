@@ -1,10 +1,14 @@
 import crypto from "crypto";
 import type { DiagramRepository } from "../../domain/ports/diagram-repository";
 import type { Diagram, DiagramRole } from "../../domain/entities/diagram";
+import { InMemorySceneRepository } from "./in-memory-scene-repository";
 
 export class InMemoryDiagramRepository implements DiagramRepository {
   store: Diagram[] = [];
   members: { diagramId: string; userId: string; role: "editor" | "viewer" }[] = [];
+
+  // Content writes land in the scene store, as in Postgres; share it with readers under test.
+  constructor(readonly scenes: InMemorySceneRepository = new InMemorySceneRepository()) {}
 
   async findById(id: string): Promise<Diagram | null> {
     return this.store.find((d) => d.id === id) ?? null;
@@ -70,23 +74,26 @@ export class InMemoryDiagramRepository implements DiagramRepository {
     const diagram = this.store.find((d) => d.id === id);
     if (!diagram) return null;
     if (data.title !== undefined) diagram.title = data.title;
-    if (data.elements !== undefined) diagram.elements = data.elements;
-    if (data.appState !== undefined) diagram.appState = data.appState;
-    diagram.updatedAt = new Date();
-    return diagram;
-  }
-
-  async updateScene(
-    id: string,
-    elements: unknown[],
-    appState: Record<string, unknown>,
-  ): Promise<void> {
-    const diagram = this.store.find((d) => d.id === id);
-    if (diagram) {
+    if (data.elements !== undefined || data.appState !== undefined) {
+      const [first] = await this.scenes.findByDiagram(id);
+      const elements = data.elements ?? first?.elements ?? diagram.elements;
+      const appState = data.appState ?? first?.appState ?? diagram.appState;
+      if (first) {
+        await this.scenes.updateScene(first.id, elements, appState);
+      } else {
+        await this.scenes.create({
+          diagramId: id,
+          name: "Scene 1",
+          sortOrder: 0,
+          elements,
+          appState,
+        });
+      }
       diagram.elements = elements;
       diagram.appState = appState;
-      diagram.updatedAt = new Date();
     }
+    diagram.updatedAt = new Date();
+    return diagram;
   }
 
   async moveTo(id: string, folderId: string | null): Promise<void> {

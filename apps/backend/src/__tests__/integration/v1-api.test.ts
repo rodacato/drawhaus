@@ -26,13 +26,15 @@ const WORKSPACE_ID = crypto.randomUUID();
 const OTHER_WORKSPACE_ID = crypto.randomUUID();
 
 let diagrams: InMemoryDiagramRepository;
+let scenes: InMemorySceneRepository;
 let apiKeys: InMemoryApiKeyRepository;
 let users: InMemoryUserRepository;
 let rawKey: string;
 let userId: string;
 
 function createApp() {
-  diagrams = new InMemoryDiagramRepository();
+  scenes = new InMemorySceneRepository();
+  diagrams = new InMemoryDiagramRepository(scenes);
   apiKeys = new InMemoryApiKeyRepository();
   users = new InMemoryUserRepository();
 
@@ -98,9 +100,9 @@ function createApp() {
     createV1DiagramRoutes(
       {
         create: new CreateDiagramUseCase(diagrams, workspaces, new InMemoryFolderRepository()),
-        get: new GetDiagramUseCase(diagrams, new InMemorySceneRepository()),
+        get: new GetDiagramUseCase(diagrams, scenes),
         list: new ListDiagramsUseCase(diagrams),
-        update: new UpdateDiagramUseCase(diagrams),
+        update: new UpdateDiagramUseCase(diagrams, scenes),
         delete: new DeleteDiagramUseCase(diagrams, new InMemoryWorkspaceRepository()),
       },
       FRONTEND_URL,
@@ -421,5 +423,42 @@ describe("/v1/ request logging", () => {
     assert.ok(apiKeys.logs.length > 0);
     assert.equal(apiKeys.logs[0].method, "GET");
     assert.equal(apiKeys.logs[0].path, "/");
+  });
+});
+
+describe("/v1/diagrams content once the board has been opened", () => {
+  const BOARD = [{ id: "board-1", type: "rectangle", x: 0, y: 0, width: 100, height: 50 }];
+  const API = [{ id: "api-1", type: "rectangle", x: 10, y: 10, width: 80, height: 40 }];
+
+  async function openedOnBoard(app: ReturnType<typeof express>) {
+    const res = await api(app).post("/v1/diagrams").send({ title: "Board" });
+    const id = res.body.data.id as string;
+    await scenes.create({ diagramId: id, name: "Scene 1", sortOrder: 0, elements: BOARD });
+    return id;
+  }
+
+  test("PATCH elements is what a later GET returns", async () => {
+    const app = createApp();
+    const id = await openedOnBoard(app);
+
+    const patch = await api(app).patch(`/v1/diagrams/${id}`).send({ elements: API });
+    const res = await api(app).get(`/v1/diagrams/${id}`);
+
+    assert.equal(patch.status, 200);
+    assert.deepEqual(res.body.data.elements, API);
+  });
+
+  test("PATCH title alone leaves the board's content in place", async () => {
+    const app = createApp();
+    const id = await openedOnBoard(app);
+    const touchedAt = scenes.store[0].updatedAt;
+
+    const patch = await api(app).patch(`/v1/diagrams/${id}`).send({ title: "Renamed" });
+    const res = await api(app).get(`/v1/diagrams/${id}`);
+
+    assert.equal(patch.body.data.title, "Renamed");
+    assert.deepEqual(patch.body.data.elements, BOARD);
+    assert.deepEqual(res.body.data.elements, BOARD);
+    assert.equal(scenes.store[0].updatedAt, touchedAt);
   });
 });

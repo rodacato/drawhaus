@@ -1,6 +1,7 @@
 import type { DiagramRepository } from "../../domain/ports/diagram-repository";
 import type { Diagram, DiagramRole } from "../../domain/entities/diagram";
-import { pool } from "../db";
+import type { PoolClient } from "pg";
+import { pool, withTransaction } from "../db";
 
 type DiagramRow = {
   id: string;
@@ -51,6 +52,33 @@ function escapeLike(str: string): string {
 const D_COLS = COLS.split(", ")
   .map((c) => `d.${c}`)
   .join(", ");
+
+/** Null elements/appState keep the stored value; a missing scene is seeded from the diagram row. */
+async function writeFirstScene(
+  client: PoolClient,
+  diagramId: string,
+  elements: string | null,
+  appState: string | null,
+): Promise<string> {
+  const { rows: updated } = await client.query<{ id: string }>(
+    `UPDATE scenes
+     SET elements = COALESCE($2::jsonb, elements), app_state = COALESCE($3::jsonb, app_state),
+         updated_at = now()
+     WHERE id = (SELECT id FROM scenes WHERE diagram_id = $1 ORDER BY sort_order, created_at LIMIT 1)
+     RETURNING id`,
+    [diagramId, elements, appState],
+  );
+  if (updated[0]) return updated[0].id;
+
+  const { rows: created } = await client.query<{ id: string }>(
+    `INSERT INTO scenes (diagram_id, name, sort_order, elements, app_state)
+     SELECT id, 'Scene 1', 0, COALESCE($2::jsonb, elements), COALESCE($3::jsonb, app_state)
+     FROM diagrams WHERE id = $1
+     RETURNING id`,
+    [diagramId, elements, appState],
+  );
+  return created[0].id;
+}
 
 export class PgDiagramRepository implements DiagramRepository {
   async findById(id: string): Promise<Diagram | null> {
@@ -188,45 +216,36 @@ export class PgDiagramRepository implements DiagramRepository {
     id: string,
     data: Partial<Pick<Diagram, "title" | "elements" | "appState">>,
   ): Promise<Diagram | null> {
-    const updates: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-
-    if (data.title !== undefined) {
-      updates.push(`title = $${index}`);
-      values.push(data.title);
-      index += 1;
-    }
-    if (data.elements !== undefined) {
-      updates.push(`elements = $${index}`);
-      values.push(JSON.stringify(data.elements));
-      index += 1;
-    }
-    if (data.appState !== undefined) {
-      updates.push(`app_state = $${index}`);
-      values.push(JSON.stringify(data.appState));
-      index += 1;
+    if (data.elements === undefined && data.appState === undefined) {
+      const { rows } = await pool.query<DiagramRow>(
+        `UPDATE diagrams SET title = COALESCE($1, title), updated_at = now()
+         WHERE id = $2 RETURNING ${COLS}`,
+        [data.title ?? null, id],
+      );
+      return rows[0] ? toDomain(rows[0]) : null;
     }
 
-    updates.push("updated_at = now()");
-    values.push(id);
+    const elements = data.elements === undefined ? null : JSON.stringify(data.elements);
+    const appState = data.appState === undefined ? null : JSON.stringify(data.appState);
 
-    const { rows } = await pool.query<DiagramRow>(
-      `UPDATE diagrams SET ${updates.join(", ")} WHERE id = $${index} RETURNING ${COLS}`,
-      values,
-    );
-    return rows[0] ? toDomain(rows[0]) : null;
-  }
+    return withTransaction(async (client) => {
+      const locked = await client.query("SELECT 1 FROM diagrams WHERE id = $1 FOR NO KEY UPDATE", [
+        id,
+      ]);
+      if (locked.rowCount === 0) return null;
 
-  async updateScene(
-    id: string,
-    elements: unknown[],
-    appState: Record<string, unknown>,
-  ): Promise<void> {
-    await pool.query(
-      "UPDATE diagrams SET elements = $1, app_state = $2, updated_at = now() WHERE id = $3",
-      [JSON.stringify(elements), JSON.stringify(appState), id],
-    );
+      const sceneId = await writeFirstScene(client, id, elements, appState);
+      const { rows } = await client.query<DiagramRow>(
+        `UPDATE diagrams d
+         SET title = COALESCE($2, d.title), elements = s.elements, app_state = s.app_state,
+             updated_at = now()
+         FROM scenes s
+         WHERE d.id = $1 AND s.id = $3
+         RETURNING ${D_COLS}`,
+        [id, data.title ?? null, sceneId],
+      );
+      return toDomain(rows[0]);
+    });
   }
 
   async moveTo(id: string, folderId: string | null): Promise<void> {

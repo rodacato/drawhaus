@@ -29,7 +29,6 @@ import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../fakes/in-memory-session-repository";
 import { InMemoryDiagramRepository } from "../fakes/in-memory-diagram-repository";
 import { InMemoryFolderRepository } from "../fakes/in-memory-folder-repository";
-import { InMemorySceneRepository } from "../fakes/in-memory-scene-repository";
 import { FakeHasher } from "../fakes/fake-hasher";
 import { InMemoryInvitationRepository } from "../fakes/in-memory-invitation-repository";
 import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-reset-repository";
@@ -114,14 +113,14 @@ function createApp() {
     createDiagramRoutes(
       {
         create: new CreateDiagramUseCase(diagrams, new InMemoryWorkspaceRepository(), folders),
-        get: new GetDiagramUseCase(diagrams, new InMemorySceneRepository()),
+        get: new GetDiagramUseCase(diagrams, diagrams.scenes),
         list: new ListDiagramsUseCase(diagrams),
         search: new SearchDiagramsUseCase(diagrams),
-        update: new UpdateDiagramUseCase(diagrams),
+        update: new UpdateDiagramUseCase(diagrams, diagrams.scenes),
         updateThumbnail: new UpdateThumbnailUseCase(diagrams),
         delete: new DeleteDiagramUseCase(diagrams, new InMemoryWorkspaceRepository()),
         toggleStar: new ToggleStarUseCase(diagrams),
-        duplicate: new DuplicateDiagramUseCase(diagrams),
+        duplicate: new DuplicateDiagramUseCase(diagrams, diagrams.scenes),
         move: new MoveDiagramUseCase(diagrams, folders, new InMemoryWorkspaceRepository()),
         transferOwnership: new TransferDiagramOwnershipUseCase(
           diagrams,
@@ -348,6 +347,30 @@ test("duplicate diagram", async () => {
     .set("Cookie", cookie);
   assert.equal(res.status, 201);
   assert.notEqual(res.body.diagram.id, originalId);
+});
+
+test("duplicate copies the board's content, not the diagram row's stale copy", async () => {
+  const app = createApp();
+  const cookie = await registerAndGetCookie(app, "dup-board@example.com");
+  const createRes = await request(app)
+    .post("/api/diagrams")
+    .set("Cookie", cookie)
+    .send({ title: "Original", elements: [{ id: "row-1", type: "rectangle" }] });
+  const originalId = createRes.body.diagram.id as string;
+  const board = [{ id: "board-1", type: "ellipse" }];
+  await diagrams.scenes.create({
+    diagramId: originalId,
+    name: "Scene 1",
+    sortOrder: 0,
+    elements: board,
+  });
+
+  const res = await request(app)
+    .post(`/api/diagrams/${originalId}/duplicate`)
+    .set("Cookie", cookie);
+
+  assert.equal(res.status, 201);
+  assert.deepEqual(res.body.diagram.elements, board);
 });
 
 test("transfer ownership", async () => {
