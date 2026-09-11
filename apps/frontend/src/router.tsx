@@ -51,7 +51,7 @@ export function AppRouter() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/self-host" element={<SelfHostPage />} />
 
-          {/* Protected routes - redirect to login if not authenticated */}
+          {/* Protected routes: the only ones a signed-out visitor or any 401 sends to /login */}
           <Route element={<ProtectedLayout />}>
             {/* Dashboard is full-screen with its own sidebar/header (Stitch layout) */}
             <Route path="/dashboard" element={<Dashboard />} />

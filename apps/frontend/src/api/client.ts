@@ -5,6 +5,18 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+type UnauthorizedListener = () => void;
+
+const unauthorizedListeners = new Set<UnauthorizedListener>();
+
+/** Only ProtectedLayout subscribes, so a 401 on a public page is left to that page to handle. */
+export function onUnauthorized(listener: UnauthorizedListener): () => void {
+  unauthorizedListeners.add(listener);
+  return () => {
+    unauthorizedListeners.delete(listener);
+  };
+}
+
 // Auto-unwrap response data
 api.interceptors.response.use((response) => response.data);
 
@@ -17,16 +29,8 @@ api.interceptors.response.use(
       }
       return Promise.reject(err);
     }
-    if (
-      err.response?.status === 401 &&
-      globalThis.location.pathname !== "/" &&
-      !globalThis.location.pathname.startsWith("/login") &&
-      !globalThis.location.pathname.startsWith("/register") &&
-      !globalThis.location.pathname.startsWith("/setup") &&
-      !globalThis.location.pathname.startsWith("/share") &&
-      !globalThis.location.pathname.startsWith("/embed")
-    ) {
-      globalThis.location.href = "/login";
+    if (err.response?.status === 401) {
+      unauthorizedListeners.forEach((listener) => listener());
     }
     return Promise.reject(err);
   },

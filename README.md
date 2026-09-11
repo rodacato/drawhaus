@@ -585,20 +585,27 @@ See [packages/mcp/README.md](packages/mcp/README.md) for full setup instructions
 
 ## Routes
 
-| Path                     | Access        | Description                                        |
-| ------------------------ | ------------- | -------------------------------------------------- |
-| `/`                      | Public        | Landing page (redirects to dashboard if logged in) |
-| `/setup`                 | Public        | First-time admin creation                          |
-| `/login`                 | Public        | Sign in                                            |
-| `/register`              | Public        | Create account                                     |
-| `/forgot-password`       | Public        | Request password reset                             |
-| `/reset-password/:token` | Public        | Set new password                                   |
-| `/dashboard`             | Authenticated | Diagram list with folders                          |
-| `/board/:id`             | Authenticated | Excalidraw editor                                  |
-| `/settings`              | Authenticated | Profile, security, preferences                     |
-| `/admin`                 | Admin only    | User management, metrics, invites                  |
-| `/share/:token`          | Public        | Join session via share link                        |
-| `/embed/:token`          | Public        | Read-only embed view                               |
+| Path                       | Access        | Description                                        |
+| -------------------------- | ------------- | -------------------------------------------------- |
+| `/`                        | Public        | Landing page (redirects to dashboard if logged in) |
+| `/setup`                   | Public        | First-time admin creation                          |
+| `/login`                   | Public        | Sign in                                            |
+| `/register`                | Public        | Create account                                     |
+| `/forgot-password`         | Public        | Request password reset                             |
+| `/reset-password/:token`   | Public        | Set new password                                   |
+| `/invite/:token`           | Public        | Site invite link; opens registration               |
+| `/workspace-invite/:token` | Public        | Workspace invitation; log in to accept             |
+| `/privacy`, `/terms`       | Public        | Privacy policy and terms of service                |
+| `/self-host`               | Public        | Self-hosting guide                                 |
+| `/dashboard`               | Authenticated | Diagram list with folders                          |
+| `/board/:id`               | Authenticated | Excalidraw editor                                  |
+| `/settings`                | Authenticated | Profile, security, preferences                     |
+| `/admin`                   | Admin only    | User management, metrics, invites                  |
+| `/share/:token`            | Public        | Join session via share link                        |
+| `/embed/:token`            | Public        | Read-only embed view                               |
+
+Only the Authenticated routes send a signed-out visitor, or a request that answers 401, to `/login`.
+A 401 on a public route is left to that page.
 
 ---
 

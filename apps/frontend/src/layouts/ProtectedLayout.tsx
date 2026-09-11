@@ -3,6 +3,7 @@ import { Navigate, Outlet, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { siteApi } from "@/api/admin";
 import { setupApi } from "@/api/setup";
+import { onUnauthorized } from "@/api/client";
 import { MaintenancePage } from "@/pages/MaintenancePage";
 import { PageLoading } from "@/components/PageLoading";
 
@@ -11,6 +12,15 @@ export function ProtectedLayout() {
   const [maintenance, setMaintenance] = useState(false);
   const [statusLoaded, setStatusLoaded] = useState(false);
   const [showSetupBanner, setShowSetupBanner] = useState(false);
+
+  // A full reload rather than <Navigate>: after a mid-session expiry the user in context is stale.
+  useEffect(
+    () =>
+      onUnauthorized(() => {
+        globalThis.location.href = "/login";
+      }),
+    [],
+  );
 
   useEffect(() => {
     siteApi
