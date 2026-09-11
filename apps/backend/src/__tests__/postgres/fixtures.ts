@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { setTimeout as sleep } from "node:timers/promises";
 import type { WorkspaceRole } from "../../domain/entities/workspace";
 import { pool } from "../../infrastructure/db";
 import { PgUserRepository } from "../../infrastructure/persistence/pg-user-repository";
@@ -49,4 +50,18 @@ export async function countRows(table: string, where = "true", params: unknown[]
     params,
   );
   return rows[0].count;
+}
+
+/** Resolves once a query in the test database is blocked waiting on a lock. */
+export async function waitForLockWaiter(): Promise<void> {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    const { rows } = await pool.query<{ waiting: number }>(
+      `SELECT count(*)::int AS waiting FROM pg_stat_activity
+       WHERE datname = current_database() AND wait_event_type = 'Lock'`,
+    );
+    if (rows[0].waiting > 0) return;
+    await sleep(10);
+  }
+  throw new Error("No query started waiting on a lock");
 }
