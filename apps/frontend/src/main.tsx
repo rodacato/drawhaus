@@ -7,7 +7,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/components/Toast";
 import { ConfirmProvider } from "@/components/ConfirmDialog";
 import { AppRouter } from "@/router";
+import { installChunkReloadGuard } from "@/lib/chunk-reload-guard";
 import "./globals.css";
+
+installChunkReloadGuard();
 
 if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
