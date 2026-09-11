@@ -119,15 +119,24 @@ export function registerSceneHandlers(
     socket,
     "save-scene",
     saveSceneSchema,
-    async ({ roomId, sceneId, elements, appState, revision }) => {
+    async ({ roomId, sceneId, elements, appState, revision }, ack) => {
       try {
-        if (!socket.rooms.has(roomId)) return;
-        if (!canEdit(socket, roomId)) return;
+        if (!socket.rooms.has(roomId)) {
+          ack?.({ ok: false, reason: "not-in-room" });
+          return;
+        }
+        if (!canEdit(socket, roomId)) {
+          ack?.({ ok: false, reason: "forbidden" });
+          return;
+        }
 
         const saverId = accountUserId(socket.data as SocketData);
 
         const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
-        if (!targetSceneId) return;
+        if (!targetSceneId) {
+          ack?.({ ok: false, reason: "no-scene" });
+          return;
+        }
 
         const saved = await useCases.saveScene.execute(
           roomId,
@@ -138,9 +147,11 @@ export function registerSceneHandlers(
         );
         if (saved.status === "stale") {
           socket.emit("scene-from-db", sceneFromDb(saved.scene));
+          ack?.({ ok: false, reason: "stale" });
           return;
         }
         socket.emit("scene-saved", { roomId, sceneId: targetSceneId });
+        ack?.({ ok: true, sceneId: targetSceneId });
 
         // Fire-and-forget: interval snapshot every 10 minutes
         // Uses Redis SET NX EX for dedup across instances, falls back to in-memory Map
@@ -207,7 +218,7 @@ export function registerSceneHandlers(
         }
       } catch (error: unknown) {
         logger.error(error, "save-scene failed");
-        socket.emit("room-error", { message: "Save failed" });
+        ack?.({ ok: false, reason: "server-error" });
       }
     },
   );

@@ -244,7 +244,7 @@ describe("socket handlers — valid payloads keep their behavior", () => {
 });
 
 describe("socket handlers — scene binding", () => {
-  it("save-scene with another diagram's sceneId persists nothing", async () => {
+  it("save-scene with another diagram's sceneId persists nothing and raises no room-error", async () => {
     const h = setup();
     const { diagram } = await joinAsOwner(h);
     const victim = await h.scenes.create({
@@ -264,9 +264,7 @@ describe("socket handlers — scene binding", () => {
     const untouched = await h.scenes.findById(victim.id);
     assert.deepEqual(untouched!.elements, [{ id: "keep", version: 1 }]);
     assert.equal(eventsNamed(h.socket.emitted, "scene-saved").length, 0);
-    assert.deepEqual(eventsNamed(h.socket.emitted, "room-error"), [
-      { event: "room-error", payload: { message: "Save failed" } },
-    ]);
+    assert.deepEqual(eventsNamed(h.socket.emitted, "room-error"), []);
   });
 });
 
