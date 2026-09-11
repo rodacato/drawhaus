@@ -134,7 +134,7 @@ export function registerSceneHandlers(
             sockets.map((s) => (s.data as SocketData).userId).filter(Boolean),
           );
           useCases.createSnapshot
-            .execute(roomId, saveUserId, "interval", undefined, uniqueIds.size || 1)
+            .createAutomatic(roomId, "interval", saveUserId, uniqueIds.size || 1)
             .then((snap) => {
               if (snap) {
                 io.to(roomId).emit("snapshot-created", {

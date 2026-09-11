@@ -77,15 +77,11 @@ export function createSnapshotRoutes(
     validate(createSchema),
     asyncRoute(async (req, res) => {
       const diagramId = String(req.params.diagramId);
-      const snapshot = await useCases.create.execute(
+      const snapshot = await useCases.create.createManual(
         diagramId,
         req.authUser.id,
-        "manual",
         req.body.name,
       );
-      if (!snapshot) {
-        return res.status(429).json({ error: "Snapshot creation throttled" });
-      }
       ioHolder?.io
         ?.to(diagramId)
         .emit("snapshot-created", { diagramId, snapshot: formatSnapshot(snapshot) });

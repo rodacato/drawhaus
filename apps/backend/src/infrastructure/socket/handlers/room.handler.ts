@@ -187,11 +187,10 @@ async function maybeSnapshotOnLastEditorLeaving(
   const actorId = myData.userId.startsWith("guest_") ? null : myData.userId;
 
   try {
-    const snap = await useCases.createSnapshot.execute(
+    const snap = await useCases.createSnapshot.createAutomatic(
       roomId,
-      actorId,
       "close",
-      undefined,
+      actorId,
       activeCount,
     );
     if (snap) {

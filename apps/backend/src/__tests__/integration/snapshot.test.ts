@@ -231,6 +231,60 @@ test("POST returns 400 when name is empty after trim", async () => {
   assert.equal(res.status, 400);
 });
 
+test("POST returns 404 and stores nothing when the caller has no access to the diagram", async () => {
+  const app = createApp();
+  const { userId: ownerId } = await registerAndGetUser(app, "snap-cr-owner@example.com");
+  const { cookie: strangerCookie } = await registerAndGetUser(app, "snap-cr-out@example.com");
+  const { diagram } = await seedDiagramWithScene(ownerId);
+
+  const res = await request(app)
+    .post(`/api/diagrams/${diagram.id}/snapshots`)
+    .set("Cookie", strangerCookie)
+    .send({ name: "Squatter" });
+
+  assert.equal(res.status, 404);
+  assert.equal(snapshots.store.length, 0);
+});
+
+test("POST returns 403 and stores nothing when the caller is a viewer", async () => {
+  const app = createApp();
+  const { userId: ownerId } = await registerAndGetUser(app, "snap-cr-vown@example.com");
+  const { cookie: viewerCookie, userId: viewerId } = await registerAndGetUser(
+    app,
+    "snap-cr-view@example.com",
+  );
+  const { diagram } = await seedDiagramWithScene(ownerId);
+  diagrams.members.push({ diagramId: diagram.id, userId: viewerId, role: "viewer" });
+
+  const res = await request(app)
+    .post(`/api/diagrams/${diagram.id}/snapshots`)
+    .set("Cookie", viewerCookie)
+    .send({ name: "Viewer snap" });
+
+  assert.equal(res.status, 403);
+  assert.equal(snapshots.store.length, 0);
+});
+
+test("POST lets an editor who does not own the diagram create a snapshot", async () => {
+  const app = createApp();
+  const { userId: ownerId } = await registerAndGetUser(app, "snap-cr-eown@example.com");
+  const { cookie: editorCookie, userId: editorId } = await registerAndGetUser(
+    app,
+    "snap-cr-edit@example.com",
+  );
+  const { diagram } = await seedDiagramWithScene(ownerId);
+  diagrams.members.push({ diagramId: diagram.id, userId: editorId, role: "editor" });
+
+  const res = await request(app)
+    .post(`/api/diagrams/${diagram.id}/snapshots`)
+    .set("Cookie", editorCookie)
+    .send({ name: "Editor snap" });
+
+  assert.equal(res.status, 201);
+  assert.equal(res.body.snapshot.createdBy, editorId);
+  assert.equal(snapshots.store.length, 1);
+});
+
 test("POST returns 404 when diagram has no scene", async () => {
   const app = createApp();
   const { cookie, userId } = await registerAndGetUser(app, "snap-noscene@example.com");
