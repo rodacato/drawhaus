@@ -196,7 +196,11 @@ export function createUseCases(repos: Repositories, services: Services) {
   const getDiagram = new GetDiagramUseCase(repos.diagramRepo, repos.sceneRepo);
   const listDiagrams = new ListDiagramsUseCase(repos.diagramRepo);
   const searchDiagrams = new SearchDiagramsUseCase(repos.diagramRepo);
-  const updateDiagram = new UpdateDiagramUseCase(repos.diagramRepo, repos.sceneRepo);
+  const updateDiagram = new UpdateDiagramUseCase(
+    repos.diagramRepo,
+    repos.sceneRepo,
+    services.realtimeNotifier,
+  );
   const deleteDiagram = new DeleteDiagramUseCase(repos.diagramRepo, repos.workspaceRepo);
   const updateThumbnail = new UpdateThumbnailUseCase(repos.diagramRepo);
   const toggleStar = new ToggleStarUseCase(repos.diagramRepo);

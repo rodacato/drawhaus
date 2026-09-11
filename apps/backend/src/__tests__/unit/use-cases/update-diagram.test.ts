@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { UpdateDiagramUseCase } from "../../../application/use-cases/diagrams/update-diagram";
 import { InMemoryDiagramRepository } from "../../fakes/in-memory-diagram-repository";
+import { FakeRealtimeNotifier } from "../../fakes/fake-realtime-notifier";
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
 const ROW = [{ id: "row-1", type: "rectangle", version: 1 }];
@@ -10,10 +11,12 @@ const API = [{ id: "api-1", type: "diamond", version: 1 }];
 
 function setup() {
   const diagrams = new InMemoryDiagramRepository();
+  const notifier = new FakeRealtimeNotifier();
   return {
     diagrams,
     scenes: diagrams.scenes,
-    update: new UpdateDiagramUseCase(diagrams, diagrams.scenes),
+    notifier,
+    update: new UpdateDiagramUseCase(diagrams, diagrams.scenes, notifier),
   };
 }
 
@@ -117,5 +120,65 @@ describe("UpdateDiagramUseCase — content is written to the first scene", () =>
     await update.execute(diagram.id, "user-1", { title: "Renamed" });
 
     assert.equal(scenes.store.length, 0);
+  });
+});
+
+describe("UpdateDiagramUseCase — open boards are told about a content write", () => {
+  it("notifies with the stored scene and the revision the write bumped it to", async () => {
+    const ctx = setup();
+    const { diagram, scene } = await openedOnBoard(ctx);
+    const revisionBefore = scene.revision;
+
+    await ctx.update.execute(diagram.id, "user-1", { elements: API });
+
+    assert.deepEqual(ctx.notifier.scenesReplaced, [
+      {
+        diagramId: diagram.id,
+        sceneId: scene.id,
+        revision: revisionBefore + 1,
+        elements: API,
+        appState: { theme: "dark" },
+      },
+    ]);
+  });
+
+  it("notifies once for the scene a fresh diagram's first content write creates", async () => {
+    const ctx = setup();
+    const diagram = await ctx.diagrams.create({ ownerId: "user-1", title: "Fresh", elements: ROW });
+
+    await ctx.update.execute(diagram.id, "user-1", { appState: { gridSize: 20 } });
+
+    assert.equal(ctx.notifier.scenesReplaced.length, 1);
+    assert.equal(ctx.notifier.scenesReplaced[0].sceneId, ctx.scenes.store[0].id);
+    assert.deepEqual(ctx.notifier.scenesReplaced[0].appState, { gridSize: 20 });
+  });
+
+  it("a title-only update notifies nothing", async () => {
+    const ctx = setup();
+    const { diagram } = await openedOnBoard(ctx);
+
+    await ctx.update.execute(diagram.id, "user-1", { title: "Renamed" });
+
+    assert.deepEqual(ctx.notifier.scenesReplaced, []);
+  });
+
+  it("a refused write notifies nothing", async () => {
+    const ctx = setup();
+    const { diagram } = await openedOnBoard(ctx);
+    ctx.diagrams.members.push({ diagramId: diagram.id, userId: "user-2", role: "viewer" });
+
+    await assert.rejects(() => ctx.update.execute(diagram.id, "user-2", { elements: API }));
+
+    assert.deepEqual(ctx.notifier.scenesReplaced, []);
+  });
+
+  it("works without a notifier", async () => {
+    const ctx = setup();
+    const { diagram } = await openedOnBoard(ctx);
+    const update = new UpdateDiagramUseCase(ctx.diagrams, ctx.scenes);
+
+    const updated = await update.execute(diagram.id, "user-1", { elements: API });
+
+    assert.deepEqual(updated.elements, API);
   });
 });
