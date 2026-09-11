@@ -51,7 +51,7 @@ drawhaus/
    npm run test:pg --workspace=backend
    ```
    `test:pg` needs PostgreSQL. The devcontainer has it; elsewhere, point `DATABASE_URL` at a database whose name ends in `_test`.
-5. (Optional) Run the E2E test suite (requires running backend + frontend + PostgreSQL; currently disabled in CI):
+5. (Optional) Run the E2E suite, which CI also runs on every PR. It starts its own backend and frontend on ports 4000/5173 and needs a disposable `drawhaus_e2e` PostgreSQL database; see [e2e/README.md](e2e/README.md):
    ```bash
    cd e2e && npm test
    ```

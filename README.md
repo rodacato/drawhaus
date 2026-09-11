@@ -124,29 +124,29 @@ troubleshooting.
 
 ## Commands
 
-| Command                                            | Description                                                                |
-| -------------------------------------------------- | -------------------------------------------------------------------------- |
-| `npm run dev`                                      | Start frontend + backend concurrently                                      |
-| `npm run dev:frontend`                             | Frontend only (Vite on :5173)                                              |
-| `npm run dev:backend`                              | Backend only (Express on :4000)                                            |
-| `npm run build`                                    | Production build (both workspaces)                                         |
-| `npm run lint`                                     | Lint all workspaces                                                        |
-| `npm run typecheck`                                | Type-check all workspaces                                                  |
-| `npm test --workspace=backend`                     | Run backend unit & integration tests                                       |
-| `npm run test:pg --workspace=backend`              | Run backend repository tests against a real PostgreSQL (`*_test` database) |
-| `cd e2e && npm test`                               | Run Playwright end-to-end tests (requires running backend + frontend + PG) |
-| `cd e2e && npm run test:ui`                        | Open Playwright test runner UI                                             |
-| `npm run db:seed`                                  | Seed database with test data                                               |
-| `npm run db:reset`                                 | Drop all tables, recreate schema, and seed                                 |
-| `npm run db:backup --workspace=backend`            | Create an on-demand database backup                                        |
-| `npm run db:restore --workspace=backend -- latest` | Restore database from most recent backup                                   |
-| `npm run docs:lint`                                | Lint OpenAPI spec with Redocly                                             |
-| `npm run docs:build`                               | Build static API docs to `docs/api/`                                       |
-| `npm run docs:preview`                             | Preview API docs locally                                                   |
-| `npm run build --workspace=@drawhaus/helpers`      | Build helpers package                                                      |
-| `npm test --workspace=@drawhaus/helpers`           | Run helpers tests (90 tests)                                               |
-| `npm run build --workspace=@drawhaus/mcp`          | Build MCP server package                                                   |
-| `npm test --workspace=@drawhaus/mcp`               | Run MCP server tests                                                       |
+| Command                                            | Description                                                                  |
+| -------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `npm run dev`                                      | Start frontend + backend concurrently                                        |
+| `npm run dev:frontend`                             | Frontend only (Vite on :5173)                                                |
+| `npm run dev:backend`                              | Backend only (Express on :4000)                                              |
+| `npm run build`                                    | Production build (both workspaces)                                           |
+| `npm run lint`                                     | Lint all workspaces                                                          |
+| `npm run typecheck`                                | Type-check all workspaces                                                    |
+| `npm test --workspace=backend`                     | Run backend unit & integration tests                                         |
+| `npm run test:pg --workspace=backend`              | Run backend repository tests against a real PostgreSQL (`*_test` database)   |
+| `cd e2e && npm test`                               | Run Playwright end-to-end tests (starts its own servers; needs a `*_e2e` DB) |
+| `cd e2e && npm run test:ui`                        | Open Playwright test runner UI                                               |
+| `npm run db:seed`                                  | Seed database with test data                                                 |
+| `npm run db:reset`                                 | Drop all tables, recreate schema, and seed                                   |
+| `npm run db:backup --workspace=backend`            | Create an on-demand database backup                                          |
+| `npm run db:restore --workspace=backend -- latest` | Restore database from most recent backup                                     |
+| `npm run docs:lint`                                | Lint OpenAPI spec with Redocly                                               |
+| `npm run docs:build`                               | Build static API docs to `docs/api/`                                         |
+| `npm run docs:preview`                             | Preview API docs locally                                                     |
+| `npm run build --workspace=@drawhaus/helpers`      | Build helpers package                                                        |
+| `npm test --workspace=@drawhaus/helpers`           | Run helpers tests (90 tests)                                                 |
+| `npm run build --workspace=@drawhaus/mcp`          | Build MCP server package                                                     |
+| `npm test --workspace=@drawhaus/mcp`               | Run MCP server tests                                                         |
 
 ---
 
@@ -622,27 +622,20 @@ Runs the `src/__tests__/postgres/*.pg-test.ts` suite against the database in `DA
 
 ### End-to-End Tests (Playwright)
 
-> **Status:** the E2E suite is temporarily disabled in CI (`ci.yml` — "tests need fixing").
-> The steps below still run locally, but expect failures until the suite is repaired.
-
-E2E tests require a running backend, frontend, and PostgreSQL:
+The Playwright suite runs in CI on every PR, after the `validate` job. Locally it starts its own
+backend (port 4000) and frontend (port 5173) and needs PostgreSQL with a disposable database whose
+name ends in `_e2e` or `_test`, because the schema is wiped on every run:
 
 ```bash
-# Option A: Use Docker Compose (easiest)
-docker compose up -d
-
-# Option B: Start services manually
-npm run dev  # in one terminal
-
-# Then run the tests (from e2e/ directory)
+psql -h db -U drawhaus -d postgres -c "CREATE DATABASE drawhaus_e2e"  # once; the default DATABASE_URL
 cd e2e
-npm test
-
-# Or open the Playwright UI
-npm run test:ui
+npx playwright install chromium   # once; system libraries: sudo npx playwright install-deps chromium
+npm test                          # or a single test: npx playwright test -g "survives a reload"
 ```
 
-> **Note:** The first run installs Playwright browsers automatically. Tests create their own test users via the global setup.
+Ports 4000 and 5173 must be free: the suite never attaches to a server it did not start unless
+`E2E_REUSE_SERVER=1`. See [`e2e/README.md`](e2e/README.md) for the fixtures, the canvas tests and
+the `test.fixme` tests pinned to known product bugs.
 
 ---
 
@@ -654,7 +647,8 @@ npm run test:ui
 4. Run `npm test --workspace=backend` to verify backend tests pass
 5. Open a PR against `master`
 
-CI runs automatically on every PR (lint, typecheck, backend tests, build).
+CI runs automatically on every PR (lint, typecheck, frontend, backend and package tests, then the
+Playwright E2E suite).
 
 ---
 

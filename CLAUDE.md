@@ -19,7 +19,7 @@ When making changes that affect any of the following, update the corresponding d
 - **Commits**: Do not add co-author lines unless explicitly asked.
 - **Backend architecture**: Clean Architecture — `application/` (use cases), `domain/` (entities), `infrastructure/` (routes, repos, services, sockets).
 - **Validation**: Use Zod schemas for all route input validation.
-- **Tests**: Backend tests in `apps/backend/src/__tests__/` (`node --test` via tsx). Frontend tests in `apps/frontend/src/__tests__/` (Vitest + jsdom). E2E tests in `e2e/` with Playwright (currently disabled in CI).
+- **Tests**: Backend tests in `apps/backend/src/__tests__/` (`node --test` via tsx). Frontend tests in `apps/frontend/src/__tests__/` (Vitest + jsdom). E2E tests in `e2e/` with Playwright, run in CI; locally they need a disposable `drawhaus_e2e` database and free ports 4000/5173 (see `e2e/README.md`).
 - **Rate limiting**: Disabled in `NODE_ENV=test` to prevent flaky e2e tests.
 - **Setup flow**: First registered user becomes admin and auto-completes setup.
 
