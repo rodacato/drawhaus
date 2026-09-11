@@ -4,7 +4,7 @@ import type { Socket } from "socket.io-client";
 import { ui } from "@/lib/ui";
 import { useSnapshots } from "@/lib/hooks/useSnapshots";
 import type { SnapshotMeta, SnapshotFull } from "@/api/snapshots";
-import type { ExcalidrawApi } from "@/lib/types";
+import { applyRemoteScene, type ExcalidrawApi } from "@/lib/excalidraw";
 import { timeAgo } from "./snapshot-helpers";
 import { SnapshotPreview } from "./SnapshotPreview";
 import { SnapshotItem } from "./SnapshotItem";
@@ -86,7 +86,7 @@ export function SnapshotPanel({
       const snapshot = await restoreSnapshot(snapshotId);
       if (snapshot && excalidrawApiRef.current) {
         const normalized = await normalizeElements(snapshot.elements);
-        excalidrawApiRef.current.updateScene({ elements: normalized });
+        applyRemoteScene(excalidrawApiRef.current, { elements: normalized });
       }
       setPreviewSnapshot(null);
       onRestored?.();
@@ -130,7 +130,7 @@ export function SnapshotPanel({
       const full = await restoreSnapshotRef.current(snap.id);
       if (full && excalidrawApiRef.current) {
         const normalized = await normalizeElements(full.elements);
-        excalidrawApiRef.current.updateScene({ elements: normalized });
+        applyRemoteScene(excalidrawApiRef.current, { elements: normalized });
       }
       setPreviewSnapshot(null);
       onRestored?.();

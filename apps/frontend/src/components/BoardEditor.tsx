@@ -21,7 +21,8 @@ import { useDriveSyncStatus } from "@/lib/hooks/useDriveSyncStatus";
 import { useBoardShortcuts } from "@/lib/hooks/useBoardShortcuts";
 import { shareApi } from "@/api/share";
 import { diagramsApi } from "@/api/diagrams";
-import type { ExcalidrawElement } from "@/lib/types";
+import type { AppState } from "@excalidraw/excalidraw/types";
+import { applyLocalScene } from "@/lib/excalidraw";
 
 type BoardEditorProps = {
   readonly diagramId: string;
@@ -91,7 +92,9 @@ export default function BoardEditor({
   const handleCanvasPrefsChange = useCallback(
     (patch: Partial<CanvasPrefs>) => {
       updateCanvasPrefs(patch);
-      collab.excalidrawApiRef.current?.updateScene({ appState: patch });
+      collab.excalidrawApiRef.current?.updateScene({
+        appState: patch as Pick<AppState, keyof CanvasPrefs>,
+      });
     },
     [updateCanvasPrefs, collab.excalidrawApiRef],
   );
@@ -212,15 +215,13 @@ export default function BoardEditor({
   const handleHighlightElement = useCallback(
     (elementId: string) => {
       const api = collab.excalidrawApiRef.current;
-      if (!api) return;
-      const elements = api.getSceneElements() as ExcalidrawElement[];
-      const el = elements.find((e) => e.id === elementId);
-      if (!el) return;
+      const el = api?.getSceneElements().find((e) => e.id === elementId);
+      if (!api || !el) return;
       api.updateScene({
         appState: {
           selectedElementIds: { [elementId]: true },
-          scrollX: -(el.x as number) + window.innerWidth / 2 - ((el.width as number) ?? 0) / 2,
-          scrollY: -(el.y as number) + window.innerHeight / 2 - ((el.height as number) ?? 0) / 2,
+          scrollX: -el.x + window.innerWidth / 2 - el.width / 2,
+          scrollY: -el.y + window.innerHeight / 2 - el.height / 2,
         },
       });
     },
@@ -403,7 +404,9 @@ export default function BoardEditor({
         <OfflineRecoveryDialog
           snapshot={offlineSnapshot}
           onKeepMine={(elements, appState) => {
-            collab.excalidrawApiRef.current?.updateScene({ elements, appState });
+            if (collab.excalidrawApiRef.current) {
+              applyLocalScene(collab.excalidrawApiRef.current, { elements, appState });
+            }
             clearOfflineSnapshot();
             setOfflineSnapshot(null);
           }}

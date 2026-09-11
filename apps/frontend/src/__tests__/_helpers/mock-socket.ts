@@ -106,10 +106,16 @@ export function createExcalidrawApiStub(
     files: overrides.files ?? {},
   };
   return {
-    updateScene: vi.fn((scene: { elements?: unknown[]; appState?: Record<string, unknown> }) => {
-      if (scene.elements) state.elements = scene.elements;
-      if (scene.appState) state.appState = { ...state.appState, ...scene.appState };
-    }),
+    updateScene: vi.fn(
+      (scene: {
+        elements?: unknown[];
+        appState?: Record<string, unknown>;
+        captureUpdate?: string;
+      }) => {
+        if (scene.elements) state.elements = scene.elements;
+        if (scene.appState) state.appState = { ...state.appState, ...scene.appState };
+      },
+    ),
     getSceneElements: vi.fn(() => state.elements as readonly unknown[]),
     getAppState: vi.fn(() => state.appState),
     getFiles: vi.fn(() => state.files),

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import type { ExcalidrawApi } from "@/lib/types";
+import { applyRemoteScene, type ExcalidrawApi } from "@/lib/excalidraw";
 
 // Re-export types for consumers
 export type { JoinMode, CollaborationOptions, CollaborationState } from "./collaboration/types";
@@ -155,7 +155,7 @@ export function useCollaboration({
       pendingSceneRef.current = null;
       setTimeout(() => {
         applyingRemoteCounter.current += 1;
-        excalidrawApi.updateScene({ elements: pending.elements });
+        applyRemoteScene(excalidrawApi, { elements: pending.elements });
         setTimeout(() => {
           applyingRemoteCounter.current -= 1;
         }, 0);
