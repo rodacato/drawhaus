@@ -12,3 +12,6 @@ config/deploy.*.yml
 
 # Peggy regenerates these at prebuild, so formatting them makes format:check unstable
 packages/*/src/parser/grammar/*.js
+
+# Playground builds (vite outDir ../public). Each package gitignores them, but Prettier reads only the root .gitignore
+packages/*/public/
