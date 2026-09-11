@@ -79,20 +79,13 @@ export function useSocketConnection({
       setConnectionState("error");
     });
 
-    // Reconnection handlers — re-join room after reconnect
+    // No manager "reconnect" handler: socket.io fires "connect" on every reconnection,
+    // and a second join would make the server resend scene-from-db over the canvas.
     socket.io.on("reconnect_attempt", () => {
       if (cancelled) {
         return;
       }
       setConnectionState("connecting");
-    });
-    socket.io.on("reconnect", () => {
-      if (cancelled) {
-        return;
-      }
-      setConnectionState("connected");
-      setConnectionError(null);
-      joinRoom();
     });
     socket.io.on("reconnect_failed", () => {
       if (cancelled) {

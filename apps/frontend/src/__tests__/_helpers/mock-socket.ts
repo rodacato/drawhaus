@@ -75,6 +75,13 @@ export function triggerManagerEvent(socket: MockSocket, event: string, ...args: 
   for (const fn of fns) fn(...args);
 }
 
+/** Replay a successful reconnection in socket.io-client's order: manager "reconnect", then socket "connect". */
+export function simulateReconnect(socket: MockSocket): void {
+  socket.connected = true;
+  triggerManagerEvent(socket, "reconnect", 1);
+  triggerSocketEvent(socket, "connect");
+}
+
 /** Create a mutable socketRef containing the given socket — convenience for hook params. */
 export function makeSocketRef(socket: MockSocket | null): React.MutableRefObject<unknown> {
   return { current: socket } as React.MutableRefObject<unknown>;
