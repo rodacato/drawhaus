@@ -1,14 +1,43 @@
 import type { Server, Socket } from "socket.io";
+import { z } from "zod";
 import type { SaveSceneUseCase } from "../../../application/use-cases/realtime/save-scene";
 import type { SyncToDriveUseCase } from "../../../application/use-cases/drive/sync-to-drive";
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
-import { type SocketData, canEdit, checkRateLimit, RATE_LIMIT_MAX_SCENE } from "../helpers";
+import {
+  type SocketData,
+  canEdit,
+  checkRateLimit,
+  onEvent,
+  RATE_LIMIT_MAX_SCENE,
+} from "../helpers";
 import { logger } from "../../logger";
 import { getRedisClientSync } from "../../redis-client";
 
 const SNAPSHOT_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const SNAPSHOT_INTERVAL_SECONDS = 10 * 60;
 const lastIntervalSnapshot = new Map<string, number>(); // in-memory fallback
+
+const sceneIdSchema = z.string().nullish();
+
+const sceneUpdateSchema = z.object({
+  roomId: z.string(),
+  sceneId: sceneIdSchema,
+  elements: z.array(z.unknown()),
+});
+
+const sceneDeltaSchema = z.object({
+  roomId: z.string(),
+  sceneId: sceneIdSchema,
+  changed: z.array(z.looseObject({ version: z.number().optional() })),
+  removedIds: z.array(z.string()),
+});
+
+const saveSceneSchema = z.object({
+  roomId: z.string(),
+  sceneId: sceneIdSchema,
+  elements: z.array(z.unknown()),
+  appState: z.record(z.string(), z.unknown()),
+});
 
 export function registerSceneHandlers(
   io: Server,
@@ -19,83 +48,54 @@ export function registerSceneHandlers(
     createSnapshot: CreateSnapshotUseCase;
   },
 ) {
-  socket.on(
-    "scene-update",
-    ({ roomId, sceneId, elements }: { roomId: string; sceneId?: string; elements: unknown[] }) => {
-      if (!socket.rooms.has(roomId)) return;
-      if (!canEdit(socket, roomId)) return;
-      if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
+  onEvent(socket, "scene-update", sceneUpdateSchema, ({ roomId, sceneId, elements }) => {
+    if (!socket.rooms.has(roomId)) return;
+    if (!canEdit(socket, roomId)) return;
+    if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
 
-      const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
-      const broadcastRoom = targetSceneId ? `${roomId}:${targetSceneId}` : roomId;
+    const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
+    const broadcastRoom = targetSceneId ? `${roomId}:${targetSceneId}` : roomId;
 
-      socket.to(broadcastRoom).emit("scene-updated", {
-        roomId,
-        sceneId: targetSceneId,
-        fromUserId: (socket.data as SocketData).userId,
-        fromSocketId: socket.id,
-        elements,
-      });
-    },
-  );
+    socket.to(broadcastRoom).emit("scene-updated", {
+      roomId,
+      sceneId: targetSceneId,
+      fromUserId: (socket.data as SocketData).userId,
+      fromSocketId: socket.id,
+      elements,
+    });
+  });
 
   /* ─── scene-delta: incremental element changes (concurrent editing) ─── */
-  socket.on(
-    "scene-delta",
-    ({
+  onEvent(socket, "scene-delta", sceneDeltaSchema, ({ roomId, sceneId, changed, removedIds }) => {
+    if (!socket.rooms.has(roomId)) return;
+    if (!canEdit(socket, roomId)) return;
+    if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
+
+    // Security: reject deltas that remove >50% of known elements
+    if (removedIds.length > 500) return;
+
+    // Security: reject version jumps >100 in any changed element
+    if (changed.some((el) => el.version !== undefined && el.version > 100_000)) return;
+
+    const userId = (socket.data as SocketData).userId;
+    const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
+    const broadcastRoom = targetSceneId ? `${roomId}:${targetSceneId}` : roomId;
+
+    socket.to(broadcastRoom).emit("scene-delta-received", {
       roomId,
-      sceneId,
+      sceneId: targetSceneId,
+      fromUserId: userId,
+      fromSocketId: socket.id,
       changed,
       removedIds,
-    }: {
-      roomId: string;
-      sceneId?: string;
-      changed: unknown[];
-      removedIds: string[];
-    }) => {
-      if (!socket.rooms.has(roomId)) return;
-      if (!canEdit(socket, roomId)) return;
-      if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
+    });
+  });
 
-      // Security: reject deltas that remove >50% of known elements
-      if (Array.isArray(removedIds) && removedIds.length > 500) return;
-
-      // Security: reject version jumps >100 in any changed element
-      if (Array.isArray(changed)) {
-        for (const el of changed) {
-          const e = el as { version?: number };
-          if (e.version !== undefined && e.version > 100_000) return;
-        }
-      }
-
-      const userId = (socket.data as SocketData).userId;
-      const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
-      const broadcastRoom = targetSceneId ? `${roomId}:${targetSceneId}` : roomId;
-
-      socket.to(broadcastRoom).emit("scene-delta-received", {
-        roomId,
-        sceneId: targetSceneId,
-        fromUserId: userId,
-        fromSocketId: socket.id,
-        changed,
-        removedIds,
-      });
-    },
-  );
-
-  socket.on(
+  onEvent(
+    socket,
     "save-scene",
-    async ({
-      roomId,
-      sceneId,
-      elements,
-      appState,
-    }: {
-      roomId: string;
-      sceneId?: string;
-      elements: unknown[];
-      appState: Record<string, unknown>;
-    }) => {
+    saveSceneSchema,
+    async ({ roomId, sceneId, elements, appState }) => {
       try {
         if (!socket.rooms.has(roomId)) return;
         if (!canEdit(socket, roomId)) return;

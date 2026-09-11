@@ -1,5 +1,8 @@
 import type { Server, Socket } from "socket.io";
-import { type SocketData, canEdit } from "../helpers";
+import { z } from "zod";
+import { type SocketData, canEdit, onEvent } from "../helpers";
+
+const roomSchema = z.object({ roomId: z.string() });
 
 /**
  * Lock handlers are now no-ops for backwards compatibility.
@@ -8,7 +11,7 @@ import { type SocketData, canEdit } from "../helpers";
  * Raise hand signaling is preserved (not tied to locking).
  */
 export function registerLockHandlers(io: Server, socket: Socket) {
-  socket.on("request-edit-lock", ({ roomId }: { roomId: string }) => {
+  onEvent(socket, "request-edit-lock", roomSchema, ({ roomId }) => {
     if (!socket.rooms.has(roomId)) return;
     if (!canEdit(socket, roomId)) return;
 
@@ -26,12 +29,12 @@ export function registerLockHandlers(io: Server, socket: Socket) {
     });
   });
 
-  socket.on("release-edit-lock", ({ roomId }: { roomId: string }) => {
+  onEvent(socket, "release-edit-lock", roomSchema, ({ roomId }) => {
     if (!socket.rooms.has(roomId)) return;
     io.to(roomId).emit("edit-lock-status", { roomId, holder: null });
   });
 
-  socket.on("raise-hand", ({ roomId }: { roomId: string }) => {
+  onEvent(socket, "raise-hand", roomSchema, ({ roomId }) => {
     if (!socket.rooms.has(roomId)) return;
     const data = socket.data as SocketData;
     if (!data.userId) return;
@@ -42,7 +45,7 @@ export function registerLockHandlers(io: Server, socket: Socket) {
     });
   });
 
-  socket.on("lower-hand", ({ roomId }: { roomId: string }) => {
+  onEvent(socket, "lower-hand", roomSchema, ({ roomId }) => {
     if (!socket.rooms.has(roomId)) return;
     const data = socket.data as SocketData;
     if (!data.userId) return;
