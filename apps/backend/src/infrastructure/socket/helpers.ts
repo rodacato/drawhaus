@@ -1,4 +1,6 @@
-import type { Server } from "socket.io";
+import type { Server, Socket } from "socket.io";
+import type { z } from "zod";
+import { logger } from "../logger";
 
 export type SocketData = {
   userId: string;
@@ -14,6 +16,38 @@ export type PresenceUser = {
   name: string;
   isGuest: boolean;
 };
+
+export const EVENT_ERROR = "event-error";
+
+export function onEvent<S extends z.ZodType>(
+  socket: Socket,
+  event: string,
+  schema: S,
+  handler: (payload: z.output<S>) => unknown,
+): void {
+  socket.on(event, (payload: unknown) => {
+    const parsed = schema.safeParse(payload);
+    if (!parsed.success) {
+      logger.warn({ event, socketId: socket.id }, "socket payload rejected");
+      socket.emit(EVENT_ERROR, { event, message: "Invalid payload" });
+      return;
+    }
+    return runSafely(socket, event, () => handler(parsed.data));
+  });
+}
+
+// socket.io dispatches listeners outside any caller that could catch, so a throw here would crash the process.
+export async function runSafely(
+  socket: Pick<Socket, "id">,
+  event: string,
+  fn: () => unknown,
+): Promise<void> {
+  try {
+    await fn();
+  } catch (error: unknown) {
+    logger.error({ err: error, event, socketId: socket.id }, "socket handler failed");
+  }
+}
 
 const RATE_LIMIT_WINDOW_MS = 1000;
 const RATE_LIMIT_MAX_SCENE = 30;

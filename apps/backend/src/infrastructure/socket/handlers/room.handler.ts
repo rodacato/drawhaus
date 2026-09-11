@@ -1,9 +1,17 @@
 import type { Server, Socket } from "socket.io";
 import { parse } from "cookie";
+import { z } from "zod";
 import type { JoinRoomUseCase } from "../../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../../application/use-cases/realtime/join-room-guest";
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
-import { type SocketData, type PresenceUser, canEdit, getRoomPresenceUsers } from "../helpers";
+import {
+  type SocketData,
+  type PresenceUser,
+  canEdit,
+  getRoomPresenceUsers,
+  onEvent,
+  runSafely,
+} from "../helpers";
 import { config } from "../../config";
 import { logger } from "../../logger";
 
@@ -13,12 +21,19 @@ type RoomUseCases = {
   createSnapshot: CreateSnapshotUseCase;
 };
 
+const joinRoomSchema = z.object({ roomId: z.string() });
+
+const joinRoomGuestSchema = z.object({
+  shareToken: z.string(),
+  guestName: z.string().nullish(),
+});
+
 function formatScene(s: { id: string; name: string; sortOrder: number }) {
   return { id: s.id, name: s.name, sortOrder: s.sortOrder };
 }
 
 export function registerRoomHandlers(io: Server, socket: Socket, useCases: RoomUseCases) {
-  socket.on("join-room", async ({ roomId }: { roomId: string }) => {
+  onEvent(socket, "join-room", joinRoomSchema, async ({ roomId }) => {
     try {
       const cookieHeader = socket.handshake.headers.cookie;
       const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
@@ -67,71 +82,70 @@ export function registerRoomHandlers(io: Server, socket: Socket, useCases: RoomU
     }
   });
 
-  socket.on(
-    "join-room-guest",
-    async ({ shareToken, guestName }: { shareToken: string; guestName: string }) => {
-      try {
-        const name = (guestName || "").trim().slice(0, 50) || "Guest";
-        const result = await useCases.joinRoomGuest.execute(shareToken);
+  onEvent(socket, "join-room-guest", joinRoomGuestSchema, async ({ shareToken, guestName }) => {
+    try {
+      const name = (guestName ?? "").trim().slice(0, 50) || "Guest";
+      const result = await useCases.joinRoomGuest.execute(shareToken);
 
-        const roomId = result.diagramId;
-        const guestId = `guest_${socket.id}`;
+      const roomId = result.diagramId;
+      const guestId = `guest_${socket.id}`;
 
-        socket.data.userId = guestId;
-        socket.data.userName = name;
-        socket.data.userEmail = "";
-        socket.data.isGuest = true;
-        (socket.data.roomRoles as Record<string, string>)[roomId] = result.role;
+      socket.data.userId = guestId;
+      socket.data.userName = name;
+      socket.data.userEmail = "";
+      socket.data.isGuest = true;
+      (socket.data.roomRoles as Record<string, string>)[roomId] = result.role;
 
-        socket.join(roomId);
+      socket.join(roomId);
 
-        const firstScene = result.scenes[0];
-        if (firstScene) {
-          socket.join(`${roomId}:${firstScene.id}`);
-          socket.data.activeSceneId = firstScene.id;
-        }
-
-        socket.emit("scene-from-db", {
-          elements: result.elements,
-          appState: result.appState,
-          scenes: result.scenes.map(formatScene),
-          activeSceneId: firstScene?.id ?? null,
-        });
-
-        socket.emit("room-joined", { roomId, role: result.role, userId: guestId });
-
-        // With concurrent editing, everyone who can edit is always "unlocked"
-        if (canEdit(socket, roomId)) {
-          socket.emit("edit-lock-acquired", {
-            roomId,
-            holder: { userId: guestId, userName: name },
-          });
-        }
-
-        io.to(roomId).emit("room-presence", {
-          roomId,
-          users: await getRoomPresenceUsers(io, roomId),
-        });
-      } catch (error: unknown) {
-        logger.error(error, "join-room-guest failed");
-        socket.emit("room-error", { message: "Invalid or expired share link" });
+      const firstScene = result.scenes[0];
+      if (firstScene) {
+        socket.join(`${roomId}:${firstScene.id}`);
+        socket.data.activeSceneId = firstScene.id;
       }
-    },
-  );
 
-  socket.on("disconnecting", async () => {
-    const myData = socket.data as SocketData;
+      socket.emit("scene-from-db", {
+        elements: result.elements,
+        appState: result.appState,
+        scenes: result.scenes.map(formatScene),
+        activeSceneId: firstScene?.id ?? null,
+      });
 
-    for (const roomId of socket.rooms) {
-      if (roomId === socket.id || roomId.includes(":")) continue;
+      socket.emit("room-joined", { roomId, role: result.role, userId: guestId });
 
-      const futureUsers = await collectFutureUsers(io, roomId, socket.id);
-      await maybeSnapshotOnLastEditorLeaving(useCases, socket, roomId, myData, futureUsers);
+      // With concurrent editing, everyone who can edit is always "unlocked"
+      if (canEdit(socket, roomId)) {
+        socket.emit("edit-lock-acquired", {
+          roomId,
+          holder: { userId: guestId, userName: name },
+        });
+      }
 
-      socket.to(roomId).emit("room-presence", { roomId, users: futureUsers });
-      socket.to(roomId).emit("cursor-left", { userId: myData.userId });
+      io.to(roomId).emit("room-presence", {
+        roomId,
+        users: await getRoomPresenceUsers(io, roomId),
+      });
+    } catch (error: unknown) {
+      logger.error(error, "join-room-guest failed");
+      socket.emit("room-error", { message: "Invalid or expired share link" });
     }
   });
+
+  socket.on("disconnecting", () =>
+    runSafely(socket, "disconnecting", async () => {
+      const myData = socket.data as SocketData;
+
+      for (const roomId of socket.rooms) {
+        if (roomId === socket.id || roomId.includes(":")) continue;
+
+        const futureUsers = await collectFutureUsers(io, roomId, socket.id);
+        await maybeSnapshotOnLastEditorLeaving(useCases, socket, roomId, myData, futureUsers);
+
+        socket.to(roomId).emit("room-presence", { roomId, users: futureUsers });
+        socket.to(roomId).emit("cursor-left", { userId: myData.userId });
+      }
+    }),
+  );
 }
 
 async function collectFutureUsers(

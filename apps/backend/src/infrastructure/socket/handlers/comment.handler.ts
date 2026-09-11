@@ -1,13 +1,33 @@
 import type { Server, Socket } from "socket.io";
+import { z } from "zod";
 import type { CreateCommentUseCase } from "../../../application/use-cases/comments/create-comment";
 import type { ReplyCommentUseCase } from "../../../application/use-cases/comments/reply-comment";
 import type { ResolveCommentUseCase } from "../../../application/use-cases/comments/resolve-comment";
 import type { DeleteCommentUseCase } from "../../../application/use-cases/comments/delete-comment";
 import type { SocketData } from "../helpers";
-import { checkRateLimit } from "../helpers";
+import { checkRateLimit, onEvent } from "../helpers";
 import { logger } from "../../logger";
 
 const RATE_LIMIT_MAX_COMMENT = 10;
+
+const commentBody = z.string().trim().min(1).max(5000);
+
+const commentCreateSchema = z.object({
+  roomId: z.string(),
+  elementId: z.string().min(1).max(200),
+  body: commentBody,
+  sceneId: z.uuid().nullish(),
+});
+
+const commentReplySchema = z.object({ roomId: z.string(), threadId: z.uuid(), body: commentBody });
+
+const commentResolveSchema = z.object({
+  roomId: z.string(),
+  threadId: z.uuid(),
+  resolved: z.boolean(),
+});
+
+const commentDeleteSchema = z.object({ roomId: z.string(), threadId: z.uuid() });
 
 export function registerCommentHandlers(
   _io: Server,
@@ -20,19 +40,11 @@ export function registerCommentHandlers(
   },
 ) {
   // Comment events gate on room membership only, not canEdit: viewers may comment by design (use cases call requireAccess, not requireEditAccess).
-  socket.on(
+  onEvent(
+    socket,
     "comment-create",
-    async ({
-      roomId,
-      elementId,
-      body,
-      sceneId,
-    }: {
-      roomId: string;
-      elementId: string;
-      body: string;
-      sceneId?: string;
-    }) => {
+    commentCreateSchema,
+    async ({ roomId, elementId, body, sceneId }) => {
       try {
         if (!socket.rooms.has(roomId)) return;
         if (!checkRateLimit(socket, "comment", RATE_LIMIT_MAX_COMMENT)) return;
@@ -52,33 +64,24 @@ export function registerCommentHandlers(
     },
   );
 
-  socket.on(
-    "comment-reply",
-    async ({ roomId, threadId, body }: { roomId: string; threadId: string; body: string }) => {
-      try {
-        if (!socket.rooms.has(roomId)) return;
-        if (!checkRateLimit(socket, "comment", RATE_LIMIT_MAX_COMMENT)) return;
-        const data = socket.data as SocketData;
-        const reply = await useCases.replyComment.execute(threadId, data.userId, body);
-        socket.to(roomId).emit("comment-replied", { roomId, threadId, reply });
-        socket.emit("comment-replied", { roomId, threadId, reply });
-      } catch (error: unknown) {
-        logger.error(error, "comment-reply failed");
-      }
-    },
-  );
+  onEvent(socket, "comment-reply", commentReplySchema, async ({ roomId, threadId, body }) => {
+    try {
+      if (!socket.rooms.has(roomId)) return;
+      if (!checkRateLimit(socket, "comment", RATE_LIMIT_MAX_COMMENT)) return;
+      const data = socket.data as SocketData;
+      const reply = await useCases.replyComment.execute(threadId, data.userId, body);
+      socket.to(roomId).emit("comment-replied", { roomId, threadId, reply });
+      socket.emit("comment-replied", { roomId, threadId, reply });
+    } catch (error: unknown) {
+      logger.error(error, "comment-reply failed");
+    }
+  });
 
-  socket.on(
+  onEvent(
+    socket,
     "comment-resolve",
-    async ({
-      roomId,
-      threadId,
-      resolved,
-    }: {
-      roomId: string;
-      threadId: string;
-      resolved: boolean;
-    }) => {
+    commentResolveSchema,
+    async ({ roomId, threadId, resolved }) => {
       try {
         if (!socket.rooms.has(roomId)) return;
         if (!checkRateLimit(socket, "comment", RATE_LIMIT_MAX_COMMENT)) return;
@@ -92,19 +95,16 @@ export function registerCommentHandlers(
     },
   );
 
-  socket.on(
-    "comment-delete",
-    async ({ roomId, threadId }: { roomId: string; threadId: string }) => {
-      try {
-        if (!socket.rooms.has(roomId)) return;
-        if (!checkRateLimit(socket, "comment", RATE_LIMIT_MAX_COMMENT)) return;
-        const data = socket.data as SocketData;
-        await useCases.deleteComment.execute(threadId, data.userId);
-        socket.to(roomId).emit("comment-deleted", { roomId, threadId });
-        socket.emit("comment-deleted", { roomId, threadId });
-      } catch (error: unknown) {
-        logger.error(error, "comment-delete failed");
-      }
-    },
-  );
+  onEvent(socket, "comment-delete", commentDeleteSchema, async ({ roomId, threadId }) => {
+    try {
+      if (!socket.rooms.has(roomId)) return;
+      if (!checkRateLimit(socket, "comment", RATE_LIMIT_MAX_COMMENT)) return;
+      const data = socket.data as SocketData;
+      await useCases.deleteComment.execute(threadId, data.userId);
+      socket.to(roomId).emit("comment-deleted", { roomId, threadId });
+      socket.emit("comment-deleted", { roomId, threadId });
+    } catch (error: unknown) {
+      logger.error(error, "comment-delete failed");
+    }
+  });
 }

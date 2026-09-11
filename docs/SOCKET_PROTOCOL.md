@@ -30,8 +30,20 @@ Each diagram is a Socket.IO room. Scenes are sub-rooms scoped to `{roomId}:{scen
 | C → S     | `join-room-guest` | `{ shareToken, guestName }`         | Join as guest via share link                     |
 | S → C     | `room-joined`     | `{ roomId, role, userId }`          | Confirms successful join                         |
 | S → C     | `room-error`      | `{ message }`                       | Join or operation failed                         |
+| S → C     | `event-error`     | `{ event, message }`                | Payload of `event` failed validation (see below) |
 | S → Room  | `room-presence`   | `{ roomId, users: PresenceUser[] }` | Updated user list on join/leave                  |
 | S → Room  | `cursor-left`     | `{ userId }`                        | User disconnected from room                      |
+
+### Payload Validation
+
+Every client → server payload is checked against a Zod schema before any handler logic runs
+(`onEvent` in `infrastructure/socket/helpers.ts`). A payload that fails is dropped and only the
+sender receives `event-error` with `{ event, message: "Invalid payload" }`. It is deliberately
+separate from `room-error`, which clients treat as a failed connection: a malformed event must not
+tear down a session. Exceptions thrown inside a handler are logged server-side and never reach the
+process. Optional `sceneId` fields accept `null` as well as omission. Comment events apply the same
+limits as their REST routes: `body` 1–5000 characters (trimmed), `elementId` up to 200, and
+`threadId` / `sceneId` must be UUIDs.
 
 ### Scene Sync
 
