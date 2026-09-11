@@ -6,6 +6,7 @@ import { ConfigProvider } from "../infrastructure/services/config-provider";
 import { StructuredAuditLogger } from "../infrastructure/services/audit-logger";
 import { GoogleOAuthProvider } from "../infrastructure/services/google-oauth-provider";
 import { GitHubOAuthProvider } from "../infrastructure/services/github-oauth-provider";
+import { SocketIoRealtimeNotifier } from "../infrastructure/socket/realtime-notifier";
 import type { Repositories } from "./repositories";
 
 export function createServices(repos: Repositories) {
@@ -17,6 +18,7 @@ export function createServices(repos: Repositories) {
   const auditLogger = new StructuredAuditLogger();
   const googleOAuthProvider = new GoogleOAuthProvider();
   const githubOAuthProvider = new GitHubOAuthProvider();
+  const realtimeNotifier = new SocketIoRealtimeNotifier();
 
   return {
     hasher,
@@ -27,6 +29,7 @@ export function createServices(repos: Repositories) {
     auditLogger,
     googleOAuthProvider,
     githubOAuthProvider,
+    realtimeNotifier,
   };
 }
 
