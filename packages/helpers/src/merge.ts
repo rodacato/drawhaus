@@ -8,6 +8,10 @@ function nonceOf(el: ExcalidrawElement): number {
   return typeof el.versionNonce === "number" ? el.versionNonce : 0;
 }
 
+function isTombstone(el: ExcalidrawElement): boolean {
+  return el.isDeleted === true;
+}
+
 /**
  * Whether the remote copy of an element replaces the local one. Same rule as Excalidraw's
  * `reconcileElements`: the higher version wins, and on equal versions the lower `versionNonce`,
@@ -155,7 +159,17 @@ export function mergeDelta(
 
     const remote = changedMap.get(local.id);
     changedMap.delete(local.id);
-    if (remote && remoteWins(local, remote)) {
+    if (remote && isTombstone(remote) && !isTombstone(local) && editedIds.has(local.id)) {
+      // ADR-022: a delete wins over an edit made concurrently with it. Excalidraw deletes by
+      // marking the element, so without this the deleter and the editor just trade versions;
+      // bumping past both settles every replica on the delete.
+      merged.push(
+        remoteWins(local, remote)
+          ? remote
+          : { ...remote, version: Math.max(versionOf(local), versionOf(remote)) + 1 },
+      );
+      deletedIds.push(local.id);
+    } else if (remote && remoteWins(local, remote)) {
       const replaced = versionOf(remote) !== versionOf(local) || nonceOf(remote) !== nonceOf(local);
       if (replaced && editedIds.has(local.id)) conflictIds.push(local.id);
       merged.push(remote);

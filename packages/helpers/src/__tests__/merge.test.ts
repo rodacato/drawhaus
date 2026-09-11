@@ -479,3 +479,41 @@ describe("mergeDelta cleanup", () => {
     );
   });
 });
+
+describe("a delete wins over a concurrent edit", () => {
+  const live = (version: number) => el("dragged", version, { versionNonce: 5 });
+  const tombstone = (version: number) =>
+    el("dragged", version, { versionNonce: 5, isDeleted: true });
+  const beingDragged = new Set(["dragged"]);
+  const versionOf = (elements: unknown[]) => (elements[0] as { version: number }).version;
+  const deleted = (elements: unknown[]) => (elements[0] as { isDeleted?: boolean }).isDeleted;
+
+  it("takes the delete even when the local edit has the higher version, bumped past both", () => {
+    const { elements, deletedIds } = mergeDelta([live(9)], [tombstone(5)], [], beingDragged);
+
+    assert.equal(deleted(elements), true);
+    assert.equal(versionOf(elements), 10, "so the deleter's replica settles on it too");
+    assert.deepEqual(deletedIds, ["dragged"]);
+  });
+
+  it("keeps the delete as sent when it already outranks the local edit", () => {
+    const { elements } = mergeDelta([live(4)], [tombstone(5)], [], beingDragged);
+
+    assert.equal(deleted(elements), true);
+    assert.equal(versionOf(elements), 5);
+  });
+
+  it("does not override an undo that brought the element back", () => {
+    const { elements, deletedIds } = mergeDelta([tombstone(5)], [live(6)], [], beingDragged);
+
+    assert.equal(deleted(elements), undefined);
+    assert.deepEqual(deletedIds, []);
+  });
+
+  it("leaves an element nobody here was editing to the version rule", () => {
+    const { elements } = mergeDelta([live(9)], [tombstone(5)], [], new Set());
+
+    assert.equal(deleted(elements), undefined);
+    assert.equal(versionOf(elements), 9);
+  });
+});
