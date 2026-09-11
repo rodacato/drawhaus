@@ -57,9 +57,10 @@ limits as their REST routes: `body` 1–5000 characters (trimmed), `elementId` u
 | C → S     | `save-scene`           | `{ roomId, sceneId?, elements, appState, revision? }`                          | Persist scene to database (server-side merge)             |
 | S → C     | `scene-saved`          | `{ roomId, sceneId }`                                                          | Confirms save succeeded                                   |
 
-`scene-from-db` is sent in three situations: on join, to the whole room after a snapshot restore,
-and to a single client whose `save-scene` was refused as stale. It always carries the scene's
-current `revision`.
+`scene-from-db` is sent in four situations: on join, to the whole room after a snapshot restore,
+to the whole room after a content `PATCH` (REST save fallback, public API, MCP), and to a single
+client whose `save-scene` was refused as stale. It always carries the scene's current `revision`.
+The three room-wide cases go through the `RealtimeNotifier` port ([ADR-027](adr/027-realtime-notifier-port.md)).
 
 ### Scene Revisions
 
@@ -129,11 +130,16 @@ Cursor and viewport events use `socket.volatile` — messages may be dropped und
 | C → S     | `comment-delete`   | `{ roomId, threadId }`                  | Delete thread             |
 | S → Room  | `comment-deleted`  | `{ roomId, threadId }`                  | Deletion broadcast        |
 
+The four `S → Room` events above are also emitted for the REST comment routes, which the client
+falls back to when the socket is down. `POST /comments/:threadId/like` has no socket counterpart
+and broadcasts nothing.
+
 ### Snapshots
 
-| Direction | Event              | Payload                   | Description                                         |
-| --------- | ------------------ | ------------------------- | --------------------------------------------------- |
-| S → Room  | `snapshot-created` | `{ diagramId, snapshot }` | Auto-snapshot on interval or last editor disconnect |
+| Direction | Event               | Payload                                 | Description                                                                                    |
+| --------- | ------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| S → Room  | `snapshot-created`  | `{ diagramId, snapshot? }`              | Auto-snapshot on interval or last editor disconnect; also on manual create and after a restore |
+| S → Room  | `snapshot-restored` | `{ diagramId, restoredBy, snapshotId }` | A snapshot was restored; followed by `scene-from-db`                                           |
 
 ### Drive Sync
 

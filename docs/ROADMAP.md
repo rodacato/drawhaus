@@ -128,6 +128,7 @@ Architectural decisions that shaped Drawhaus. Full ADRs in [`docs/adr/`](adr/).
 | Vitest + jsdom for frontend tests  | Vite-native runner; backend stays on `tsx --test`                     | Unlocks DOM testing (components, hooks, contexts); fixes `mock.module()` for CJS modules       | [024](adr/024-vitest-for-frontend-tests.md)          |
 | Diagram content write path         | First scene is the only write target; `diagrams.elements` is a mirror | REST/v1/MCP updates were lost once a board had been opened; one transaction keeps both in step | [025](adr/025-first-scene-single-write-path.md)      |
 | Scene revisions                    | A counter only replaces bump; stale saves are refused, not merged     | A save or delta computed before a restore or API write must not put back what it removed       | [026](adr/026-scene-revisions.md)                    |
+| Realtime notifications             | One `RealtimeNotifier` port, Socket.IO adapter; no event bus          | Writes that skip the room must reach open boards; `IoHolder` leaked socket types into routes   | [027](adr/027-realtime-notifier-port.md)             |
 
 Other decisions not warranting a full ADR:
 
