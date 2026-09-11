@@ -475,15 +475,15 @@ kamal rollback -c config/deploy.frontend.yml
 
 ### Templates
 
-| Method   | Endpoint                            | Description                                           |
-| -------- | ----------------------------------- | ----------------------------------------------------- |
-| `GET`    | `/api/templates`                    | List all templates (built-in + user's custom)         |
-| `GET`    | `/api/templates/:id`                | Get single template                                   |
-| `POST`   | `/api/templates`                    | Create custom template from current canvas            |
-| `POST`   | `/api/templates/:id/use`            | Create a new diagram from a template                  |
-| `PATCH`  | `/api/templates/:id`                | Update custom template (title, description, category) |
-| `DELETE` | `/api/templates/:id`                | Delete custom template                                |
-| `POST`   | `/api/templates/transfer-ownership` | Bulk transfer template ownership                      |
+| Method   | Endpoint                            | Description                                                                    |
+| -------- | ----------------------------------- | ------------------------------------------------------------------------------ |
+| `GET`    | `/api/templates`                    | List your templates, plus a workspace's with `?workspaceId=` (members only)    |
+| `GET`    | `/api/templates/:id`                | Get a template you created or one in a workspace you belong to (404 otherwise) |
+| `POST`   | `/api/templates`                    | Create custom template from current canvas                                     |
+| `POST`   | `/api/templates/:id/use`            | Create a new diagram from a template you can read                              |
+| `PATCH`  | `/api/templates/:id`                | Update custom template (title, description, category)                          |
+| `DELETE` | `/api/templates/:id`                | Delete custom template                                                         |
+| `POST`   | `/api/templates/transfer-ownership` | Bulk transfer template ownership                                               |
 
 ### Snapshots
 
@@ -585,20 +585,27 @@ See [packages/mcp/README.md](packages/mcp/README.md) for full setup instructions
 
 ## Routes
 
-| Path                     | Access        | Description                                        |
-| ------------------------ | ------------- | -------------------------------------------------- |
-| `/`                      | Public        | Landing page (redirects to dashboard if logged in) |
-| `/setup`                 | Public        | First-time admin creation                          |
-| `/login`                 | Public        | Sign in                                            |
-| `/register`              | Public        | Create account                                     |
-| `/forgot-password`       | Public        | Request password reset                             |
-| `/reset-password/:token` | Public        | Set new password                                   |
-| `/dashboard`             | Authenticated | Diagram list with folders                          |
-| `/board/:id`             | Authenticated | Excalidraw editor                                  |
-| `/settings`              | Authenticated | Profile, security, preferences                     |
-| `/admin`                 | Admin only    | User management, metrics, invites                  |
-| `/share/:token`          | Public        | Join session via share link                        |
-| `/embed/:token`          | Public        | Read-only embed view                               |
+| Path                       | Access        | Description                                        |
+| -------------------------- | ------------- | -------------------------------------------------- |
+| `/`                        | Public        | Landing page (redirects to dashboard if logged in) |
+| `/setup`                   | Public        | First-time admin creation                          |
+| `/login`                   | Public        | Sign in                                            |
+| `/register`                | Public        | Create account                                     |
+| `/forgot-password`         | Public        | Request password reset                             |
+| `/reset-password/:token`   | Public        | Set new password                                   |
+| `/invite/:token`           | Public        | Site invite link; opens registration               |
+| `/workspace-invite/:token` | Public        | Workspace invitation; log in to accept             |
+| `/privacy`, `/terms`       | Public        | Privacy policy and terms of service                |
+| `/self-host`               | Public        | Self-hosting guide                                 |
+| `/dashboard`               | Authenticated | Diagram list with folders                          |
+| `/board/:id`               | Authenticated | Excalidraw editor                                  |
+| `/settings`                | Authenticated | Profile, security, preferences                     |
+| `/admin`                   | Admin only    | User management, metrics, invites                  |
+| `/share/:token`            | Public        | Join session via share link                        |
+| `/embed/:token`            | Public        | Read-only embed view                               |
+
+Only the Authenticated routes send a signed-out visitor, or a request that answers 401, to `/login`.
+A 401 on a public route is left to that page.
 
 ---
 

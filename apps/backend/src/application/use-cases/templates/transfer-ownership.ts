@@ -1,7 +1,8 @@
 import type { TemplateRepository } from "../../../domain/ports/template-repository";
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
 import type { AuditLogger } from "../../../domain/ports/audit-logger";
-import { NotFoundError, ForbiddenError } from "../../../domain/errors";
+import { ForbiddenError } from "../../../domain/errors";
+import { findReadableTemplate } from "../../helpers/find-readable-template";
 
 export class TransferTemplateOwnershipUseCase {
   constructor(
@@ -14,8 +15,11 @@ export class TransferTemplateOwnershipUseCase {
     if (newCreatorId === actorId) throw new ForbiddenError();
 
     for (const id of templateIds) {
-      const template = await this.templates.findById(id);
-      if (!template) throw new NotFoundError("Template");
+      const template = await findReadableTemplate(
+        { templates: this.templates, workspaces: this.workspaces },
+        id,
+        actorId,
+      );
       if (template.creatorId !== actorId) throw new ForbiddenError();
       if (template.isBuiltIn) throw new ForbiddenError();
 

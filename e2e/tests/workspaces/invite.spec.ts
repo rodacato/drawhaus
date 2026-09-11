@@ -47,10 +47,7 @@ test.describe("Workspace Invitations", () => {
     expect(role).toBe("editor");
   });
 
-  test.fixme("UI: a signed-out visitor is sent to log in first (bug: 401 interceptor sends signed-out visitors to /login)", async ({
-    createUser,
-    openAs,
-  }) => {
+  test("UI: a signed-out visitor is sent to log in first", async ({ createUser, openAs }) => {
     const { token } = await pendingInvite(createUser);
     const page = await openAs(SIGNED_OUT);
 
@@ -62,9 +59,7 @@ test.describe("Workspace Invitations", () => {
     await expect(page).toHaveURL(`/login?redirect=/workspace-invite/${token}`);
   });
 
-  test.fixme("UI: an unknown invitation shows an error (bug: 401 interceptor sends signed-out visitors to /login)", async ({
-    openAs,
-  }) => {
+  test("UI: an unknown invitation shows an error", async ({ openAs }) => {
     const page = await openAs(SIGNED_OUT);
 
     await page.goto("/workspace-invite/bad-token-xyz");
