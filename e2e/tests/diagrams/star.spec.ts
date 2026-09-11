@@ -1,46 +1,41 @@
-import { test, expect } from "@playwright/test";
-import { createDiagram } from "../../fixtures/data.fixture";
+import { randomUUID } from "node:crypto";
+import type { APIRequestContext, Page } from "@playwright/test";
+import { test, expect } from "../../fixtures/test";
+import { createDiagram, getDiagram } from "../../fixtures/api";
+
+async function setStar(request: APIRequestContext, diagramId: string, starred: boolean) {
+  const res = await request.patch(`/api/diagrams/${diagramId}/star`, { data: { starred } });
+  expect(res.ok()).toBeTruthy();
+}
+
+async function openStarred(page: Page) {
+  await page.goto("/dashboard");
+  await page.locator("nav").getByText("Starred").first().click();
+  await expect(page.locator("main h2").first()).toContainText("Starred");
+}
 
 test.describe("Star Diagrams", () => {
-  test("can star a diagram", async ({ request }) => {
-    const diagram = await createDiagram(request, "Star Test");
+  test("starring and unstarring updates the diagram", async ({ request }) => {
+    const diagram = await createDiagram(request, { title: "Star Test" });
 
-    const res = await request.patch(`/api/diagrams/${diagram.id}/star`, {
-      data: { starred: true },
-    });
-    expect(res.ok()).toBeTruthy();
+    await setStar(request, diagram.id, true);
+    expect((await getDiagram(request, diagram.id)).starred).toBe(true);
+
+    await setStar(request, diagram.id, false);
+    expect((await getDiagram(request, diagram.id)).starred).toBe(false);
   });
 
-  test("can unstar a diagram", async ({ request }) => {
-    const diagram = await createDiagram(request, "Unstar Test");
+  test("the Starred view lists starred diagrams only", async ({ page, request }) => {
+    const suffix = randomUUID().slice(0, 8);
+    const kept = await createDiagram(request, { title: `Kept Star ${suffix}` });
+    const dropped = await createDiagram(request, { title: `Dropped Star ${suffix}` });
+    await setStar(request, kept.id, true);
+    await setStar(request, dropped.id, true);
+    await setStar(request, dropped.id, false);
 
-    // Star it first
-    await request.patch(`/api/diagrams/${diagram.id}/star`, {
-      data: { starred: true },
-    });
+    await openStarred(page);
 
-    // Unstar it
-    const res = await request.patch(`/api/diagrams/${diagram.id}/star`, {
-      data: { starred: false },
-    });
-    expect(res.ok()).toBeTruthy();
-  });
-
-  test("starred diagram appears in starred list", async ({ page, request }) => {
-    const diagram = await createDiagram(request, "Starred List Test");
-    await request.patch(`/api/diagrams/${diagram.id}/star`, {
-      data: { starred: true },
-    });
-
-    // Navigate to starred view in dashboard
-    await page.goto("/dashboard");
-    await page
-      .getByText("Loading...")
-      .waitFor({ state: "hidden", timeout: 10_000 })
-      .catch(() => {});
-    await page.locator("nav").getByText("Starred").first().click({ force: true });
-    await page.locator("main h2").first().waitFor({ timeout: 5_000 });
-
-    await expect(page.locator("main h2").first()).toContainText("Starred");
+    await expect(page.getByText(`Kept Star ${suffix}`)).toBeVisible();
+    await expect(page.getByText(`Dropped Star ${suffix}`)).toHaveCount(0);
   });
 });

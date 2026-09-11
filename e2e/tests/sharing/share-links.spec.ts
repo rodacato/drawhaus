@@ -1,73 +1,62 @@
-import { test, expect } from "@playwright/test";
-import { createDiagram, createShareLink } from "../../fixtures/data.fixture";
-import { unauthenticatedContext } from "../../fixtures/multi-user.fixture";
+import type { APIRequestContext } from "@playwright/test";
+import { test, expect } from "../../fixtures/test";
+import { createDiagram, createShareLink } from "../../fixtures/api";
 
-const BASE_URL = "http://localhost:5173";
+type Resolved = { share: { token: string; role: string }; diagram: { id: string } };
+
+async function linkTokens(api: APIRequestContext, diagramId: string) {
+  const res = await api.get(`/api/share/${diagramId}/links`);
+  expect(res.ok()).toBeTruthy();
+  return ((await res.json()) as { links: { token: string }[] }).links.map((l) => l.token);
+}
 
 test.describe("Share Links", () => {
-  test("can create viewer share link", async ({ request }) => {
-    const diagram = await createDiagram(request, "Share Viewer Test");
-    const share = await createShareLink(request, diagram.id, "viewer");
-    expect(share.token).toBeTruthy();
+  for (const role of ["viewer", "editor"] as const) {
+    test(`a ${role} link resolves anonymously to its diagram and role`, async ({
+      request,
+      anonApi,
+    }) => {
+      const diagram = await createDiagram(request, { title: `Share ${role} Test` });
+      const token = await createShareLink(request, diagram.id, role);
+
+      const res = await anonApi.get(`/api/share/link/${token}`);
+
+      expect(res.ok()).toBeTruthy();
+      const body = (await res.json()) as Resolved;
+      expect(body.diagram.id).toBe(diagram.id);
+      expect(body.share.role).toBe(role);
+    });
+  }
+
+  test("the owner can list a diagram's links", async ({ request }) => {
+    const diagram = await createDiagram(request, { title: "Share List Test" });
+    const token = await createShareLink(request, diagram.id, "viewer");
+
+    expect(await linkTokens(request, diagram.id)).toContain(token);
   });
 
-  test("can create editor share link", async ({ request }) => {
-    const diagram = await createDiagram(request, "Share Editor Test");
-    const share = await createShareLink(request, diagram.id, "editor");
-    expect(share.token).toBeTruthy();
+  test("a revoked link no longer resolves", async ({ request, anonApi }) => {
+    const diagram = await createDiagram(request, { title: "Share Revoke Test" });
+    const token = await createShareLink(request, diagram.id, "viewer");
+
+    expect((await request.delete(`/api/share/link/${token}`)).ok()).toBeTruthy();
+
+    expect((await anonApi.get(`/api/share/link/${token}`)).ok()).toBeFalsy();
+    expect(await linkTokens(request, diagram.id)).not.toContain(token);
   });
 
-  test("can list share links for diagram", async ({ request }) => {
-    const diagram = await createDiagram(request, "Share List Test");
-    await createShareLink(request, diagram.id, "viewer");
+  test("another user can neither list nor revoke the owner's links", async ({
+    request,
+    anonApi,
+    createUser,
+  }) => {
+    const outsider = await createUser("outsider");
+    const diagram = await createDiagram(request, { title: "Share Guarded Test" });
+    const token = await createShareLink(request, diagram.id, "editor");
 
-    const res = await request.get(`/api/share/${diagram.id}/links`);
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const links = body.shareLinks ?? body.links ?? body;
-    expect(Array.isArray(links)).toBeTruthy();
-    expect(links.length).toBeGreaterThan(0);
-  });
+    expect((await outsider.api.get(`/api/share/${diagram.id}/links`)).ok()).toBeFalsy();
+    expect((await outsider.api.delete(`/api/share/link/${token}`)).ok()).toBeFalsy();
 
-  test("can revoke share link", async ({ request }) => {
-    const diagram = await createDiagram(request, "Share Revoke Test");
-    const share = await createShareLink(request, diagram.id, "viewer");
-
-    const deleteRes = await request.delete(`/api/share/link/${share.token}`);
-    expect(deleteRes.ok()).toBeTruthy();
-  });
-
-  test("revoked link no longer resolves", async ({ request }) => {
-    const diagram = await createDiagram(request, "Share Revoked Resolve");
-    const share = await createShareLink(request, diagram.id, "viewer");
-    await request.delete(`/api/share/link/${share.token}`);
-
-    const noAuth = await unauthenticatedContext(BASE_URL);
-    const res = await noAuth.get(`/api/share/link/${share.token}`);
-    expect(res.ok()).toBeFalsy();
-    await noAuth.dispose();
-  });
-
-  test("share link resolves for unauthenticated users", async ({ request }) => {
-    const diagram = await createDiagram(request, "Share Resolve Test");
-    const share = await createShareLink(request, diagram.id, "viewer");
-
-    const noAuth = await unauthenticatedContext(BASE_URL);
-    const res = await noAuth.get(`/api/share/link/${share.token}`);
-    expect(res.ok()).toBeTruthy();
-    await noAuth.dispose();
-  });
-
-  test("share link contains role information", async ({ request }) => {
-    const diagram = await createDiagram(request, "Share Role Test");
-    const share = await createShareLink(request, diagram.id, "editor");
-
-    const noAuth = await unauthenticatedContext(BASE_URL);
-    const res = await noAuth.get(`/api/share/link/${share.token}`);
-    expect(res.ok()).toBeTruthy();
-    const body = await res.json();
-    const role = body.share?.role ?? body.shareLink?.role ?? body.role;
-    expect(role).toBe("editor");
-    await noAuth.dispose();
+    expect((await anonApi.get(`/api/share/link/${token}`)).ok()).toBeTruthy();
   });
 });

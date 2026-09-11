@@ -5,16 +5,18 @@
  * Seeds demo data via API, navigates key pages, captures at 1440×900.
  *
  * Usage (from e2e/):
- *   npx playwright test tests/marketing/screenshots.spec.ts
+ *   npm run screenshots
  */
 
 import { test } from "@playwright/test";
 import path from "path";
 import heroElements from "../../fixtures/demo-elements.json";
 import demoDiagrams from "../../fixtures/demo-diagrams.json";
+import { ADMIN_USER, PRIMARY_AUTH_FILE, loginApi } from "../../fixtures/test";
+import { createDiagram, createFolder, createWorkspace } from "../../fixtures/api";
 
 const VIEWPORT = { width: 1440, height: 900 };
-const OUTPUT_DIR = path.resolve(__dirname, "../../../frontend/public/screenshots");
+const OUTPUT_DIR = path.resolve(__dirname, "../../../apps/frontend/public/screenshots");
 
 /** Disable animations, tooltips, blinking cursor */
 async function stabilizePage(page: import("@playwright/test").Page) {
@@ -48,8 +50,7 @@ async function hideExcalidrawNoise(page: import("@playwright/test").Page) {
 
 /** Wait for board canvas to be ready */
 async function waitForBoard(page: import("@playwright/test").Page) {
-  // Wait for Excalidraw canvas to render
-  await page.waitForSelector(".excalidraw canvas, canvas", { timeout: 15_000 }).catch(() => {});
+  await page.waitForSelector(".excalidraw canvas", { timeout: 30_000 });
   await page.waitForTimeout(3000);
 }
 
@@ -74,17 +75,6 @@ function addFakeCursors(page: import("@playwright/test").Page) {
   });
 }
 
-/** Hide comment element references like "ON ELEMENT #API-" */
-async function hideCommentElementRefs(page: import("@playwright/test").Page) {
-  await page.evaluate(() => {
-    document.querySelectorAll("*").forEach((el) => {
-      if (el.textContent?.match(/ON ELEMENT #[A-Z]/i) && el.children.length <= 2) {
-        (el as HTMLElement).style.display = "none";
-      }
-    });
-  });
-}
-
 /** Hide the "Saved/Unsaved" badge */
 async function hideSaveBadge(page: import("@playwright/test").Page) {
   await page.evaluate(() => {
@@ -104,101 +94,49 @@ test.describe("Marketing Screenshots", () => {
 
   let mainDiagramId: string;
   const allDiagramIds: string[] = [];
-  let workspaceId: string;
 
   test.beforeAll(async ({ request }) => {
-    // Get or create a non-personal workspace
-    const wsRes = await request.get("/api/workspaces");
-    if (wsRes.ok()) {
-      const body = await wsRes.json();
-      const workspaces = body.workspaces ?? body;
-      const ws = workspaces.find((w: any) => !w.isPersonal);
-      if (ws) {
-        workspaceId = ws.id;
-      } else {
-        // Create a team workspace for screenshots
-        const createRes = await request.post("/api/workspaces", {
-          data: { name: "Design Team" },
-        });
-        if (createRes.ok()) {
-          const created = await createRes.json();
-          workspaceId = created.workspace?.id ?? created.id;
-        } else {
-          // Fallback to first workspace
-          if (workspaces[0]) workspaceId = workspaces[0].id;
-        }
-      }
-    }
+    const workspace = await createWorkspace(request, "Design Team");
 
-    // Create main diagram with rich elements
-    const mainRes = await request.post("/api/diagrams", {
-      data: {
-        title: "System Architecture",
-        elements: heroElements.elements,
-        appState: heroElements.appState,
-        workspaceId: workspaceId || undefined,
-      },
+    const main = await createDiagram(request, {
+      title: "System Architecture",
+      elements: heroElements.elements,
+      workspaceId: workspace.id,
     });
-    if (mainRes.ok()) {
-      const body = await mainRes.json();
-      mainDiagramId = body.diagram?.id ?? body.id;
-      allDiagramIds.push(mainDiagramId);
-    }
+    mainDiagramId = main.id;
+    allDiagramIds.push(main.id);
 
-    // Create additional diagrams
     for (const diag of demoDiagrams.diagrams) {
-      const res = await request.post("/api/diagrams", {
-        data: {
-          title: diag.title,
-          elements: diag.elements,
-          appState: { viewBackgroundColor: "#ffffff", gridSize: null, zoom: { value: 1 } },
-          workspaceId: workspaceId || undefined,
-        },
+      const created = await createDiagram(request, {
+        title: diag.title,
+        elements: diag.elements,
+        workspaceId: workspace.id,
       });
-      if (res.ok()) {
-        const body = await res.json();
-        allDiagramIds.push(body.diagram?.id ?? body.id);
-      }
+      allDiagramIds.push(created.id);
     }
 
-    // Create folders
-    if (workspaceId) {
-      for (const name of ["Backend", "Product"]) {
-        await request.post("/api/folders", { data: { name, workspaceId } }).catch(() => {});
-      }
+    for (const name of ["Backend", "Product"]) {
+      await createFolder(request, workspace.id, name);
     }
 
-    // Create comments on main diagram
-    if (mainDiagramId) {
-      const comments = [
-        {
-          elementId: "api-box",
-          body: "Should we add a load balancer in front of the API Gateway?",
-        },
-        { elementId: "cache-box", body: "Redis cache TTL should be configurable per endpoint" },
-        {
-          elementId: "ws-box",
-          body: "Looks great! The WebSocket connection should be bidirectional",
-        },
-      ];
-      for (const c of comments) {
-        await request
-          .post(`/api/diagrams/${mainDiagramId}/comments`, {
-            data: { elementId: c.elementId, body: c.body },
-          })
-          .catch(() => {});
-      }
+    const comments = [
+      { elementId: "api-box", body: "Should we add a load balancer in front of the API Gateway?" },
+      { elementId: "cache-box", body: "Redis cache TTL should be configurable per endpoint" },
+      {
+        elementId: "ws-box",
+        body: "Looks great! The WebSocket connection should be bidirectional",
+      },
+    ];
+    for (const c of comments) {
+      const res = await request.post(`/api/diagrams/${mainDiagramId}/comments`, { data: c });
+      if (!res.ok()) throw new Error(`create comment failed with ${res.status()}`);
     }
 
-    // Create extra scenes
-    if (mainDiagramId) {
-      for (const name of ["Auth Flow", "DB Schema", "Deploy Pipeline"]) {
-        await request
-          .post(`/api/diagrams/${mainDiagramId}/scenes`, {
-            data: { title: name },
-          })
-          .catch(() => {});
-      }
+    for (const name of ["Auth Flow", "DB Schema", "Deploy Pipeline"]) {
+      const res = await request.post(`/api/diagrams/${mainDiagramId}/scenes`, {
+        data: { title: name },
+      });
+      if (!res.ok()) throw new Error(`create scene failed with ${res.status()}`);
     }
   });
 
@@ -216,12 +154,10 @@ test.describe("Marketing Screenshots", () => {
 
   // ─── 1. Hero Editor ───
   test("hero-editor", async ({ page }) => {
-    test.skip(!mainDiagramId, "No diagram created");
     await page.setViewportSize(VIEWPORT);
     await page.goto(`/board/${mainDiagramId}`);
     await waitForBoard(page);
 
-    // Zoom to fit
     await page.mouse.click(700, 450);
     await page.waitForTimeout(300);
     await page.keyboard.press("Control+Shift+Digit1");
@@ -238,18 +174,15 @@ test.describe("Marketing Screenshots", () => {
 
   // ─── 2. Collaboration (comments + cursors) ───
   test("screenshot-collab", async ({ page }) => {
-    test.skip(!mainDiagramId, "No diagram created");
     await page.setViewportSize(VIEWPORT);
     await page.goto(`/board/${mainDiagramId}`);
     await waitForBoard(page);
 
-    // Zoom to fit so diagram is centered
     await page.mouse.click(700, 450);
     await page.waitForTimeout(300);
     await page.keyboard.press("Control+Shift+Digit1");
     await page.waitForTimeout(2000);
 
-    // Open share panel to show collaboration UI
     const shareBtn = page.locator('button[title="Share & Collaborate"]');
     await shareBtn.waitFor({ state: "visible", timeout: 8_000 });
     await shareBtn.click();
@@ -266,7 +199,6 @@ test.describe("Marketing Screenshots", () => {
 
   // ─── 3. Code Import ───
   test("screenshot-code-import", async ({ page }) => {
-    test.skip(!mainDiagramId, "No diagram created");
     await page.setViewportSize(VIEWPORT);
     await page.goto(`/board/${mainDiagramId}`);
     await waitForBoard(page);
@@ -295,7 +227,6 @@ test.describe("Marketing Screenshots", () => {
 
   // ─── 4. Share Panel ───
   test("screenshot-share", async ({ page }) => {
-    test.skip(!mainDiagramId, "No diagram created");
     await page.setViewportSize(VIEWPORT);
     await page.goto(`/board/${mainDiagramId}`);
     await waitForBoard(page);
@@ -312,7 +243,6 @@ test.describe("Marketing Screenshots", () => {
 
   // ─── 5. Export Panel ───
   test("screenshot-export", async ({ page }) => {
-    test.skip(!mainDiagramId, "No diagram created");
     await page.setViewportSize(VIEWPORT);
     await page.goto(`/board/${mainDiagramId}`);
     await waitForBoard(page);
@@ -329,7 +259,6 @@ test.describe("Marketing Screenshots", () => {
 
   // ─── 6. Scenes (multi-scene tab bar) ───
   test("screenshot-scenes", async ({ page }) => {
-    test.skip(!mainDiagramId, "No diagram created");
     await page.setViewportSize(VIEWPORT);
     await page.goto(`/board/${mainDiagramId}`);
     await waitForBoard(page);
@@ -350,10 +279,7 @@ test.describe("Marketing Screenshots", () => {
   test("screenshot-dashboard", async ({ page }) => {
     await page.setViewportSize(VIEWPORT);
     await page.goto("/dashboard");
-    await page
-      .getByText("Loading...")
-      .waitFor({ state: "hidden", timeout: 15_000 })
-      .catch(() => {});
+    await page.getByText("Loading...").waitFor({ state: "hidden", timeout: 15_000 });
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(2000);
     await stabilizePage(page);
@@ -363,26 +289,17 @@ test.describe("Marketing Screenshots", () => {
 
   // ─── 8. Templates ───
   test("screenshot-templates", async ({ browser }) => {
-    const ctx = await browser.newContext({
-      storageState: "tests/.auth/user.json",
-      viewport: VIEWPORT,
-    });
+    const ctx = await browser.newContext({ storageState: PRIMARY_AUTH_FILE, viewport: VIEWPORT });
     const page = await ctx.newPage();
 
     await page.goto("/dashboard");
-    await page
-      .getByText("Loading...")
-      .waitFor({ state: "hidden", timeout: 15_000 })
-      .catch(() => {});
+    await page.getByText("Loading...").waitFor({ state: "hidden", timeout: 15_000 });
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1000);
 
-    // Navigate to workspace to get "New Diagram" button
     const personalLink = page.locator("nav a, nav button").filter({ hasText: "Personal" }).first();
-    if (await personalLink.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await personalLink.click();
-      await page.waitForTimeout(2000);
-    }
+    await personalLink.click();
+    await page.waitForTimeout(2000);
 
     const newBtn = page
       .locator("button")
@@ -399,66 +316,39 @@ test.describe("Marketing Screenshots", () => {
 
   // ─── 9. Workspace Settings ───
   test("screenshot-workspace-settings", async ({ browser }) => {
-    const ctx = await browser.newContext({
-      storageState: "tests/.auth/user.json",
-      viewport: VIEWPORT,
-    });
+    const ctx = await browser.newContext({ storageState: PRIMARY_AUTH_FILE, viewport: VIEWPORT });
     const page = await ctx.newPage();
 
     await page.goto("/dashboard");
-    await page
-      .getByText("Loading...")
-      .waitFor({ state: "hidden", timeout: 15_000 })
-      .catch(() => {});
+    await page.getByText("Loading...").waitFor({ state: "hidden", timeout: 15_000 });
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(1500);
 
-    // Hover over non-personal workspace to reveal gear icon
-    const wsGroup = page.locator("nav .group").filter({ hasNotText: /personal/i });
-    const wsCount = await wsGroup.count();
+    const group = page.locator("nav .group").filter({ hasText: "Design Team" }).first();
+    await group.hover();
+    await group.locator('button[title="Workspace settings"]').click();
+    await page.waitForTimeout(1500);
+    await stabilizePage(page);
 
-    let opened = false;
-    for (let i = 0; i < wsCount && !opened; i++) {
-      const group = wsGroup.nth(i);
-      if (await group.isVisible().catch(() => false)) {
-        await group.hover();
-        await page.waitForTimeout(500);
-        const gear = group.locator('button[title="Workspace settings"]');
-        if (await gear.isVisible({ timeout: 2_000 }).catch(() => false)) {
-          await gear.click();
-          await page.waitForTimeout(1500);
-          opened = true;
-        }
-      }
-    }
-
-    if (opened) {
-      await stabilizePage(page);
-    }
     await page.screenshot({ path: path.join(OUTPUT_DIR, "screenshot-workspace-settings.png") });
     await ctx.close();
   });
 
   // ─── 10. Admin Overview ───
   test("screenshot-admin", async ({ browser }) => {
+    const admin = await loginApi(ADMIN_USER.email, ADMIN_USER.password);
     const adminContext = await browser.newContext({
-      storageState: "tests/.auth/admin.json",
+      storageState: await admin.storageState(),
       viewport: VIEWPORT,
     });
+    await admin.dispose();
     const page = await adminContext.newPage();
 
-    await page.goto("/dashboard");
-    await page.waitForTimeout(2000);
-
     await page.goto("/settings?tab=admin-overview");
+    await page.getByText("Admin Dashboard").waitFor({ state: "visible", timeout: 15_000 });
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(2000);
-
-    const heading = page.locator("text=Admin Dashboard");
-    if (await heading.isVisible({ timeout: 5_000 }).catch(() => false)) {
-      await stabilizePage(page);
-      await page.screenshot({ path: path.join(OUTPUT_DIR, "screenshot-admin.png") });
-    }
+    await stabilizePage(page);
+    await page.screenshot({ path: path.join(OUTPUT_DIR, "screenshot-admin.png") });
     await adminContext.close();
   });
 });

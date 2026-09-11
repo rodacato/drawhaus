@@ -1,98 +1,43 @@
-import { test, expect } from "@playwright/test";
-import { loginAsUser, REGULAR_USER, ADMIN_USER } from "../../fixtures/multi-user.fixture";
-import { createDiagram, createShareLink } from "../../fixtures/data.fixture";
-
-const BASE_URL = "http://localhost:5173";
+import { test, expect } from "../../fixtures/test";
+import { createDiagram, getDiagram } from "../../fixtures/api";
 
 test.describe("Resource Access", () => {
-  let userCtx: Awaited<ReturnType<typeof loginAsUser>>;
-  let adminCtx: Awaited<ReturnType<typeof loginAsUser>>;
+  test("a user can read their own diagram", async ({ createUser }) => {
+    const owner = await createUser("owner");
+    const diagram = await createDiagram(owner.api, { title: "My Own Diagram" });
 
-  test.beforeAll(async () => {
-    userCtx = await loginAsUser(BASE_URL, REGULAR_USER.email, REGULAR_USER.password);
-    adminCtx = await loginAsUser(BASE_URL, ADMIN_USER.email, ADMIN_USER.password);
+    expect((await owner.api.get(`/api/diagrams/${diagram.id}`)).ok()).toBeTruthy();
   });
 
-  test.afterAll(async () => {
-    await userCtx.dispose();
-    await adminCtx.dispose();
+  test("another user cannot read the diagram", async ({ createUser }) => {
+    const owner = await createUser("owner");
+    const outsider = await createUser("outsider");
+    const diagram = await createDiagram(owner.api, { title: "Private Diagram" });
+
+    expect((await outsider.api.get(`/api/diagrams/${diagram.id}`)).ok()).toBeFalsy();
   });
 
-  test("user cannot access another user's diagram", async () => {
-    // Admin creates a diagram
-    const diagram = await createDiagram(adminCtx, "Admin Private Diagram");
-    // Regular user tries to access it
-    const res = await userCtx.get(`/api/diagrams/${diagram.id}`);
-    expect(res.ok()).toBeFalsy();
-  });
+  test("another user cannot rename the diagram", async ({ createUser }) => {
+    const owner = await createUser("owner");
+    const outsider = await createUser("outsider");
+    const diagram = await createDiagram(owner.api, { title: "Private Diagram" });
 
-  test("user cannot update another user's diagram", async () => {
-    const diagram = await createDiagram(adminCtx, "Admin Edit Test");
-    const res = await userCtx.patch(`/api/diagrams/${diagram.id}`, {
+    const res = await outsider.api.patch(`/api/diagrams/${diagram.id}`, {
       data: { title: "Hacked" },
     });
+
     expect(res.ok()).toBeFalsy();
+    expect((await getDiagram(owner.api, diagram.id)).title).toBe("Private Diagram");
   });
 
-  test("user cannot delete another user's diagram", async () => {
-    const diagram = await createDiagram(adminCtx, "Admin Delete Test");
-    const res = await userCtx.delete(`/api/diagrams/${diagram.id}`);
+  test("another user cannot delete the diagram", async ({ createUser }) => {
+    const owner = await createUser("owner");
+    const outsider = await createUser("outsider");
+    const diagram = await createDiagram(owner.api, { title: "Private Diagram" });
+
+    const res = await outsider.api.delete(`/api/diagrams/${diagram.id}`);
+
     expect(res.ok()).toBeFalsy();
-  });
-
-  test("share link resolves for unauthenticated users", async () => {
-    const diagram = await createDiagram(userCtx, "Shared Diagram");
-    const share = await createShareLink(userCtx, diagram.id, "viewer");
-
-    // Access without auth via the public resolve endpoint
-    const { unauthenticatedContext } = await import("../../fixtures/multi-user.fixture");
-    const noAuth = await unauthenticatedContext(BASE_URL);
-    const res = await noAuth.get(`/api/share/link/${share.token}`);
-    expect(res.ok()).toBeTruthy();
-    await noAuth.dispose();
-  });
-
-  test("deleted share link no longer resolves", async () => {
-    const diagram = await createDiagram(userCtx, "Revoke Share Test");
-    const share = await createShareLink(userCtx, diagram.id, "viewer");
-
-    // Delete the share link
-    await userCtx.delete(`/api/share/link/${share.token}`);
-
-    // Try to resolve it
-    const { unauthenticatedContext } = await import("../../fixtures/multi-user.fixture");
-    const noAuth = await unauthenticatedContext(BASE_URL);
-    const res = await noAuth.get(`/api/share/link/${share.token}`);
-    expect(res.ok()).toBeFalsy();
-    await noAuth.dispose();
-  });
-
-  test("user can access own diagram", async () => {
-    const diagram = await createDiagram(userCtx, "My Own Diagram");
-    const res = await userCtx.get(`/api/diagrams/${diagram.id}`);
-    expect(res.ok()).toBeTruthy();
-  });
-
-  test("viewer share link blocks editing via API", async () => {
-    const diagram = await createDiagram(userCtx, "Viewer Only Diagram");
-    const share = await createShareLink(userCtx, diagram.id, "viewer");
-
-    // Access the diagram as a guest via share link (get the data)
-    const { unauthenticatedContext } = await import("../../fixtures/multi-user.fixture");
-    const noAuth = await unauthenticatedContext(BASE_URL);
-
-    // Resolve the share link — guest can view
-    const viewRes = await noAuth.get(`/api/share/link/${share.token}`);
-    expect(viewRes.ok()).toBeTruthy();
-
-    // Guest (admin user as different user) should not be able to edit via API
-    // A viewer share link should not grant write access to the diagram
-    const editRes = await adminCtx.patch(`/api/diagrams/${diagram.id}`, {
-      data: { title: "Hacked via viewer link" },
-    });
-    // Admin user is not the owner, so this should fail regardless
-    expect(editRes.ok()).toBeFalsy();
-
-    await noAuth.dispose();
+    expect((await owner.api.get(`/api/diagrams/${diagram.id}`)).ok()).toBeTruthy();
   });
 });

@@ -1,55 +1,35 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../fixtures/test";
+import { createDiagram, getDiagram } from "../fixtures/api";
 
 test.describe("Editor", () => {
-  test.setTimeout(60_000); // Excalidraw can be slow to load in headless
+  test("opens a board with its title and the canvas", async ({ page, request }) => {
+    const diagram = await createDiagram(request, { title: "E2E Editor Test" });
 
-  let diagramId: string;
+    await page.goto(`/board/${diagram.id}`);
 
-  test.beforeEach(async ({ page }) => {
-    const res = await page.request.post("/api/diagrams", {
-      data: { title: "E2E Editor Test" },
-    });
-
-    if (res.ok()) {
-      const body = await res.json();
-      diagramId = body.diagram?.id ?? body.id;
-    }
-  });
-
-  test("loads the editor page", async ({ page }) => {
-    test.skip(!diagramId, "Could not create test diagram");
-
-    await page.goto(`/board/${diagramId}`);
-
-    // Verify we're on the board page (URL-based check, doesn't require WebGL)
-    await expect(page).toHaveURL(new RegExp(`/board/${diagramId}`));
-
-    // Verify the page responded (API check instead of UI render)
-    const getRes = await page.request.get(`/api/diagrams/${diagramId}`);
-    expect(getRes.ok()).toBeTruthy();
+    await expect(page.locator(".excalidraw canvas").first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTitle("Click to rename")).toHaveText("E2E Editor Test");
   });
 
   test("shows error for non-existent diagram", async ({ page }) => {
     await page.goto("/board/non-existent-id-12345");
 
-    await expect(page.getByText(/not found/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Diagram not found")).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator(".excalidraw")).toHaveCount(0);
   });
 
-  test("diagram API CRUD works", async ({ page }) => {
-    test.skip(!diagramId, "Could not create test diagram");
+  test("renaming the board from its title persists", async ({ page, request }) => {
+    const diagram = await createDiagram(request, { title: "Before Rename" });
+    await page.goto(`/board/${diagram.id}`);
 
-    // Verify we can get the diagram
-    const getRes = await page.request.get(`/api/diagrams/${diagramId}`);
-    expect(getRes.ok()).toBeTruthy();
+    await page.getByTitle("Click to rename").click();
+    const input = page.locator("input:focus");
+    await input.fill("After Rename");
+    await input.press("Enter");
 
-    const body = await getRes.json();
-    const diagram = body.diagram ?? body;
-    expect(diagram.title).toBe("E2E Editor Test");
-
-    // Update title
-    const updateRes = await page.request.patch(`/api/diagrams/${diagramId}`, {
-      data: { title: "Updated Title" },
-    });
-    expect(updateRes.ok()).toBeTruthy();
+    await expect(page.getByTitle("Click to rename")).toHaveText("After Rename");
+    await expect
+      .poll(async () => (await getDiagram(request, diagram.id)).title)
+      .toBe("After Rename");
   });
 });

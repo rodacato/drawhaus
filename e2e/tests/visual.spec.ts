@@ -1,16 +1,12 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, SIGNED_OUT } from "../fixtures/test";
+import { createDiagram, createShareLink } from "../fixtures/api";
 
 /**
- * Visual regression tests.
- *
- * First run generates baseline screenshots.
- * Subsequent runs compare against baselines pixel by pixel.
- *
- * To update baselines after intentional UI changes:
+ * Visual regression tests: each page is compared with its committed baseline.
+ * To update baselines after an intentional UI change:
  *   npm run test:update-snapshots --workspace=e2e
  */
 
-/** Disable all animations/transitions and hide decorative blurs so screenshots are stable */
 async function stabilizePage(page: import("@playwright/test").Page) {
   await page.addStyleTag({
     content: `
@@ -31,7 +27,6 @@ async function stabilizePage(page: import("@playwright/test").Page) {
       }
     `,
   });
-  // Blur any focused element to avoid cursor flicker
   await page.evaluate(() => {
     (document.activeElement as HTMLElement)?.blur();
   });
@@ -52,14 +47,10 @@ test.describe("Visual Regression", () => {
 
   test("dashboard", async ({ page }) => {
     await page.goto("/dashboard");
-    await page
-      .getByText("Loading...")
-      .waitFor({ state: "hidden", timeout: 10_000 })
-      .catch(() => {});
+    await expect(page.getByText("Loading...")).toBeHidden({ timeout: 10_000 });
     await page.waitForLoadState("networkidle");
     await stabilizePage(page);
 
-    // Mask dynamic content by hiding it
     await page.addStyleTag({
       content: `
         time { visibility: hidden !important; }
@@ -71,87 +62,42 @@ test.describe("Visual Regression", () => {
     expect(screenshot).toMatchSnapshot("dashboard.png", { maxDiffPixelRatio: 0.05 });
   });
 
-  test("share join page", async ({ browser }) => {
-    const authContext = await browser.newContext({
-      storageState: "tests/.auth/user.json",
-    });
-    const authPage = await authContext.newPage();
+  test("share join page", async ({ createUser, openAs }) => {
+    const owner = await createUser("owner");
+    const diagram = await createDiagram(owner.api, { title: "Visual Share Test" });
+    const token = await createShareLink(owner.api, diagram.id, "viewer");
 
-    const createRes = await authPage.request.post("/api/diagrams", {
-      data: { title: "Visual Share Test" },
-    });
-
-    if (!createRes.ok()) {
-      await authContext.close();
-      test.skip(true, "Could not create test diagram");
-      return;
-    }
-
-    const createBody = await createRes.json();
-    const diagramId = createBody.diagram?.id ?? createBody.id;
-
-    const shareRes = await authPage.request.post(`/api/share/${diagramId}`, {
-      data: { role: "viewer" },
-    });
-
-    if (!shareRes.ok()) {
-      await authContext.close();
-      test.skip(true, "Could not create share link");
-      return;
-    }
-
-    const shareBody = await shareRes.json();
-    const token = shareBody.shareLink?.token ?? shareBody.token;
-    await authContext.close();
-
-    const guestContext = await browser.newContext();
-    const guestPage = await guestContext.newPage();
-
+    const guestPage = await openAs(SIGNED_OUT);
     await guestPage.goto(`/share/${token}`);
     await guestPage.waitForLoadState("networkidle");
     await stabilizePage(guestPage);
 
     const screenshot = await guestPage.screenshot({ timeout: 60_000 });
     expect(screenshot).toMatchSnapshot("share-join.png", { maxDiffPixelRatio: 0.05 });
-
-    await guestContext.close();
   });
 
-  test("register page", async ({ browser }) => {
-    // Use unauthenticated context to avoid redirect
-    const ctx = await browser.newContext({
-      storageState: { cookies: [], origins: [] },
-    });
-    const page = await ctx.newPage();
-    await page.goto("http://localhost:5173/register");
+  test("register page", async ({ openAs }) => {
+    const page = await openAs(SIGNED_OUT);
+    await page.goto("/register");
     await page.waitForLoadState("networkidle");
     await stabilizePage(page);
 
     const screenshot = await page.screenshot({ timeout: 60_000 });
     expect(screenshot).toMatchSnapshot("register.png", { maxDiffPixelRatio: 0.05 });
-    await ctx.close();
   });
 
-  test("forgot password page", async ({ browser }) => {
-    const ctx = await browser.newContext({
-      storageState: { cookies: [], origins: [] },
-    });
-    const page = await ctx.newPage();
-    try {
-      await page.goto("http://localhost:5173/forgot-password");
-      await page.waitForLoadState("networkidle");
-      // Wait for the form to be visible before stabilizing
-      await page
-        .locator('input[type="email"]')
-        .waitFor({ state: "visible", timeout: 10_000 })
-        .catch(() => {});
-      await stabilizePage(page);
+  // The committed forgot-password baseline is a screenshot of the login page this bug redirects to.
+  test.fixme("forgot password page (bug: 401 interceptor sends signed-out visitors to /login)", async ({
+    openAs,
+  }) => {
+    const page = await openAs(SIGNED_OUT);
+    await page.goto("/forgot-password");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 10_000 });
+    await stabilizePage(page);
 
-      const screenshot = await page.screenshot({ timeout: 60_000 });
-      expect(screenshot).toMatchSnapshot("forgot-password.png", { maxDiffPixelRatio: 0.05 });
-    } finally {
-      await ctx.close();
-    }
+    const screenshot = await page.screenshot({ timeout: 60_000 });
+    expect(screenshot).toMatchSnapshot("forgot-password.png", { maxDiffPixelRatio: 0.05 });
   });
 
   test("settings page - profile tab", async ({ page }) => {
@@ -159,7 +105,6 @@ test.describe("Visual Regression", () => {
     await page.waitForLoadState("networkidle");
     await stabilizePage(page);
 
-    // Mask dynamic content (input values, avatars)
     await page.addStyleTag({
       content: `
         img[src*="avatar"] { visibility: hidden !important; }
@@ -185,7 +130,6 @@ test.describe("Visual Regression", () => {
     await page.waitForLoadState("networkidle");
     await stabilizePage(page);
 
-    // Mask dynamic user data (dates, emails, user counts)
     await page.addStyleTag({
       content: `
         time { visibility: hidden !important; }
@@ -198,31 +142,23 @@ test.describe("Visual Regression", () => {
     expect(screenshot).toMatchSnapshot("admin-users.png", { maxDiffPixelRatio: 0.05 });
   });
 
-  test("landing page", async ({ browser }) => {
-    const ctx = await browser.newContext({
-      storageState: { cookies: [], origins: [] },
-    });
-    const page = await ctx.newPage();
-    await page.goto("http://localhost:5173/");
+  test("landing page", async ({ openAs }) => {
+    const page = await openAs(SIGNED_OUT);
+    await page.goto("/");
     await page.waitForLoadState("networkidle");
     await stabilizePage(page);
 
     const screenshot = await page.screenshot({ timeout: 60_000 });
     expect(screenshot).toMatchSnapshot("landing.png", { maxDiffPixelRatio: 0.05 });
-    await ctx.close();
   });
 
-  test("404 page", async ({ browser }) => {
-    const ctx = await browser.newContext({
-      storageState: { cookies: [], origins: [] },
-    });
-    const page = await ctx.newPage();
-    await page.goto("http://localhost:5173/this-page-does-not-exist");
+  test("404 page", async ({ openAs }) => {
+    const page = await openAs(SIGNED_OUT);
+    await page.goto("/this-page-does-not-exist");
     await page.waitForLoadState("networkidle");
     await stabilizePage(page);
 
     const screenshot = await page.screenshot({ timeout: 60_000 });
     expect(screenshot).toMatchSnapshot("404.png", { maxDiffPixelRatio: 0.05 });
-    await ctx.close();
   });
 });
