@@ -16,6 +16,8 @@ const getRestoreElements = async () => {
   return _restoreElements;
 };
 
+type Revision = number | null | undefined;
+
 export interface UseSceneManagerParams {
   socketRef: React.MutableRefObject<Socket | null>;
   socketGeneration: number;
@@ -62,17 +64,22 @@ export function useSceneManager({
     const handleSceneFromDb = ({
       elements,
       activeSceneId: sceneId,
+      revision,
     }: {
       elements: unknown[];
       activeSceneId?: string | null;
+      revision?: Revision;
     }) => {
       if (sceneId) setActiveSceneId(sceneId);
 
       const apply = (serverElements: unknown[]) => {
         const api = excalidrawApiRef.current;
-        const localEdits = sync.localEdits(api?.getSceneElementsIncludingDeleted() ?? []);
-        sync.reset(serverElements);
-        // After a reconnect, edits the server has not seen stay on top, still pending a save.
+        // A replace (restore, API write) wins over edits made before this client saw it; after a
+        // plain reconnect, edits the server has not seen stay on top, still pending a save.
+        const localEdits = sync.isReplacedBy(revision)
+          ? []
+          : sync.localEdits(api?.getSceneElementsIncludingDeleted() ?? []);
+        sync.reset(serverElements, revision ?? null);
         const scene =
           localEdits.length > 0 ? mergeElements(localEdits, serverElements) : serverElements;
         if (!api) {
@@ -92,12 +99,14 @@ export function useSceneManager({
     const handleSceneUpdated = ({
       fromSocketId,
       elements: remoteElements,
+      revision,
     }: {
       fromSocketId: string;
       elements: unknown[];
+      revision?: Revision;
     }) => {
       const api = excalidrawApiRef.current;
-      if (fromSocketId === socket.id || !api) return;
+      if (fromSocketId === socket.id || !api || sync.isStale(revision)) return;
       const merged = mergeElements(api.getSceneElementsIncludingDeleted(), remoteElements);
       applyRemoteScene(api, { elements: merged });
       // Read after applying: Excalidraw may re-index, and so re-version, what it was given.
@@ -109,14 +118,16 @@ export function useSceneManager({
       fromUserId,
       changed,
       removedIds,
+      revision,
     }: {
       fromSocketId: string;
       fromUserId: string;
       changed: unknown[];
       removedIds: string[];
+      revision?: Revision;
     }) => {
       const api = excalidrawApiRef.current;
-      if (fromSocketId === socket.id || !api) return;
+      if (fromSocketId === socket.id || !api || sync.isStale(revision)) return;
       const local = api.getSceneElementsIncludingDeleted();
       const edited = sync.editedIds(local);
       const { elements, conflictIds, deletedIds } = mergeDelta(local, changed, removedIds, edited);

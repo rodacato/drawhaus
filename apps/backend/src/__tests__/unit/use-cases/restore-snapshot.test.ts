@@ -69,5 +69,15 @@ describe("RestoreSnapshotUseCase", () => {
     assert.deepEqual(scene.elements, CURRENT);
     assert.deepEqual(scene.appState, { theme: "dark" });
     assert.equal(snapshots.store.length, 1, "no backup was recorded either");
+    assert.equal(scene.revision, 0, "an aborted restore does not move the revision");
+  });
+
+  it("moves the scene to a new revision, which it reports for the broadcast", async () => {
+    const { scene, snapshot, restore } = await setup();
+
+    const result = await restore.execute(snapshot.id, OWNER_ID);
+
+    assert.equal(scene.revision, 1);
+    assert.equal(result.revision, 1);
   });
 });

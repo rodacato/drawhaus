@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { SaveSceneUseCase } from "../../../application/use-cases/realtime/save-scene";
 import type { SyncToDriveUseCase } from "../../../application/use-cases/drive/sync-to-drive";
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
+import type { Scene } from "../../../domain/entities/scene";
 import {
   type SocketData,
   accountUserId,
@@ -19,11 +20,14 @@ const SNAPSHOT_INTERVAL_SECONDS = 10 * 60;
 const lastIntervalSnapshot = new Map<string, number>(); // in-memory fallback
 
 const sceneIdSchema = z.string().nullish();
+// The scene revision the sender's copy is based on (ADR-026); clients older than it send none.
+const revisionSchema = z.number().int().nonnegative().nullish();
 
 const sceneUpdateSchema = z.object({
   roomId: z.string(),
   sceneId: sceneIdSchema,
   elements: z.array(z.unknown()),
+  revision: revisionSchema,
 });
 
 const sceneDeltaSchema = z.object({
@@ -31,6 +35,7 @@ const sceneDeltaSchema = z.object({
   sceneId: sceneIdSchema,
   changed: z.array(z.looseObject({ version: z.number().optional() })),
   removedIds: z.array(z.string()),
+  revision: revisionSchema,
 });
 
 const saveSceneSchema = z.object({
@@ -38,7 +43,17 @@ const saveSceneSchema = z.object({
   sceneId: sceneIdSchema,
   elements: z.array(z.unknown()),
   appState: z.record(z.string(), z.unknown()),
+  revision: revisionSchema,
 });
+
+function sceneFromDb(scene: Scene) {
+  return {
+    elements: scene.elements,
+    appState: scene.appState,
+    activeSceneId: scene.id,
+    revision: scene.revision,
+  };
+}
 
 export function registerSceneHandlers(
   io: Server,
@@ -49,7 +64,7 @@ export function registerSceneHandlers(
     createSnapshot: CreateSnapshotUseCase;
   },
 ) {
-  onEvent(socket, "scene-update", sceneUpdateSchema, ({ roomId, sceneId, elements }) => {
+  onEvent(socket, "scene-update", sceneUpdateSchema, ({ roomId, sceneId, elements, revision }) => {
     if (!socket.rooms.has(roomId)) return;
     if (!canEdit(socket, roomId)) return;
     if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
@@ -63,40 +78,48 @@ export function registerSceneHandlers(
       fromUserId: (socket.data as SocketData).userId,
       fromSocketId: socket.id,
       elements,
+      revision,
     });
   });
 
   /* ─── scene-delta: incremental element changes (concurrent editing) ─── */
-  onEvent(socket, "scene-delta", sceneDeltaSchema, ({ roomId, sceneId, changed, removedIds }) => {
-    if (!socket.rooms.has(roomId)) return;
-    if (!canEdit(socket, roomId)) return;
-    if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
+  onEvent(
+    socket,
+    "scene-delta",
+    sceneDeltaSchema,
+    ({ roomId, sceneId, changed, removedIds, revision }) => {
+      if (!socket.rooms.has(roomId)) return;
+      if (!canEdit(socket, roomId)) return;
+      if (!checkRateLimit(socket, "scene", RATE_LIMIT_MAX_SCENE)) return;
 
-    // Security: reject deltas that remove >50% of known elements
-    if (removedIds.length > 500) return;
+      // Security: reject deltas that remove >50% of known elements
+      if (removedIds.length > 500) return;
 
-    // Security: reject version jumps >100 in any changed element
-    if (changed.some((el) => el.version !== undefined && el.version > 100_000)) return;
+      // Security: reject version jumps >100 in any changed element
+      if (changed.some((el) => el.version !== undefined && el.version > 100_000)) return;
 
-    const userId = (socket.data as SocketData).userId;
-    const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
-    const broadcastRoom = targetSceneId ? `${roomId}:${targetSceneId}` : roomId;
+      const userId = (socket.data as SocketData).userId;
+      const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
+      const broadcastRoom = targetSceneId ? `${roomId}:${targetSceneId}` : roomId;
 
-    socket.to(broadcastRoom).emit("scene-delta-received", {
-      roomId,
-      sceneId: targetSceneId,
-      fromUserId: userId,
-      fromSocketId: socket.id,
-      changed,
-      removedIds,
-    });
-  });
+      // Receivers drop a delta whose revision is older than their scene's (ADR-026).
+      socket.to(broadcastRoom).emit("scene-delta-received", {
+        roomId,
+        sceneId: targetSceneId,
+        fromUserId: userId,
+        fromSocketId: socket.id,
+        changed,
+        removedIds,
+        revision,
+      });
+    },
+  );
 
   onEvent(
     socket,
     "save-scene",
     saveSceneSchema,
-    async ({ roomId, sceneId, elements, appState }) => {
+    async ({ roomId, sceneId, elements, appState, revision }) => {
       try {
         if (!socket.rooms.has(roomId)) return;
         if (!canEdit(socket, roomId)) return;
@@ -106,7 +129,17 @@ export function registerSceneHandlers(
         const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
         if (!targetSceneId) return;
 
-        await useCases.saveScene.execute(roomId, targetSceneId, elements, appState);
+        const saved = await useCases.saveScene.execute(
+          roomId,
+          targetSceneId,
+          elements,
+          appState,
+          revision ?? undefined,
+        );
+        if (saved.status === "stale") {
+          socket.emit("scene-from-db", sceneFromDb(saved.scene));
+          return;
+        }
         socket.emit("scene-saved", { roomId, sceneId: targetSceneId });
 
         // Fire-and-forget: interval snapshot every 10 minutes

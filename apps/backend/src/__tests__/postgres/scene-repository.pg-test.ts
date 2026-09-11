@@ -40,7 +40,7 @@ describe("PgSceneRepository.updateSceneMerged", () => {
       ids.map((id) => scenes.updateSceneMerged(scene.id, diagram.id, [element(id)], {})),
     );
 
-    assert.ok(results.every(Boolean));
+    assert.ok(results.every((result) => result === "saved"));
     assert.deepEqual(
       await elementIds(scene.id),
       ["base", ...ids].sort((a, b) => a.localeCompare(b)),
@@ -62,7 +62,7 @@ describe("PgSceneRepository.updateSceneMerged", () => {
       await waitForLockWaiter();
       await other.query("COMMIT");
 
-      assert.equal(await save, true);
+      assert.equal(await save, "saved");
     } finally {
       await other.end();
     }
@@ -79,7 +79,82 @@ describe("PgSceneRepository.updateSceneMerged", () => {
       theme: "dark",
     });
 
-    assert.equal(saved, false);
+    assert.equal(saved, "missing");
     assert.deepEqual(await scenes.findById(scene.id), before);
+  });
+});
+
+describe("scene revisions (ADR-026)", () => {
+  it("a replace moves the scene to the next revision and returns it", async () => {
+    const { scene } = await sceneWith([element("base")]);
+
+    const revision = await scenes.updateScene(scene.id, [element("restored")], {});
+
+    assert.equal(scene.revision, 0);
+    assert.equal(revision, 1);
+    assert.equal((await scenes.findById(scene.id))?.revision, 1);
+  });
+
+  it("refuses a save computed before a replace and keeps the replaced content", async () => {
+    const { diagram, scene } = await sceneWith([element("kept"), element("removed-by-restore")]);
+    await scenes.updateScene(scene.id, [element("kept")], {});
+
+    const result = await scenes.updateSceneMerged(
+      scene.id,
+      diagram.id,
+      [element("kept"), element("removed-by-restore")],
+      {},
+      scene.revision,
+    );
+
+    assert.equal(result, "stale");
+    assert.deepEqual(await elementIds(scene.id), ["kept"]);
+  });
+
+  it("checks a save waiting on a replace's row lock against the revision the replace committed", async () => {
+    const { diagram, scene } = await sceneWith([element("kept"), element("removed-by-restore")]);
+    const other = new Client({ connectionString: config.databaseUrl });
+    await other.connect();
+    try {
+      await other.query("BEGIN");
+      await other.query("UPDATE scenes SET elements = $1, revision = revision + 1 WHERE id = $2", [
+        JSON.stringify([element("kept")]),
+        scene.id,
+      ]);
+
+      const save = scenes.updateSceneMerged(
+        scene.id,
+        diagram.id,
+        [element("removed-by-restore")],
+        {},
+        scene.revision,
+      );
+      await waitForLockWaiter();
+      await other.query("COMMIT");
+
+      assert.equal(await save, "stale");
+    } finally {
+      await other.end();
+    }
+
+    assert.deepEqual(await elementIds(scene.id), ["kept"]);
+  });
+
+  it("merges a save on the current revision, and one without a revision, and moves neither", async () => {
+    const { diagram, scene } = await sceneWith([element("base")]);
+    const revision = await scenes.updateScene(scene.id, [element("restored")], {});
+
+    const current = await scenes.updateSceneMerged(
+      scene.id,
+      diagram.id,
+      [element("current")],
+      {},
+      revision ?? undefined,
+    );
+    const unversioned = await scenes.updateSceneMerged(scene.id, diagram.id, [element("old")], {});
+
+    assert.deepEqual([current, unversioned], ["saved", "saved"]);
+    assert.deepEqual(await elementIds(scene.id), ["current", "old", "restored"]);
+    assert.equal((await scenes.findById(scene.id))?.revision, revision);
   });
 });

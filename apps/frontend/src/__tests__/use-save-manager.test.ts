@@ -35,6 +35,8 @@ type RenderOpts = {
   socketConnected?: boolean;
   /** The scene the server sent on join; null for a board still waiting for it. */
   serverScene?: unknown[] | null;
+  /** The revision that scene came with. */
+  revision?: number | null;
 };
 
 function renderSaveManager(opts: RenderOpts) {
@@ -44,7 +46,7 @@ function renderSaveManager(opts: RenderOpts) {
   const api = opts.api ?? createExcalidrawApiStub();
   const excalidrawApiRef = makeRef(api);
   const sync = new SceneSync();
-  if (opts.serverScene !== null) sync.reset(opts.serverScene ?? []);
+  if (opts.serverScene !== null) sync.reset(opts.serverScene ?? [], opts.revision ?? null);
   const activeSceneIdRef = makeRef<string | null>(opts.activeSceneId ?? "scene-1");
   const followingUserIdRef = makeRef<string | null>(null);
   const followedViewportRef = makeRef<{ scrollX: number; scrollY: number; zoom: number } | null>(
@@ -157,6 +159,41 @@ describe("useSaveManager", () => {
     const deltas = emitted(socket, "scene-delta");
     expect(deltas.length).toBe(1);
     expect(deltas[0]).toMatchObject({ roomId: "diag-1", sceneId: "scene-1" });
+  });
+
+  test("edits and saves carry the revision the scene came with", async () => {
+    const { result } = renderSaveManager({ socket, revision: 7 });
+
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+
+    expect(emitted(socket, "scene-delta")[0]).toMatchObject({ revision: 7 });
+    expect(emitted(socket, "save-scene")[0]).toMatchObject({ revision: 7 });
+  });
+
+  test("after a REST save the client no longer claims a revision", async () => {
+    const { result, sync } = renderSaveManager({
+      socket,
+      socketConnected: false,
+      revision: 7,
+    });
+
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    for (let i = 0; i < 5; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+    expect(sync.revision).toBeNull();
   });
 
   test("rapid onChange invocations are throttled (no double-emit within one window)", () => {

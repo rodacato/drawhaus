@@ -127,6 +127,7 @@ Architectural decisions that shaped Drawhaus. Full ADRs in [`docs/adr/`](adr/).
 | Sentry for error monitoring        | `@sentry/node` (backend) + `@sentry/react` + source maps (frontend)   | One vendor for both runtimes, free tier covers our volume, replaces Honeybadger                | [023](adr/023-sentry-error-monitoring.md)            |
 | Vitest + jsdom for frontend tests  | Vite-native runner; backend stays on `tsx --test`                     | Unlocks DOM testing (components, hooks, contexts); fixes `mock.module()` for CJS modules       | [024](adr/024-vitest-for-frontend-tests.md)          |
 | Diagram content write path         | First scene is the only write target; `diagrams.elements` is a mirror | REST/v1/MCP updates were lost once a board had been opened; one transaction keeps both in step | [025](adr/025-first-scene-single-write-path.md)      |
+| Scene revisions                    | A counter only replaces bump; stale saves are refused, not merged     | A save or delta computed before a restore or API write must not put back what it removed       | [026](adr/026-scene-revisions.md)                    |
 
 Other decisions not warranting a full ADR:
 

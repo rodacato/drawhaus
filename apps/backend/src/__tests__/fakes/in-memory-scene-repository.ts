@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import type { SceneRepository } from "../../domain/ports/scene-repository";
+import type { SceneMergeResult, SceneRepository } from "../../domain/ports/scene-repository";
 import type { Scene } from "../../domain/entities/scene";
 import { mergeElements } from "@drawhaus/helpers";
 
@@ -30,6 +30,7 @@ export class InMemorySceneRepository implements SceneRepository {
       elements: data.elements ?? [],
       appState: data.appState ?? {},
       sortOrder: data.sortOrder,
+      revision: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -48,13 +49,14 @@ export class InMemorySceneRepository implements SceneRepository {
     id: string,
     elements: unknown[],
     appState: Record<string, unknown>,
-  ): Promise<void> {
+  ): Promise<number | null> {
     const scene = this.store.find((s) => s.id === id);
-    if (scene) {
-      scene.elements = elements;
-      scene.appState = appState;
-      scene.updatedAt = new Date();
-    }
+    if (!scene) return null;
+    scene.elements = elements;
+    scene.appState = appState;
+    scene.revision += 1;
+    scene.updatedAt = new Date();
+    return scene.revision;
   }
 
   async updateSceneMerged(
@@ -62,13 +64,15 @@ export class InMemorySceneRepository implements SceneRepository {
     diagramId: string,
     incomingElements: unknown[],
     appState: Record<string, unknown>,
-  ): Promise<boolean> {
+    expectedRevision?: number,
+  ): Promise<SceneMergeResult> {
     const scene = this.store.find((s) => s.id === id && s.diagramId === diagramId);
-    if (!scene) return false;
+    if (!scene) return "missing";
+    if (expectedRevision !== undefined && scene.revision !== expectedRevision) return "stale";
     scene.elements = mergeElements(scene.elements, incomingElements);
     scene.appState = appState;
     scene.updatedAt = new Date();
-    return true;
+    return "saved";
   }
 
   async reorder(id: string, sortOrder: number): Promise<void> {

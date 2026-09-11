@@ -1,4 +1,4 @@
-import type { SceneRepository } from "../../domain/ports/scene-repository";
+import type { SceneMergeResult, SceneRepository } from "../../domain/ports/scene-repository";
 import type { Scene } from "../../domain/entities/scene";
 import { pool } from "../db";
 import { mergeElements } from "@drawhaus/helpers";
@@ -10,11 +10,13 @@ type SceneRow = {
   elements: unknown[];
   app_state: Record<string, unknown>;
   sort_order: number;
+  revision: number;
   created_at: string;
   updated_at: string;
 };
 
-const COLS = "id, diagram_id, name, elements, app_state, sort_order, created_at, updated_at";
+const COLS =
+  "id, diagram_id, name, elements, app_state, sort_order, revision, created_at, updated_at";
 
 function toDomain(row: SceneRow): Scene {
   return {
@@ -24,6 +26,7 @@ function toDomain(row: SceneRow): Scene {
     elements: row.elements,
     appState: row.app_state,
     sortOrder: row.sort_order,
+    revision: row.revision,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
@@ -79,11 +82,13 @@ export class PgSceneRepository implements SceneRepository {
     id: string,
     elements: unknown[],
     appState: Record<string, unknown>,
-  ): Promise<void> {
-    await pool.query(
-      "UPDATE scenes SET elements = $1, app_state = $2, updated_at = now() WHERE id = $3",
+  ): Promise<number | null> {
+    const { rows } = await pool.query<{ revision: number }>(
+      `UPDATE scenes SET elements = $1, app_state = $2, revision = revision + 1, updated_at = now()
+       WHERE id = $3 RETURNING revision`,
       [JSON.stringify(elements), JSON.stringify(appState), id],
     );
+    return rows[0]?.revision ?? null;
   }
 
   async updateSceneMerged(
@@ -91,17 +96,22 @@ export class PgSceneRepository implements SceneRepository {
     diagramId: string,
     incomingElements: unknown[],
     appState: Record<string, unknown>,
-  ): Promise<boolean> {
+    expectedRevision?: number,
+  ): Promise<SceneMergeResult> {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      const { rows } = await client.query<{ elements: unknown[] | null }>(
-        "SELECT elements FROM scenes WHERE id = $1 AND diagram_id = $2 FOR UPDATE",
+      const { rows } = await client.query<{ elements: unknown[] | null; revision: number }>(
+        "SELECT elements, revision FROM scenes WHERE id = $1 AND diagram_id = $2 FOR UPDATE",
         [id, diagramId],
       );
       if (!rows[0]) {
         await client.query("ROLLBACK");
-        return false;
+        return "missing";
+      }
+      if (expectedRevision !== undefined && rows[0].revision !== expectedRevision) {
+        await client.query("ROLLBACK");
+        return "stale";
       }
       const merged = mergeElements(rows[0].elements ?? [], incomingElements);
       await client.query(
@@ -109,7 +119,7 @@ export class PgSceneRepository implements SceneRepository {
         [JSON.stringify(merged), JSON.stringify(appState), id, diagramId],
       );
       await client.query("COMMIT");
-      return true;
+      return "saved";
     } catch (err) {
       await client.query("ROLLBACK");
       throw err;

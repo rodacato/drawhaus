@@ -3,7 +3,7 @@ import { test, expect } from "../../fixtures/test";
 import { createSnapshot, liveElementIds, rectangle } from "../../fixtures/api";
 import { BoardPage } from "../../pages/board.page";
 import { viewport } from "../../support/scene";
-import { SocketTraffic } from "../../support/socket-traffic";
+import { hasEvent, SocketTraffic } from "../../support/socket-traffic";
 import { sharedBoard } from "../../support/team";
 
 // Past the 1.2s save debounce, so a delayed echo or save would already have been sent.
@@ -72,7 +72,14 @@ test.describe("Real-time collaboration", () => {
     await teammateBoard.page.mouse.down();
     await teammateBoard.page.mouse.move(grab.x + 40, grab.y + 30, { steps: 5 });
 
-    const target = await ownerBoard.canvasPoint(580, 300);
+    // Delete it where the owner actually sees it: until the drag has reached them, a click on the
+    // element's new place lands on empty canvas, selects nothing, and Delete does nothing.
+    await expect.poll(async () => (await ownerBoard.elements())[0]?.x ?? 0).toBeGreaterThan(500);
+    const [dragged] = await ownerBoard.elements();
+    const target = await ownerBoard.canvasPoint(
+      dragged.x + dragged.width / 2,
+      dragged.y + dragged.height / 2,
+    );
     await ownerBoard.page.mouse.click(target.x, target.y);
     await ownerBoard.page.keyboard.press("Delete");
     await expect.poll(() => ownerBoard.elementIds()).toEqual([]);
@@ -86,32 +93,93 @@ test.describe("Real-time collaboration", () => {
     expect(await liveElementIds(owner.api, diagram.id)).toEqual([]);
   });
 
-  test("restoring a snapshot updates every open client", async ({ createUser, openAs }) => {
-    const { owner, diagram, ownerBoard, teammateBoard } = await sharedBoard(
-      { createUser, openAs },
-      { title: "Restore", elements: [rectangle("before-rect")] },
-    );
-    // Scenes are created on the first room join, and snapshots need one.
-    const opener = new BoardPage(await openAs(owner.storageState));
-    await opener.open(diagram.id);
+  type SharedBoard = Awaited<ReturnType<typeof sharedBoard>>;
+
+  // Freezes "Before change" as a snapshot, then moves the board on, so a restore has to remove
+  // something. Scenes are created on the first room join, and snapshots need one.
+  async function snapshotThenChange(board: SharedBoard, opener: BoardPage) {
+    await opener.open(board.diagram.id);
     await opener.page.close();
-    await createSnapshot(owner.api, diagram.id, "Before change");
-    const changed = await owner.api.patch(`/api/diagrams/${diagram.id}`, {
+    await createSnapshot(board.owner.api, board.diagram.id, "Before change");
+    const changed = await board.owner.api.patch(`/api/diagrams/${board.diagram.id}`, {
       data: { elements: [rectangle("after-rect", 400, 100)] },
     });
     expect(changed.ok()).toBeTruthy();
+  }
+
+  async function restoreBeforeChange(board: SharedBoard) {
+    await board.ownerBoard.page.getByTitle("Version History").click();
+    await board.ownerBoard.page.getByText("Before change").click();
+    await board.ownerBoard.page.getByRole("button", { name: "Restore this version" }).click();
+  }
+
+  test("restoring a snapshot updates every open client", async ({ createUser, openAs }) => {
+    const board = await sharedBoard(
+      { createUser, openAs },
+      { title: "Restore", elements: [rectangle("before-rect")] },
+    );
+    const { owner, diagram, ownerBoard, teammateBoard } = board;
+    await snapshotThenChange(board, new BoardPage(await openAs(owner.storageState)));
     await ownerBoard.open(diagram.id);
     await teammateBoard.open(diagram.id);
     await expect.poll(() => ownerBoard.elementIds()).toEqual(["after-rect"]);
     await expect.poll(() => teammateBoard.elementIds()).toEqual(["after-rect"]);
 
-    await ownerBoard.page.getByTitle("Version History").click();
-    await ownerBoard.page.getByText("Before change").click();
-    await ownerBoard.page.getByRole("button", { name: "Restore this version" }).click();
+    await restoreBeforeChange(board);
 
     await expect.poll(() => ownerBoard.elementIds()).toEqual(["before-rect"]);
     await expect.poll(() => teammateBoard.elementIds()).toEqual(["before-rect"]);
     await expect.poll(() => liveElementIds(owner.api, diagram.id)).toEqual(["before-rect"]);
+    // And it stays restored: no client re-saves the scene the restore replaced.
+    await ownerBoard.page.waitForTimeout(SETTLE_MS);
+    expect(await liveElementIds(owner.api, diagram.id)).toEqual(["before-rect"]);
+    expect(await ownerBoard.elementIds()).toEqual(["before-rect"]);
+    expect(await teammateBoard.elementIds()).toEqual(["before-rect"]);
+  });
+
+  test("a save computed before a restore does not bring back what it removed", async ({
+    createUser,
+    openAs,
+  }) => {
+    const board = await sharedBoard(
+      { createUser, openAs },
+      { title: "Restore Race", elements: [rectangle("before-rect")] },
+    );
+    const { owner, diagram, ownerBoard, teammateBoard } = board;
+    let holdSaves = false;
+    const held: (string | Buffer)[] = [];
+    let release = (_message: string | Buffer) => {};
+    await teammateBoard.page.routeWebSocket(/\/socket\.io\//, (ws) => {
+      const server = ws.connectToServer();
+      ws.onMessage((message) => {
+        if (holdSaves && hasEvent(message, "save-scene")) held.push(message);
+        else server.send(message);
+      });
+      release = (message) => server.send(message);
+    });
+    await snapshotThenChange(board, new BoardPage(await openAs(owner.storageState)));
+    await ownerBoard.open(diagram.id);
+    await teammateBoard.open(diagram.id);
+    await expect.poll(() => teammateBoard.elementIds()).toEqual(["after-rect"]);
+    await teammateBoard.waitForEditorRole();
+    await teammateBoard.ensureEditable();
+
+    // The teammate's save is computed now and only reaches the server after the restore.
+    holdSaves = true;
+    await teammateBoard.drawRectangle(700, 320);
+    await expect.poll(() => held.length, { timeout: 15_000 }).toBeGreaterThan(0);
+
+    await restoreBeforeChange(board);
+    await expect.poll(() => ownerBoard.elementIds()).toEqual(["before-rect"]);
+    await expect.poll(() => teammateBoard.elementIds()).toEqual(["before-rect"]);
+
+    holdSaves = false;
+    for (const message of held) release(message);
+    await teammateBoard.page.waitForTimeout(SETTLE_MS);
+
+    expect(await liveElementIds(owner.api, diagram.id)).toEqual(["before-rect"]);
+    expect(await teammateBoard.elementIds()).toEqual(["before-rect"]);
+    expect(await ownerBoard.elementIds()).toEqual(["before-rect"]);
   });
 
   test("undo does not revert a teammate's change", async ({ createUser, openAs }) => {

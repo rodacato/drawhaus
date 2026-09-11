@@ -45,6 +45,21 @@ describe("PgDiagramRepository.update (ADR-025)", () => {
     assert.deepEqual(updated?.elements, scene.elements);
   });
 
+  it("moves the scene to a new revision on a content update, but not on a title-only one", async () => {
+    const diagram = await diagramWithRowContent();
+    await diagrams.update(diagram.id, { elements: [element("from-api")] });
+    const [created] = await scenes.findByDiagram(diagram.id);
+
+    await diagrams.update(diagram.id, { elements: [element("replaced")] });
+    const [afterContent] = await scenes.findByDiagram(diagram.id);
+    await diagrams.update(diagram.id, { title: "Renamed" });
+    const [afterTitle] = await scenes.findByDiagram(diagram.id);
+
+    assert.equal(created.revision, 0, "the first content update creates the scene, not replaces");
+    assert.equal(afterContent.revision, 1);
+    assert.equal(afterTitle.revision, 1);
+  });
+
   it("waits for a concurrent content update and writes the scene it created", async () => {
     const diagram = await diagramWithRowContent();
     const firstWriter = new Client({ connectionString: config.databaseUrl });
