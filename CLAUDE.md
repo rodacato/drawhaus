@@ -27,6 +27,8 @@ When making changes that affect any of the following, update the corresponding d
 ```bash
 npm run dev              # Start frontend + backend
 npm test --workspace=backend  # Backend tests
+npm test --workspace=frontend  # Frontend tests (vitest + jsdom)
+npm test --workspace=frontend -- <pattern>  # Targeted frontend run, e.g. -- use-socket
 npm run lint             # Lint all workspaces
 npm run typecheck        # Type-check all workspaces
 npm run db:seed          # Seed test data
