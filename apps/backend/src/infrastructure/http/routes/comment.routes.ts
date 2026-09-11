@@ -8,7 +8,8 @@ import type { DeleteCommentUseCase } from "../../../application/use-cases/commen
 import type { ToggleLikeUseCase } from "../../../application/use-cases/comments/toggle-like";
 import { asyncRoute } from "../middleware/async-handler";
 import { validate, validateParams } from "../middleware/validate";
-import type { CommentThread, CommentReply } from "../../../domain/entities/comment";
+import type { RealtimeNotifier } from "../../../domain/ports/realtime-notifier";
+import { formatReply, formatThread } from "../../serializers/comment";
 
 const diagramIdParams = z.object({ diagramId: z.uuid() });
 const threadParams = z.object({ diagramId: z.uuid(), threadId: z.uuid() });
@@ -27,37 +28,6 @@ const resolveSchema = z.object({
   resolved: z.boolean(),
 });
 
-function formatReply(r: CommentReply) {
-  return {
-    id: r.id,
-    threadId: r.threadId,
-    authorId: r.authorId,
-    authorName: r.authorName,
-    body: r.body,
-    createdAt: r.createdAt.toISOString(),
-  };
-}
-
-function formatThread(t: CommentThread) {
-  return {
-    id: t.id,
-    diagramId: t.diagramId,
-    sceneId: t.sceneId,
-    elementId: t.elementId,
-    authorId: t.authorId,
-    authorName: t.authorName,
-    body: t.body,
-    resolved: t.resolved,
-    resolvedBy: t.resolvedBy,
-    resolvedAt: t.resolvedAt?.toISOString() ?? null,
-    createdAt: t.createdAt.toISOString(),
-    updatedAt: t.updatedAt.toISOString(),
-    replies: t.replies.map(formatReply),
-    likeCount: t.likeCount,
-    likedByMe: t.likedByMe,
-  };
-}
-
 export function createCommentRoutes(
   useCases: {
     list: ListCommentsUseCase;
@@ -68,6 +38,7 @@ export function createCommentRoutes(
     toggleLike: ToggleLikeUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
+  notifier?: RealtimeNotifier,
 ) {
   const router = Router({ mergeParams: true });
   router.use(requireAuth);
@@ -93,13 +64,15 @@ export function createCommentRoutes(
     validateParams(diagramIdParams),
     validate(createSchema),
     asyncRoute(async (req, res) => {
+      const diagramId = String(req.params.diagramId);
       const thread = await useCases.create.execute(
-        String(req.params.diagramId),
+        diagramId,
         req.authUser.id,
         req.body.elementId,
         req.body.body,
         req.body.sceneId,
       );
+      notifier?.commentChanged({ kind: "created", diagramId, thread });
       return res.status(201).json({ thread: formatThread(thread) });
     }),
   );
@@ -110,11 +83,14 @@ export function createCommentRoutes(
     validateParams(threadParams),
     validate(replySchema),
     asyncRoute(async (req, res) => {
-      const reply = await useCases.reply.execute(
-        String(req.params.threadId),
-        req.authUser.id,
-        req.body.body,
-      );
+      const threadId = String(req.params.threadId);
+      const reply = await useCases.reply.execute(threadId, req.authUser.id, req.body.body);
+      notifier?.commentChanged({
+        kind: "replied",
+        diagramId: String(req.params.diagramId),
+        threadId,
+        reply,
+      });
       return res.status(201).json({ reply: formatReply(reply) });
     }),
   );
@@ -130,6 +106,11 @@ export function createCommentRoutes(
         req.authUser.id,
         req.body.resolved,
       );
+      notifier?.commentChanged({
+        kind: "resolved",
+        diagramId: String(req.params.diagramId),
+        thread,
+      });
       return res.json({ thread: formatThread(thread) });
     }),
   );
@@ -139,7 +120,13 @@ export function createCommentRoutes(
     "/:threadId",
     validateParams(threadParams),
     asyncRoute(async (req, res) => {
-      await useCases.delete.execute(String(req.params.threadId), req.authUser.id);
+      const threadId = String(req.params.threadId);
+      await useCases.delete.execute(threadId, req.authUser.id);
+      notifier?.commentChanged({
+        kind: "deleted",
+        diagramId: String(req.params.diagramId),
+        threadId,
+      });
       return res.json({ success: true });
     }),
   );
