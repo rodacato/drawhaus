@@ -46,7 +46,7 @@
     "@typescript-eslint/eslint-plugin": "^8.70.0",
     "@typescript-eslint/parser": "^8.70.0",
     "@vitejs/plugin-react": "^5.1.4",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.0",
     "c8": "^11.0.0",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
@@ -56,6 +56,6 @@
     "tailwindcss": "^4.2.1",
     "typescript": "^5",
     "vite": "^7.3.1",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.0"
   }
 }
