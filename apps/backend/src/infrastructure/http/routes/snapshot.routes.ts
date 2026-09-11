@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { z } from "zod";
-import type { Server } from "socket.io";
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
 import type { ListSnapshotsUseCase } from "../../../application/use-cases/snapshots/list-snapshots";
 import type { GetSnapshotUseCase } from "../../../application/use-cases/snapshots/get-snapshot";
@@ -9,9 +8,8 @@ import type { RenameSnapshotUseCase } from "../../../application/use-cases/snaps
 import type { DeleteSnapshotUseCase } from "../../../application/use-cases/snapshots/delete-snapshot";
 import { asyncRoute } from "../middleware/async-handler";
 import { validate, validateParams } from "../middleware/validate";
-import type { DiagramSnapshot } from "../../../domain/entities/diagram-snapshot";
-
-export type IoHolder = { io: Server | null };
+import type { RealtimeNotifier } from "../../../domain/ports/realtime-notifier";
+import { formatSnapshot, formatSnapshotFull } from "../../serializers/snapshot";
 
 const diagramIdParams = z.object({ diagramId: z.uuid() });
 const snapshotParams = z.object({ diagramId: z.uuid(), snapshotId: z.uuid() });
@@ -24,27 +22,6 @@ const renameSchema = z.object({
   name: z.string().trim().min(1).max(100).nullable(),
 });
 
-function formatSnapshot(s: DiagramSnapshot) {
-  return {
-    id: s.id,
-    diagramId: s.diagramId,
-    createdBy: s.createdBy,
-    createdByName: s.createdByName,
-    activeUsers: s.activeUsers,
-    trigger: s.trigger,
-    name: s.name,
-    createdAt: s.createdAt.toISOString(),
-  };
-}
-
-function formatSnapshotFull(s: DiagramSnapshot) {
-  return {
-    ...formatSnapshot(s),
-    elements: s.elements,
-    appState: s.appState,
-  };
-}
-
 export function createSnapshotRoutes(
   useCases: {
     create: CreateSnapshotUseCase;
@@ -55,7 +32,7 @@ export function createSnapshotRoutes(
     delete: DeleteSnapshotUseCase;
   },
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
-  ioHolder?: IoHolder,
+  notifier?: RealtimeNotifier,
 ) {
   const router = Router({ mergeParams: true });
   router.use(requireAuth);
@@ -82,9 +59,7 @@ export function createSnapshotRoutes(
         req.authUser.id,
         req.body.name,
       );
-      ioHolder?.io
-        ?.to(diagramId)
-        .emit("snapshot-created", { diagramId, snapshot: formatSnapshot(snapshot) });
+      notifier?.snapshotCreated({ diagramId, snapshot });
       return res.status(201).json({ snapshot: formatSnapshot(snapshot) });
     }),
   );
@@ -106,26 +81,19 @@ export function createSnapshotRoutes(
     asyncRoute(async (req, res) => {
       const result = await useCases.restore.execute(String(req.params.snapshotId), req.authUser.id);
 
-      if (ioHolder?.io) {
-        const { diagramId } = result;
-        // Notify all users in the room about the restore
-        ioHolder.io.to(diagramId).emit("snapshot-restored", {
-          diagramId,
-          restoredBy: { userId: req.authUser.id, userName: req.authUser.name },
-          snapshotId: req.params.snapshotId,
-        });
-        // Broadcast restored scene to all users so their canvas updates
-        if (result.sceneId) {
-          ioHolder.io.to(diagramId).emit("scene-from-db", {
-            elements: result.elements,
-            appState: result.appState,
-            activeSceneId: result.sceneId,
-            revision: result.revision,
-          });
-        }
-        // Trigger snapshot list refresh (pre-restore backup was created)
-        ioHolder.io.to(diagramId).emit("snapshot-created", { diagramId });
-      }
+      notifier?.snapshotRestored({
+        diagramId: result.diagramId,
+        snapshotId: String(req.params.snapshotId),
+        restoredBy: { userId: req.authUser.id, userName: req.authUser.name },
+        scene: result.sceneId
+          ? {
+              sceneId: result.sceneId,
+              revision: result.revision,
+              elements: result.elements,
+              appState: result.appState,
+            }
+          : null,
+      });
 
       return res.json({ success: true, diagramId: result.diagramId });
     }),

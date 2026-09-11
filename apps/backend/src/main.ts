@@ -43,7 +43,7 @@ import { createFolderRoutes } from "./infrastructure/http/routes/folder.routes";
 import { createShareRoutes } from "./infrastructure/http/routes/share.routes";
 import { createAdminRoutes } from "./infrastructure/http/routes/admin.routes";
 
-import { createSnapshotRoutes, type IoHolder } from "./infrastructure/http/routes/snapshot.routes";
+import { createSnapshotRoutes } from "./infrastructure/http/routes/snapshot.routes";
 import { createCommentRoutes } from "./infrastructure/http/routes/comment.routes";
 import { createTagRoutes } from "./infrastructure/http/routes/tag.routes";
 import { createDriveRoutes } from "./infrastructure/http/routes/drive.routes";
@@ -71,8 +71,6 @@ import { setupSocketServer } from "./infrastructure/socket";
 import { createCompositionRoot } from "./composition";
 
 const { repos, services, useCases } = createCompositionRoot();
-
-const ioHolder: IoHolder = { io: null };
 
 // Middleware
 const requireAuth = createRequireAuth(useCases.getCurrentUser);
@@ -199,6 +197,7 @@ app.use(
       toggleLike: useCases.toggleLike,
     },
     requireAuth,
+    services.realtimeNotifier,
   ),
 );
 app.use(
@@ -213,7 +212,7 @@ app.use(
       delete: useCases.deleteSnapshot,
     },
     requireAuth,
-    ioHolder,
+    services.realtimeNotifier,
   ),
 );
 app.use(
@@ -377,7 +376,7 @@ async function startServer(): Promise<void> {
   }
 
   const httpServer = createServer(app);
-  ioHolder.io = await setupSocketServer(httpServer, {
+  const io = await setupSocketServer(httpServer, {
     joinRoom: useCases.joinRoom,
     joinRoomGuest: useCases.joinRoomGuest,
     saveScene: useCases.saveScene,
@@ -388,6 +387,7 @@ async function startServer(): Promise<void> {
     deleteComment: useCases.deleteComment,
     createSnapshot: useCases.createSnapshot,
   });
+  services.realtimeNotifier.attach(io);
 
   // Start backup scheduler (cron-based, reads config from DB, no-op if disabled)
   const { startBackupScheduler, stopBackupScheduler } =
@@ -409,7 +409,7 @@ async function startServer(): Promise<void> {
       exit: (code) => process.exit(code),
       steps: [
         // io.close() also closes the HTTP server, waiting for in-flight requests.
-        { name: "socket.io + http", run: () => ioHolder.io?.close() },
+        { name: "socket.io + http", run: () => io.close() },
         { name: "backup scheduler", run: stopBackupScheduler },
         { name: "postgres", run: () => pool.end() },
         { name: "redis", run: () => Promise.all([disconnectRedis(), disconnectRedisAdapter()]) },
