@@ -7,9 +7,12 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:update-snapshots": "playwright test --update-snapshots",
-    "screenshots": "playwright test --grep 'Marketing Screenshots'"
+    "screenshots": "E2E_MARKETING=1 playwright test --project=marketing"
   },
   "devDependencies": {
-    "@playwright/test": "^1.52.0"
+    "@playwright/test": "^1.52.0",
+    "@types/pg": "^8.18.0",
+    "pg": "^8.20.0",
+    "tsx": "^4.19.0"
   }
 }
