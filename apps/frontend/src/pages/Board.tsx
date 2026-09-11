@@ -15,37 +15,43 @@ type DiagramData = {
   createdVia?: string;
 };
 
+// Tagged with the requested id so a result for the previous board is never shown for the next.
+type LoadResult = { id: string; diagram: DiagramData } | { id: string; error: string };
+
 export function Board() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const [diagram, setDiagram] = useState<DiagramData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState<LoadResult | null>(null);
 
   useEffect(() => {
     if (!id) return;
+    let current = true;
     diagramsApi
       .get(id)
       .then((data) => {
+        if (!current) return;
         const d = data.diagram ?? data;
-        setDiagram({
-          id: d.id,
-          title: d.title ?? "",
-          elements: d.elements ?? [],
-          appState: d.appState ?? d.app_state ?? {},
-          workspaceId: d.workspaceId ?? d.workspace_id ?? null,
-          createdVia: d.createdVia ?? d.created_via,
+        setLoaded({
+          id,
+          diagram: {
+            id: d.id,
+            title: d.title ?? "",
+            elements: d.elements ?? [],
+            appState: d.appState ?? d.app_state ?? {},
+            workspaceId: d.workspaceId ?? d.workspace_id ?? null,
+            createdVia: d.createdVia ?? d.created_via,
+          },
         });
       })
-      .catch(() => setError("Diagram not found"));
+      .catch(() => {
+        if (current) setLoaded({ id, error: "Diagram not found" });
+      });
+    return () => {
+      current = false;
+    };
   }, [id]);
 
-  if (error) {
-    return (
-      <div className="flex h-screen items-center justify-center text-sm text-red-600">{error}</div>
-    );
-  }
-
-  if (!diagram) {
+  if (!loaded || loaded.id !== id) {
     return (
       <div className="flex h-screen items-center justify-center text-sm text-text-muted">
         Loading...
@@ -53,9 +59,20 @@ export function Board() {
     );
   }
 
+  if ("error" in loaded) {
+    return (
+      <div className="flex h-screen items-center justify-center text-sm text-red-600">
+        {loaded.error}
+      </div>
+    );
+  }
+
+  const { diagram } = loaded;
   return (
     <ErrorBoundary FallbackComponent={BoardErrorFallback}>
+      {/* Collab hooks hold per-diagram refs (active scene, socket listeners): remount per board. */}
       <BoardEditor
+        key={diagram.id}
         diagramId={diagram.id}
         title={diagram.title}
         userEmail={user?.email ?? ""}
