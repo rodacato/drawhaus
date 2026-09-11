@@ -73,10 +73,7 @@ test.describe("Board canvas", () => {
     expect(await board.elementIds()).toEqual([drawn]);
   });
 
-  test.fixme("Ctrl+S never reports a save the server did not receive (bug: the saved toast fires on emit, before the server acknowledges)", async ({
-    page,
-    request,
-  }) => {
+  test("Ctrl+S never reports a save the server did not receive", async ({ page, request }) => {
     const diagram = await createDiagram(request, { title: "Unacknowledged Save" });
     let dropEdits = false;
     let killSocket = () => {};

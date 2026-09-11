@@ -1,6 +1,7 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import {
+  answerAck,
   createMockSocket,
   createExcalidrawApiStub,
   makeRef,
@@ -23,6 +24,7 @@ vi.mock("../api/diagrams", () => ({
 }));
 
 import { useSaveManager } from "../lib/hooks/collaboration/useSaveManager";
+import { SAVE_ACK_TIMEOUT_MS } from "../lib/collaboration";
 import { SceneSync } from "../lib/scene-sync";
 import { diagramsApi } from "../api/diagrams";
 
@@ -384,7 +386,9 @@ describe("useSaveManager", () => {
     const { result } = renderSaveManager({ socket, api });
 
     await act(async () => {
-      await result.current.flushSave();
+      const pending = result.current.flushSave();
+      answerAck(socket, "save-scene", { ok: true });
+      await pending;
     });
 
     const [save] = emitted(socket, "save-scene") as { elements: { id: string }[] }[];
@@ -403,15 +407,46 @@ describe("useSaveManager", () => {
     expect(result.current.saveState).toBe("error");
   });
 
-  test("flushSave returns true when the socket emit path is taken (best-effort)", async () => {
+  test("flushSave reports saved only once the server acknowledges the save", async () => {
     const api = createExcalidrawApiStub({ elements: [{ id: "x", version: 1 }] });
     const { result } = renderSaveManager({ socket, api, socketConnected: true });
     let returned: boolean | undefined;
     await act(async () => {
-      returned = await result.current.flushSave();
+      const pending = result.current.flushSave();
+      answerAck(socket, "save-scene", { ok: true, sceneId: "scene-1" });
+      returned = await pending;
     });
     expect(emitted(socket, "save-scene").length).toBe(1);
     expect(returned).toBe(true);
+    expect(result.current.saveState).toBe("saved");
+    expect(result.current.lastSavedAt).not.toBeNull();
+  });
+
+  test("a save the server refuses leaves the board in error and tells the caller", async () => {
+    const api = createExcalidrawApiStub({ elements: [{ id: "x", version: 1 }] });
+    const { result } = renderSaveManager({ socket, api, socketConnected: true });
+    let returned: boolean | undefined;
+    await act(async () => {
+      const pending = result.current.flushSave();
+      answerAck(socket, "save-scene", { ok: false, reason: "stale" });
+      returned = await pending;
+    });
+    expect(returned).toBe(false);
+    expect(result.current.saveState).toBe("error");
+    expect(result.current.lastSavedAt).toBeNull();
+  });
+
+  test("a save the server never answers times out as an error", async () => {
+    const api = createExcalidrawApiStub({ elements: [{ id: "x", version: 1 }] });
+    const { result } = renderSaveManager({ socket, api, socketConnected: true });
+    let returned: boolean | undefined;
+    await act(async () => {
+      const pending = result.current.flushSave();
+      vi.advanceTimersByTime(SAVE_ACK_TIMEOUT_MS);
+      returned = await pending;
+    });
+    expect(returned).toBe(false);
+    expect(result.current.saveState).toBe("error");
   });
 
   test("flushSave is a no-op when the excalidraw api is not ready", async () => {

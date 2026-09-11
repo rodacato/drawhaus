@@ -8,15 +8,22 @@ export interface MockSocketManager {
   handlers: Map<string, Set<Handler>>;
 }
 
+export interface PendingAck {
+  respond: Handler;
+  timer: ReturnType<typeof setTimeout>;
+}
+
 export interface MockSocket {
   id: string;
   connected: boolean;
   emit: ReturnType<typeof vi.fn>;
   on: ReturnType<typeof vi.fn>;
   off: ReturnType<typeof vi.fn>;
+  timeout: ReturnType<typeof vi.fn>;
   disconnect: ReturnType<typeof vi.fn>;
   io: MockSocketManager;
   handlers: Map<string, Set<Handler>>;
+  pendingAcks: Map<string, PendingAck>;
 }
 
 export function createMockSocket(overrides: { id?: string; connected?: boolean } = {}): MockSocket {
@@ -49,16 +56,47 @@ export function createMockSocket(overrides: { id?: string; connected?: boolean }
     managerHandlers.get(event)?.delete(fn);
   });
 
-  return {
+  const pendingAcks = new Map<string, PendingAck>();
+  let ackTimeoutMs: number | null = null;
+
+  // Mirrors socket.io-client: `timeout(ms).emit(event, payload, cb)` fails cb when nothing answers.
+  const emit = vi.fn((event: string, ...args: unknown[]) => {
+    const ms = ackTimeoutMs;
+    ackTimeoutMs = null;
+    const respond = args.at(-1);
+    if (ms === null || typeof respond !== "function") return;
+    const timer = setTimeout(() => {
+      pendingAcks.delete(event);
+      (respond as Handler)(new Error("operation has timed out"));
+    }, ms);
+    pendingAcks.set(event, { respond: respond as Handler, timer });
+  });
+
+  const socket: MockSocket = {
     id: overrides.id ?? "socket-self",
     connected: overrides.connected ?? true,
-    emit: vi.fn(),
+    emit,
     on,
     off,
+    timeout: vi.fn((ms: number) => {
+      ackTimeoutMs = ms;
+      return socket;
+    }),
     disconnect: vi.fn(),
     io: { on: managerOn, off: managerOff, handlers: managerHandlers },
     handlers,
+    pendingAcks,
   };
+  return socket;
+}
+
+/** Answer the ack callback the last `emit` of `event` carried, as the server would. */
+export function answerAck(socket: MockSocket, event: string, response: unknown): void {
+  const pending = socket.pendingAcks.get(event);
+  if (!pending) throw new Error(`No pending ack for ${event}`);
+  clearTimeout(pending.timer);
+  socket.pendingAcks.delete(event);
+  pending.respond(null, response);
 }
 
 /** Invoke every registered handler for an event with the given args. */
