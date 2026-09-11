@@ -16,9 +16,7 @@ test.describe("Public pages", () => {
     });
   }
 
-  test.fixme("every other public page stays reachable for a signed-out visitor (bug: the 401 interceptor in api/client.ts sends them to /login)", async ({
-    page,
-  }) => {
+  test("every other public page stays reachable for a signed-out visitor", async ({ page }) => {
     for (const path of [
       "/forgot-password",
       "/reset-password/some-token",

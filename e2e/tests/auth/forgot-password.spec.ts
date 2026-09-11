@@ -1,9 +1,7 @@
 import { test, expect, PRIMARY_USER, SIGNED_OUT } from "../../fixtures/test";
 
 test.describe("Forgot Password", () => {
-  test.fixme("forgot password page shows form (bug: 401 interceptor sends signed-out visitors to /login)", async ({
-    openAs,
-  }) => {
+  test("forgot password page shows form", async ({ openAs }) => {
     const page = await openAs(SIGNED_OUT);
     await page.goto("/forgot-password");
 
