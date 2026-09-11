@@ -113,7 +113,7 @@ function createApp() {
     "/api/diagrams",
     createDiagramRoutes(
       {
-        create: new CreateDiagramUseCase(diagrams),
+        create: new CreateDiagramUseCase(diagrams, new InMemoryWorkspaceRepository(), folders),
         get: new GetDiagramUseCase(diagrams, new InMemorySceneRepository()),
         list: new ListDiagramsUseCase(diagrams),
         search: new SearchDiagramsUseCase(diagrams),

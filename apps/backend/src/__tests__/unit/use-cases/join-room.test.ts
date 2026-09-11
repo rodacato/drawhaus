@@ -7,6 +7,8 @@ import { CreateShareLinkUseCase } from "../../../application/use-cases/share/cre
 import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { InMemoryDiagramRepository } from "../../fakes/in-memory-diagram-repository";
+import { InMemoryFolderRepository } from "../../fakes/in-memory-folder-repository";
+import { InMemoryWorkspaceRepository } from "../../fakes/in-memory-workspace-repository";
 import { InMemoryShareRepository } from "../../fakes/in-memory-share-repository";
 import { InMemorySceneRepository } from "../../fakes/in-memory-scene-repository";
 import { UnauthorizedError, NotFoundError } from "../../../domain/errors";
@@ -18,7 +20,11 @@ describe("JoinRoomUseCase", () => {
     const diagrams = new InMemoryDiagramRepository();
     const scenes = new InMemorySceneRepository();
     const joinRoom = new JoinRoomUseCase(sessions, diagrams, scenes);
-    const createDiagram = new CreateDiagramUseCase(diagrams);
+    const createDiagram = new CreateDiagramUseCase(
+      diagrams,
+      new InMemoryWorkspaceRepository(),
+      new InMemoryFolderRepository(),
+    );
 
     const user = await users.create({ email: "a@b.com", name: "A", passwordHash: "h" });
     const session = await sessions.create(user.id);
@@ -50,7 +56,11 @@ describe("JoinRoomUseCase", () => {
     const diagrams = new InMemoryDiagramRepository();
     const scenes = new InMemorySceneRepository();
     const joinRoom = new JoinRoomUseCase(sessions, diagrams, scenes);
-    const createDiagram = new CreateDiagramUseCase(diagrams);
+    const createDiagram = new CreateDiagramUseCase(
+      diagrams,
+      new InMemoryWorkspaceRepository(),
+      new InMemoryFolderRepository(),
+    );
 
     const owner = await users.create({ email: "owner@b.com", name: "O", passwordHash: "h" });
     const stranger = await users.create({ email: "stranger@b.com", name: "S", passwordHash: "h" });
@@ -71,7 +81,11 @@ describe("JoinRoomGuestUseCase", () => {
     const shares = new InMemoryShareRepository();
     const scenes = new InMemorySceneRepository();
     const joinGuest = new JoinRoomGuestUseCase(shares, diagrams, scenes);
-    const createDiagram = new CreateDiagramUseCase(diagrams);
+    const createDiagram = new CreateDiagramUseCase(
+      diagrams,
+      new InMemoryWorkspaceRepository(),
+      new InMemoryFolderRepository(),
+    );
     const createLink = new CreateShareLinkUseCase(shares, diagrams);
 
     const diagram = await createDiagram.execute({ ownerId: "user-1", title: "Shared" });

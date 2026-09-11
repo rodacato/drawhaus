@@ -188,7 +188,11 @@ export function createUseCases(repos: Repositories, services: Services) {
   );
 
   // Diagrams
-  const createDiagram = new CreateDiagramUseCase(repos.diagramRepo);
+  const createDiagram = new CreateDiagramUseCase(
+    repos.diagramRepo,
+    repos.workspaceRepo,
+    repos.folderRepo,
+  );
   const getDiagram = new GetDiagramUseCase(repos.diagramRepo, repos.sceneRepo);
   const listDiagrams = new ListDiagramsUseCase(repos.diagramRepo);
   const searchDiagrams = new SearchDiagramsUseCase(repos.diagramRepo);
@@ -326,12 +330,17 @@ export function createUseCases(repos: Repositories, services: Services) {
   );
 
   // Templates
-  const createTemplate = new CreateTemplateUseCase(repos.templateRepo);
+  const createTemplate = new CreateTemplateUseCase(repos.templateRepo, repos.workspaceRepo);
   const getTemplate = new GetTemplateUseCase(repos.templateRepo);
-  const listTemplates = new ListTemplatesUseCase(repos.templateRepo);
+  const listTemplates = new ListTemplatesUseCase(repos.templateRepo, repos.workspaceRepo);
   const updateTemplate = new UpdateTemplateUseCase(repos.templateRepo);
   const deleteTemplate = new DeleteTemplateUseCase(repos.templateRepo);
-  const useTemplate = new UseTemplateUseCase(repos.templateRepo, repos.diagramRepo);
+  const useTemplate = new UseTemplateUseCase(
+    repos.templateRepo,
+    repos.diagramRepo,
+    repos.workspaceRepo,
+    repos.folderRepo,
+  );
 
   // Snapshots
   const createSnapshot = new CreateSnapshotUseCase(

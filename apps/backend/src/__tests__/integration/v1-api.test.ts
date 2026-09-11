@@ -19,6 +19,7 @@ import { InMemoryApiKeyRepository } from "../fakes/in-memory-api-key-repository"
 import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
 import { InMemorySceneRepository } from "../fakes/in-memory-scene-repository";
 import { InMemoryWorkspaceRepository } from "../fakes/in-memory-workspace-repository";
+import { InMemoryFolderRepository } from "../fakes/in-memory-folder-repository";
 
 const FRONTEND_URL = "http://localhost:5173";
 const WORKSPACE_ID = crypto.randomUUID();
@@ -67,6 +68,16 @@ function createApp() {
     createdAt: new Date(),
   });
 
+  const workspaces = new InMemoryWorkspaceRepository();
+  workspaces.members.push({
+    workspaceId: WORKSPACE_ID,
+    userId,
+    role: "editor",
+    addedAt: new Date(),
+    userName: "API User",
+    userEmail: "api@example.com",
+  });
+
   const validateApiKey = new ValidateApiKeyUseCase(apiKeys, users);
   const requireApiKey = createRequireApiKey(validateApiKey);
   const logApiRequest = createLogApiRequest(apiKeys);
@@ -86,7 +97,7 @@ function createApp() {
     "/v1/diagrams",
     createV1DiagramRoutes(
       {
-        create: new CreateDiagramUseCase(diagrams),
+        create: new CreateDiagramUseCase(diagrams, workspaces, new InMemoryFolderRepository()),
         get: new GetDiagramUseCase(diagrams, new InMemorySceneRepository()),
         list: new ListDiagramsUseCase(diagrams),
         update: new UpdateDiagramUseCase(diagrams),
