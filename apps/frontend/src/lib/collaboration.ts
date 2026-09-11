@@ -11,6 +11,8 @@ export const HEAVY_ELEMENT_THRESHOLD = 200;
 export const CURSOR_THROTTLE_MS = 30;
 export const VIEWPORT_THROTTLE_MS = 100;
 export const SAVE_DEBOUNCE_MS = 1200;
+/** Long enough for a slow save round trip, short enough to bound the wait when leaving a board. */
+export const SAVE_ACK_TIMEOUT_MS = 5000;
 
 /** Return a higher throttle interval when the scene has many elements. */
 export function getAdaptiveThrottleMs(elementCount: number): number {

@@ -5,6 +5,7 @@ import {
   getAdaptiveThrottleMs,
   VIEWPORT_THROTTLE_MS,
   SAVE_DEBOUNCE_MS,
+  SAVE_ACK_TIMEOUT_MS,
 } from "@/lib/collaboration";
 import type { SaveState } from "@/lib/types";
 import { applyRemoteScene, type ExcalidrawApi } from "@/lib/excalidraw";
@@ -13,6 +14,8 @@ import { deriveSaveLabel, deriveSaveColor } from "@/lib/save-state";
 import { diagramsApi } from "@/api/diagrams";
 
 type LatestScene = { elements: readonly unknown[]; appState: Record<string, unknown> };
+
+type SaveAck = { ok: boolean; reason?: string };
 
 export interface UseSaveManagerParams {
   socketRef: React.MutableRefObject<Socket | null>;
@@ -126,15 +129,29 @@ export function useSaveManager({
         } catch {
           /* quota exceeded */
         }
-        if (socketRef.current?.connected) {
-          socketRef.current.emit("save-scene", {
-            roomId: diagramId,
-            sceneId: activeSceneIdRef.current,
-            elements: safeElements,
-            appState: sanitizedAppState,
-            revision: sync.revision,
+        const socket = socketRef.current;
+        if (socket?.connected) {
+          const acknowledged = new Promise<boolean>((resolve) => {
+            socket.timeout(SAVE_ACK_TIMEOUT_MS).emit(
+              "save-scene",
+              {
+                roomId: diagramId,
+                sceneId: activeSceneIdRef.current,
+                elements: safeElements,
+                appState: sanitizedAppState,
+                revision: sync.revision,
+              },
+              (timedOut: unknown, response?: SaveAck) =>
+                resolve(!timedOut && response?.ok === true),
+            );
           });
           generateThumbnail();
+          if (!(await acknowledged)) {
+            setSaveState("error");
+            return false;
+          }
+          lastSavedAt.current = new Date().toLocaleTimeString();
+          setSaveState("saved");
           return true;
         }
         await diagramsApi.update(diagramId, {
