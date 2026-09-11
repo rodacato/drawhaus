@@ -1,4 +1,6 @@
-import { Routes, Route, Navigate, useParams } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AppErrorFallback } from "@/components/AppErrorFallback";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { ProtectedLayout } from "@/layouts/ProtectedLayout";
 import { AppShell } from "@/layouts/AppShell";
@@ -25,55 +27,61 @@ function InviteRedirect() {
 }
 
 export function AppRouter() {
+  const { pathname } = useLocation();
   return (
-    <Routes>
-      {/* Auth routes - redirect to dashboard if already logged in */}
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-      </Route>
-
-      {/* Invite link redirect */}
-      <Route path="/invite/:token" element={<InviteRedirect />} />
-
-      {/* Public marketing pages */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/self-host" element={<SelfHostPage />} />
-
-      {/* Protected routes - redirect to login if not authenticated */}
-      <Route element={<ProtectedLayout />}>
-        {/* Dashboard is full-screen with its own sidebar/header (Stitch layout) */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route element={<AppShell />}>
-          <Route path="/settings" element={<Settings />} />
+    <ErrorBoundary FallbackComponent={AppErrorFallback} resetKeys={[pathname]}>
+      <Routes>
+        {/* Auth routes - redirect to dashboard if already logged in */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Route>
-        {/* Board is full-screen, no AppShell */}
-        <Route path="/board/:id" element={<Board />} />
-      </Route>
 
-      {/* Redirect old admin routes to settings tabs */}
-      <Route path="/admin" element={<Navigate to="/settings?tab=admin-overview" replace />} />
-      <Route path="/admin/users" element={<Navigate to="/settings?tab=admin-users" replace />} />
-      <Route path="/admin/settings" element={<Navigate to="/settings?tab=admin-site" replace />} />
-      <Route
-        path="/admin/style-guide"
-        element={<Navigate to="/settings?tab=admin-style" replace />}
-      />
+        {/* Invite link redirect */}
+        <Route path="/invite/:token" element={<InviteRedirect />} />
 
-      {/* Workspace invite (works both authenticated and not) */}
-      <Route path="/workspace-invite/:token" element={<WorkspaceInvite />} />
+        {/* Public marketing pages */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/self-host" element={<SelfHostPage />} />
 
-      {/* Public routes */}
-      <Route path="/setup" element={<Setup />} />
-      <Route path="/share/:token" element={<Share />} />
-      <Route path="/embed/:token" element={<Embed />} />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/terms" element={<Terms />} />
+        {/* Protected routes - redirect to login if not authenticated */}
+        <Route element={<ProtectedLayout />}>
+          {/* Dashboard is full-screen with its own sidebar/header (Stitch layout) */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route element={<AppShell />}>
+            <Route path="/settings" element={<Settings />} />
+          </Route>
+          {/* Board is full-screen, no AppShell */}
+          <Route path="/board/:id" element={<Board />} />
+        </Route>
 
-      {/* Catch-all */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        {/* Redirect old admin routes to settings tabs */}
+        <Route path="/admin" element={<Navigate to="/settings?tab=admin-overview" replace />} />
+        <Route path="/admin/users" element={<Navigate to="/settings?tab=admin-users" replace />} />
+        <Route
+          path="/admin/settings"
+          element={<Navigate to="/settings?tab=admin-site" replace />}
+        />
+        <Route
+          path="/admin/style-guide"
+          element={<Navigate to="/settings?tab=admin-style" replace />}
+        />
+
+        {/* Workspace invite (works both authenticated and not) */}
+        <Route path="/workspace-invite/:token" element={<WorkspaceInvite />} />
+
+        {/* Public routes */}
+        <Route path="/setup" element={<Setup />} />
+        <Route path="/share/:token" element={<Share />} />
+        <Route path="/embed/:token" element={<Embed />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+
+        {/* Catch-all */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </ErrorBoundary>
   );
 }
