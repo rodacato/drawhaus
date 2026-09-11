@@ -87,7 +87,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
         } else {
           // For PlantUML, validate parse and extract stats for feedback
           try {
-            const result = plantumlToElements(text);
+            const result = await plantumlToElements(text);
             setPreview(null);
             setIsFallback(false);
             // Extract entity/relation counts from the parsed elements
@@ -142,7 +142,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
       if (format === "mermaid") {
         newElements = await mermaidToElements(code);
       } else {
-        const result = plantumlToElements(code);
+        const result = await plantumlToElements(code);
         newElements = result.elements;
       }
       const existing = replaceAll ? [] : (api.getSceneElements() as any[]);

@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { siteApi } from "@/api/admin";
 import { setupApi } from "@/api/setup";
 import { MaintenancePage } from "@/pages/MaintenancePage";
+import { PageLoading } from "@/components/PageLoading";
 
 export function ProtectedLayout() {
   const { user, loading } = useAuth();
@@ -31,11 +32,7 @@ export function ProtectedLayout() {
   }, [user]);
 
   if (loading || !statusLoaded) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-surface">
-        <div className="text-sm text-text-muted">Loading...</div>
-      </div>
-    );
+    return <PageLoading />;
   }
 
   if (!user) return <Navigate to="/login" replace />;

@@ -10,10 +10,6 @@ let nextSocket: MockSocket;
 vi.mock("@/components/ExcalidrawCanvas", () => ({
   ExcalidrawCanvas: () => <div data-testid="excalidraw-canvas" />,
 }));
-// convert-to-excalidraw.ts imports the lib directly, which drags in roughjs (unresolvable under jsdom).
-vi.mock("@excalidraw/excalidraw", () => ({
-  convertToExcalidrawElements: vi.fn((x: unknown) => x),
-}));
 vi.mock("@/lib/services/socket", () => ({ createSocket: () => nextSocket }));
 vi.mock("@/api/share", () => ({
   shareApi: {
@@ -41,6 +37,7 @@ vi.mock("@/api/auth", () => ({
 import { Embed } from "../pages/Embed";
 import { Share } from "../pages/Share";
 import { Board } from "../pages/Board";
+import { AppRouter } from "../router";
 
 beforeEach(() => {
   nextSocket = createMockSocket();
@@ -56,6 +53,13 @@ describe("canvas pages — smoke (ExcalidrawCanvas + socket stubbed)", () => {
     renderWithProviders(<Share />, { route: "/share/tok123", path: "/share/:token" });
     // The viewer must enter a name before the canvas mounts; assert that gate renders.
     await waitFor(() => expect(screen.getByRole("heading", { name: /shared/i })).toBeTruthy());
+  });
+
+  test("the lazy /embed/:token route shows the loading screen, then mounts the canvas", async () => {
+    renderWithProviders(<AppRouter />, { route: "/embed/tok123" });
+    expect(screen.getByText("Loading...")).toBeTruthy();
+    await waitFor(() => expect(screen.getByTestId("excalidraw-canvas")).toBeTruthy());
+    expect(screen.queryByRole("heading", { name: /something went wrong/i })).toBeNull();
   });
 
   test("Board mounts the editor once the diagram loads", async () => {
