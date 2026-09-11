@@ -35,15 +35,7 @@ export class BoardPage {
     await expect(this.saveBadge).toHaveText(/^Saved /, { timeout: 15_000 });
   }
 
-  // Cold loads start in view mode (fixme in collaboration/board.spec.ts); Alt+R is Excalidraw's
-  // own toggle, so this keeps drawing tests meaningful until that bug is fixed.
   async ensureEditable() {
-    if ((await this.viewMode.count()) > 0) {
-      const box = await this.interactiveCanvas.boundingBox();
-      if (!box) throw new Error("canvas is not laid out");
-      await this.page.mouse.click(box.x + box.width - 120, box.y + box.height - 160);
-      await this.page.keyboard.press("Alt+r");
-    }
     await expect(this.viewMode).toHaveCount(0);
     await this.selectTool("selection");
   }

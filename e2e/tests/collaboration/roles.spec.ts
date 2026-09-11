@@ -35,7 +35,7 @@ async function pokeAround(board: BoardPage) {
 test.describe("Roles on the canvas", () => {
   test.describe.configure({ timeout: 90_000 });
 
-  test.fixme("a workspace viewer gets a read-only canvas and sends no edits (bug: the board always runs the editor save path, so viewers emit scene edits)", async ({
+  test("a workspace viewer gets a read-only canvas and sends no edits", async ({
     createUser,
     openAs,
   }) => {
@@ -88,10 +88,7 @@ test.describe("Roles on the canvas", () => {
     expect(await liveElementIds(owner.api, diagram.id)).toEqual(["viewer-rect"]);
   });
 
-  test.fixme("a guest editor joins in edit mode (bug: cold load stays in view mode)", async ({
-    createUser,
-    openAs,
-  }) => {
+  test("a guest editor joins in edit mode", async ({ createUser, openAs }) => {
     const owner = await createUser("owner");
     const diagram = await createDiagram(owner.api, { title: "Guest Edit Mode" });
     const token = await createShareLink(owner.api, diagram.id, "editor");

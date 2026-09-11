@@ -116,6 +116,7 @@ describe("Board — navigating between boards", () => {
     const socketB = sockets.at(-1)!;
     act(() => {
       triggerSocketEvent(socketB, "connect");
+      triggerSocketEvent(socketB, "room-joined", { roomId: "B", role: "owner", userId: "u-1" });
     });
     act(() => {
       canvas.onChange?.([{ id: "el-B", version: 2 }], {

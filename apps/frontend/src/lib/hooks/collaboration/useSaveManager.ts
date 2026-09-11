@@ -258,11 +258,11 @@ export function useSaveManager({
   /* ─── flush save ─── */
   const flushSave = useCallback(async (): Promise<boolean> => {
     const a = excalidrawApiRef.current;
-    if (!a) return true;
+    if (!a || !canEdit) return true;
     const elements = a.getSceneElements();
     const appState = a.getAppState();
     return persistScene([...elements], appState, activeSceneIdRef.current);
-  }, [persistScene]);
+  }, [persistScene, canEdit]);
 
   /* ─── derived values ─── */
   const saveLabel = deriveSaveLabel(saveState, lastSavedAt.current);
