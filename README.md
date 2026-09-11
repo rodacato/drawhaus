@@ -489,7 +489,7 @@ kamal rollback -c config/deploy.frontend.yml
 | Method   | Endpoint                                          | Description                                   |
 | -------- | ------------------------------------------------- | --------------------------------------------- |
 | `GET`    | `/api/diagrams/:id/snapshots`                     | List snapshots (metadata only)                |
-| `POST`   | `/api/diagrams/:id/snapshots`                     | Create snapshot (manual trigger)              |
+| `POST`   | `/api/diagrams/:id/snapshots`                     | Create snapshot (manual trigger, edit access) |
 | `GET`    | `/api/diagrams/:id/snapshots/:snapshotId`         | Get full snapshot (with elements)             |
 | `POST`   | `/api/diagrams/:id/snapshots/:snapshotId/restore` | Restore snapshot (creates pre-restore backup) |
 | `PATCH`  | `/api/diagrams/:id/snapshots/:snapshotId`         | Rename snapshot                               |
