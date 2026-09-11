@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { DrawhausClient } from "../client.js";
-import { UpdateDiagramInput } from "../schemas.js";
+import { UpdateDiagramFields, UpdateDiagramInput } from "../schemas.js";
 import { formatErrorForMcp } from "../errors.js";
 import { validateElements } from "@drawhaus/helpers";
 
@@ -9,12 +9,7 @@ export function registerUpdateDiagram(server: McpServer, client: DrawhausClient)
     "update_diagram",
     "Update a diagram's title, elements, or app state. At least one field must be provided. " +
       "Elements and appState replace the existing values entirely.",
-    {
-      id: UpdateDiagramInput._def.schema.shape.id,
-      title: UpdateDiagramInput._def.schema.shape.title,
-      elements: UpdateDiagramInput._def.schema.shape.elements,
-      appState: UpdateDiagramInput._def.schema.shape.appState,
-    },
+    UpdateDiagramFields.shape,
     async (args) => {
       try {
         const input = UpdateDiagramInput.parse(args);
