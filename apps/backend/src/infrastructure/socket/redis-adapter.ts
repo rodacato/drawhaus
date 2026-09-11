@@ -7,6 +7,8 @@ import { logger } from "../logger";
 // Suppress ioredis "unhandled error" logs during connection attempt
 const noop = () => {};
 
+let adapterClients: Redis[] = [];
+
 export async function attachRedisAdapter(io: Server): Promise<void> {
   if (!config.redisUrl) {
     logger.info("REDIS_URL not set — using in-memory Socket.IO adapter");
@@ -39,10 +41,17 @@ export async function attachRedisAdapter(io: Server): Promise<void> {
     subClient.options.retryStrategy = (times: number) => Math.min(times * 200, 5000);
 
     io.adapter(createAdapter(pubClient, subClient));
+    adapterClients = [pubClient, subClient];
     logger.info("Socket.IO Redis adapter attached");
   } catch (err) {
     logger.warn({ err }, "Redis connection failed — falling back to in-memory adapter");
     pubClient?.disconnect();
     subClient?.disconnect();
   }
+}
+
+/** For graceful shutdown, after io.close() has closed the adapter. */
+export function disconnectRedisAdapter(): void {
+  for (const client of adapterClients) client.disconnect();
+  adapterClients = [];
 }
