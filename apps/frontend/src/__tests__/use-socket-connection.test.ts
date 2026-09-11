@@ -4,6 +4,7 @@ import {
   createMockSocket,
   triggerSocketEvent,
   triggerManagerEvent,
+  simulateReconnect,
   type MockSocket,
 } from "./_helpers/mock-socket";
 
@@ -116,7 +117,7 @@ describe("useSocketConnection", () => {
     expect(result.current.connectionState).toBe("connecting");
   });
 
-  test("manager 'reconnect' rejoins the room", () => {
+  test("each reconnect joins the room exactly once and ends 'connected'", () => {
     const { result } = renderHook(() =>
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
     );
@@ -124,11 +125,58 @@ describe("useSocketConnection", () => {
       triggerSocketEvent(nextSocket, "connect");
     });
     nextSocket.emit.mockClear();
+
+    for (let cycle = 1; cycle <= 2; cycle++) {
+      act(() => {
+        triggerSocketEvent(nextSocket, "disconnect", "transport close");
+        triggerManagerEvent(nextSocket, "reconnect_attempt", 1);
+      });
+      expect(result.current.connectionState).toBe("connecting");
+      act(() => {
+        simulateReconnect(nextSocket);
+      });
+      expect(result.current.connectionState).toBe("connected");
+      const joins = nextSocket.emit.mock.calls.filter(([event]) => event === "join-room");
+      expect(joins).toEqual(
+        Array.from({ length: cycle }, () => ["join-room", { roomId: "room-1" }]),
+      );
+    }
+  });
+
+  test("a reconnect clears a previous connection error", () => {
+    const { result } = renderHook(() =>
+      useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
+    );
     act(() => {
-      triggerManagerEvent(nextSocket, "reconnect");
+      triggerSocketEvent(nextSocket, "connect_error", { message: "no route" });
+    });
+    act(() => {
+      simulateReconnect(nextSocket);
     });
     expect(result.current.connectionState).toBe("connected");
-    expect(nextSocket.emit).toHaveBeenCalledWith("join-room", { roomId: "room-1" });
+    expect(result.current.connectionError).toBeNull();
+  });
+
+  test("a guest reconnect re-sends join-room-guest once, never join-room", () => {
+    renderHook(() => useSocketConnection({ diagramId: "d1", joinMode: guestJoin }));
+    act(() => {
+      triggerSocketEvent(nextSocket, "connect");
+    });
+    nextSocket.emit.mockClear();
+    act(() => {
+      simulateReconnect(nextSocket);
+    });
+    expect(nextSocket.emit.mock.calls).toEqual([
+      ["join-room-guest", { shareToken: "tok-9", guestName: "Visitor" }],
+    ]);
+  });
+
+  test("a reconnect attempt alone does not join the room", () => {
+    renderHook(() => useSocketConnection({ diagramId: "d1", joinMode: authJoin }));
+    act(() => {
+      triggerManagerEvent(nextSocket, "reconnect_attempt", 1);
+    });
+    expect(nextSocket.emit).not.toHaveBeenCalled();
   });
 
   test("manager 'reconnect_failed' sets error state with Spanish message", () => {
