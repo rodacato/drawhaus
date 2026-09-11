@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { ExcalidrawApi } from "@/lib/types";
 
 // Re-export types for consumers
@@ -12,9 +12,10 @@ import { useSaveManager } from "./collaboration/useSaveManager";
 import { usePresence } from "./collaboration/usePresence";
 import { useSceneManager } from "./collaboration/useSceneManager";
 
+const EDIT_ROLES = new Set(["owner", "editor"]);
+
 export function useCollaboration({
   diagramId,
-  canEdit,
   joinMode,
   initialElements,
   initialAppState,
@@ -62,7 +63,6 @@ export function useCollaboration({
         ...canvasPrefs,
         collaborators: new Map(),
         theme: "light",
-        viewModeEnabled: true,
       },
     };
   }, [initialElements, initialAppState, cacheKey]);
@@ -73,6 +73,8 @@ export function useCollaboration({
       diagramId,
       joinMode,
     });
+  // Only the room join knows the role; until it answers, the board stays read-only.
+  const canEdit = userRole !== null && EDIT_ROLES.has(userRole);
 
   /* ─── 2. Edit lock (stub — concurrent editing) ─── */
   const editLock = useEditLock({ socketRef, socketGeneration, selfUserId });
@@ -140,28 +142,17 @@ export function useCollaboration({
     onRemoteDelete,
   });
 
-  /* ─── 6. Force viewModeEnabled when user cannot edit or is following ─── */
-  useEffect(() => {
-    const api = excalidrawApiRef.current;
-    if (!api) return;
-    const viewMode = !canEdit || !!followingUserIdRef.current;
-    applyingRemoteCounter.current += 1;
-    api.updateScene({ appState: { viewModeEnabled: viewMode } });
-    setTimeout(() => {
-      applyingRemoteCounter.current -= 1;
-    }, 0);
-  }, [canEdit]);
+  // Passed to Excalidraw as a prop: it applies at mount and on every change, whenever the
+  // lazily loaded canvas and the room join happen to finish.
+  const viewModeEnabled = !canEdit || followingUserId !== null;
 
   /* ─── excalidraw API init ─── */
   const onExcalidrawApi = useCallback((excalidrawApi: ExcalidrawApi) => {
     excalidrawApiRef.current = excalidrawApi;
-    // Don't call updateScene here — it fires during Excalidraw's constructor
-    // before mount. viewModeEnabled is set via initialData.appState and the
-    // useEffect above handles subsequent changes after mount.
+    // Excalidraw calls this from its constructor, before mount, so the pending scene waits a tick.
     if (pendingSceneRef.current) {
       const pending = pendingSceneRef.current;
       pendingSceneRef.current = null;
-      // Defer pending scene apply to after mount
       setTimeout(() => {
         applyingRemoteCounter.current += 1;
         excalidrawApi.updateScene({ elements: pending.elements });
@@ -186,6 +177,7 @@ export function useCollaboration({
     setToolbarOpen,
     initialData,
     canEdit,
+    viewModeEnabled,
     saveLabel,
     saveColor,
     lastSavedAt,

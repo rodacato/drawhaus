@@ -7,10 +7,7 @@ import { isEditFrame } from "../../support/socket-traffic";
 test.describe("Board canvas", () => {
   test.describe.configure({ timeout: 90_000 });
 
-  test.fixme("a fresh board opens editable for its owner (bug: cold load stays in view mode)", async ({
-    page,
-    request,
-  }) => {
+  test("a fresh board opens editable for its owner", async ({ page, request }) => {
     const diagram = await createDiagram(request, { title: "Cold Load" });
     const board = new BoardPage(page);
 

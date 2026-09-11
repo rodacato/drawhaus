@@ -13,7 +13,6 @@ export type JoinMode =
 
 export type CollaborationOptions = {
   diagramId: string;
-  canEdit: boolean;
   joinMode: JoinMode;
   initialElements: unknown[];
   initialAppState: Record<string, unknown>;
@@ -39,7 +38,9 @@ export type CollaborationState = {
   toolbarOpen: boolean;
   setToolbarOpen: (open: boolean) => void;
   initialData: { elements: unknown[]; appState: Record<string, unknown> };
+  /** From the role the room join granted; false until the join answers. */
   canEdit: boolean;
+  viewModeEnabled: boolean;
   saveLabel: string;
   saveColor: string;
   lastSavedAt: string | null;

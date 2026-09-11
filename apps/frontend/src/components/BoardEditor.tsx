@@ -79,7 +79,6 @@ export default function BoardEditor({
 
   const collab = useCollaboration({
     diagramId,
-    canEdit: true,
     joinMode: { type: "authenticated", roomId: diagramId },
     initialElements,
     initialAppState,
@@ -118,7 +117,7 @@ export default function BoardEditor({
   // Drive sync status from socket
   const { driveSyncState, driveSyncError } = useDriveSyncStatus(collab.socketRef);
 
-  const canEdit = collab.userRole === "owner" || collab.userRole === "editor";
+  const { canEdit } = collab;
 
   const commentsPanelRef = useRef(commentsPanelOpen);
   commentsPanelRef.current = commentsPanelOpen;
@@ -376,6 +375,7 @@ export default function BoardEditor({
             initialData={collab.initialData}
             onChange={handleChange}
             objectsSnapModeEnabled={canvasPrefs.objectsSnapModeEnabled}
+            viewModeEnabled={collab.viewModeEnabled}
           />
         </div>
 

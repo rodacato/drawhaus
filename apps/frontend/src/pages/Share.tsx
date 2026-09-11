@@ -262,16 +262,15 @@ function ShareCanvas({
   readonly data: ShareData;
   readonly guestName: string;
 }) {
-  const canEdit = data.role === "editor";
   const { prefs: canvasPrefs } = useCanvasPrefs();
   const collab = useCollaboration({
     diagramId: data.diagramId,
-    canEdit,
     joinMode: { type: "guest", shareToken, guestName },
     initialElements: data.elements,
     initialAppState: data.appState,
     canvasPrefs,
   });
+  const { canEdit } = collab;
 
   // No lock acquisition needed — concurrent editing
   const handleCanvasPointerDown = useCallback(() => {}, []);
@@ -351,6 +350,7 @@ function ShareCanvas({
           excalidrawAPI={collab.onExcalidrawApi}
           initialData={collab.initialData}
           onChange={collab.onChange}
+          viewModeEnabled={collab.viewModeEnabled}
         />
       </div>
     </div>
