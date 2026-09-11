@@ -17,6 +17,11 @@ export type PresenceUser = {
   isGuest: boolean;
 };
 
+/** Guest ids (`guest_<socketId>`) are not user rows, so they must never reach a users foreign key. */
+export function accountUserId(data: SocketData): string | null {
+  return data.isGuest || !data.userId ? null : data.userId;
+}
+
 export const EVENT_ERROR = "event-error";
 
 export function onEvent<S extends z.ZodType>(

@@ -5,6 +5,7 @@ import type { SyncToDriveUseCase } from "../../../application/use-cases/drive/sy
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
 import {
   type SocketData,
+  accountUserId,
   canEdit,
   checkRateLimit,
   onEvent,
@@ -100,7 +101,7 @@ export function registerSceneHandlers(
         if (!socket.rooms.has(roomId)) return;
         if (!canEdit(socket, roomId)) return;
 
-        const saveUserId = (socket.data as SocketData).userId;
+        const saverId = accountUserId(socket.data as SocketData);
 
         const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
         if (!targetSceneId) return;
@@ -134,7 +135,7 @@ export function registerSceneHandlers(
             sockets.map((s) => (s.data as SocketData).userId).filter(Boolean),
           );
           useCases.createSnapshot
-            .createAutomatic(roomId, "interval", saveUserId, uniqueIds.size || 1)
+            .createAutomatic(roomId, "interval", saverId, uniqueIds.size || 1)
             .then((snap) => {
               if (snap) {
                 io.to(roomId).emit("snapshot-created", {
@@ -155,10 +156,9 @@ export function registerSceneHandlers(
         }
 
         // Fire-and-forget: sync to Google Drive if enabled
-        const userId = saveUserId;
-        if (useCases.syncToDrive && userId) {
+        if (useCases.syncToDrive && saverId) {
           useCases.syncToDrive
-            .execute(userId, roomId, targetSceneId, elements, appState)
+            .execute(saverId, roomId, targetSceneId, elements, appState)
             .then((result) => {
               if (result.synced || result.error) {
                 socket.emit("drive-sync-status", {

@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import type { SnapshotRepository } from "../../domain/ports/snapshot-repository";
 import type { DiagramSnapshot, SnapshotTrigger } from "../../domain/entities/diagram-snapshot";
+import { assertUuidColumn } from "./pg-uuid";
 
 export class InMemorySnapshotRepository implements SnapshotRepository {
   store: DiagramSnapshot[] = [];
@@ -15,6 +16,7 @@ export class InMemorySnapshotRepository implements SnapshotRepository {
     elements: unknown[];
     appState: Record<string, unknown>;
   }): Promise<DiagramSnapshot> {
+    assertUuidColumn(data.createdBy);
     const snapshot: DiagramSnapshot = {
       id: crypto.randomUUID(),
       diagramId: data.diagramId,
