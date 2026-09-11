@@ -12,3 +12,7 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+interface Window {
+  EXCALIDRAW_ASSET_PATH?: string | string[];
+}
