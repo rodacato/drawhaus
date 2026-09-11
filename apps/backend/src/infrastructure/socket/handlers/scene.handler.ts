@@ -105,7 +105,7 @@ export function registerSceneHandlers(
         const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
         if (!targetSceneId) return;
 
-        await useCases.saveScene.execute(targetSceneId, elements, appState);
+        await useCases.saveScene.execute(roomId, targetSceneId, elements, appState);
         socket.emit("scene-saved", { roomId, sceneId: targetSceneId });
 
         // Fire-and-forget: interval snapshot every 10 minutes

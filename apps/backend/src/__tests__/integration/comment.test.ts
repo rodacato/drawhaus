@@ -28,6 +28,7 @@ import { InMemoryUserRepository } from "../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../fakes/in-memory-session-repository";
 import { InMemoryCommentRepository } from "../fakes/in-memory-comment-repository";
 import { InMemoryDiagramRepository } from "../fakes/in-memory-diagram-repository";
+import { InMemorySceneRepository } from "../fakes/in-memory-scene-repository";
 import { InMemoryInvitationRepository } from "../fakes/in-memory-invitation-repository";
 import { InMemoryPasswordResetRepository } from "../fakes/in-memory-password-reset-repository";
 import { InMemoryOAuthTokenRepository } from "../fakes/in-memory-oauth-token-repository";
@@ -113,7 +114,7 @@ function createApp() {
     createCommentRoutes(
       {
         list: new ListCommentsUseCase(comments, diagrams),
-        create: new CreateCommentUseCase(comments, diagrams),
+        create: new CreateCommentUseCase(comments, diagrams, new InMemorySceneRepository()),
         reply: new ReplyCommentUseCase(comments, diagrams),
         resolve: new ResolveCommentUseCase(comments, diagrams),
         delete: new DeleteCommentUseCase(comments, diagrams),
