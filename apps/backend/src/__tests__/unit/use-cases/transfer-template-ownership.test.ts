@@ -34,7 +34,7 @@ describe("TransferTemplateOwnershipUseCase", () => {
     assert.equal((await templates.findById(t.id))!.creatorId, "member-2");
   });
 
-  it("non-creator cannot transfer", async () => {
+  it("a template the actor cannot read is not found and keeps its creator", async () => {
     const { templates, useCase } = setup();
     const t = await templates.create({
       creatorId: "owner-1",
@@ -47,6 +47,27 @@ describe("TransferTemplateOwnershipUseCase", () => {
 
     await assert.rejects(
       () => useCase.execute([t.id], "other-user", "someone"),
+      (err: unknown) => err instanceof NotFoundError,
+    );
+    assert.equal((await templates.findById(t.id))!.creatorId, "owner-1");
+  });
+
+  it("a workspace member who is not the creator cannot transfer", async () => {
+    const { templates, workspaces, useCase } = setup();
+    const ws = await workspaces.create({ name: "Team", ownerId: "owner-1" });
+    await workspaces.addMember(ws.id, "member-2", "admin");
+    const t = await templates.create({
+      creatorId: "owner-1",
+      workspaceId: ws.id,
+      title: "T1",
+      description: "",
+      category: "general",
+      elements: [],
+      appState: {},
+    });
+
+    await assert.rejects(
+      () => useCase.execute([t.id], "member-2", "member-2-friend"),
       (err: unknown) => err instanceof ForbiddenError,
     );
   });

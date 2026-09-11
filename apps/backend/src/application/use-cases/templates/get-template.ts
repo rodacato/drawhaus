@@ -1,12 +1,18 @@
 import type { TemplateRepository } from "../../../domain/ports/template-repository";
-import { NotFoundError } from "../../../domain/errors";
+import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
+import { findReadableTemplate } from "../../helpers/find-readable-template";
 
 export class GetTemplateUseCase {
-  constructor(private readonly templates: TemplateRepository) {}
+  constructor(
+    private readonly templates: TemplateRepository,
+    private readonly workspaces: WorkspaceRepository,
+  ) {}
 
-  async execute(id: string) {
-    const template = await this.templates.findById(id);
-    if (!template) throw new NotFoundError("Template");
-    return template;
+  async execute(id: string, userId: string) {
+    return findReadableTemplate(
+      { templates: this.templates, workspaces: this.workspaces },
+      id,
+      userId,
+    );
   }
 }

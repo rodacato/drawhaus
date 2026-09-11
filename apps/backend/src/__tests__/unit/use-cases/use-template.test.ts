@@ -21,9 +21,13 @@ function setup() {
   };
 }
 
-function createTemplate(templates: InMemoryTemplateRepository, title = "Architecture") {
+function createTemplate(
+  templates: InMemoryTemplateRepository,
+  { title = "Architecture", creatorId = "user-1", workspaceId = null as string | null } = {},
+) {
   return templates.create({
-    creatorId: "author",
+    creatorId,
+    workspaceId,
     title,
     description: "",
     category: "general",
@@ -50,7 +54,7 @@ describe("UseTemplateUseCase", () => {
 
   it("uses custom title when provided", async () => {
     const { templates, useCase } = setup();
-    const template = await createTemplate(templates, "Default Name");
+    const template = await createTemplate(templates, { title: "Default Name" });
 
     const diagram = await useCase.execute({
       templateId: template.id,
@@ -70,9 +74,35 @@ describe("UseTemplateUseCase", () => {
     );
   });
 
+  it("copies a teammate's template shared in a workspace the user belongs to", async () => {
+    const { templates, workspaces, useCase } = setup();
+    const ws = await workspaces.create({ name: "Team", ownerId: "author" });
+    await workspaces.addMember(ws.id, "user-1", "viewer");
+    const template = await createTemplate(templates, { creatorId: "author", workspaceId: ws.id });
+
+    const diagram = await useCase.execute({ templateId: template.id, userId: "user-1" });
+
+    assert.deepEqual(diagram.elements, template.elements);
+  });
+
+  it("hides a template the user cannot read and copies nothing", async () => {
+    const { templates, diagrams, workspaces, useCase } = setup();
+    const ws = await workspaces.create({ name: "Team", ownerId: "author" });
+    const personal = await createTemplate(templates, { creatorId: "author" });
+    const shared = await createTemplate(templates, { creatorId: "author", workspaceId: ws.id });
+
+    for (const template of [personal, shared]) {
+      await assert.rejects(
+        () => useCase.execute({ templateId: template.id, userId: "stranger" }),
+        (err: unknown) => err instanceof NotFoundError,
+      );
+    }
+    assert.equal(diagrams.store.length, 0);
+  });
+
   it("increments usage count after creating diagram", async () => {
     const { templates, useCase } = setup();
-    const template = await createTemplate(templates, "Popular");
+    const template = await createTemplate(templates, { title: "Popular" });
 
     await useCase.execute({ templateId: template.id, userId: "user-1" });
     // Wait a tick for the fire-and-forget to complete
@@ -98,7 +128,7 @@ describe("UseTemplateUseCase", () => {
 
   it("rejects a workspace the user is not a member of and creates nothing", async () => {
     const { templates, diagrams, workspaces, useCase } = setup();
-    const template = await createTemplate(templates);
+    const template = await createTemplate(templates, { creatorId: "intruder" });
     const ws = await workspaces.create({ name: "Team", ownerId: "owner-1" });
 
     await assert.rejects(
