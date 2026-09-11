@@ -18,7 +18,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
-    "typecheck": "npm run typecheck --workspace=frontend && npm run typecheck --workspace=backend",
+    "typecheck": "npm run typecheck --workspace=frontend && npm run typecheck --workspace=backend && npm run typecheck --workspace=@drawhaus/helpers && npm run typecheck --workspace=@drawhaus/mcp && npm run typecheck --workspace=@drawhaus/mermaid-to-excalidraw && npm run typecheck --workspace=@drawhaus/plantuml-to-excalidraw",
     "test": "npm run test --workspace=frontend && npm run test --workspace=backend && npm run test:packages",
     "test:packages": "npm run test --workspace=@drawhaus/helpers && npm run test --workspace=@drawhaus/mcp && npm run test --workspace=@drawhaus/mermaid-to-excalidraw && npm run test --workspace=@drawhaus/plantuml-to-excalidraw",
     "test:coverage": "npm run test:coverage --workspace=frontend && npm run test:coverage --workspace=backend",
