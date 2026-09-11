@@ -4,7 +4,12 @@ import cors from "cors";
 import helmet from "helmet";
 import path from "node:path";
 import { createServer } from "node:http";
-import { authLimiter, generalLimiter } from "./infrastructure/http/middleware/rate-limit";
+import {
+  authLimiter,
+  generalLimiter,
+  healthLimiter,
+} from "./infrastructure/http/middleware/rate-limit";
+import { configureTrustProxy } from "./infrastructure/http/trust-proxy";
 import { createSetupLock } from "./infrastructure/http/middleware/setup-lock";
 import { config } from "./infrastructure/config";
 import { runMigrations, pool } from "./infrastructure/db";
@@ -77,6 +82,7 @@ const requireAuth = createRequireAuth(useCases.getCurrentUser);
 // ============================================================
 
 export const app = express();
+configureTrustProxy(app);
 
 app.use(helmet());
 app.use(requestId);
@@ -89,7 +95,7 @@ registerMetrics(app);
 app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json({ limit: "5mb" }));
 
-app.get("/health", async (_req, res) => {
+app.get("/health", healthLimiter, async (_req, res) => {
   let database = "ok";
   try {
     await pool.query("SELECT 1");
@@ -113,7 +119,7 @@ app.get("/api/version", (_req, res) => {
   });
 });
 
-app.get("/api/site/status", async (_req, res) => {
+app.get("/api/site/status", generalLimiter, async (_req, res) => {
   const settings = await useCases.getSettings.execute();
   res.json({ maintenanceMode: settings.maintenanceMode, instanceName: settings.instanceName });
 });
@@ -327,7 +333,7 @@ app.use(
 );
 
 // --- Public API /v1/ ---
-app.use("/v1/health", createV1HealthRoutes());
+app.use("/v1/health", healthLimiter, createV1HealthRoutes());
 app.use("/v1/docs", express.static(path.resolve(__dirname, "../../docs/api")));
 
 const requireApiKey = createRequireApiKey(useCases.validateApiKey);

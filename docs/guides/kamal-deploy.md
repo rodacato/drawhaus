@@ -143,6 +143,12 @@ After editing, restart cloudflared:
 sudo systemctl restart cloudflared
 ```
 
+> **Trusted proxies.** The backend trusts exactly two proxy hops — cloudflared and kamal-proxy
+> (`apps/backend/src/infrastructure/http/trust-proxy.ts`) — so `req.ip` is the real client and rate
+> limits apply per client. That holds only while kamal-proxy's port 80 is **not** reachable from the
+> internet: cloudflared reaches it on `localhost:80`, and a client able to connect there directly could
+> forge `X-Forwarded-For`. Adding another proxy in front changes the hop count.
+
 ---
 
 ## Step 4: First Deploy (kamal setup)
@@ -351,6 +357,9 @@ The backend health check hits `/health` which verifies the DB connection. Check:
 kamal app logs -c config/deploy.backend.yml
 kamal accessory logs postgres -c config/deploy.backend.yml
 ```
+
+`/health` is rate limited to 120 requests per minute per client. kamal-proxy's check every 10 seconds is
+far below that, so a `429` there means something else is polling it.
 
 ### Images not found in GHCR
 
