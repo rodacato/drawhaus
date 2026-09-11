@@ -7,7 +7,7 @@
 
 **Intent**: Drawhaus exists to replace paid whiteboard subscriptions for individuals and small teams who want full control over their data. The focus is on a polished single-user and small-team experience with collaborative diagramming, not on competing with enterprise tools. Every feature should earn its place by solving a real problem for this audience.
 
-**Currently working on**: Backup All to Google Drive
+**Current work**: tracked in the maintainer's private [GitHub Project](https://github.com/users/rodacato/projects/8), the single source of truth for the backlog.
 
 **Current phase**: Phase 2 — Programmatic Access (see [Execution Strategy](VISION.md#execution-strategy) for the full arc)
 
@@ -50,40 +50,16 @@ Shipped and working in production. See [CHANGELOG.md](../CHANGELOG.md) for full 
 | **MCP Server**      | `@drawhaus/mcp` npm package — 5 tools (CRUD) + validate_elements, 2 resources, 4 prompts with curated spec, stdio transport, health check on startup                                                                                                                                                                        | v0.11 |
 | **Helpers**         | `@drawhaus/helpers` — shared element builders, dagre layout engine, arrow routing, element validator, merge utilities (mergeElements, mergeDelta, diffElements), curated Excalidraw spec for LLMs                                                                                                                           | v0.11 |
 | **DevOps**          | Docker + Kamal deploy (backend + frontend), Docker Hub auth in CI, automated DB backups (7-day retention), health endpoint, `/api/version`, Redis adapter for horizontal scaling, shared Redis client for rate limiting + snapshot dedup, nginx frontend with immutable asset caching, node-pg-migrate versioned migrations | v0.1  |
-| **Testing**         | 5-phase Playwright E2E suite (permissions, CRUD, sharing, auth, visual regression), 83 backend unit tests, 90 helpers tests, marketing screenshot automation                                                                                                                                                                | v0.8  |
+| **Testing**         | Playwright E2E suite (permissions, CRUD, sharing, auth, visual regression; disabled in CI pending fixes), backend unit + integration tests (`node --test`), frontend tests (Vitest + jsdom), helpers tests, marketing screenshot automation                                                                                 | v0.8  |
 | **Architecture**    | Clean Architecture (application/domain/infrastructure), Vite + React Router + Axios, composition root, `validate()` middleware, `withTransaction`, response interceptor                                                                                                                                                     | v0.5  |
-
----
-
-## What's Next
-
-Features prioritized and ready to build. Specs live in [`docs/specs/`](specs/).
-
-| #   | Feature                   | Summary                                                                                          | Priority | Effort | Status      | Spec                                 |
-| --- | ------------------------- | ------------------------------------------------------------------------------------------------ | -------- | ------ | ----------- | ------------------------------------ |
-| 1   | Backup All to Drive       | One-click workspace backup to Google Drive with progress bar                                     | High     | M      | in-progress | [spec](specs/backup-all-to-drive.md) |
-| 2   | Webhooks                  | Notify external systems (Slack, CI) on diagram events. HMAC-SHA256 signed, retry queue           | High     | S      | backlog     | [spec](specs/webhooks.md)            |
-| 3   | Presenter Mode            | Owner can lock editing during presentations; viewers can pan/zoom but not edit                   | Medium   | S      | backlog     | —                                    |
-| 4   | Link previews (OpenGraph) | HTML endpoint serving OG meta tags + 302 redirect to SPA. Uses existing thumbnails as `og:image` | Medium   | S      | backlog     | —                                    |
-| 5   | GitHub Gist export        | Export `.excalidraw` to Gist (public/secret). Per-user PAT, encrypted storage                    | Medium   | S      | backlog     | [spec](specs/github-gist-export.md)  |
 
 ---
 
 ## Backlog
 
-Ideas evaluated but not yet prioritized. When ready to build, write a spec in `specs/` and move to "What's Next".
+Planned work — features, bugs, technical debt and open decisions — lives in the maintainer's private [GitHub Project](https://github.com/users/rodacato/projects/8), the single source of truth for what's next. Each item carries Status, Priority, Area and Kind; features link their spec in [`specs/`](specs/). This file keeps the strategy: intent, principles, what has shipped, what we won't build, and why.
 
-| #   | Feature                  | Summary                                                                   | Intent                                                                                                                                                                         | Effort |
-| --- | ------------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
-| 1   | AI assist                | Text → Excalidraw elements via Claude API with preview/accept flow        | Let users describe a diagram in words and get a starting point they can refine visually                                                                                        | L      |
-| 2   | @mention in comments     | User search + notification system in threaded comments                    | Make comment threads actionable — tag someone to get their attention without switching to Slack                                                                                | M      |
-| 3   | Embed SDK                | JS SDK (`@drawhaus/embed`) — iframe + postMessage for theme, zoom, events | Allow embedding Drawhaus diagrams in docs, wikis, and internal tools with interactivity                                                                                        | M      |
-| 4   | CLI tool                 | `drawhaus create/export/import` from terminal. Requires Public API        | Enable automation and scripting — generate diagrams from CI, import from other tools in batch                                                                                  | M      |
-| 5   | Admin analytics          | Charts (recharts) for user growth, diagram creation, active sessions      | Give admins visibility into adoption and usage patterns on their instance                                                                                                      | M      |
-| 6   | Admin backup & logs      | DB dump download, log viewer                                              | Self-service ops for admins without SSH access to the server                                                                                                                   | S      |
-| 7   | Admin CSV export         | Client-side CSV generation from user table                                | Let admins pull user data for reporting or migration without direct DB access                                                                                                  | S      |
-| 8   | DX polish                | Makefile wrapper, husky + lint-staged                                     | Reduce friction for contributors; catch lint/format issues before they reach CI                                                                                                | S      |
-| 9   | CRDT collaboration (Yjs) | Adopt Yjs for mathematical convergence guarantees at scale                | For when 10+ simultaneous editors need true conflict-free editing. Current merge-by-version is sufficient for small teams ([ADR-022](adr/022-concurrent-editing-over-lock.md)) | L      |
+To propose a feature or report a bug, open an issue; it gets triaged into the project. Security issues follow [SECURITY.md](../SECURITY.md).
 
 ---
 
@@ -107,13 +83,19 @@ Evaluated and decided against. Reasoning preserved for future reference. Never d
 
 ## Specs
 
-Technical specs created for features. Full specs in [`docs/specs/`](specs/).
+Technical specs for features. Full specs in [`docs/specs/`](specs/).
 
-| Spec                                                | Feature             | Status      |
-| --------------------------------------------------- | ------------------- | ----------- |
-| [backup-all-to-drive](specs/backup-all-to-drive.md) | Backup All to Drive | in-progress |
-| [webhooks](specs/webhooks.md)                       | Webhooks            | backlog     |
-| [github-gist-export](specs/github-gist-export.md)   | GitHub Gist Export  | backlog     |
+| Spec                                                  | Feature                              | Status                                                           |
+| ----------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------- |
+| [api-keys](specs/api-keys.md)                         | API key management                   | shipped (v0.11)                                                  |
+| [public-api-v1](specs/public-api-v1.md)               | Public REST API `/v1/`               | shipped (v0.11)                                                  |
+| [openapi-redocly](specs/openapi-redocly.md)           | OpenAPI 3.1 + Redocly docs           | shipped (v0.11)                                                  |
+| [mcp-server](specs/mcp-server.md)                     | MCP server                           | shipped (v0.11)                                                  |
+| [plantuml-import](specs/plantuml-import.md)           | PlantUML import                      | shipped (v0.9)                                                   |
+| [collaboration-revamp](specs/collaboration-revamp.md) | Smart edit lock + Redis shared state | superseded by [ADR-022](adr/022-concurrent-editing-over-lock.md) |
+| [backup-all-to-drive](specs/backup-all-to-drive.md)   | Backup all to Drive                  | backlog                                                          |
+| [webhooks](specs/webhooks.md)                         | Webhooks                             | backlog                                                          |
+| [github-gist-export](specs/github-gist-export.md)     | GitHub Gist export                   | backlog                                                          |
 
 ---
 
@@ -172,4 +154,4 @@ Other decisions not warranting a full ADR:
 
 ---
 
-_Last updated: 2026-03-29_
+_Last updated: 2026-09-11_

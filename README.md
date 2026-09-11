@@ -653,7 +653,7 @@ CI runs automatically on every PR (lint, typecheck, backend tests, build).
 | ---------------------------------------- | --------------------------------------------------------------- |
 | [GETTING_STARTED.md](GETTING_STARTED.md) | Run Drawhaus locally — all paths, social login, troubleshooting |
 | [CHANGELOG.md](CHANGELOG.md)             | Full version history                                            |
-| [docs/ROADMAP.md](docs/ROADMAP.md)       | Feature plan and backlog                                        |
+| [docs/ROADMAP.md](docs/ROADMAP.md)       | Strategy, shipped capabilities, decision log                    |
 | [docs/VISION.md](docs/VISION.md)         | Product vision and architecture principles                      |
 | [docs/WORKFLOW.md](docs/WORKFLOW.md)     | AI-assisted build cycle and conventions                         |
 | [docs/BRANDING.md](docs/BRANDING.md)     | Brand guide, assets, and design tokens                          |

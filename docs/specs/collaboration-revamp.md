@@ -1,5 +1,7 @@
 # Collaboration Revamp: Smart Edit Lock + Redis Shared State
 
+**Status:** superseded by [ADR-022](../adr/022-concurrent-editing-over-lock.md) — concurrent editing replaced the edit lock. Kept for history.
+
 > Mejorar la experiencia de colaboración reemplazando el lock global frustrante por un sistema de ownership inteligente con turnos fluidos, cola de espera, feedback visual claro y cero pérdida de datos. Además, migrar stores in-memory a Redis para soportar multi-instancia correctamente.
 
 ---
