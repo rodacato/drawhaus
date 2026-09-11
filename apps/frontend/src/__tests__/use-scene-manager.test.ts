@@ -18,6 +18,7 @@ import {
   useSceneManager,
   type UseSceneManagerParams,
 } from "../lib/hooks/collaboration/useSceneManager";
+import { SceneSync } from "../lib/scene-sync";
 
 type OnConflict = NonNullable<UseSceneManagerParams["onConflict"]>;
 type OnRemoteDelete = NonNullable<UseSceneManagerParams["onRemoteDelete"]>;
@@ -25,19 +26,23 @@ type OnRemoteDelete = NonNullable<UseSceneManagerParams["onRemoteDelete"]>;
 function renderScene(opts: {
   socket: MockSocket;
   api?: ReturnType<typeof createExcalidrawApiStub> | null;
+  /** What the room already had; defaults to the stub's scene, i.e. no local edits. */
+  shared?: unknown[];
   onConflict?: Mock<OnConflict>;
   onRemoteDelete?: Mock<OnRemoteDelete>;
   pendingSceneRef?: { current: { elements: unknown[] } | null };
 }) {
   const socketRef = makeRef(opts.socket as unknown as Socket | null);
-  const apiRef = makeRef(opts.api === null ? null : (opts.api ?? createExcalidrawApiStub()));
-  const applyingRemoteCounter = makeRef(0);
+  const api = opts.api === null ? null : (opts.api ?? createExcalidrawApiStub());
+  const apiRef = makeRef(api);
+  const sync = new SceneSync();
+  sync.reset(opts.shared ?? api?._state.elements ?? []);
   const activeSceneIdRef = makeRef<string | null>(null);
   const pendingSceneRef = opts.pendingSceneRef ?? makeRef<{ elements: unknown[] } | null>(null);
 
   return {
     apiRef,
-    applyingRemoteCounter,
+    sync,
     activeSceneIdRef,
     pendingSceneRef,
     ...renderHook(() =>
@@ -45,7 +50,7 @@ function renderScene(opts: {
         socketRef,
         socketGeneration: 1,
         excalidrawApiRef: apiRef as never,
-        applyingRemoteCounter,
+        sync,
         activeSceneIdRef,
         pendingSceneRef,
         onConflict: opts.onConflict,
@@ -53,6 +58,17 @@ function renderScene(opts: {
       }),
     ),
   };
+}
+
+function receiveDelta(socket: MockSocket, changed: unknown[], removedIds: string[] = []) {
+  act(() => {
+    triggerSocketEvent(socket, "scene-delta-received", {
+      fromSocketId: "other",
+      fromUserId: "user-other",
+      changed,
+      removedIds,
+    });
+  });
 }
 
 describe("useSceneManager", () => {
@@ -100,6 +116,37 @@ describe("useSceneManager", () => {
     expect(pendingSceneRef.current!.elements).toHaveLength(1);
   });
 
+  test("the server's scene becomes the baseline, so it is never sent back as an edit", async () => {
+    const api = createExcalidrawApiStub();
+    const { sync } = renderScene({ socket, api });
+
+    act(() => {
+      triggerSocketEvent(socket, "scene-from-db", { elements: [{ id: "e1", version: 3 }] });
+    });
+
+    await waitFor(() => expect(api.updateScene).toHaveBeenCalled());
+    expect(sync.hasChanges(api.getSceneElementsIncludingDeleted())).toBe(false);
+  });
+
+  test("after a reconnect, edits the server has not seen stay on the canvas and pending", async () => {
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 3 }] });
+    const { sync } = renderScene({ socket, api, shared: [{ id: "a", version: 1 }] });
+
+    act(() => {
+      triggerSocketEvent(socket, "scene-from-db", {
+        elements: [
+          { id: "a", version: 1 },
+          { id: "b", version: 1 },
+        ],
+      });
+    });
+
+    await waitFor(() => expect(api.updateScene).toHaveBeenCalled());
+    const scene = api.getSceneElementsIncludingDeleted() as { id: string; version: number }[];
+    expect(scene.map((e) => `${e.id}@${e.version}`)).toEqual(["a@3", "b@1"]);
+    expect(sync.editedIds(scene)).toEqual(new Set(["a"]));
+  });
+
   test("scene-updated ignores events that originate from the current socket", () => {
     const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });
     const { apiRef } = renderScene({ socket, api });
@@ -112,9 +159,9 @@ describe("useSceneManager", () => {
     expect(apiRef.current!.updateScene).not.toHaveBeenCalled();
   });
 
-  test("scene-updated from a different socket merges remote into local", () => {
+  test("scene-updated from a different socket merges, and the copies it took count as shared", () => {
     const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1, text: "local" }] });
-    const { apiRef, applyingRemoteCounter } = renderScene({ socket, api });
+    const { sync } = renderScene({ socket, api });
 
     act(() => {
       triggerSocketEvent(socket, "scene-updated", {
@@ -123,32 +170,52 @@ describe("useSceneManager", () => {
       });
     });
 
-    expect(apiRef.current!.updateScene).toHaveBeenCalled();
-    expect(applyingRemoteCounter.current).toBeGreaterThanOrEqual(0);
+    expect(api.getSceneElements()).toEqual([{ id: "a", version: 2, text: "remote" }]);
+    expect(sync.hasChanges(api.getSceneElementsIncludingDeleted())).toBe(false);
   });
 
-  test("scene-delta-received fires onConflict when remote version overwrites local edit", () => {
+  test("a conflict is reported only for an element with local edits not yet saved", () => {
     const onConflict = vi.fn<OnConflict>();
-    const onRemoteDelete = vi.fn<OnRemoteDelete>();
-    // Conflict requires: remote.version > local.version > 0
-    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });
-    renderScene({ socket, api, onConflict, onRemoteDelete });
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 2 }] });
+    renderScene({ socket, api, shared: [{ id: "a", version: 1 }], onConflict });
 
-    act(() => {
-      triggerSocketEvent(socket, "scene-delta-received", {
-        fromSocketId: "other",
-        fromUserId: "user-other",
-        changed: [{ id: "a", version: 5 }],
-        removedIds: [],
-      });
-    });
+    receiveDelta(socket, [{ id: "a", version: 5 }]);
 
-    expect(onConflict).toHaveBeenCalled();
-    expect(onConflict.mock.calls[0][0]).toContain("a");
-    expect(onConflict.mock.calls[0][1]).toBe("user-other");
+    expect(onConflict).toHaveBeenCalledWith(["a"], "user-other");
   });
 
-  test("scene-delta-received fires onRemoteDelete with deleted IDs", () => {
+  test("a teammate's change to an element nobody here touched is no conflict", () => {
+    const onConflict = vi.fn<OnConflict>();
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });
+    const { sync } = renderScene({ socket, api, onConflict });
+
+    receiveDelta(socket, [{ id: "a", version: 5 }]);
+
+    expect(api.getSceneElements()).toEqual([{ id: "a", version: 5 }]);
+    expect(onConflict).not.toHaveBeenCalled();
+    expect(sync.hasChanges(api.getSceneElementsIncludingDeleted())).toBe(false);
+  });
+
+  test("a remote delete is reported when it removes an element being edited here", () => {
+    const onRemoteDelete = vi.fn<OnRemoteDelete>();
+    const api = createExcalidrawApiStub({
+      elements: [
+        { id: "a", version: 1 },
+        { id: "b", version: 2 },
+      ],
+    });
+    const shared = [
+      { id: "a", version: 1 },
+      { id: "b", version: 1 },
+    ];
+    renderScene({ socket, api, shared, onRemoteDelete });
+
+    receiveDelta(socket, [], ["b"]);
+
+    expect(onRemoteDelete).toHaveBeenCalledWith(["b"], "user-other");
+  });
+
+  test("a remote delete of an untouched element is applied without a toast", () => {
     const onRemoteDelete = vi.fn<OnRemoteDelete>();
     const api = createExcalidrawApiStub({
       elements: [
@@ -158,17 +225,10 @@ describe("useSceneManager", () => {
     });
     renderScene({ socket, api, onRemoteDelete });
 
-    act(() => {
-      triggerSocketEvent(socket, "scene-delta-received", {
-        fromSocketId: "other",
-        fromUserId: "user-other",
-        changed: [],
-        removedIds: ["b"],
-      });
-    });
+    receiveDelta(socket, [], ["b"]);
 
-    expect(onRemoteDelete).toHaveBeenCalled();
-    expect(onRemoteDelete.mock.calls[0][0]).toContain("b");
+    expect(api.getSceneElements()).toEqual([{ id: "a", version: 1 }]);
+    expect(onRemoteDelete).not.toHaveBeenCalled();
   });
 
   test("scene-delta-received ignores delta from self", () => {
@@ -215,13 +275,8 @@ describe("useSceneManager", () => {
         fromSocketId: "other",
         elements: [{ id: "b", version: 1 }],
       });
-      triggerSocketEvent(socket, "scene-delta-received", {
-        fromSocketId: "other",
-        fromUserId: "user-other",
-        changed: [{ id: "c", version: 1 }],
-        removedIds: [],
-      });
     });
+    receiveDelta(socket, [{ id: "c", version: 1 }]);
 
     const captures = api.updateScene.mock.calls.map(([scene]) => scene.captureUpdate);
     expect(captures).toEqual(["NEVER", "NEVER", "NEVER"]);
@@ -236,13 +291,8 @@ describe("useSceneManager", () => {
     });
     renderScene({ socket, api });
 
+    receiveDelta(socket, [{ id: "gone", version: 2 }]);
     act(() => {
-      triggerSocketEvent(socket, "scene-delta-received", {
-        fromSocketId: "other",
-        fromUserId: "user-other",
-        changed: [{ id: "gone", version: 2 }],
-        removedIds: [],
-      });
       triggerSocketEvent(socket, "scene-updated", {
         fromSocketId: "other",
         elements: [
@@ -261,14 +311,7 @@ describe("useSceneManager", () => {
     });
     renderScene({ socket, api });
 
-    act(() => {
-      triggerSocketEvent(socket, "scene-delta-received", {
-        fromSocketId: "other",
-        fromUserId: "user-other",
-        changed: [{ id: "gone", version: 4 }],
-        removedIds: [],
-      });
-    });
+    receiveDelta(socket, [{ id: "gone", version: 4 }]);
 
     expect(api.getSceneElements()).toEqual([{ id: "gone", version: 4 }]);
   });

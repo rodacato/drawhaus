@@ -116,23 +116,27 @@ describe("Board — navigating between boards", () => {
     const socketB = sockets.at(-1)!;
     act(() => {
       triggerSocketEvent(socketB, "connect");
+      triggerSocketEvent(socketB, "scene-from-db", { elements: [{ id: "el-B", version: 1 }] });
       triggerSocketEvent(socketB, "room-joined", { roomId: "B", role: "owner", userId: "u-1" });
     });
-    act(() => {
-      canvas.onChange?.([{ id: "el-B", version: 2 }], {
-        scrollX: 0,
-        scrollY: 0,
-        zoom: { value: 1 },
+    // The server's scene becomes the baseline only once it is normalised, asynchronously.
+    await waitFor(() => {
+      act(() => {
+        canvas.onChange?.([{ id: "el-B", version: 2 }], {
+          scrollX: 0,
+          scrollY: 0,
+          zoom: { value: 1 },
+        });
       });
+      expect(socketB.emit).toHaveBeenCalledWith(
+        "scene-delta",
+        expect.objectContaining({ roomId: "B", sceneId: null }),
+      );
     });
 
     expect(socketB.emit.mock.calls.filter(([event]) => event === "join-room")).toEqual([
       ["join-room", { roomId: "B" }],
     ]);
-    expect(socketB.emit).toHaveBeenCalledWith(
-      "scene-delta",
-      expect.objectContaining({ roomId: "B", sceneId: null }),
-    );
     const leaked = socketB.emit.mock.calls.filter(
       ([, payload]) => payload?.roomId === "A" || payload?.sceneId === "scene-A",
     );

@@ -10,7 +10,6 @@ export interface UsePresenceParams {
   socketGeneration: number;
   diagramId: string;
   excalidrawApiRef: React.MutableRefObject<ExcalidrawApi | null>;
-  applyingRemoteCounter: React.MutableRefObject<number>;
   followingUserIdRef: React.MutableRefObject<string | null>;
   followedViewportRef: React.MutableRefObject<{
     scrollX: number;
@@ -37,7 +36,6 @@ export function usePresence({
   socketGeneration,
   diagramId,
   excalidrawApiRef,
-  applyingRemoteCounter,
   followingUserIdRef,
   followedViewportRef,
   selfUserId,
@@ -136,7 +134,6 @@ export function usePresence({
       cursorsDirty.current = true;
     };
 
-    /* ─── Mejora 5: use setTimeout(0) instead of rAF for applyingRemoteCounter ─── */
     const handleViewport = ({
       userId,
       scrollX,
@@ -151,12 +148,7 @@ export function usePresence({
       if (followingUserIdRef.current !== userId) return;
       followedViewportRef.current = { scrollX, scrollY, zoom };
       const api = excalidrawApiRef.current;
-      if (!api) return;
-      applyingRemoteCounter.current += 1;
-      applyRemoteScene(api, { appState: { scrollX, scrollY, zoom: { value: zoom } } });
-      setTimeout(() => {
-        applyingRemoteCounter.current -= 1;
-      }, 0);
+      if (api) applyRemoteScene(api, { appState: { scrollX, scrollY, zoom: { value: zoom } } });
     };
 
     /* ─── Mejora 2: respond to viewport requests from followers ─── */

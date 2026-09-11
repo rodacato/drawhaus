@@ -24,7 +24,7 @@ function watchForText(page: Page, text: RegExp, timeout: number) {
 test.describe("Real-time collaboration", () => {
   test.describe.configure({ timeout: 90_000 });
 
-  test.fixme("a teammate sees a new rectangle without an echo or a conflict (bug: a drag's final version is never broadcast and the teammate re-saves what it received)", async ({
+  test("a teammate sees a new rectangle without an echo or a conflict", async ({
     createUser,
     openAs,
   }) => {
@@ -55,10 +55,7 @@ test.describe("Real-time collaboration", () => {
     expect(ownerTraffic.receivedCount("scene-updated")).toBe(0);
   });
 
-  test.fixme("a delete wins over a teammate's concurrent drag (bug: the teammate who was dragging keeps the deleted element)", async ({
-    createUser,
-    openAs,
-  }) => {
+  test("a delete wins over a teammate's concurrent drag", async ({ createUser, openAs }) => {
     const { owner, diagram, ownerBoard, teammateBoard } = await sharedBoard(
       { createUser, openAs },
       { title: "Contested", elements: [rectangle("contested", 500, 250, 160, 100)] },

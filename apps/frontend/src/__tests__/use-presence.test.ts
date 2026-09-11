@@ -46,7 +46,6 @@ function renderPresence(opts: RenderOpts) {
   const socketRef = makeRef(opts.socket as unknown as Socket | null);
   const api = opts.api ?? createExcalidrawApiStub();
   const excalidrawApiRef = makeRef(api);
-  const applyingRemoteCounter = makeRef(0);
   const followingUserIdRef = makeRef<string | null>(null);
   const followedViewportRef = makeRef<{ scrollX: number; scrollY: number; zoom: number } | null>(
     null,
@@ -54,7 +53,6 @@ function renderPresence(opts: RenderOpts) {
 
   return {
     api,
-    applyingRemoteCounter,
     followingUserIdRef,
     followedViewportRef,
     ...renderHook(() =>
@@ -63,7 +61,6 @@ function renderPresence(opts: RenderOpts) {
         socketGeneration: 1,
         diagramId: opts.diagramId ?? "diag-1",
         excalidrawApiRef: excalidrawApiRef as never,
-        applyingRemoteCounter,
         followingUserIdRef,
         followedViewportRef,
         selfUserId: opts.selfUserId ?? "self-user",
@@ -218,7 +215,7 @@ describe("usePresence", () => {
   });
 
   test("viewport-updated only applies when matching the followed user", () => {
-    const { result, applyingRemoteCounter, api } = renderPresence({ socket });
+    const { result, api } = renderPresence({ socket });
     act(() => {
       triggerSocketEvent(socket, "room-presence", { users: [{ userId: "u-target", name: "T" }] });
     });
@@ -248,10 +245,6 @@ describe("usePresence", () => {
         captureUpdate: "NEVER",
       }),
     );
-    act(() => {
-      vi.advanceTimersByTime(1);
-    });
-    expect(applyingRemoteCounter.current).toBe(0);
   });
 
   test("provide-viewport responds with current viewport-update", () => {
