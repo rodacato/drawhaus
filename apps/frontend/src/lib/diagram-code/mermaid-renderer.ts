@@ -1,16 +1,18 @@
-import mermaid from "mermaid";
+type Mermaid = (typeof import("mermaid"))["default"];
 
-let initialized = false;
+let mermaidReady: Promise<Mermaid> | null = null;
 
-function ensureInit() {
-  if (initialized) return;
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: "default",
-    securityLevel: "strict",
-    fontFamily: "sans-serif",
+function loadMermaid(): Promise<Mermaid> {
+  mermaidReady ??= import("mermaid").then(({ default: mermaid }) => {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "default",
+      securityLevel: "strict",
+      fontFamily: "sans-serif",
+    });
+    return mermaid;
   });
-  initialized = true;
+  return mermaidReady;
 }
 
 let renderCounter = 0;
@@ -20,7 +22,7 @@ let renderCounter = 0;
  * Returns the SVG markup or throws on parse/render errors.
  */
 export async function renderMermaid(code: string): Promise<string> {
-  ensureInit();
+  const mermaid = await loadMermaid();
   const id = `mermaid-preview-${++renderCounter}`;
   const { svg } = await mermaid.render(id, code);
   return svg;

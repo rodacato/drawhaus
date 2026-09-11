@@ -2,28 +2,33 @@ import { describe, test, vi } from "vitest";
 import assert from "node:assert/strict";
 
 const { state, initCalls, renderCalls } = vi.hoisted(() => ({
-  state: { mode: "ok" as "ok" | "throw" },
+  state: { mode: "ok" as "ok" | "throw", loaded: false },
   initCalls: [] as Array<Record<string, unknown>>,
   renderCalls: [] as Array<{ id: string; code: string }>,
 }));
 
-vi.mock("mermaid", () => ({
-  default: {
-    initialize: (cfg: Record<string, unknown>) => {
-      initCalls.push(cfg);
+vi.mock("mermaid", () => {
+  state.loaded = true;
+  return {
+    default: {
+      initialize: (cfg: Record<string, unknown>) => {
+        initCalls.push(cfg);
+      },
+      render: async (id: string, code: string) => {
+        renderCalls.push({ id, code });
+        if (state.mode === "throw") throw new Error("parse error");
+        return { svg: `<svg data-id="${id}"/>` };
+      },
     },
-    render: async (id: string, code: string) => {
-      renderCalls.push({ id, code });
-      if (state.mode === "throw") throw new Error("parse error");
-      return { svg: `<svg data-id="${id}"/>` };
-    },
-  },
-}));
+  };
+});
 
 import { renderMermaid } from "../lib/diagram-code/mermaid-renderer";
 
 describe("diagram-code/mermaid-renderer renderMermaid", () => {
-  test("initializes mermaid once, renders successive svgs, and propagates render errors", async () => {
+  test("loads and initializes mermaid once on first render, renders successive svgs, and propagates render errors", async () => {
+    assert.equal(state.loaded, false, "importing the renderer must not load mermaid");
+
     const svgA = await renderMermaid("graph TD\nA-->B");
     const svgB = await renderMermaid("flowchart LR\nC-->D");
 

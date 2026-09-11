@@ -9,9 +9,6 @@ const { crash, captureException } = vi.hoisted(() => ({
 }));
 
 vi.mock("@sentry/react", () => ({ captureException }));
-// The router imports the canvas pages eagerly, and Excalidraw cannot load under jsdom.
-vi.mock("@/components/ExcalidrawCanvas", () => ({ ExcalidrawCanvas: () => null }));
-vi.mock("@excalidraw/excalidraw", () => ({ convertToExcalidrawElements: vi.fn() }));
 vi.mock("@/pages/Terms", () => ({
   Terms: () => {
     if (crash.on) throw new Error("terms exploded");

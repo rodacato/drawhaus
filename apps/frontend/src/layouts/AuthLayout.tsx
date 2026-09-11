@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/api/auth";
+import { PageLoading } from "@/components/PageLoading";
 
 export function AuthLayout() {
   const { user, loading } = useAuth();
@@ -21,11 +22,7 @@ export function AuthLayout() {
   }, [loading, user]);
 
   if (loading || (!user && needsSetup === null)) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-surface">
-        <div className="text-sm text-text-muted">Loading...</div>
-      </div>
-    );
+    return <PageLoading />;
   }
 
   if (user) return <Navigate to="/dashboard" replace />;
