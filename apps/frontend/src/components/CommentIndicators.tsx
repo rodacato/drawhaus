@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { ExcalidrawApi, ExcalidrawElement } from "@/lib/types";
+import type { ExcalidrawApi } from "@/lib/types";
 
 type CommentIndicatorsProps = {
   readonly elementsWithComments: Map<string, number>;
@@ -26,18 +26,14 @@ export function CommentIndicators({
       const api = excalidrawApiRef.current;
       if (!api) return;
 
-      const elements = api.getSceneElements() as ExcalidrawElement[];
-      const appState = api.getAppState();
-      const scrollX = (appState.scrollX as number) ?? 0;
-      const scrollY = (appState.scrollY as number) ?? 0;
-      const zoom = (appState.zoom as { value: number })?.value ?? 1;
+      const { scrollX, scrollY, zoom } = api.getAppState();
 
       const positions: IndicatorPos[] = [];
-      for (const el of elements) {
+      for (const el of api.getSceneElements()) {
         const count = elementsWithComments.get(el.id);
         if (!count) continue;
-        const x = ((el.x as number) + (el.width as number) + scrollX) * zoom;
-        const y = ((el.y as number) + scrollY) * zoom;
+        const x = (el.x + el.width + scrollX) * zoom.value;
+        const y = (el.y + scrollY) * zoom.value;
         positions.push({ elementId: el.id, x, y, count });
       }
       setIndicators(positions);

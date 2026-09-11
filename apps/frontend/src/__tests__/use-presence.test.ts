@@ -242,7 +242,12 @@ describe("usePresence", () => {
         zoom: 2,
       });
     });
-    expect(api.updateScene).toHaveBeenCalled();
+    expect(api.updateScene).toHaveBeenCalledWith(
+      expect.objectContaining({
+        appState: { scrollX: 100, scrollY: 200, zoom: { value: 2 } },
+        captureUpdate: "NEVER",
+      }),
+    );
     act(() => {
       vi.advanceTimersByTime(1);
     });

@@ -117,10 +117,7 @@ test.describe("Real-time collaboration", () => {
     await expect.poll(() => liveElementIds(owner.api, diagram.id)).toEqual(["before-rect"]);
   });
 
-  test.fixme("undo does not revert a teammate's change (bug: remote updates join the local undo stack)", async ({
-    createUser,
-    openAs,
-  }) => {
+  test("undo does not revert a teammate's change", async ({ createUser, openAs }) => {
     const { owner, diagram, ownerBoard, teammateBoard } = await sharedBoard(
       { createUser, openAs },
       { title: "Undo" },

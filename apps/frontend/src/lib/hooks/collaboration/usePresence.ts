@@ -3,6 +3,7 @@ import type { Socket } from "socket.io-client";
 import { CURSOR_THROTTLE_MS } from "@/lib/collaboration";
 import { isCursorStale } from "@/lib/save-state";
 import type { PresenceUser, CursorInfo, ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
+import { applyRemoteScene } from "@/lib/excalidraw";
 
 export interface UsePresenceParams {
   socketRef: React.MutableRefObject<Socket | null>;
@@ -149,10 +150,10 @@ export function usePresence({
     }) => {
       if (followingUserIdRef.current !== userId) return;
       followedViewportRef.current = { scrollX, scrollY, zoom };
+      const api = excalidrawApiRef.current;
+      if (!api) return;
       applyingRemoteCounter.current += 1;
-      excalidrawApiRef.current?.updateScene({
-        appState: { scrollX, scrollY, zoom: { value: zoom } },
-      });
+      applyRemoteScene(api, { appState: { scrollX, scrollY, zoom: { value: zoom } } });
       setTimeout(() => {
         applyingRemoteCounter.current -= 1;
       }, 0);

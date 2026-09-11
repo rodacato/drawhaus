@@ -201,4 +201,29 @@ describe("useSceneManager", () => {
     const { result } = renderScene({ socket });
     expect(result.current.activeSceneId).toBeNull();
   });
+
+  test("scenes from the server and from teammates stay out of the local undo stack", async () => {
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });
+    renderScene({ socket, api });
+
+    act(() => {
+      triggerSocketEvent(socket, "scene-from-db", { elements: [{ id: "a", version: 1 }] });
+    });
+    await waitFor(() => expect(api.updateScene).toHaveBeenCalledTimes(1));
+    act(() => {
+      triggerSocketEvent(socket, "scene-updated", {
+        fromSocketId: "other",
+        elements: [{ id: "b", version: 1 }],
+      });
+      triggerSocketEvent(socket, "scene-delta-received", {
+        fromSocketId: "other",
+        fromUserId: "user-other",
+        changed: [{ id: "c", version: 1 }],
+        removedIds: [],
+      });
+    });
+
+    const captures = api.updateScene.mock.calls.map(([scene]) => scene.captureUpdate);
+    expect(captures).toEqual(["NEVER", "NEVER", "NEVER"]);
+  });
 });

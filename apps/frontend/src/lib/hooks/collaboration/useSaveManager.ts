@@ -8,6 +8,7 @@ import {
   SAVE_DEBOUNCE_MS,
 } from "@/lib/collaboration";
 import type { SaveState, ExcalidrawApi } from "@/lib/types";
+import { applyRemoteScene } from "@/lib/excalidraw";
 import { deriveSaveLabel, deriveSaveColor } from "@/lib/save-state";
 import { diagramsApi } from "@/api/diagrams";
 
@@ -161,30 +162,31 @@ export function useSaveManager({
     };
   }, [socketGeneration]);
 
+  /* ─── while following, hold the viewport on the followed user's ─── */
+  const snapToFollowedViewport = useCallback((appState: Record<string, unknown>) => {
+    const fv = followedViewportRef.current;
+    const api = excalidrawApiRef.current;
+    if (!fv || !api) return;
+    const zoom = (appState.zoom as { value: number })?.value ?? 1;
+    if (appState.scrollX === fv.scrollX && appState.scrollY === fv.scrollY && zoom === fv.zoom) {
+      return;
+    }
+    applyingRemoteCounter.current += 1;
+    applyRemoteScene(api, {
+      appState: { scrollX: fv.scrollX, scrollY: fv.scrollY, zoom: { value: fv.zoom } },
+    });
+    setTimeout(() => {
+      applyingRemoteCounter.current -= 1;
+    }, 0);
+  }, []);
+
   /* ─── onChange handler ─── */
   const onChange = useCallback(
     (elements: readonly unknown[], appState: Record<string, unknown>) => {
       if (applyingRemoteCounter.current > 0) return;
       const now = Date.now();
       if (followingUserIdRef.current) {
-        // Lock viewport while following — restore to followed user's viewport
-        const fv = followedViewportRef.current;
-        if (fv) {
-          const currentZoom = (appState.zoom as { value: number })?.value ?? 1;
-          if (
-            appState.scrollX !== fv.scrollX ||
-            appState.scrollY !== fv.scrollY ||
-            currentZoom !== fv.zoom
-          ) {
-            applyingRemoteCounter.current += 1;
-            excalidrawApiRef.current?.updateScene({
-              appState: { scrollX: fv.scrollX, scrollY: fv.scrollY, zoom: { value: fv.zoom } },
-            });
-            setTimeout(() => {
-              applyingRemoteCounter.current -= 1;
-            }, 0);
-          }
-        }
+        snapToFollowedViewport(appState);
         return; // Skip editing while following
       }
       if (now - lastViewportEmitTime.current >= VIEWPORT_THROTTLE_MS) {
