@@ -14,9 +14,7 @@ test.describe("Reset Password", () => {
     expect(res.ok()).toBeFalsy();
   });
 
-  test.fixme("the reset page tells the visitor the link is invalid (bug: 401 interceptor sends signed-out visitors to /login)", async ({
-    openAs,
-  }) => {
+  test("the reset page tells the visitor the link is invalid", async ({ openAs }) => {
     const page = await openAs(SIGNED_OUT);
     await page.goto("/reset-password/expired-fake-token");
 

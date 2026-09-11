@@ -56,9 +56,11 @@ fixed yet. Remove the `fixme` in the change that fixes the bug. List them with
 
 `visual.spec.ts` compares pages with the baselines in `visual.spec.ts-snapshots/` at a 5% pixel
 tolerance, which catches layout breaks rather than content changes. Update baselines only for an
-intentional UI change: `npm run test:update-snapshots`. The forgot-password baseline currently
-shows the login page it is redirected to, so that test is a `fixme` until the redirect is fixed
-and the baseline regenerated.
+intentional UI change, and scope the update to the tests you changed:
+`npx playwright test visual.spec.ts -g "<test title>" --update-snapshots=all`. The bare flag means
+`changed`, which keeps any baseline still within tolerance. Open the new PNG before committing it:
+a baseline records whatever page loaded, redirects included. At 5% the login page passes as the
+forgot-password page, so that test asserts its heading before the screenshot.
 
 ## Layout
 

@@ -86,14 +86,14 @@ test.describe("Visual Regression", () => {
     expect(screenshot).toMatchSnapshot("register.png", { maxDiffPixelRatio: 0.05 });
   });
 
-  // The committed forgot-password baseline is a screenshot of the login page this bug redirects to.
-  test.fixme("forgot password page (bug: 401 interceptor sends signed-out visitors to /login)", async ({
-    openAs,
-  }) => {
+  test("forgot password page", async ({ openAs }) => {
     const page = await openAs(SIGNED_OUT);
     await page.goto("/forgot-password");
     await page.waitForLoadState("networkidle");
-    await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 10_000 });
+    // At 5% tolerance the login page matches this baseline, so pin the page before comparing.
+    await expect(page.getByRole("heading", { name: "Reset your password" })).toBeVisible({
+      timeout: 10_000,
+    });
     await stabilizePage(page);
 
     const screenshot = await page.screenshot({ timeout: 60_000 });
