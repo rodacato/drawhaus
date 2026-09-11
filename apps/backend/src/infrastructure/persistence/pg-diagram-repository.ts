@@ -125,22 +125,17 @@ export class PgDiagramRepository implements DiagramRepository {
 
     // Legacy: user-scoped query (personal diagrams or all)
     if (folderId !== undefined) {
-      const sql =
-        folderId === null
-          ? `SELECT DISTINCT ON (d.id) ${D_COLS}
-           FROM diagrams d
-           LEFT JOIN diagram_members dm ON dm.diagram_id = d.id
-           LEFT JOIN workspace_members wm ON wm.workspace_id = d.workspace_id AND wm.user_id = $1
-           WHERE (d.owner_id = $1 OR dm.user_id = $1 OR wm.user_id IS NOT NULL) AND d.folder_id IS NULL
-           ORDER BY d.id, d.updated_at DESC`
-          : `SELECT DISTINCT ON (d.id) ${D_COLS}
-           FROM diagrams d
-           LEFT JOIN diagram_members dm ON dm.diagram_id = d.id
-           LEFT JOIN workspace_members wm ON wm.workspace_id = d.workspace_id AND wm.user_id = $1
-           WHERE (d.owner_id = $1 OR dm.user_id = $1 OR wm.user_id IS NOT NULL) AND d.folder_id = $2
-           ORDER BY d.id, d.updated_at DESC`;
+      const folderCondition = folderId === null ? "d.folder_id IS NULL" : "d.folder_id = $2";
       const params = folderId === null ? [userId] : [userId, folderId];
-      const { rows } = await pool.query<DiagramRow>(sql, params);
+      const { rows } = await pool.query<DiagramRow>(
+        `SELECT DISTINCT ${D_COLS}
+         FROM diagrams d
+         LEFT JOIN diagram_members dm ON dm.diagram_id = d.id AND dm.user_id = $1
+         LEFT JOIN workspace_members wm ON wm.workspace_id = d.workspace_id AND wm.user_id = $1
+         WHERE (d.owner_id = $1 OR dm.user_id IS NOT NULL OR wm.user_id IS NOT NULL) AND ${folderCondition}
+         ORDER BY d.updated_at DESC`,
+        params,
+      );
       return rows.map(toDomain);
     }
 

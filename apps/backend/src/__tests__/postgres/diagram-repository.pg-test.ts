@@ -3,15 +3,18 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { Client } from "pg";
 import { config } from "../../infrastructure/config";
+import { pool } from "../../infrastructure/db";
 import { PgDiagramRepository } from "../../infrastructure/persistence/pg-diagram-repository";
+import { PgFolderRepository } from "../../infrastructure/persistence/pg-folder-repository";
 import { PgSceneRepository } from "../../infrastructure/persistence/pg-scene-repository";
-import { countRows, createUser, waitForLockWaiter } from "./fixtures";
+import { addDiagramMember, countRows, createUser, waitForLockWaiter } from "./fixtures";
 import { useTestDatabase } from "./test-database";
 
 useTestDatabase();
 
 const diagrams = new PgDiagramRepository();
 const scenes = new PgSceneRepository();
+const folders = new PgFolderRepository();
 
 const element = (id: string) => ({ id, version: 1 });
 
@@ -116,4 +119,34 @@ describe("PgDiagramRepository.update (ADR-025)", () => {
     assert.equal(await diagrams.update(crypto.randomUUID(), { elements: [element("x")] }), null);
     assert.equal(await countRows("scenes"), 0);
   });
+});
+
+describe("PgDiagramRepository.findByUser outside a workspace", () => {
+  for (const inFolder of [true, false]) {
+    it(`lists ${inFolder ? "a folder" : "the root"} most recently updated first, each diagram once`, async () => {
+      const owner = await createUser();
+      const folderId = inFolder ? (await folders.create({ ownerId: owner, name: "F" })).id : null;
+      const newestFirst: string[] = [];
+      for (const title of ["a", "b", "c"]) {
+        newestFirst.push((await diagrams.create({ title, ownerId: owner, folderId })).id);
+      }
+      // Newest gets the highest id, so a listing ordered by id cannot pass by chance.
+      newestFirst.sort((x, y) => (x < y ? 1 : -1));
+      for (const [daysAgo, id] of newestFirst.entries()) {
+        await pool.query(
+          "UPDATE diagrams SET updated_at = now() - make_interval(days => $2) WHERE id = $1",
+          [id, daysAgo],
+        );
+      }
+      await addDiagramMember(newestFirst[0], await createUser(), "viewer");
+      await addDiagramMember(newestFirst[0], await createUser(), "editor");
+
+      const listed = await diagrams.findByUser(owner, folderId);
+
+      assert.deepEqual(
+        listed.map((d) => d.id),
+        newestFirst,
+      );
+    });
+  }
 });
