@@ -12,11 +12,13 @@ export interface SceneRepository {
   }): Promise<Scene>;
   rename(id: string, name: string): Promise<Scene | null>;
   updateScene(id: string, elements: unknown[], appState: Record<string, unknown>): Promise<void>;
+  /** Returns false, persisting nothing, when no scene with `id` belongs to `diagramId`. */
   updateSceneMerged(
     id: string,
+    diagramId: string,
     incomingElements: unknown[],
     appState: Record<string, unknown>,
-  ): Promise<void>;
+  ): Promise<boolean>;
   reorder(id: string, sortOrder: number): Promise<void>;
   delete(id: string): Promise<void>;
 }

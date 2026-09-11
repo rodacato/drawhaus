@@ -88,23 +88,28 @@ export class PgSceneRepository implements SceneRepository {
 
   async updateSceneMerged(
     id: string,
+    diagramId: string,
     incomingElements: unknown[],
     appState: Record<string, unknown>,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      const { rows } = await client.query<{ elements: unknown[] }>(
-        "SELECT elements FROM scenes WHERE id = $1 FOR UPDATE",
-        [id],
+      const { rows } = await client.query<{ elements: unknown[] | null }>(
+        "SELECT elements FROM scenes WHERE id = $1 AND diagram_id = $2 FOR UPDATE",
+        [id, diagramId],
       );
-      const dbElements = rows[0]?.elements ?? [];
-      const merged = mergeElements(dbElements, incomingElements);
+      if (!rows[0]) {
+        await client.query("ROLLBACK");
+        return false;
+      }
+      const merged = mergeElements(rows[0].elements ?? [], incomingElements);
       await client.query(
-        "UPDATE scenes SET elements = $1, app_state = $2, updated_at = now() WHERE id = $3",
-        [JSON.stringify(merged), JSON.stringify(appState), id],
+        "UPDATE scenes SET elements = $1, app_state = $2, updated_at = now() WHERE id = $3 AND diagram_id = $4",
+        [JSON.stringify(merged), JSON.stringify(appState), id, diagramId],
       );
       await client.query("COMMIT");
+      return true;
     } catch (err) {
       await client.query("ROLLBACK");
       throw err;

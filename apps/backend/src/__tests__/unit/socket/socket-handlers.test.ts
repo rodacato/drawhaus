@@ -74,7 +74,7 @@ function setup() {
   registerLockHandlers(server, client);
   registerCursorHandlers(client, server);
   registerCommentHandlers(server, client, {
-    createComment: new CreateCommentUseCase(comments, diagrams),
+    createComment: new CreateCommentUseCase(comments, diagrams, scenes),
     replyComment: new ReplyCommentUseCase(comments, diagrams),
     resolveComment: new ResolveCommentUseCase(comments, diagrams),
     deleteComment: new DeleteCommentUseCase(comments, diagrams),
@@ -214,6 +214,33 @@ describe("socket handlers — valid payloads keep their behavior", () => {
     );
     assert.deepEqual(eventsNamed(h.socket.emitted, "scene-saved"), [
       { event: "scene-saved", payload: { roomId: diagram.id, sceneId: scene.id } },
+    ]);
+  });
+});
+
+describe("socket handlers — scene binding", () => {
+  it("save-scene with another diagram's sceneId persists nothing", async () => {
+    const h = setup();
+    const { diagram } = await joinAsOwner(h);
+    const victim = await h.scenes.create({
+      diagramId: "victim-diagram",
+      name: "Scene 1",
+      sortOrder: 0,
+      elements: [{ id: "keep", version: 1 }],
+    });
+
+    await h.socket.receive("save-scene", {
+      roomId: diagram.id,
+      sceneId: victim.id,
+      elements: [{ id: "evil", version: 1 }],
+      appState: {},
+    });
+
+    const untouched = await h.scenes.findById(victim.id);
+    assert.deepEqual(untouched!.elements, [{ id: "keep", version: 1 }]);
+    assert.equal(eventsNamed(h.socket.emitted, "scene-saved").length, 0);
+    assert.deepEqual(eventsNamed(h.socket.emitted, "room-error"), [
+      { event: "room-error", payload: { message: "Save failed" } },
     ]);
   });
 });

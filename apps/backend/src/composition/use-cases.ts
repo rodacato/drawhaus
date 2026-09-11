@@ -280,7 +280,11 @@ export function createUseCases(repos: Repositories, services: Services) {
 
   // Comments
   const listComments = new ListCommentsUseCase(repos.commentRepo, repos.diagramRepo);
-  const createComment = new CreateCommentUseCase(repos.commentRepo, repos.diagramRepo);
+  const createComment = new CreateCommentUseCase(
+    repos.commentRepo,
+    repos.diagramRepo,
+    repos.sceneRepo,
+  );
   const replyComment = new ReplyCommentUseCase(repos.commentRepo, repos.diagramRepo);
   const resolveComment = new ResolveCommentUseCase(repos.commentRepo, repos.diagramRepo);
   const deleteComment = new DeleteCommentUseCase(repos.commentRepo, repos.diagramRepo);

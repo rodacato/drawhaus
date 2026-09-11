@@ -59,15 +59,16 @@ export class InMemorySceneRepository implements SceneRepository {
 
   async updateSceneMerged(
     id: string,
+    diagramId: string,
     incomingElements: unknown[],
     appState: Record<string, unknown>,
-  ): Promise<void> {
-    const scene = this.store.find((s) => s.id === id);
-    if (scene) {
-      scene.elements = mergeElements(scene.elements, incomingElements);
-      scene.appState = appState;
-      scene.updatedAt = new Date();
-    }
+  ): Promise<boolean> {
+    const scene = this.store.find((s) => s.id === id && s.diagramId === diagramId);
+    if (!scene) return false;
+    scene.elements = mergeElements(scene.elements, incomingElements);
+    scene.appState = appState;
+    scene.updatedAt = new Date();
+    return true;
   }
 
   async reorder(id: string, sortOrder: number): Promise<void> {
