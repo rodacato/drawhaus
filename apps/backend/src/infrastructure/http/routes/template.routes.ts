@@ -73,7 +73,7 @@ export function createTemplateRoutes(
   const router = Router();
   router.use(requireAuth);
 
-  // List templates: built-in + personal + workspace (if workspaceId provided)
+  // List templates: the user's own + the workspace's (if workspaceId provided)
   router.get(
     "/",
     asyncRoute(async (req, res) => {
@@ -103,7 +103,7 @@ export function createTemplateRoutes(
     "/:id",
     validateParams(uuidParams),
     asyncRoute(async (req, res) => {
-      const template = await useCases.get.execute(String(req.params.id));
+      const template = await useCases.get.execute(String(req.params.id), req.authUser.id);
       return res.json({ template: formatTemplate(template) });
     }),
   );

@@ -110,10 +110,10 @@ function createApp() {
     createTemplateRoutes(
       {
         create: new CreateTemplateUseCase(templates, workspaces),
-        get: new GetTemplateUseCase(templates),
+        get: new GetTemplateUseCase(templates, workspaces),
         list: new ListTemplatesUseCase(templates, workspaces),
-        update: new UpdateTemplateUseCase(templates),
-        delete: new DeleteTemplateUseCase(templates),
+        update: new UpdateTemplateUseCase(templates, workspaces),
+        delete: new DeleteTemplateUseCase(templates, workspaces),
         use: new UseTemplateUseCase(
           templates,
           diagrams,
@@ -143,6 +143,20 @@ async function registerAndGetUser(app: express.Express, email: string) {
     });
   const cookie = res.headers["set-cookie"][0].split(";")[0];
   return { cookie, userId: res.body.user.id as string };
+}
+
+async function workspaceTemplate(creatorId: string) {
+  const ws = await workspaces.create({ name: "Team", ownerId: creatorId });
+  const template = await templates.create({
+    creatorId,
+    workspaceId: ws.id,
+    title: "Shared",
+    description: "",
+    category: "general",
+    elements: [{ id: "e1" }],
+    appState: {},
+  });
+  return { ws, template };
 }
 
 beforeEach(() => {
@@ -240,7 +254,7 @@ test("PATCH /api/templates/:id updates an owned template", async () => {
   assert.equal(res.body.template.description, "new desc");
 });
 
-test("PATCH /api/templates/:id returns 403 when user is not creator", async () => {
+test("PATCH and DELETE /api/templates/:id are 404 for a template the user cannot read", async () => {
   const app = createApp();
   const { cookie: aliceCookie } = await registerAndGetUser(app, "tplao@example.com");
   const { cookie: bobCookie } = await registerAndGetUser(app, "tplbo@example.com");
@@ -251,12 +265,41 @@ test("PATCH /api/templates/:id returns 403 when user is not creator", async () =
     .send({ title: "Mine", elements: [], appState: {} });
   const tplId = create.body.template.id as string;
 
-  const res = await request(app)
+  const patched = await request(app)
     .patch(`/api/templates/${tplId}`)
     .set("Cookie", bobCookie)
     .send({ title: "Hacked" });
+  const deleted = await request(app).delete(`/api/templates/${tplId}`).set("Cookie", bobCookie);
 
-  assert.equal(res.status, 403);
+  assert.equal(patched.status, 404);
+  assert.equal(deleted.status, 404);
+  assert.deepEqual(
+    templates.store.map((t) => t.title),
+    ["Mine"],
+  );
+});
+
+test("PATCH and DELETE /api/templates/:id are 403 for a workspace member who did not create it", async () => {
+  const app = createApp();
+  const alice = await registerAndGetUser(app, "tplwa@example.com");
+  const bob = await registerAndGetUser(app, "tplwb@example.com");
+  const { ws, template } = await workspaceTemplate(alice.userId);
+  await workspaces.addMember(ws.id, bob.userId, "admin");
+
+  const patched = await request(app)
+    .patch(`/api/templates/${template.id}`)
+    .set("Cookie", bob.cookie)
+    .send({ title: "Renamed" });
+  const deleted = await request(app)
+    .delete(`/api/templates/${template.id}`)
+    .set("Cookie", bob.cookie);
+
+  assert.equal(patched.status, 403);
+  assert.equal(deleted.status, 403);
+  assert.deepEqual(
+    templates.store.map((t) => t.title),
+    ["Shared"],
+  );
 });
 
 test("PATCH /api/templates/:id rejects empty body with 400", async () => {
@@ -380,4 +423,67 @@ test("GET /api/templates without auth returns 401", async () => {
   const app = createApp();
   const res = await request(app).get("/api/templates");
   assert.equal(res.status, 401);
+});
+
+test("GET /api/templates/:id returns a workspace template to a member who did not create it", async () => {
+  const app = createApp();
+  const alice = await registerAndGetUser(app, "tplra@example.com");
+  const bob = await registerAndGetUser(app, "tplrb@example.com");
+  const { ws, template } = await workspaceTemplate(alice.userId);
+  await workspaces.addMember(ws.id, bob.userId, "viewer");
+
+  const res = await request(app).get(`/api/templates/${template.id}`).set("Cookie", bob.cookie);
+
+  assert.equal(res.status, 200);
+  assert.deepEqual(res.body.template.elements, template.elements);
+});
+
+test("GET /api/templates/:id is 404 for a template the user cannot read", async () => {
+  const app = createApp();
+  const alice = await registerAndGetUser(app, "tplsa@example.com");
+  const stranger = await registerAndGetUser(app, "tplsb@example.com");
+  const { template: shared } = await workspaceTemplate(alice.userId);
+  const personal = await request(app)
+    .post("/api/templates")
+    .set("Cookie", alice.cookie)
+    .send({ title: "Personal", elements: [{ id: "secret" }], appState: {} });
+
+  for (const id of [shared.id, personal.body.template.id as string]) {
+    const res = await request(app).get(`/api/templates/${id}`).set("Cookie", stranger.cookie);
+    assert.equal(res.status, 404);
+    assert.equal(res.body.template, undefined);
+  }
+});
+
+test("POST /api/templates/:id/use copies a workspace template for a member", async () => {
+  const app = createApp();
+  const alice = await registerAndGetUser(app, "tplma@example.com");
+  const bob = await registerAndGetUser(app, "tplmb@example.com");
+  const { ws, template } = await workspaceTemplate(alice.userId);
+  await workspaces.addMember(ws.id, bob.userId, "viewer");
+
+  const res = await request(app)
+    .post(`/api/templates/${template.id}/use`)
+    .set("Cookie", bob.cookie)
+    .send({});
+
+  assert.equal(res.status, 201);
+  assert.equal(diagrams.store.length, 1);
+  assert.deepEqual(diagrams.store[0].elements, template.elements);
+});
+
+test("POST /api/templates/:id/use of a template the user cannot read is 404 and creates nothing", async () => {
+  const app = createApp();
+  const alice = await registerAndGetUser(app, "tplxa@example.com");
+  const stranger = await registerAndGetUser(app, "tplxb@example.com");
+  const { template } = await workspaceTemplate(alice.userId);
+
+  const res = await request(app)
+    .post(`/api/templates/${template.id}/use`)
+    .set("Cookie", stranger.cookie)
+    .send({ title: "Copied" });
+
+  assert.equal(res.status, 404);
+  assert.equal(diagrams.store.length, 0);
+  assert.equal(template.usageCount, 0);
 });

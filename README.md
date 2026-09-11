@@ -475,15 +475,15 @@ kamal rollback -c config/deploy.frontend.yml
 
 ### Templates
 
-| Method   | Endpoint                            | Description                                           |
-| -------- | ----------------------------------- | ----------------------------------------------------- |
-| `GET`    | `/api/templates`                    | List all templates (built-in + user's custom)         |
-| `GET`    | `/api/templates/:id`                | Get single template                                   |
-| `POST`   | `/api/templates`                    | Create custom template from current canvas            |
-| `POST`   | `/api/templates/:id/use`            | Create a new diagram from a template                  |
-| `PATCH`  | `/api/templates/:id`                | Update custom template (title, description, category) |
-| `DELETE` | `/api/templates/:id`                | Delete custom template                                |
-| `POST`   | `/api/templates/transfer-ownership` | Bulk transfer template ownership                      |
+| Method   | Endpoint                            | Description                                                                    |
+| -------- | ----------------------------------- | ------------------------------------------------------------------------------ |
+| `GET`    | `/api/templates`                    | List your templates, plus a workspace's with `?workspaceId=` (members only)    |
+| `GET`    | `/api/templates/:id`                | Get a template you created or one in a workspace you belong to (404 otherwise) |
+| `POST`   | `/api/templates`                    | Create custom template from current canvas                                     |
+| `POST`   | `/api/templates/:id/use`            | Create a new diagram from a template you can read                              |
+| `PATCH`  | `/api/templates/:id`                | Update custom template (title, description, category)                          |
+| `DELETE` | `/api/templates/:id`                | Delete custom template                                                         |
+| `POST`   | `/api/templates/transfer-ownership` | Bulk transfer template ownership                                               |
 
 ### Snapshots
 

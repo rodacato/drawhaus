@@ -331,10 +331,10 @@ export function createUseCases(repos: Repositories, services: Services) {
 
   // Templates
   const createTemplate = new CreateTemplateUseCase(repos.templateRepo, repos.workspaceRepo);
-  const getTemplate = new GetTemplateUseCase(repos.templateRepo);
+  const getTemplate = new GetTemplateUseCase(repos.templateRepo, repos.workspaceRepo);
   const listTemplates = new ListTemplatesUseCase(repos.templateRepo, repos.workspaceRepo);
-  const updateTemplate = new UpdateTemplateUseCase(repos.templateRepo);
-  const deleteTemplate = new DeleteTemplateUseCase(repos.templateRepo);
+  const updateTemplate = new UpdateTemplateUseCase(repos.templateRepo, repos.workspaceRepo);
+  const deleteTemplate = new DeleteTemplateUseCase(repos.templateRepo, repos.workspaceRepo);
   const useTemplate = new UseTemplateUseCase(
     repos.templateRepo,
     repos.diagramRepo,
