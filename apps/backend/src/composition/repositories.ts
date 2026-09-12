@@ -18,6 +18,7 @@ import { PgSnapshotRepository } from "../infrastructure/persistence/pg-snapshot-
 import { PgApiKeyRepository } from "../infrastructure/persistence/pg-api-key-repository";
 import { PgMetricsRepository } from "../infrastructure/persistence/pg-metrics-repository";
 import { PgWorkspaceInvitationRepository } from "../infrastructure/persistence/pg-workspace-invitation-repository";
+import { PgWebhookRepository } from "../infrastructure/persistence/pg-webhook-repository";
 import { config } from "../infrastructure/config";
 
 export function createRepositories() {
@@ -43,6 +44,7 @@ export function createRepositories() {
   const apiKeyRepo = new PgApiKeyRepository();
   const metricsRepo = new PgMetricsRepository();
   const workspaceInvitationRepo = new PgWorkspaceInvitationRepository();
+  const webhookRepo = config.encryptionKey ? new PgWebhookRepository(config.encryptionKey) : null;
 
   return {
     userRepo,
@@ -65,6 +67,7 @@ export function createRepositories() {
     apiKeyRepo,
     metricsRepo,
     workspaceInvitationRepo,
+    webhookRepo,
   };
 }
 

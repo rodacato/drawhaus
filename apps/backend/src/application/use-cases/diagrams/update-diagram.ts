@@ -1,9 +1,11 @@
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
 import type { SceneRepository } from "../../../domain/ports/scene-repository";
 import type { RealtimeNotifier } from "../../../domain/ports/realtime-notifier";
+import type { WebhookDispatcher } from "../../../domain/ports/webhook-dispatcher";
 import { NotFoundError } from "../../../domain/errors";
 import { requireEditAccess } from "../../helpers/require-access";
 import { applySceneContent } from "../../helpers/scene-content";
+import { diagramEventData } from "../../helpers/webhook-payloads";
 
 type UpdateData = { title?: string; elements?: unknown[]; appState?: Record<string, unknown> };
 
@@ -17,6 +19,7 @@ export class UpdateDiagramUseCase {
     private readonly diagrams: DiagramRepository,
     private readonly scenes: SceneRepository,
     private readonly notifier?: RealtimeNotifier,
+    private readonly webhooks?: WebhookDispatcher,
   ) {}
 
   async execute(diagramId: string, userId: string, data: UpdateData) {
@@ -36,6 +39,12 @@ export class UpdateDiagramUseCase {
         appState: scene.appState,
       });
     }
+
+    this.webhooks?.dispatch({
+      event: "diagram.updated",
+      actorId: userId,
+      data: diagramEventData(updated),
+    });
 
     return applySceneContent(updated, scene);
   }

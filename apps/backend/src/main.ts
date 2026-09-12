@@ -394,6 +394,10 @@ async function startServer(): Promise<void> {
     await import("./infrastructure/services/backup-scheduler");
   await startBackupScheduler();
 
+  const { startWebhookScheduler, stopWebhookScheduler } =
+    await import("./infrastructure/services/webhook-scheduler");
+  if (services.webhookDelivery) startWebhookScheduler(services.webhookDelivery);
+
   httpServer.listen(config.port, () => {
     logger.info({ port: config.port }, `Backend running on http://localhost:${config.port}`);
   });
@@ -411,6 +415,7 @@ async function startServer(): Promise<void> {
         // io.close() also closes the HTTP server, waiting for in-flight requests.
         { name: "socket.io + http", run: () => io.close() },
         { name: "backup scheduler", run: stopBackupScheduler },
+        { name: "webhook scheduler", run: stopWebhookScheduler },
         { name: "postgres", run: () => pool.end() },
         { name: "redis", run: () => Promise.all([disconnectRedis(), disconnectRedisAdapter()]) },
       ],

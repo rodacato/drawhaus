@@ -1,7 +1,9 @@
 import type { ShareRepository } from "../../../domain/ports/share-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
+import type { WebhookDispatcher } from "../../../domain/ports/webhook-dispatcher";
 import { ConflictError } from "../../../domain/errors";
 import { requireEditAccess } from "../../helpers/require-access";
+import { shareLinkEventData } from "../../helpers/webhook-payloads";
 
 const MAX_LINKS_PER_DIAGRAM = 20;
 
@@ -9,6 +11,7 @@ export class CreateShareLinkUseCase {
   constructor(
     private readonly shares: ShareRepository,
     private readonly diagrams: DiagramRepository,
+    private readonly webhooks?: WebhookDispatcher,
   ) {}
 
   async execute(input: {
@@ -31,11 +34,19 @@ export class CreateShareLinkUseCase {
       ? new Date(Date.now() + input.expiresInHours * 3_600_000)
       : null;
 
-    return this.shares.create({
+    const link = await this.shares.create({
       diagramId: input.diagramId,
       createdBy: input.userId,
       role: input.role ?? "viewer",
       expiresAt,
     });
+
+    this.webhooks?.dispatch({
+      event: "diagram.shared",
+      actorId: input.userId,
+      data: shareLinkEventData(link),
+    });
+
+    return link;
   }
 }
