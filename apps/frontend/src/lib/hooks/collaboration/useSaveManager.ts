@@ -60,6 +60,9 @@ export function useSaveManager({
   const lastEmitTime = useRef(0);
   const lastViewportEmitTime = useRef(0);
   const lastSavedAt = useRef<string | null>(null);
+  const saveSequence = useRef(0);
+  const retryArmed = useRef(true);
+  const scheduleSaveRef = useRef<() => void>(() => {});
   // The elements array Excalidraw last handed to onChange; its elements are the live ones.
   const latestRef = useRef<LatestScene | null>(null);
 
@@ -108,8 +111,27 @@ export function useSaveManager({
       forSceneId: string | null,
     ): Promise<boolean> => {
       if (forSceneId && forSceneId !== activeSceneIdRef.current) return false;
+      const mark = sync.markSaved();
+      // Two saves can be in flight; only the newest owns the badge.
+      const seq = (saveSequence.current += 1);
+      const isLatest = () => seq === saveSequence.current;
+      const succeeded = (): void => {
+        retryArmed.current = true;
+        if (!isLatest()) return;
+        lastSavedAt.current = new Date().toLocaleTimeString();
+        setSaveState("saved");
+      };
+      const failed = (): void => {
+        sync.restoreUnsaved(mark);
+        if (!isLatest()) return;
+        setSaveState("error");
+        // One attempt only, so a refusal the server will never accept cannot spin.
+        if (retryArmed.current) {
+          retryArmed.current = false;
+          scheduleSaveRef.current();
+        }
+      };
       setSaveState("saving");
-      sync.markSaved();
       try {
         const {
           collaborators: _1,
@@ -147,11 +169,10 @@ export function useSaveManager({
           });
           generateThumbnail();
           if (!(await acknowledged)) {
-            setSaveState("error");
+            failed();
             return false;
           }
-          lastSavedAt.current = new Date().toLocaleTimeString();
-          setSaveState("saved");
+          succeeded();
           return true;
         }
         await diagramsApi.update(diagramId, {
@@ -160,12 +181,11 @@ export function useSaveManager({
         });
         // That PATCH replaced the scene under a revision only the server knows now.
         sync.forgetRevision();
-        lastSavedAt.current = new Date().toLocaleTimeString();
-        setSaveState("saved");
         generateThumbnail();
+        succeeded();
         return true;
       } catch {
-        setSaveState("error");
+        failed();
         return false;
       }
     },
@@ -246,6 +266,7 @@ export function useSaveManager({
       persistScene([...scene.elements], scene.appState, capturedSceneId);
     }, SAVE_DEBOUNCE_MS);
   }, [flushBroadcast, persistScene]);
+  scheduleSaveRef.current = scheduleSave;
 
   /* ─── while following, hold the viewport on the followed user's ─── */
   const snapToFollowedViewport = useCallback((appState: Record<string, unknown>) => {
@@ -286,6 +307,7 @@ export function useSaveManager({
       }
       emitViewport(appState);
       if (!canEdit || !sync.hasChanges(elements)) return;
+      retryArmed.current = true;
       setSaveState("pending");
       throttledBroadcast();
       scheduleSave();

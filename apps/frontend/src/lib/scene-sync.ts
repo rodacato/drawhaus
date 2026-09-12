@@ -2,6 +2,9 @@ import type { ElementDelta, ExcalidrawElement } from "@drawhaus/helpers";
 
 type Versioned = { id?: string; version: number };
 
+/** What a save cleared from the unsaved set, so a failed save can put it back. */
+export type SavedMark = { readonly ids: readonly string[]; readonly baseline: number };
+
 /**
  * What this client shares with the room, element by element: the version it last sent or
  * received, and which local edits no save has carried yet. It compares version numbers rather
@@ -15,6 +18,8 @@ export class SceneSync {
 
   /** The server's scene revision this baseline belongs to; null while unknown (ADR-026). */
   private currentRevision: number | null = null;
+
+  private baseline = 0;
 
   get sharedCount(): number {
     return this.shared.size;
@@ -30,6 +35,7 @@ export class SceneSync {
     this.unsaved.clear();
     this.ready = true;
     this.currentRevision = revision;
+    this.baseline += 1;
     this.markShared(elements);
   }
 
@@ -115,7 +121,15 @@ export class SceneSync {
   }
 
   /** A save carrying the whole current scene is on its way. */
-  markSaved(): void {
+  markSaved(): SavedMark {
+    const ids = [...this.unsaved];
     this.unsaved.clear();
+    return { ids, baseline: this.baseline };
+  }
+
+  /** The save failed: its edits are unsaved again, unless a replace has since reset the baseline. */
+  restoreUnsaved(mark: SavedMark): void {
+    if (mark.baseline !== this.baseline) return;
+    for (const id of mark.ids) this.unsaved.add(id);
   }
 }

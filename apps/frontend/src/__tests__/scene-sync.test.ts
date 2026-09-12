@@ -85,6 +85,39 @@ describe("SceneSync", () => {
     expect(sync.isReplacedBy(9)).toBe(false);
   });
 
+  test("a failed save puts its edits back, without clearing marks added since", () => {
+    const sync = new SceneSync();
+    sync.reset([el("a", 1)]);
+    sync.takeChanges([el("a", 2)]);
+    const mark = sync.markSaved();
+    sync.takeChanges([el("a", 2), el("b", 1)]);
+
+    sync.restoreUnsaved(mark);
+
+    expect(sync.editedIds([el("a", 2), el("b", 1)])).toEqual(new Set(["a", "b"]));
+  });
+
+  test("a save that succeeded is not put back — nothing calls restoreUnsaved", () => {
+    const sync = new SceneSync();
+    sync.reset([el("a", 1)]);
+    sync.takeChanges([el("a", 2)]);
+    sync.markSaved();
+
+    expect(sync.hasUnsaved()).toBe(false);
+  });
+
+  test("a replace between the save and its refusal beats the rollback", () => {
+    const sync = new SceneSync();
+    sync.reset([el("a", 1)], 1);
+    sync.takeChanges([el("a", 2)]);
+    const mark = sync.markSaved();
+
+    sync.reset([el("a", 9)], 2);
+    sync.restoreUnsaved(mark);
+
+    expect(sync.hasUnsaved()).toBe(false);
+  });
+
   test("a new server scene drops edits it replaced", () => {
     const sync = new SceneSync();
     sync.reset([el("a", 1)]);
