@@ -22,6 +22,7 @@ vi.mock("@/api/admin", () => ({
     deleteUser: vi.fn(),
     updateSettings: vi.fn(),
     updateIntegration: vi.fn(),
+    listWebhooks: vi.fn().mockResolvedValue({ webhooks: [], events: [], encryptionEnabled: false }),
   },
 }));
 
