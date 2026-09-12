@@ -6,6 +6,7 @@ import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { NoopAuditLogger } from "../../fakes/noop-audit-logger";
 import { ForbiddenError } from "../../../domain/errors";
+import { FakeRealtimeNotifier } from "../../fakes/fake-realtime-notifier";
 
 function setup() {
   const users = new InMemoryUserRepository();
@@ -13,8 +14,8 @@ function setup() {
   const audit = new NoopAuditLogger();
   return {
     users,
-    deleteUser: new AdminDeleteUserUseCase(users, sessions, audit),
-    updateUser: new AdminUpdateUserUseCase(users, sessions, audit),
+    deleteUser: new AdminDeleteUserUseCase(users, sessions, audit, new FakeRealtimeNotifier()),
+    updateUser: new AdminUpdateUserUseCase(users, sessions, audit, new FakeRealtimeNotifier()),
   };
 }
 

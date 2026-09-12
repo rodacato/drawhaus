@@ -290,7 +290,7 @@ describe("socket handshake auth — admitted", () => {
   });
 });
 
-describe("socket handshake auth — a session that ends while connected", () => {
+describe("socket handshake auth — a session row that disappears without a revoke (expiry)", () => {
   it("keeps the open socket, and refuses its next reconnect for good", async () => {
     const { session, cookie } = await signedIn();
     const socket = open({ cookie });

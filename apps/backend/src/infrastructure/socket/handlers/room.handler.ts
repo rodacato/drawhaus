@@ -13,6 +13,7 @@ import {
   onEvent,
   runSafely,
 } from "../helpers";
+import { accessRoom } from "../access-rooms";
 import { config } from "../../config";
 import { logger } from "../../logger";
 
@@ -87,6 +88,8 @@ export function registerRoomHandlers(io: Server, socket: Socket, useCases: RoomU
   onEvent(socket, "join-room-guest", joinRoomGuestSchema, async ({ shareToken, guestName }) => {
     try {
       const name = (guestName ?? "").trim().slice(0, 50) || "Guest";
+      // Joined before the lookup, so a revoke that commits after it still finds this socket.
+      await socket.join(accessRoom({ kind: "share-link", shareToken }));
       const result = await useCases.joinRoomGuest.execute(shareToken);
 
       const roomId = result.diagramId;

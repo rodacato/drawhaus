@@ -6,13 +6,20 @@ import { InMemorySessionRepository } from "../../fakes/in-memory-session-reposit
 import { InMemoryPasswordResetRepository } from "../../fakes/in-memory-password-reset-repository";
 import { FakeHasher } from "../../fakes/fake-hasher";
 import { ConflictError, ExpiredError, NotFoundError } from "../../../domain/errors";
+import { FakeRealtimeNotifier } from "../../fakes/fake-realtime-notifier";
 
 function setup() {
   const users = new InMemoryUserRepository();
   const sessions = new InMemorySessionRepository(() => users.store);
   const resetTokens = new InMemoryPasswordResetRepository();
   const hasher = new FakeHasher();
-  const useCase = new ResetPasswordUseCase(users, sessions, resetTokens, hasher);
+  const useCase = new ResetPasswordUseCase(
+    users,
+    sessions,
+    resetTokens,
+    hasher,
+    new FakeRealtimeNotifier(),
+  );
   return { users, sessions, resetTokens, hasher, useCase };
 }
 

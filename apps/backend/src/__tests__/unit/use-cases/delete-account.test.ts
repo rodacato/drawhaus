@@ -6,6 +6,7 @@ import { InMemoryWorkspaceRepository } from "../../fakes/in-memory-workspace-rep
 import { FakeHasher } from "../../fakes/fake-hasher";
 import { ConflictError, NotFoundError, UnauthorizedError } from "../../../domain/errors";
 import type { AuditEvent, AuditLogger } from "../../../domain/ports/audit-logger";
+import { FakeRealtimeNotifier } from "../../fakes/fake-realtime-notifier";
 
 class RecordingAuditLogger implements AuditLogger {
   events: AuditEvent[] = [];
@@ -19,7 +20,13 @@ function setup() {
   const hasher = new FakeHasher();
   const audit = new RecordingAuditLogger();
   const workspaces = new InMemoryWorkspaceRepository();
-  const useCase = new DeleteAccountUseCase(users, hasher, audit, workspaces);
+  const useCase = new DeleteAccountUseCase(
+    users,
+    hasher,
+    audit,
+    workspaces,
+    new FakeRealtimeNotifier(),
+  );
   return { users, hasher, audit, workspaces, useCase };
 }
 

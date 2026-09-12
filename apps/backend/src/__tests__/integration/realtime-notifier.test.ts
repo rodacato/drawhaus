@@ -7,6 +7,8 @@ import msgpackParser from "socket.io-msgpack-parser";
 import { io as connect, type Socket as ClientSocket } from "socket.io-client";
 import { SocketIoRealtimeNotifier } from "../../infrastructure/socket/realtime-notifier";
 import type { CommentThread } from "../../domain/entities/comment";
+import { LogoutUseCase } from "../../application/use-cases/auth/logout";
+import { InMemorySessionRepository } from "../fakes/in-memory-session-repository";
 
 const ROOM = "11111111-1111-4111-8111-111111111111";
 const OTHER_ROOM = "22222222-2222-4222-8222-222222222222";
@@ -190,5 +192,21 @@ describe("SocketIoRealtimeNotifier", () => {
     await delivered;
 
     assert.deepEqual(strayEvents, ["scene-from-db"], "only the attached notifier's event arrived");
+  });
+
+  it("lets a logout complete when the socket layer throws on the revoke", async () => {
+    const sessions = new InMemorySessionRepository(() => []);
+    const session = await sessions.create("user-1");
+    const broken = new SocketIoRealtimeNotifier();
+    broken.attach({
+      to: () => {
+        throw new Error("adapter unavailable");
+      },
+    } as unknown as Server);
+
+    await new LogoutUseCase(sessions, broken).execute(session.token);
+    new SocketIoRealtimeNotifier().accessRevoked({ kind: "user-sessions", userId: "user-1" });
+
+    assert.deepEqual(sessions.sessions, []);
   });
 });

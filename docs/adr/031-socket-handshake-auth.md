@@ -3,6 +3,7 @@
 **Status:** accepted
 **Date:** 2026-09-12
 **Refines:** ADR-007 (socket protocol design), ADR-028 (save acknowledgement)
+**Refined by:** ADR-032 (closing sockets on revoke)
 
 ## Context
 
@@ -38,7 +39,8 @@ valid share token. It admits; it does not authorize.**
 
 ### What the handshake establishes, and what each event still checks
 
-Only that the connection presented a credential that was valid at that moment. It stores nothing
+Only that the connection presented a credential that was valid at that moment. Apart from the
+access rooms ADR-032 added, which record which credential admitted the socket, it stores nothing
 on the socket. Identity (`userId`, `isGuest`) and the per-room role are still set by `join-room`
 and `join-room-guest`, which resolve the credential again, and every room event keeps the #157
 membership and `canEdit` checks. The handshake is a gate in front of those checks, not a
@@ -48,13 +50,15 @@ and join is still caught at the join.
 
 ### A session or link that ends while the socket is open
 
-Deliberately not handled. An open socket keeps the rooms it joined until it disconnects, exactly
-as before this change: logout, session expiry, disabling a user and revoking a share link do not
-close live sockets. What changed is that every reconnect runs the handshake again, so a socket
-whose credential has ended cannot come back after any network blip, deploy or server restart.
-Closing live sockets on logout, disable or revoke means rooms keyed by user or token and a
-disconnect call from each of those use cases through the `RealtimeNotifier` port (ADR-027). It is
-real work with its own tests, and it is recorded as a follow-up rather than folded in here.
+This ADR left it out of scope. Every reconnect runs the handshake again, so a socket whose
+credential has ended cannot come back after a network blip, a deploy or a server restart. An open
+socket, though, kept its rooms until it disconnected.
+
+[ADR-032](032-close-sockets-on-revoke.md) closes that gap for the paths that end a credential with
+a write. Logout, password reset, an admin disabling or deleting a user, account deletion and
+share-link revoke now close the sockets that credential admitted, through the `RealtimeNotifier`
+port. Expiry has no write to hook into, so a session or link that expires still keeps its open
+socket until the next reconnect, which is refused.
 
 ### How a share-token socket is scoped
 
@@ -121,6 +125,7 @@ it recovers with a reload.
 - No anonymous socket reaches a handler. Opening a connection needs a live session or a valid share
   link.
 - `docs/ARCHITECTURE.md`'s socket auth box now describes code that exists.
-- Revoking a link or logging out does not disconnect a board that is already open; its next
-  reconnect is refused. Closing live sockets is a follow-up.
+- Revoking a link or logging out disconnects a board that is already open, and so do a password
+  reset, disabling a user and deleting a user (ADR-032). An expired session or link is not
+  disconnected, and its next reconnect is refused.
 - Old guest tabs are refused on the deploy that ships this (see "Deploy window").

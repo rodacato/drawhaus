@@ -2,6 +2,7 @@ import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { SessionRepository } from "../../../domain/ports/session-repository";
 import type { PasswordResetRepository } from "../../../domain/ports/password-reset-repository";
 import type { Hasher } from "../../../domain/ports/hasher";
+import type { RealtimeNotifier } from "../../../domain/ports/realtime-notifier";
 import type { PasswordResetToken } from "../../../domain/entities/password-reset-token";
 import { NotFoundError, ExpiredError, ConflictError } from "../../../domain/errors";
 
@@ -11,6 +12,7 @@ export class ResetPasswordUseCase {
     private readonly sessions: SessionRepository,
     private readonly resetTokens: PasswordResetRepository,
     private readonly hasher: Hasher,
+    private readonly notifier: RealtimeNotifier,
   ) {}
 
   async validate(token: string): Promise<{ valid: boolean }> {
@@ -29,8 +31,8 @@ export class ResetPasswordUseCase {
     await this.users.update(reset.userId, { passwordHash });
     await this.resetTokens.markUsed(reset.id);
 
-    // Invalidate all sessions for security
     await this.sessions.deleteAllForUser(reset.userId);
+    this.notifier.accessRevoked({ kind: "user-sessions", userId: reset.userId });
   }
 
   private async assertUsableResetToken(token: string): Promise<PasswordResetToken> {

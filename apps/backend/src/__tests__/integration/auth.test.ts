@@ -29,6 +29,7 @@ import { NoopAuditLogger } from "../fakes/noop-audit-logger";
 import { InMemoryDriveBackupRepository } from "../fakes/in-memory-drive-backup-repository";
 import { InMemorySiteSettingsRepository } from "../fakes/in-memory-site-settings-repository";
 import { FakeOAuthProvider } from "../fakes/fake-oauth-provider";
+import { FakeRealtimeNotifier } from "../fakes/fake-realtime-notifier";
 
 let users: InMemoryUserRepository;
 let sessions: InMemorySessionRepository;
@@ -46,7 +47,7 @@ function createApp() {
   );
   const audit = new NoopAuditLogger();
   const login = new LoginUseCase(users, sessions, hasher, audit);
-  const logout = new LogoutUseCase(sessions);
+  const logout = new LogoutUseCase(sessions, new FakeRealtimeNotifier());
   const getCurrentUser = new GetCurrentUserUseCase(sessions);
   const updateProfile = new UpdateProfileUseCase(users);
   const changePassword = new ChangePasswordUseCase(users, hasher);
@@ -55,12 +56,19 @@ function createApp() {
   const emailService = new NoopEmailService();
   const acceptInvite = new AcceptInviteUseCase(users, sessions, invitations, hasher);
   const forgotPassword = new ForgotPasswordUseCase(users, passwordResets, emailService);
-  const resetPassword = new ResetPasswordUseCase(users, sessions, passwordResets, hasher);
+  const resetPassword = new ResetPasswordUseCase(
+    users,
+    sessions,
+    passwordResets,
+    hasher,
+    new FakeRealtimeNotifier(),
+  );
   const deleteAccount = new DeleteAccountUseCase(
     users,
     hasher,
     audit,
     new InMemoryWorkspaceRepository(),
+    new FakeRealtimeNotifier(),
   );
   const oauthTokens = new InMemoryOAuthTokenRepository();
   const googleAuth = new GoogleAuthUseCase(
