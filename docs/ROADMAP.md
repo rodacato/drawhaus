@@ -43,6 +43,7 @@ Shipped and working in production. See [CHANGELOG.md](../CHANGELOG.md) for full 
 | **Google Drive**    | OAuth login + linking, Drive export, Drive import, auto-backup on save, scope upgrade flow                                                                                                                                                                                                                                  | v0.7  |
 | **Auth**            | Register/login/logout, sessions, forgot password with email reset, Google OAuth, GitHub OAuth, identity linking by email, connected accounts management (link/unlink), account deletion with cascade, delete guard for workspace owners                                                                                     | v0.1  |
 | **Admin**           | User management, metrics, registration toggle, invite via email (Resend), setup wizard (3-step), integration secrets (AES-256-GCM), maintenance mode                                                                                                                                                                        | v0.3  |
+| **Webhooks**        | HMAC-SHA256 signed delivery of `diagram.created` / `.updated` / `.deleted` / `.shared` and `template.created` to admin-registered endpoints, Postgres outbox with 3 attempts and exponential backoff, dead-letter log ([ADR-029](adr/029-webhook-outbox.md))                                                                | v0.12 |
 | **Security**        | Helmet headers, rate limiting (Redis-backed when available), audit logger, RBAC, cookie hardening, encrypted secrets in DB                                                                                                                                                                                                  | v0.8  |
 | **UI & Branding**   | Dark/light theme, Bauhaus-inspired branding, toast notifications, confirm dialogs, style guide, board sidebar with semantic groups                                                                                                                                                                                          | v0.6  |
 | **Landing Page**    | Hero with real screenshots, "Why Drawhaus?" value props, "How it works" deploy steps, 12-feature grid, comparison badges, tech stack logos, automated Playwright screenshots                                                                                                                                                | v0.9  |
@@ -94,7 +95,7 @@ Technical specs for features. Full specs in [`docs/specs/`](specs/).
 | [plantuml-import](specs/plantuml-import.md)           | PlantUML import                      | shipped (v0.9)                                                   |
 | [collaboration-revamp](specs/collaboration-revamp.md) | Smart edit lock + Redis shared state | superseded by [ADR-022](adr/022-concurrent-editing-over-lock.md) |
 | [backup-all-to-drive](specs/backup-all-to-drive.md)   | Backup all to Drive                  | backlog                                                          |
-| [webhooks](specs/webhooks.md)                         | Webhooks                             | backlog                                                          |
+| [webhooks](specs/webhooks.md)                         | Webhooks                             | delivery shipped; admin API pending                              |
 | [github-gist-export](specs/github-gist-export.md)     | GitHub Gist export                   | backlog                                                          |
 
 ---
@@ -130,6 +131,7 @@ Architectural decisions that shaped Drawhaus. Full ADRs in [`docs/adr/`](adr/).
 | Scene revisions                    | A counter only replaces bump; stale saves are refused, not merged     | A save or delta computed before a restore or API write must not put back what it removed       | [026](adr/026-scene-revisions.md)                    |
 | Realtime notifications             | One `RealtimeNotifier` port, Socket.IO adapter; no event bus          | Writes that skip the room must reach open boards; `IoHolder` leaked socket types into routes   | [027](adr/027-realtime-notifier-port.md)             |
 | Acknowledged saves                 | `save-scene` answers on a Socket.IO ack with a timeout                | Saves reported success on emit, refusals hung the badge, and failures rode `room-error`        | [028](adr/028-save-acknowledgement.md)               |
+| Webhook delivery                   | Postgres outbox drained by a poller; `FOR UPDATE SKIP LOCKED`         | Redis is optional, so a Redis queue would half-work; the same table is the dead-letter log     | [029](adr/029-webhook-outbox.md)                     |
 
 Other decisions not warranting a full ADR:
 
