@@ -8,6 +8,9 @@ export const WEBHOOK_EVENTS = [
 
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
 
+/** Sent only by the admin "send test" action, so nothing can subscribe to it. */
+export const WEBHOOK_TEST_EVENT = "webhook.test";
+
 export function isWebhookEvent(value: string): value is WebhookEvent {
   return (WEBHOOK_EVENTS as readonly string[]).includes(value);
 }

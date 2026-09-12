@@ -6,24 +6,14 @@ import {
   SIGNATURE_HEADER,
   signWebhookBody,
 } from "./webhook-signature";
+import type {
+  WebhookRequest,
+  WebhookResult,
+  WebhookSender,
+} from "../../domain/ports/webhook-sender";
 import { config } from "../config";
 
 export const WEBHOOK_TIMEOUT_MS = 10_000;
-
-export type WebhookRequest = {
-  url: string;
-  secret: string;
-  body: string;
-  eventType: string;
-  eventId: string;
-  deliveryId: string;
-};
-
-export type WebhookResult = { ok: true; status: number } | { ok: false; error: string };
-
-export interface WebhookSender {
-  send(request: WebhookRequest): Promise<WebhookResult>;
-}
 
 export class FetchWebhookSender implements WebhookSender {
   constructor(private readonly timeoutMs = WEBHOOK_TIMEOUT_MS) {}

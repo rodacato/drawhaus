@@ -529,6 +529,22 @@ kamal rollback -c config/deploy.frontend.yml
 | `GET`    | `/api/admin/backups`         | List database backups          |
 | `POST`   | `/api/admin/backups/trigger` | Trigger manual backup          |
 
+### Webhooks (Admin)
+
+Registration requires `ENCRYPTION_KEY`; without it `GET /api/admin/webhooks` reports
+`encryptionEnabled: false` and the mutating endpoints answer 400. The signing secret is generated
+server-side and returned only by the create and regenerate endpoints — it is never readable again.
+
+| Method   | Endpoint                             | Description                                  |
+| -------- | ------------------------------------ | -------------------------------------------- |
+| `GET`    | `/api/admin/webhooks`                | List webhooks + selectable events            |
+| `POST`   | `/api/admin/webhooks`                | Register a webhook, returns the secret once  |
+| `PATCH`  | `/api/admin/webhooks/:id`            | Update url, description, events or active    |
+| `DELETE` | `/api/admin/webhooks/:id`            | Delete a webhook and its delivery log        |
+| `POST`   | `/api/admin/webhooks/:id/secret`     | Regenerate the signing secret, returned once |
+| `GET`    | `/api/admin/webhooks/:id/deliveries` | Delivery / dead-letter log (`?limit=`)       |
+| `POST`   | `/api/admin/webhooks/:id/test`       | Send a signed `webhook.test` event now       |
+
 ### API Keys
 
 | Method   | Endpoint            | Description                    |

@@ -21,3 +21,13 @@ export function checkWebhookUrl(raw: string): WebhookUrlRejection | null {
 export function isDeliverableWebhookUrl(raw: string): boolean {
   return checkWebhookUrl(raw) === null;
 }
+
+const REJECTION_MESSAGES: Record<WebhookUrlRejection, string> = {
+  malformed: "Webhook URL is not a valid URL",
+  protocol: "Webhook URL must use http or https",
+  credentials: "Webhook URL must not embed credentials",
+};
+
+export function webhookUrlRejectionMessage(rejection: WebhookUrlRejection): string {
+  return REJECTION_MESSAGES[rejection];
+}
