@@ -83,6 +83,13 @@ function emitted(socket: MockSocket, event: string) {
   return socket.emit.mock.calls.filter((c) => c[0] === event).map((c) => c[1]);
 }
 
+/** The ack callback each save-scene emit carried, oldest first. */
+function saveAcks(socket: MockSocket) {
+  return socket.emit.mock.calls
+    .filter((c) => c[0] === "save-scene")
+    .map((c) => c.at(-1) as (err: unknown, res?: unknown) => void);
+}
+
 function sentVersions(socket: MockSocket) {
   return emitted(socket, "scene-delta").flatMap((d) =>
     (d as { changed: { version: number }[] }).changed.map((e) => e.version),
@@ -447,6 +454,159 @@ describe("useSaveManager", () => {
     });
     expect(returned).toBe(false);
     expect(result.current.saveState).toBe("error");
+  });
+
+  test("a refused save is unsaved again, and the next debounce retries it", async () => {
+    const { result, sync } = renderSaveManager({ socket, socketConnected: true });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    expect(emitted(socket, "save-scene").length).toBe(1);
+
+    await act(async () => {
+      answerAck(socket, "save-scene", { ok: false, reason: "server-error" });
+      await Promise.resolve();
+    });
+    expect(sync.hasUnsaved()).toBe(true);
+
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+
+    const saves = emitted(socket, "save-scene") as { elements: { id: string }[] }[];
+    expect(saves.length).toBe(2);
+    expect(saves[1].elements.map((e) => e.id)).toEqual(["e1"]);
+  });
+
+  test("a save that times out is retried the same way", async () => {
+    const { result } = renderSaveManager({ socket, socketConnected: true });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(SAVE_ACK_TIMEOUT_MS);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+
+    expect(emitted(socket, "save-scene").length).toBe(2);
+  });
+
+  test("a save the server accepts is never retried", async () => {
+    const { result, sync } = renderSaveManager({ socket, socketConnected: true });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    await act(async () => {
+      answerAck(socket, "save-scene", { ok: true, sceneId: "scene-1" });
+      await Promise.resolve();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(4000);
+    });
+
+    expect(sync.hasUnsaved()).toBe(false);
+    expect(emitted(socket, "save-scene").length).toBe(1);
+    expect(result.current.saveState).toBe("saved");
+  });
+
+  test("a save the server keeps refusing is retried once, not forever", async () => {
+    const { result } = renderSaveManager({ socket, socketConnected: true });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    await act(async () => {
+      answerAck(socket, "save-scene", { ok: false, reason: "forbidden" });
+      await Promise.resolve();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    expect(emitted(socket, "save-scene").length).toBe(2);
+
+    await act(async () => {
+      answerAck(socket, "save-scene", { ok: false, reason: "forbidden" });
+      await Promise.resolve();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(4000);
+    });
+
+    expect(emitted(socket, "save-scene").length).toBe(2);
+    expect(result.current.saveState).toBe("error");
+  });
+
+  test("edits made while a doomed save was in flight survive the rollback", async () => {
+    const { result, sync } = renderSaveManager({ socket, socketConnected: true });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    act(() => {
+      result.current.onChange(
+        [
+          { id: "e1", version: 1 },
+          { id: "e2", version: 1 },
+        ],
+        appStateBase,
+      );
+    });
+    await act(async () => {
+      answerAck(socket, "save-scene", { ok: false, reason: "server-error" });
+      await Promise.resolve();
+    });
+
+    expect(
+      sync.editedIds([
+        { id: "e1", version: 1 },
+        { id: "e2", version: 1 },
+      ]),
+    ).toEqual(new Set(["e1", "e2"]));
+  });
+
+  test("a refusal that lands after a newer save succeeded does not undo its badge", async () => {
+    const { result } = renderSaveManager({ socket, socketConnected: true });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 1 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    act(() => {
+      result.current.onChange([{ id: "e1", version: 2 }], appStateBase);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    const [first, second] = saveAcks(socket);
+    expect(second).toBeDefined();
+
+    await act(async () => {
+      second(null, { ok: true, sceneId: "scene-1" });
+      await Promise.resolve();
+    });
+    expect(result.current.saveState).toBe("saved");
+
+    await act(async () => {
+      first(null, { ok: false, reason: "server-error" });
+      await Promise.resolve();
+    });
+    expect(result.current.saveState).toBe("saved");
   });
 
   test("flushSave is a no-op when the excalidraw api is not ready", async () => {
