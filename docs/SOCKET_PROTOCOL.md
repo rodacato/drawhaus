@@ -6,8 +6,26 @@ Socket.IO event contract for realtime collaboration.
 
 - **Transport:** Socket.IO with `msgpack` parser
 - **Primary transport:** WebSocket (polling fallback)
-- **Auth:** Session cookie (`drawhaus_session`) or share token
+- **Auth:** Session cookie (`drawhaus_session`) or share token, checked at the handshake (see below)
 - **Scaling:** Optional Redis adapter for multi-server deployments
+
+### Handshake
+
+A connection must present a session cookie on the upgrade request or a share token in Socket.IO's
+`auth` option (`io(url, { auth: { shareToken } })`). The server refuses anything else before
+`connection`, with `connect_error`:
+
+| `err.data.reason` | When                                                                        |
+| ----------------- | --------------------------------------------------------------------------- |
+| `unauthenticated` | No live session for a user who is not disabled, and no unexpired share link |
+| `server-error`    | The credential lookup failed                                                |
+
+`err.message` is `"Not authorized to connect. Reload the page."`, meant for humans and for older
+clients that display it as is; clients branch on `reason`. Socket.IO does not retry a refused
+socket (`socket.active` is `false`), so the client shows the refusal and stops. The handshake only
+admits the connection: `join-room` and `join-room-guest` still resolve the credential and decide
+the room and role. A credential that ends while connected keeps its socket until it disconnects,
+and its reconnect is refused. See [ADR-031](adr/031-socket-handshake-auth.md).
 
 ## Room Model
 

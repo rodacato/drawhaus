@@ -1,7 +1,9 @@
 import { io, type Socket } from "socket.io-client";
 import msgpackParser from "socket.io-msgpack-parser";
 
-export function createSocket(): Socket {
+export type HandshakeAuth = { shareToken: string };
+
+export function createSocket(auth?: HandshakeAuth): Socket {
   return io(import.meta.env.VITE_WS_URL || globalThis.location.origin, {
     path: "/socket.io",
     parser: msgpackParser,
@@ -11,5 +13,6 @@ export function createSocket(): Socket {
     reconnectionAttempts: 5,
     reconnectionDelay: 500,
     reconnectionDelayMax: 5000,
+    ...(auth ? { auth } : {}),
   });
 }

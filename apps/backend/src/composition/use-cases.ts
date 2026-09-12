@@ -92,6 +92,7 @@ import { DeleteCommentUseCase } from "../application/use-cases/comments/delete-c
 import { ToggleLikeUseCase } from "../application/use-cases/comments/toggle-like";
 
 // --- Realtime ---
+import { AuthenticateSocketUseCase } from "../application/use-cases/realtime/authenticate-socket";
 import { JoinRoomUseCase } from "../application/use-cases/realtime/join-room";
 import { JoinRoomGuestUseCase } from "../application/use-cases/realtime/join-room-guest";
 import { SaveSceneUseCase } from "../application/use-cases/realtime/save-scene";
@@ -332,6 +333,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   const toggleLike = new ToggleLikeUseCase(repos.commentRepo, repos.diagramRepo);
 
   // Realtime
+  const authenticateSocket = new AuthenticateSocketUseCase(repos.sessionRepo, repos.shareRepo);
   const joinRoom = new JoinRoomUseCase(repos.sessionRepo, repos.diagramRepo, repos.sceneRepo);
   const joinRoomGuest = new JoinRoomGuestUseCase(
     repos.shareRepo,
@@ -500,6 +502,7 @@ export function createUseCases(repos: Repositories, services: Services) {
     deleteComment,
     toggleLike,
     // realtime
+    authenticateSocket,
     joinRoom,
     joinRoomGuest,
     saveScene,
