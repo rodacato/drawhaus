@@ -44,7 +44,7 @@
     "resend": "^6.27.0",
     "socket.io": "^4.8.3",
     "socket.io-msgpack-parser": "^3.0.2",
-    "zod": "^4.6.2"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
