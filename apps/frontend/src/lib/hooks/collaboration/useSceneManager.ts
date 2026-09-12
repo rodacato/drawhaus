@@ -27,6 +27,7 @@ export interface UseSceneManagerParams {
   pendingSceneRef: React.MutableRefObject<{ elements: unknown[] } | null>;
   onConflict?: (conflictIds: string[], fromUserId: string) => void;
   onRemoteDelete?: (deletedIds: string[], fromUserId: string) => void;
+  onEditsReplaced?: (discardedIds: string[]) => void;
 }
 
 export interface UseSceneManagerReturn {
@@ -48,6 +49,7 @@ export function useSceneManager({
   pendingSceneRef,
   onConflict,
   onRemoteDelete,
+  onEditsReplaced,
 }: UseSceneManagerParams): UseSceneManagerReturn {
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
 
@@ -74,12 +76,14 @@ export function useSceneManager({
 
       const apply = (serverElements: unknown[]) => {
         const api = excalidrawApiRef.current;
+        const current = api?.getSceneElementsIncludingDeleted() ?? [];
         // A replace (restore, API write) wins over edits made before this client saw it; after a
         // plain reconnect, edits the server has not seen stay on top, still pending a save.
-        const localEdits = sync.isReplacedBy(revision)
-          ? []
-          : sync.localEdits(api?.getSceneElementsIncludingDeleted() ?? []);
+        const replaced = sync.isReplacedBy(revision);
+        const discardedIds = replaced ? sync.editedIds(current) : null;
+        const localEdits = replaced ? [] : sync.localEdits(current);
         sync.reset(serverElements, revision ?? null);
+        if (discardedIds?.size) onEditsReplaced?.([...discardedIds]);
         const scene =
           localEdits.length > 0 ? mergeElements(localEdits, serverElements) : serverElements;
         if (!api) {
