@@ -4,6 +4,7 @@ import { ui } from "@/lib/ui";
 import { getErrorMessage } from "@/lib/api-error";
 import { ToggleSwitch } from "@/components/ToggleSwitch";
 import { IntegrationSecretsPanel } from "@/components/IntegrationSecretsPanel";
+import { WebhooksPanel } from "@/components/WebhooksPanel";
 
 export function AdminSettings() {
   const [instanceName, setInstanceName] = useState("");
@@ -208,6 +209,15 @@ export function AdminSettings() {
           Manage integration API keys and secrets. Values are encrypted at rest in the database.
         </p>
         <IntegrationSecretsPanel />
+      </div>
+
+      <div className={ui.card}>
+        <h2 className={ui.h2}>Webhooks</h2>
+        <p className={`${ui.muted} mb-4`}>
+          Notify external systems of diagram events with HMAC-signed callbacks. Failed deliveries
+          are retried three times and then kept in the log below.
+        </p>
+        <WebhooksPanel />
       </div>
     </div>
   );
