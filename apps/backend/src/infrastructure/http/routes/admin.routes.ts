@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Response } from "express";
 import { z } from "zod";
 import type { ListUsersUseCase } from "../../../application/use-cases/admin/list-users";
 import type { AdminUpdateUserUseCase } from "../../../application/use-cases/admin/update-user";
@@ -9,10 +9,19 @@ import type { InviteUserUseCase } from "../../../application/use-cases/admin/inv
 import type { AdminDeleteUserUseCase } from "../../../application/use-cases/admin/delete-user";
 import type { InvitationRepository } from "../../../domain/ports/invitation-repository";
 import type { IntegrationSecretsRepository } from "../../../domain/ports/integration-secrets-repository";
+import type { ListWebhooksUseCase } from "../../../application/use-cases/webhooks/list-webhooks";
+import type { CreateWebhookUseCase } from "../../../application/use-cases/webhooks/create-webhook";
+import type { UpdateWebhookUseCase } from "../../../application/use-cases/webhooks/update-webhook";
+import type { DeleteWebhookUseCase } from "../../../application/use-cases/webhooks/delete-webhook";
+import type { RegenerateWebhookSecretUseCase } from "../../../application/use-cases/webhooks/regenerate-webhook-secret";
+import type { ListWebhookDeliveriesUseCase } from "../../../application/use-cases/webhooks/list-webhook-deliveries";
+import type { SendTestWebhookEventUseCase } from "../../../application/use-cases/webhooks/send-test-webhook-event";
 import type { ConfigProvider } from "../../services/config-provider";
 import { INTEGRATION_KEYS } from "../../../domain/entities/integration-secret";
+import { WEBHOOK_EVENTS } from "../../../domain/entities/webhook";
+import { formatWebhook, formatWebhookDelivery } from "../../serializers/webhook";
 import { asyncRoute } from "../middleware/async-handler";
-import { validate, validateParams } from "../middleware/validate";
+import { validate, validateParams, validateQuery } from "../middleware/validate";
 
 const uuidParams = z.object({ id: z.uuid() });
 import { requireAdmin } from "../middleware/require-admin";
@@ -43,6 +52,43 @@ const inviteSchema = z.object({
   role: z.enum(["user", "admin"]).optional().default("user"),
 });
 
+const webhookUrlSchema = z.string().trim().min(1).max(2048);
+const webhookEventsSchema = z.array(z.enum(WEBHOOK_EVENTS)).min(1);
+const webhookDescriptionSchema = z.string().trim().max(200);
+
+const createWebhookSchema = z.object({
+  url: webhookUrlSchema,
+  description: webhookDescriptionSchema.optional(),
+  events: webhookEventsSchema,
+  active: z.boolean().optional(),
+});
+
+const updateWebhookSchema = z
+  .object({
+    url: webhookUrlSchema.optional(),
+    description: webhookDescriptionSchema.optional(),
+    events: webhookEventsSchema.optional(),
+    active: z.boolean().optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: "At least one field is required" });
+
+const deliveriesQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(200).optional(),
+});
+
+const WEBHOOKS_UNAVAILABLE =
+  "ENCRYPTION_KEY not configured — webhooks cannot store a signing secret and are unavailable";
+
+export type AdminWebhookUseCases = {
+  list: ListWebhooksUseCase;
+  create: CreateWebhookUseCase;
+  update: UpdateWebhookUseCase;
+  remove: DeleteWebhookUseCase;
+  regenerateSecret: RegenerateWebhookSecretUseCase;
+  listDeliveries: ListWebhookDeliveriesUseCase;
+  sendTest: SendTestWebhookEventUseCase;
+};
+
 const updateIntegrationSchema = z.object({
   key: z.enum(INTEGRATION_KEYS as unknown as [string, ...string[]]),
   value: z.string(),
@@ -61,6 +107,7 @@ export function createAdminRoutes(
   requireAuth: ReturnType<typeof import("../middleware/require-auth").createRequireAuth>,
   invitationRepo: InvitationRepository,
   integrationSecrets?: { repo: IntegrationSecretsRepository; configProvider: ConfigProvider },
+  webhooks?: AdminWebhookUseCases,
 ) {
   const router = Router();
 
@@ -238,7 +285,93 @@ export function createAdminRoutes(
     }),
   );
 
+  // --- Webhooks ---
+
+  router.get(
+    "/webhooks",
+    asyncRoute(async (_req, res) => {
+      if (!webhooks) {
+        return res.json({ webhooks: [], events: WEBHOOK_EVENTS, encryptionEnabled: false });
+      }
+      const registered = await webhooks.list.execute();
+      return res.json({
+        webhooks: registered.map(formatWebhook),
+        events: WEBHOOK_EVENTS,
+        encryptionEnabled: true,
+      });
+    }),
+  );
+
+  router.post(
+    "/webhooks",
+    validate(createWebhookSchema),
+    asyncRoute(async (req, res) => {
+      if (!webhooks) return webhooksUnavailable(res);
+      const { webhook, secret } = await webhooks.create.execute(req.body);
+      return res.status(201).json({ webhook: formatWebhook(webhook), secret });
+    }),
+  );
+
+  router.patch(
+    "/webhooks/:id",
+    validateParams(uuidParams),
+    validate(updateWebhookSchema),
+    asyncRoute(async (req, res) => {
+      if (!webhooks) return webhooksUnavailable(res);
+      const webhook = await webhooks.update.execute(req.params.id as string, req.body);
+      return res.json({ webhook: formatWebhook(webhook) });
+    }),
+  );
+
+  router.delete(
+    "/webhooks/:id",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      if (!webhooks) return webhooksUnavailable(res);
+      await webhooks.remove.execute(req.params.id as string);
+      return res.json({ success: true });
+    }),
+  );
+
+  router.post(
+    "/webhooks/:id/secret",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      if (!webhooks) return webhooksUnavailable(res);
+      const { webhook, secret } = await webhooks.regenerateSecret.execute(req.params.id as string);
+      return res.json({ webhook: formatWebhook(webhook), secret });
+    }),
+  );
+
+  router.get(
+    "/webhooks/:id/deliveries",
+    validateParams(uuidParams),
+    validateQuery(deliveriesQuerySchema),
+    asyncRoute(async (req, res) => {
+      if (!webhooks) return webhooksUnavailable(res);
+      const deliveries = await webhooks.listDeliveries.execute(
+        req.params.id as string,
+        req.query.limit as number | undefined,
+      );
+      return res.json({ deliveries: deliveries.map(formatWebhookDelivery) });
+    }),
+  );
+
+  router.post(
+    "/webhooks/:id/test",
+    validateParams(uuidParams),
+    asyncRoute(async (req, res) => {
+      if (!webhooks) return webhooksUnavailable(res);
+      const result = await webhooks.sendTest.execute(req.params.id as string, req.authUser.id);
+      return res.json({ result });
+    }),
+  );
+
   return router;
+}
+
+function webhooksUnavailable(res: Response) {
+  return res.status(400).json({ error: WEBHOOKS_UNAVAILABLE });
 }
 
 function maskValue(value: string): string {

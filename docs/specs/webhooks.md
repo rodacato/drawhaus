@@ -2,8 +2,8 @@
 
 > Notify external systems on diagram events with signed payloads and retry logic.
 
-Delivery machinery: shipped, see [ADR-029](../adr/029-webhook-outbox.md). Admin API and UI for
-registering webhooks: not built.
+Shipped. Delivery machinery: [ADR-029](../adr/029-webhook-outbox.md). Admin API and UI:
+[ADR-030](../adr/030-write-only-webhook-secrets.md).
 
 ## Why
 
@@ -42,6 +42,9 @@ nothing, deliberately — see ADR-029.
 
 Headers: `X-Drawhaus-Event`, `X-Drawhaus-Event-Id`, `X-Drawhaus-Delivery`, `X-Drawhaus-Signature`.
 
+The admin "send test event" action sends the same envelope with `event: "webhook.test"`. Nothing
+can subscribe to it, so a receiver should switch on `event` and ignore what it does not know.
+
 Verification, in a receiver:
 
 ```js
@@ -54,11 +57,20 @@ const ok =
 
 Delivery is at-least-once: deduplicate on `id`.
 
+## Admin Surface
+
+Registration, the delivery log and the send-test action live behind the admin guard, beside
+Integration Secrets in Site Settings. The signing secret is generated server-side and shown once,
+at creation or regeneration; no read path returns it. Without `ENCRYPTION_KEY` the panel says why
+webhooks are unavailable instead of rendering an empty registry.
+
 ## Resolved Questions
 
 - **Admin-only config or workspace-level registration?** Admin-only. Config lives with the admin
   surface, beside Integration Secrets. Workspace-level registration stays possible as an additive
   migration and is not built.
+- **Can an admin read a secret back?** No — encryption made it possible, ADR-030 refused it.
+  Regeneration is the recovery path.
 
 ## Corrections
 

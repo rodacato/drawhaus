@@ -291,6 +291,7 @@ app.use(
     repos.integrationSecretsRepo
       ? { repo: repos.integrationSecretsRepo, configProvider: services.configProvider }
       : undefined,
+    useCases.adminWebhooks,
   ),
 );
 app.use(

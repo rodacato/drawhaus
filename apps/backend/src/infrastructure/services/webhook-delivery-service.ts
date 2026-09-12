@@ -1,7 +1,7 @@
 import type { WebhookRepository } from "../../domain/ports/webhook-repository";
 import type { WebhookDelivery } from "../../domain/entities/webhook";
 import { webhookAttemptsExhausted, webhookRetryDelayMs } from "../../domain/entities/webhook";
-import type { WebhookSender } from "./webhook-sender";
+import type { WebhookSender } from "../../domain/ports/webhook-sender";
 import { logger } from "../logger";
 
 export const DELIVERY_BATCH_SIZE = 20;

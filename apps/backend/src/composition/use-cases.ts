@@ -53,6 +53,15 @@ import { ResolveLinkUseCase } from "../application/use-cases/share/resolve-link"
 import { ListLinksUseCase } from "../application/use-cases/share/list-links";
 import { DeleteLinkUseCase } from "../application/use-cases/share/delete-link";
 
+// --- Webhooks ---
+import { ListWebhooksUseCase } from "../application/use-cases/webhooks/list-webhooks";
+import { CreateWebhookUseCase } from "../application/use-cases/webhooks/create-webhook";
+import { UpdateWebhookUseCase } from "../application/use-cases/webhooks/update-webhook";
+import { DeleteWebhookUseCase } from "../application/use-cases/webhooks/delete-webhook";
+import { RegenerateWebhookSecretUseCase } from "../application/use-cases/webhooks/regenerate-webhook-secret";
+import { ListWebhookDeliveriesUseCase } from "../application/use-cases/webhooks/list-webhook-deliveries";
+import { SendTestWebhookEventUseCase } from "../application/use-cases/webhooks/send-test-webhook-event";
+
 // --- Admin ---
 import { ListUsersUseCase } from "../application/use-cases/admin/list-users";
 import { AdminUpdateUserUseCase } from "../application/use-cases/admin/update-user";
@@ -284,6 +293,20 @@ export function createUseCases(repos: Repositories, services: Services) {
     services.emailService,
   );
 
+  // Webhooks
+  const webhookRepo = repos.webhookRepo;
+  const adminWebhooks = webhookRepo
+    ? {
+        list: new ListWebhooksUseCase(webhookRepo),
+        create: new CreateWebhookUseCase(webhookRepo),
+        update: new UpdateWebhookUseCase(webhookRepo),
+        remove: new DeleteWebhookUseCase(webhookRepo),
+        regenerateSecret: new RegenerateWebhookSecretUseCase(webhookRepo),
+        listDeliveries: new ListWebhookDeliveriesUseCase(webhookRepo),
+        sendTest: new SendTestWebhookEventUseCase(webhookRepo, services.webhookSender),
+      }
+    : undefined;
+
   // Scenes
   const listScenes = new ListScenesUseCase(repos.sceneRepo, repos.diagramRepo);
   const getScene = new GetSceneUseCase(repos.sceneRepo, repos.diagramRepo);
@@ -457,6 +480,8 @@ export function createUseCases(repos: Repositories, services: Services) {
     updateSettings,
     getMetrics,
     inviteUser,
+    // webhooks
+    adminWebhooks,
     // scenes
     listScenes,
     getScene,

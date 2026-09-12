@@ -26,8 +26,9 @@ export function createServices(repos: Repositories) {
   const webhookDispatcher = repos.webhookRepo
     ? new OutboxWebhookDispatcher(repos.webhookRepo)
     : undefined;
+  const webhookSender = new FetchWebhookSender();
   const webhookDelivery = repos.webhookRepo
-    ? new WebhookDeliveryService(repos.webhookRepo, new FetchWebhookSender())
+    ? new WebhookDeliveryService(repos.webhookRepo, webhookSender)
     : undefined;
 
   return {
@@ -41,6 +42,7 @@ export function createServices(repos: Repositories) {
     githubOAuthProvider,
     realtimeNotifier,
     webhookDispatcher,
+    webhookSender,
     webhookDelivery,
   };
 }

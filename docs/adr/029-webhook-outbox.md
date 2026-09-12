@@ -116,5 +116,5 @@ subscriber learns that a link was created, its role and its expiry.
   retention job; the `webhook_deliveries_webhook_id_idx` index is shaped for the read side of one.
 - Five use cases gained an optional `WebhookDispatcher` constructor argument. Omitting it — which
   every existing test does — is a no-op, so the feature is off wherever it is not wired.
-- No new HTTP endpoints. Registration, listing and the dead-letter view are a separate change;
-  until they exist a webhook can only be created through the repository.
+- No new HTTP endpoints. Registration, listing and the dead-letter view were a separate change,
+  since shipped — see [ADR-030](030-write-only-webhook-secrets.md).
