@@ -102,6 +102,7 @@ describe("Board — navigating between boards", () => {
     const user = userEvent.setup();
     renderBoardA();
     await waitFor(() => expect(canvasElements()).toBe("el-A"));
+    await waitFor(() => expect(sockets[0]).toBeDefined());
     const socketA = sockets[0];
     act(() => {
       triggerSocketEvent(socketA, "connect");
@@ -113,6 +114,7 @@ describe("Board — navigating between boards", () => {
     expect(canvas.mounts).toBe(2);
     expect(socketA.disconnect).toHaveBeenCalled();
 
+    await waitFor(() => expect(sockets.at(-1)).not.toBe(socketA));
     const socketB = sockets.at(-1)!;
     act(() => {
       triggerSocketEvent(socketB, "connect");
@@ -148,6 +150,7 @@ describe("Board — navigating between boards", () => {
     const pendingB = deferred();
     renderBoardA();
     await waitFor(() => expect(canvasElements()).toBe("el-A"));
+    await waitFor(() => expect(sockets[0]).toBeDefined());
     api.get = (id) => (id === "B" ? pendingB.promise : Promise.resolve(diagram(id)));
 
     await user.click(screen.getByRole("button", { name: "go to B" }));
