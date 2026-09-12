@@ -2,6 +2,7 @@ import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
 import type { Hasher } from "../../../domain/ports/hasher";
 import type { AuditLogger } from "../../../domain/ports/audit-logger";
+import type { RealtimeNotifier } from "../../../domain/ports/realtime-notifier";
 import { NotFoundError, UnauthorizedError, ConflictError } from "../../../domain/errors";
 
 export class DeleteAccountUseCase {
@@ -10,6 +11,7 @@ export class DeleteAccountUseCase {
     private readonly hasher: Hasher,
     private readonly audit: AuditLogger,
     private readonly workspaces: WorkspaceRepository,
+    private readonly notifier: RealtimeNotifier,
   ) {}
 
   async execute(userId: string, password: string | null) {
@@ -48,6 +50,8 @@ export class DeleteAccountUseCase {
     }
 
     this.audit.log({ actor: userId, action: "user.delete_account" });
+    // Sessions go with the user row (ON DELETE CASCADE), so this is when they end.
     await this.users.delete(userId);
+    this.notifier.accessRevoked({ kind: "user-sessions", userId });
   }
 }

@@ -24,8 +24,23 @@ A connection must present a session cookie on the upgrade request or a share tok
 clients that display it as is; clients branch on `reason`. Socket.IO does not retry a refused
 socket (`socket.active` is `false`), so the client shows the refusal and stops. The handshake only
 admits the connection: `join-room` and `join-room-guest` still resolve the credential and decide
-the room and role. A credential that ends while connected keeps its socket until it disconnects,
-and its reconnect is refused. See [ADR-031](adr/031-socket-handshake-auth.md).
+the room and role. See [ADR-031](adr/031-socket-handshake-auth.md).
+
+### Revoked Access
+
+Logout, a password reset, an admin disabling or deleting the user, account deletion and share-link
+revoke close the sockets that credential admitted, after the credential is deleted. Each closed
+socket first receives `access-revoked`, then a server disconnect (`reason` on the client:
+`io server disconnect`), which Socket.IO does not retry:
+
+| `reason`             | When                                                                     |
+| -------------------- | ------------------------------------------------------------------------ |
+| `session-ended`      | The socket's session was logged out, or all of its user's sessions ended |
+| `share-link-revoked` | The socket was admitted with, or joined a board through, a deleted link  |
+
+Logout closes only that session's sockets. A share-link revoke does not close sockets that were
+admitted and joined with a session cookie. An expired session or link is not closed while
+connected, and its reconnect is refused. See [ADR-032](adr/032-close-sockets-on-revoke.md).
 
 ## Room Model
 
@@ -51,6 +66,7 @@ Each diagram is a Socket.IO room. Scenes are sub-rooms scoped to `{roomId}:{scen
 | S → C     | `event-error`     | `{ event, message }`                | Payload of `event` failed validation (see below) |
 | S → Room  | `room-presence`   | `{ roomId, users: PresenceUser[] }` | Updated user list on join/leave                  |
 | S → Room  | `cursor-left`     | `{ userId }`                        | User disconnected from room                      |
+| S → C     | `access-revoked`  | `{ reason }`                        | Credential revoked; a server disconnect follows  |
 
 ### Payload Validation
 

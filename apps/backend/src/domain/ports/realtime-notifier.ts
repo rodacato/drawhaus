@@ -32,13 +32,21 @@ export type CommentChanged =
   | { kind: "resolved"; diagramId: string; thread: CommentThread }
   | { kind: "deleted"; diagramId: string; threadId: string };
 
+/** Emitted only after the credential is gone, so a socket reconnecting in reply is refused. */
+export type AccessRevoked =
+  | { kind: "session"; sessionToken: string }
+  | { kind: "user-sessions"; userId: string }
+  | { kind: "share-link"; shareToken: string };
+
 /**
  * Tells the boards that have a diagram open about a write that did not come from their room,
- * so they stop editing a scene the server has already replaced (ADR-027).
+ * so they stop editing a scene the server has already replaced (ADR-027), and closes the sockets
+ * a revoked credential admitted (ADR-032).
  */
 export interface RealtimeNotifier {
   sceneReplaced(event: SceneReplaced): void;
   snapshotRestored(event: SnapshotRestored): void;
   snapshotCreated(event: SnapshotCreated): void;
   commentChanged(event: CommentChanged): void;
+  accessRevoked(event: AccessRevoked): void;
 }

@@ -125,6 +125,42 @@ describe("useSocketConnection", () => {
     expect(result.current.connectionState).toBe("disconnected");
   });
 
+  test.each([
+    ["authenticated", "session-ended", authJoin, /sesión terminó/],
+    ["guest", "share-link-revoked", guestJoin, /enlace ya no es válido/],
+    ["guest", "session-ended", guestJoin, /sesión terminó/],
+    ["guest", undefined, guestJoin, /enlace ya no es válido/],
+  ])(
+    "a %s board closed by the server (%s) says why instead of reconnecting",
+    (_, reason, joinMode, copy) => {
+      const { result } = renderHook(() => useSocketConnection({ diagramId: "d1", joinMode }));
+      act(() => {
+        triggerSocketEvent(nextSocket, "connect");
+      });
+      act(() => {
+        if (reason) triggerSocketEvent(nextSocket, "access-revoked", { reason });
+        triggerSocketEvent(nextSocket, "disconnect", "io server disconnect");
+      });
+      expect(result.current.connectionState).toBe("error");
+      expect(result.current.connectionError).toMatch(copy);
+    },
+  );
+
+  test("a notice without a server disconnect changes nothing on its own", () => {
+    const { result } = renderHook(() =>
+      useSocketConnection({ diagramId: "d1", joinMode: authJoin }),
+    );
+    act(() => {
+      triggerSocketEvent(nextSocket, "connect");
+      triggerSocketEvent(nextSocket, "access-revoked", { reason: "session-ended" });
+    });
+    act(() => {
+      triggerSocketEvent(nextSocket, "disconnect", "transport close");
+    });
+    expect(result.current.connectionState).toBe("disconnected");
+    expect(result.current.connectionError).toBeNull();
+  });
+
   test("'room-error' transitions to error with the server message", () => {
     const { result } = renderHook(() =>
       useSocketConnection({ diagramId: "d1", joinMode: authJoin }),

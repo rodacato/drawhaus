@@ -150,7 +150,7 @@ export function createUseCases(repos: Repositories, services: Services) {
     services.hasher,
     services.auditLogger,
   );
-  const logout = new LogoutUseCase(repos.sessionRepo);
+  const logout = new LogoutUseCase(repos.sessionRepo, services.realtimeNotifier);
   const getCurrentUser = new GetCurrentUserUseCase(repos.sessionRepo);
   const updateProfile = new UpdateProfileUseCase(repos.userRepo);
   const changePassword = new ChangePasswordUseCase(repos.userRepo, services.hasher);
@@ -170,12 +170,14 @@ export function createUseCases(repos: Repositories, services: Services) {
     repos.sessionRepo,
     repos.passwordResetRepo,
     services.hasher,
+    services.realtimeNotifier,
   );
   const deleteAccount = new DeleteAccountUseCase(
     repos.userRepo,
     services.hasher,
     services.auditLogger,
     repos.workspaceRepo,
+    services.realtimeNotifier,
   );
   const googleAuth = new GoogleAuthUseCase(
     repos.userRepo,
@@ -270,7 +272,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   );
   const resolveLink = new ResolveLinkUseCase(repos.shareRepo, repos.diagramRepo, repos.sceneRepo);
   const listLinks = new ListLinksUseCase(repos.shareRepo, repos.diagramRepo);
-  const deleteLink = new DeleteLinkUseCase(repos.shareRepo);
+  const deleteLink = new DeleteLinkUseCase(repos.shareRepo, services.realtimeNotifier);
 
   // Admin
   const listUsers = new ListUsersUseCase(repos.userRepo);
@@ -278,11 +280,13 @@ export function createUseCases(repos: Repositories, services: Services) {
     repos.userRepo,
     repos.sessionRepo,
     services.auditLogger,
+    services.realtimeNotifier,
   );
   const adminDeleteUser = new AdminDeleteUserUseCase(
     repos.userRepo,
     repos.sessionRepo,
     services.auditLogger,
+    services.realtimeNotifier,
   );
   const getSettings = new GetSiteSettingsUseCase(repos.siteSettingsRepo);
   const updateSettings = new UpdateSiteSettingsUseCase(repos.siteSettingsRepo);

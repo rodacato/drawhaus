@@ -1,6 +1,7 @@
 import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { SessionRepository } from "../../../domain/ports/session-repository";
 import type { AuditLogger } from "../../../domain/ports/audit-logger";
+import type { RealtimeNotifier } from "../../../domain/ports/realtime-notifier";
 import { NotFoundError, InvalidInputError, ForbiddenError } from "../../../domain/errors";
 
 export class AdminDeleteUserUseCase {
@@ -8,6 +9,7 @@ export class AdminDeleteUserUseCase {
     private readonly users: UserRepository,
     private readonly sessions: SessionRepository,
     private readonly audit: AuditLogger,
+    private readonly notifier: RealtimeNotifier,
   ) {}
 
   async execute(targetId: string, adminId: string) {
@@ -28,5 +30,6 @@ export class AdminDeleteUserUseCase {
     this.audit.log({ actor: "admin", action: "admin.delete_user", target: targetId });
     await this.sessions.deleteAllForUser(targetId);
     await this.users.delete(targetId);
+    this.notifier.accessRevoked({ kind: "user-sessions", userId: targetId });
   }
 }

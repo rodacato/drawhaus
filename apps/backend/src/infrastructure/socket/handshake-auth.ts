@@ -6,6 +6,7 @@ import type {
   SocketCredentials,
 } from "../../application/use-cases/realtime/authenticate-socket";
 import { config } from "../config";
+import { admissionRooms } from "./access-rooms";
 import { logger } from "../logger";
 
 export type HandshakeRejection = "unauthenticated" | "server-error";
@@ -32,7 +33,9 @@ export function handshakeAuth(authenticate: AuthenticateSocketUseCase) {
   return async (socket: Socket, next: (err?: ExtendedError) => void): Promise<void> => {
     try {
       const admission = await authenticate.execute(credentialsOf(socket.handshake));
-      next(admission ? undefined : rejection("unauthenticated"));
+      if (!admission) return next(rejection("unauthenticated"));
+      await socket.join(admissionRooms(admission));
+      next();
     } catch (error: unknown) {
       logger.error({ err: error, socketId: socket.id }, "socket handshake auth failed");
       next(rejection("server-error"));
