@@ -37,14 +37,26 @@ export function onEvent<S extends z.ZodType>(
     const ack = takeAck(args);
     const parsed = schema.safeParse(args[0]);
     if (!parsed.success) {
-      logger.warn({ event, socketId: socket.id }, "socket payload rejected");
-      socket.emit(EVENT_ERROR, { event, message: "Invalid payload" });
+      rejectInvalidPayload(socket, event);
       ack?.({ ok: false, reason: "invalid-payload" });
       return;
     }
     const completed = await runSafely(socket, event, () => handler(parsed.data, ack));
     if (!completed) ack?.({ ok: false, reason: "server-error" });
   });
+}
+
+function rejectInvalidPayload(socket: Socket, event: string): void {
+  const count = countInWindow(socket, "invalid");
+  if (count <= RATE_LIMIT_MAX_INVALID) {
+    logger.warn({ event, socketId: socket.id }, "socket payload rejected");
+    socket.emit(EVENT_ERROR, { event, message: "Invalid payload" });
+  } else if (count === RATE_LIMIT_MAX_INVALID + 1) {
+    logger.warn(
+      { event, socketId: socket.id, limit: RATE_LIMIT_MAX_INVALID },
+      "socket invalid payloads over limit; dropping the rest of this window silently",
+    );
+  }
 }
 
 /** Clients that want an outcome pass a callback after the payload; older ones send none. */
@@ -77,14 +89,19 @@ export async function runSafely(
 const RATE_LIMIT_WINDOW_MS = 1000;
 const RATE_LIMIT_MAX_SCENE = 30;
 const RATE_LIMIT_MAX_CURSOR = 60;
+const RATE_LIMIT_MAX_INVALID = 10;
 
-export { RATE_LIMIT_MAX_SCENE, RATE_LIMIT_MAX_CURSOR };
+export { RATE_LIMIT_MAX_SCENE, RATE_LIMIT_MAX_CURSOR, RATE_LIMIT_MAX_INVALID };
 
 export function checkRateLimit(
   socket: { data: Record<string, unknown> },
   bucket: string,
   max: number,
 ): boolean {
+  return countInWindow(socket, bucket) <= max;
+}
+
+function countInWindow(socket: { data: Record<string, unknown> }, bucket: string): number {
   const now = Date.now();
   const startKey = `_rl_${bucket}_start`;
   const countKey = `_rl_${bucket}_count`;
@@ -92,11 +109,11 @@ export function checkRateLimit(
   if (now - windowStart > RATE_LIMIT_WINDOW_MS) {
     socket.data[startKey] = now;
     socket.data[countKey] = 1;
-    return true;
+    return 1;
   }
   const count = ((socket.data[countKey] as number) ?? 0) + 1;
   socket.data[countKey] = count;
-  return count <= max;
+  return count;
 }
 
 export function canEdit(socket: { data: Record<string, unknown> }, roomId: string): boolean {
