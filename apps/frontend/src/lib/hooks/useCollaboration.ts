@@ -23,6 +23,7 @@ export function useCollaboration({
   canvasPrefs,
   onConflict,
   onRemoteDelete,
+  onEditsReplaced,
 }: CollaborationOptions): CollaborationState {
   /* ─── toolbar state (owned by parent, not a sub-hook concern) ─── */
   const [toolbarOpen, setToolbarOpen] = useState(false);
@@ -140,6 +141,7 @@ export function useCollaboration({
     pendingSceneRef,
     onConflict,
     onRemoteDelete,
+    onEditsReplaced,
   });
 
   // Passed to Excalidraw as a prop: it applies at mount and on every change, whenever the

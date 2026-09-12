@@ -19,12 +19,14 @@ export type CollaborationOptions = {
   canvasPrefs: CanvasPrefs;
   onConflict?: ConflictCallback;
   onRemoteDelete?: RemoteDeleteCallback;
+  onEditsReplaced?: EditsReplacedCallback;
 };
 
 export type LockHolderInfo = { userId: string; userName: string };
 
 export type ConflictCallback = (conflictIds: string[], fromUserId: string) => void;
 export type RemoteDeleteCallback = (deletedIds: string[], fromUserId: string) => void;
+export type EditsReplacedCallback = (discardedIds: string[]) => void;
 
 export type CollaborationState = {
   saveState: SaveState;

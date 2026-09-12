@@ -78,6 +78,14 @@ export default function BoardEditor({
     [toast],
   );
 
+  const handleEditsReplaced = useCallback(
+    (discardedIds: string[]) => {
+      const target = discardedIds.length === 1 ? "un elemento" : `${discardedIds.length} elementos`;
+      toast(`El diagrama fue reemplazado; se descartaron tus cambios en ${target}`, "error");
+    },
+    [toast],
+  );
+
   const collab = useCollaboration({
     diagramId,
     joinMode: { type: "authenticated", roomId: diagramId },
@@ -86,6 +94,7 @@ export default function BoardEditor({
     canvasPrefs,
     onConflict: handleConflict,
     onRemoteDelete: handleRemoteDelete,
+    onEditsReplaced: handleEditsReplaced,
   });
   presenceRef.current = collab;
 

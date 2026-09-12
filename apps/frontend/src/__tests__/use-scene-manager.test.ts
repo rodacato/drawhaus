@@ -22,6 +22,7 @@ import { SceneSync } from "../lib/scene-sync";
 
 type OnConflict = NonNullable<UseSceneManagerParams["onConflict"]>;
 type OnRemoteDelete = NonNullable<UseSceneManagerParams["onRemoteDelete"]>;
+type OnEditsReplaced = NonNullable<UseSceneManagerParams["onEditsReplaced"]>;
 
 function renderScene(opts: {
   socket: MockSocket;
@@ -32,6 +33,7 @@ function renderScene(opts: {
   revision?: number | null;
   onConflict?: Mock<OnConflict>;
   onRemoteDelete?: Mock<OnRemoteDelete>;
+  onEditsReplaced?: Mock<OnEditsReplaced>;
   pendingSceneRef?: { current: { elements: unknown[] } | null };
 }) {
   const socketRef = makeRef(opts.socket as unknown as Socket | null);
@@ -57,6 +59,7 @@ function renderScene(opts: {
         pendingSceneRef,
         onConflict: opts.onConflict,
         onRemoteDelete: opts.onRemoteDelete,
+        onEditsReplaced: opts.onEditsReplaced,
       }),
     ),
   };
@@ -181,6 +184,83 @@ describe("useSceneManager", () => {
     const scene = api.getSceneElementsIncludingDeleted() as { id: string; version: number }[];
     expect(scene.map((e) => `${e.id}@${e.version}`)).toEqual(["a@1"]);
     expect(sync.editedIds(scene)).toEqual(new Set());
+  });
+
+  test("a replace that throws away unsaved edits says so, and still throws them away", async () => {
+    const onEditsReplaced = vi.fn<OnEditsReplaced>();
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 3 }] });
+    renderScene({ socket, api, shared: [{ id: "a", version: 1 }], revision: 1, onEditsReplaced });
+
+    act(() => {
+      triggerSocketEvent(socket, "scene-from-db", {
+        elements: [{ id: "a", version: 1 }],
+        revision: 2,
+      });
+    });
+
+    await waitFor(() => expect(onEditsReplaced).toHaveBeenCalledWith(["a"]));
+    const scene = api.getSceneElementsIncludingDeleted() as { id: string; version: number }[];
+    expect(scene.map((e) => `${e.id}@${e.version}`)).toEqual(["a@1"]);
+  });
+
+  test("a replace a local delete was waiting on is reported, although no element carries it", async () => {
+    const onEditsReplaced = vi.fn<OnEditsReplaced>();
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });
+    const { sync } = renderScene({
+      socket,
+      api,
+      shared: [
+        { id: "a", version: 1 },
+        { id: "b", version: 1 },
+      ],
+      revision: 1,
+      onEditsReplaced,
+    });
+    sync.takeChanges([{ id: "a", version: 1 }]);
+
+    act(() => {
+      triggerSocketEvent(socket, "scene-from-db", {
+        elements: [
+          { id: "a", version: 1 },
+          { id: "b", version: 1 },
+        ],
+        revision: 2,
+      });
+    });
+
+    await waitFor(() => expect(onEditsReplaced).toHaveBeenCalledWith(["b"]));
+  });
+
+  test("a replace with nothing unsaved is silent", async () => {
+    const onEditsReplaced = vi.fn<OnEditsReplaced>();
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });
+    renderScene({ socket, api, shared: [{ id: "a", version: 1 }], revision: 1, onEditsReplaced });
+
+    act(() => {
+      triggerSocketEvent(socket, "scene-from-db", {
+        elements: [{ id: "a", version: 7 }],
+        revision: 2,
+      });
+    });
+
+    await waitFor(() => expect(api.updateScene).toHaveBeenCalled());
+    expect(onEditsReplaced).not.toHaveBeenCalled();
+  });
+
+  test("a reconnect keeps unsaved edits, so it is silent too", async () => {
+    const onEditsReplaced = vi.fn<OnEditsReplaced>();
+    const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 3 }] });
+    renderScene({ socket, api, shared: [{ id: "a", version: 1 }], revision: 1, onEditsReplaced });
+
+    act(() => {
+      triggerSocketEvent(socket, "scene-from-db", {
+        elements: [{ id: "a", version: 1 }],
+        revision: 1,
+      });
+    });
+
+    await waitFor(() => expect(api.updateScene).toHaveBeenCalled());
+    expect(onEditsReplaced).not.toHaveBeenCalled();
   });
 
   test("a delta computed on an older revision is ignored", () => {
