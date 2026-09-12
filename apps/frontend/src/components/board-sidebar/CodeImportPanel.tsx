@@ -145,6 +145,10 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
         const result = await plantumlToElements(code);
         newElements = result.elements;
       }
+      if (newElements.length === 0) {
+        setError("El diagrama no produjo ningún elemento. Revisa la sintaxis.");
+        return;
+      }
       const existing = replaceAll ? [] : (api.getSceneElements() as any[]);
       api.updateScene({ elements: [...existing, ...newElements] });
       onClose();
