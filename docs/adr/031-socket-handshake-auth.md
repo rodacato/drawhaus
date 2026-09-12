@@ -1,6 +1,6 @@
 # ADR-031: Socket Handshake Admits a Credential, Joins Still Authorize the Room
 
-**Status:** proposed (one deploy consequence needs the owner's sign-off, see "Deploy window")
+**Status:** accepted
 **Date:** 2026-09-12
 **Refines:** ADR-007 (socket protocol design), ADR-028 (save acknowledgement)
 
@@ -99,12 +99,11 @@ A deploy restarts the backend, and every open tab reconnects through the new han
   between the disconnect and the reload do not reach the server: guests cannot use the REST save
   fallback.
 
-**This is the decision the owner needs to confirm.** The alternative is a grace release that
+**Decided 2026-09-12: refuse from the first deploy.** The rejected alternative was a grace release that
 admits a handshake with no credential for one deploy and removes that path in the next. It keeps
 old guest tabs alive, but for that whole release it admits exactly the anonymous sockets this
 change exists to refuse, since the server cannot tell an old guest tab from any other client with
-no credential, and it needs a second deploy to finish. The recommendation is to refuse from the
-first deploy. Drawhaus is a personal tool (ADR-001), a guest tab open across a deploy is rare, and
+no credential, and it needs a second deploy to finish. Drawhaus is a personal tool (ADR-001), a guest tab open across a deploy is rare, and
 it recovers with a reload.
 
 ## Alternatives Considered
