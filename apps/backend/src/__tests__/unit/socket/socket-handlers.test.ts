@@ -134,8 +134,8 @@ describe("socket handlers — malformed payloads", () => {
   });
 
   it("never throws and answers with event-error instead of room-error", async () => {
-    const { socket } = setup();
     for (const event of CLIENT_EVENTS) {
+      const { socket } = setup();
       for (const payload of MALFORMED) {
         socket.emitted = [];
         await assert.doesNotReject(

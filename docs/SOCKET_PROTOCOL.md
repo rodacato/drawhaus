@@ -38,7 +38,8 @@ Each diagram is a Socket.IO room. Scenes are sub-rooms scoped to `{roomId}:{scen
 
 Every client → server payload is checked against a Zod schema before any handler logic runs
 (`onEvent` in `infrastructure/socket/helpers.ts`). A payload that fails is dropped and only the
-sender receives `event-error` with `{ event, message: "Invalid payload" }`. It is deliberately
+sender receives `event-error` with `{ event, message: "Invalid payload" }` (subject to the `invalid`
+rate limit below). It is deliberately
 separate from `room-error`, which clients treat as a failed connection: a malformed event must not
 tear down a session. Exceptions thrown inside a handler are logged server-side and never reach the
 process. Optional `sceneId` fields accept `null` as well as omission. Comment events apply the same
@@ -50,7 +51,8 @@ limits as their REST routes: `body` 1–5000 characters (trimmed), `elementId` u
 A client may pass a Socket.IO ack callback after the payload of any client → server event. It is
 optional: an event sent without one behaves exactly as before. When one is sent, `onEvent` answers
 it at most once with `{ ok: true, ... }` or `{ ok: false, reason }`, where `reason` is
-`invalid-payload` for a payload the schema rejected and `server-error` for a handler that threw.
+`invalid-payload` for a payload the schema rejected — including one dropped over the `invalid` rate
+limit — and `server-error` for a handler that threw.
 Only `save-scene` answers its own outcomes today; every other handler leaves the callback to the
 wrapper, so a client that acks them waits for its own timeout. See
 [ADR-028](adr/028-save-acknowledgement.md).
@@ -179,13 +181,23 @@ and broadcasts nothing.
 
 ## Rate Limits
 
-| Bucket    | Max per second | Applied to                       |
-| --------- | -------------- | -------------------------------- |
-| `scene`   | 30             | `scene-update`                   |
-| `cursor`  | 60             | `cursor-move`, `viewport-update` |
-| `comment` | 10             | All comment events               |
+| Bucket    | Max per second | Applied to                               |
+| --------- | -------------- | ---------------------------------------- |
+| `scene`   | 30             | `scene-update`, `scene-delta`            |
+| `cursor`  | 60             | `cursor-move`, `viewport-update`         |
+| `comment` | 10             | All comment events                       |
+| `invalid` | 10             | Payloads of any event the schema rejects |
 
-Rate limits are disabled when `NODE_ENV=test`.
+Limits are per socket, over a fixed one-second window, and an event over its limit is dropped.
+Up to the `invalid` limit, each rejected payload is logged and answered with `event-error`. Past
+it, the rest of the window's rejected payloads produce neither: one warning is logged when the
+limit trips, so a flood leaves evidence without costing a log line per frame. Their ack callback,
+when one was sent, is still answered with `invalid-payload`; it is one packet back per packet in,
+and a client waiting on it must not be left to its timeout. Valid payloads never count against
+`invalid`.
+
+Unlike HTTP rate limiting, socket limits stay active when `NODE_ENV=test`: the client's own
+throttles (below) keep a normal session well under them.
 
 ## Types
 
