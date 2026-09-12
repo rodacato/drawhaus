@@ -16,6 +16,7 @@ export interface PendingAck {
 export interface MockSocket {
   id: string;
   connected: boolean;
+  active: boolean;
   emit: ReturnType<typeof vi.fn>;
   on: ReturnType<typeof vi.fn>;
   off: ReturnType<typeof vi.fn>;
@@ -75,6 +76,7 @@ export function createMockSocket(overrides: { id?: string; connected?: boolean }
   const socket: MockSocket = {
     id: overrides.id ?? "socket-self",
     connected: overrides.connected ?? true,
+    active: true,
     emit,
     on,
     off,

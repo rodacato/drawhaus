@@ -133,6 +133,7 @@ Architectural decisions that shaped Drawhaus. Full ADRs in [`docs/adr/`](adr/).
 | Acknowledged saves                 | `save-scene` answers on a Socket.IO ack with a timeout                | Saves reported success on emit, refusals hung the badge, and failures rode `room-error`             | [028](adr/028-save-acknowledgement.md)               |
 | Webhook delivery                   | Postgres outbox drained by a poller; `FOR UPDATE SKIP LOCKED`         | Redis is optional, so a Redis queue would half-work; the same table is the dead-letter log          | [029](adr/029-webhook-outbox.md)                     |
 | Webhook secrets                    | Returned at creation and regeneration only; never readable            | Encryption makes a reveal possible, so refusing one has to be deliberate; test event is synchronous | [030](adr/030-write-only-webhook-secrets.md)         |
+| Socket handshake auth              | `io.use` admits a session or share token; joins still authorize       | No anonymous socket reaches a handler; room roles stay decided at join; old guest tabs must reload  | [031](adr/031-socket-handshake-auth.md)              |
 
 Other decisions not warranting a full ADR:
 

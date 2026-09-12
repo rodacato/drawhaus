@@ -1,6 +1,7 @@
 import type { Server as HttpServer } from "node:http";
 import { Server } from "socket.io";
 import msgpackParser from "socket.io-msgpack-parser";
+import type { AuthenticateSocketUseCase } from "../../application/use-cases/realtime/authenticate-socket";
 import type { JoinRoomUseCase } from "../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../application/use-cases/realtime/join-room-guest";
 import type { SaveSceneUseCase } from "../../application/use-cases/realtime/save-scene";
@@ -10,6 +11,7 @@ import type { ReplyCommentUseCase } from "../../application/use-cases/comments/r
 import type { ResolveCommentUseCase } from "../../application/use-cases/comments/resolve-comment";
 import type { DeleteCommentUseCase } from "../../application/use-cases/comments/delete-comment";
 import type { CreateSnapshotUseCase } from "../../application/use-cases/snapshots/create-snapshot";
+import { handshakeAuth } from "./handshake-auth";
 import { registerRoomHandlers } from "./handlers/room.handler";
 import { registerSceneHandlers } from "./handlers/scene.handler";
 import { registerCursorHandlers } from "./handlers/cursor.handler";
@@ -22,6 +24,7 @@ import { activeCollaborators } from "../metrics";
 export async function setupSocketServer(
   httpServer: HttpServer,
   useCases: {
+    authenticateSocket: AuthenticateSocketUseCase;
     joinRoom: JoinRoomUseCase;
     joinRoomGuest: JoinRoomGuestUseCase;
     saveScene: SaveSceneUseCase;
@@ -46,6 +49,8 @@ export async function setupSocketServer(
   });
 
   await attachRedisAdapter(io);
+
+  io.use(handshakeAuth(useCases.authenticateSocket));
 
   io.on("connection", (socket) => {
     socket.data.roomRoles = {};

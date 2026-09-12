@@ -18,6 +18,17 @@ export interface UseSocketConnectionReturn {
   selfUserId: string | null;
 }
 
+type ConnectError = Error & { data?: { reason?: string } };
+
+function refusalMessage(joinMode: JoinMode, reason: string | undefined): string {
+  if (reason === "unauthenticated") {
+    return joinMode.type === "guest"
+      ? "Este enlace ya no es válido. Pide uno nuevo."
+      : "Tu sesión terminó. Recarga la página para volver a entrar.";
+  }
+  return "No se pudo verificar tu acceso. Recarga la página.";
+}
+
 export function useSocketConnection({
   diagramId,
   joinMode,
@@ -31,7 +42,9 @@ export function useSocketConnection({
 
   useEffect(() => {
     let cancelled = false;
-    const socket = createSocket();
+    const socket = createSocket(
+      joinMode.type === "guest" ? { shareToken: joinMode.shareToken } : undefined,
+    );
     socketRef.current = socket;
     setSocketGeneration((g) => g + 1);
 
@@ -55,13 +68,14 @@ export function useSocketConnection({
       setConnectionError(null);
       joinRoom();
     });
-    socket.on("connect_error", (err) => {
+    socket.on("connect_error", (err: ConnectError) => {
       if (cancelled) {
         return;
       }
       console.warn("Socket connect_error:", err.message);
       setConnectionState("error");
-      setConnectionError(err.message);
+      // An inactive socket was refused by the server and socket.io will not retry it.
+      setConnectionError(socket.active ? err.message : refusalMessage(joinMode, err.data?.reason));
     });
     socket.on("disconnect", (reason) => {
       if (cancelled) {

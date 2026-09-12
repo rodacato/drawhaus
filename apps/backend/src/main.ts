@@ -378,6 +378,7 @@ async function startServer(): Promise<void> {
 
   const httpServer = createServer(app);
   const io = await setupSocketServer(httpServer, {
+    authenticateSocket: useCases.authenticateSocket,
     joinRoom: useCases.joinRoom,
     joinRoomGuest: useCases.joinRoomGuest,
     saveScene: useCases.saveScene,

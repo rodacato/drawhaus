@@ -9,9 +9,13 @@ import {
 } from "./_helpers/mock-socket";
 
 let nextSocket: MockSocket;
+let handshakeAuth: unknown;
 
 vi.mock("../lib/services/socket", () => ({
-  createSocket: () => nextSocket,
+  createSocket: (auth?: unknown) => {
+    handshakeAuth = auth;
+    return nextSocket;
+  },
 }));
 
 // Import AFTER the mock is registered
@@ -22,6 +26,7 @@ const guestJoin = { type: "guest" as const, shareToken: "tok-9", guestName: "Vis
 
 describe("useSocketConnection", () => {
   beforeEach(() => {
+    handshakeAuth = "not-created";
     nextSocket = createMockSocket({ id: "sock-1" });
     vi.spyOn(console, "warn").mockImplementation(() => {});
   });
@@ -66,6 +71,45 @@ describe("useSocketConnection", () => {
     });
     expect(result.current.connectionState).toBe("error");
     expect(result.current.connectionError).toBe("no route");
+  });
+
+  test("a guest socket presents its share token at the handshake", () => {
+    renderHook(() => useSocketConnection({ diagramId: "d1", joinMode: guestJoin }));
+    expect(handshakeAuth).toEqual({ shareToken: "tok-9" });
+  });
+
+  test("an authenticated socket presents no share token and relies on its cookie", () => {
+    renderHook(() => useSocketConnection({ diagramId: "d1", joinMode: authJoin }));
+    expect(handshakeAuth).toBeUndefined();
+  });
+
+  const refused = { message: "Not authorized to connect. Reload the page." };
+
+  test.each([
+    ["authenticated", "unauthenticated", authJoin, /sesión terminó/],
+    ["guest", "unauthenticated", guestJoin, /enlace ya no es válido/],
+    ["guest", "server-error", guestJoin, /verificar tu acceso/],
+  ])(
+    "a refused %s handshake (%s) says why instead of the raw message",
+    (_, reason, joinMode, copy) => {
+      const { result } = renderHook(() => useSocketConnection({ diagramId: "d1", joinMode }));
+      nextSocket.active = false;
+      act(() => {
+        triggerSocketEvent(nextSocket, "connect_error", { ...refused, data: { reason } });
+      });
+      expect(result.current.connectionState).toBe("error");
+      expect(result.current.connectionError).toMatch(copy);
+    },
+  );
+
+  test("a transient connect_error on a socket still retrying keeps the transport message", () => {
+    const { result } = renderHook(() =>
+      useSocketConnection({ diagramId: "d1", joinMode: guestJoin }),
+    );
+    act(() => {
+      triggerSocketEvent(nextSocket, "connect_error", { message: "websocket error" });
+    });
+    expect(result.current.connectionError).toBe("websocket error");
   });
 
   test("'disconnect' sets state to 'disconnected'", () => {

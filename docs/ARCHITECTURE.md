@@ -309,11 +309,19 @@ HTTP Request
 
 ```
 Socket.IO Handshake
-  │  (session cookie OR share token)
+  │  (session cookie header OR auth: { shareToken })
   ▼
 ┌─────────────────────────────────────┐
-│  Socket Auth Middleware              │
-│  Validates session or share token    │
+│  Socket Auth Middleware (io.use)     │
+│  Admits a valid session or share     │
+│  token; refuses with connect_error   │
+└──────────┬──────────────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────┐
+│  join-room / join-room-guest         │
+│  Re-resolve the credential, set the  │
+│  identity and the per-room role      │
 └──────────┬──────────────────────────┘
            │
            ▼
