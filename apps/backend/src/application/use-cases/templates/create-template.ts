@@ -1,11 +1,14 @@
 import type { TemplateRepository } from "../../../domain/ports/template-repository";
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
+import type { WebhookDispatcher } from "../../../domain/ports/webhook-dispatcher";
 import { requireWorkspaceAccess } from "../../helpers/require-placement";
+import { templateEventData } from "../../helpers/webhook-payloads";
 
 export class CreateTemplateUseCase {
   constructor(
     private readonly templates: TemplateRepository,
     private readonly workspaces: WorkspaceRepository,
+    private readonly webhooks?: WebhookDispatcher,
   ) {}
 
   async execute(input: {
@@ -22,7 +25,7 @@ export class CreateTemplateUseCase {
       userId: input.creatorId,
       workspaceId: input.workspaceId ?? null,
     });
-    return this.templates.create({
+    const template = await this.templates.create({
       creatorId: input.creatorId,
       workspaceId: input.workspaceId,
       title: input.title,
@@ -32,5 +35,13 @@ export class CreateTemplateUseCase {
       appState: input.appState,
       thumbnail: input.thumbnail,
     });
+
+    this.webhooks?.dispatch({
+      event: "template.created",
+      actorId: input.creatorId,
+      data: templateEventData(template),
+    });
+
+    return template;
   }
 }

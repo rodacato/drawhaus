@@ -192,6 +192,7 @@ export function createUseCases(repos: Repositories, services: Services) {
     repos.diagramRepo,
     repos.workspaceRepo,
     repos.folderRepo,
+    services.webhookDispatcher,
   );
   const getDiagram = new GetDiagramUseCase(repos.diagramRepo, repos.sceneRepo);
   const listDiagrams = new ListDiagramsUseCase(repos.diagramRepo);
@@ -200,8 +201,13 @@ export function createUseCases(repos: Repositories, services: Services) {
     repos.diagramRepo,
     repos.sceneRepo,
     services.realtimeNotifier,
+    services.webhookDispatcher,
   );
-  const deleteDiagram = new DeleteDiagramUseCase(repos.diagramRepo, repos.workspaceRepo);
+  const deleteDiagram = new DeleteDiagramUseCase(
+    repos.diagramRepo,
+    repos.workspaceRepo,
+    services.webhookDispatcher,
+  );
   const updateThumbnail = new UpdateThumbnailUseCase(repos.diagramRepo);
   const toggleStar = new ToggleStarUseCase(repos.diagramRepo);
   const duplicateDiagram = new DuplicateDiagramUseCase(repos.diagramRepo, repos.sceneRepo);
@@ -247,7 +253,11 @@ export function createUseCases(repos: Repositories, services: Services) {
   );
 
   // Share
-  const createLink = new CreateShareLinkUseCase(repos.shareRepo, repos.diagramRepo);
+  const createLink = new CreateShareLinkUseCase(
+    repos.shareRepo,
+    repos.diagramRepo,
+    services.webhookDispatcher,
+  );
   const resolveLink = new ResolveLinkUseCase(repos.shareRepo, repos.diagramRepo, repos.sceneRepo);
   const listLinks = new ListLinksUseCase(repos.shareRepo, repos.diagramRepo);
   const deleteLink = new DeleteLinkUseCase(repos.shareRepo);
@@ -334,7 +344,11 @@ export function createUseCases(repos: Repositories, services: Services) {
   );
 
   // Templates
-  const createTemplate = new CreateTemplateUseCase(repos.templateRepo, repos.workspaceRepo);
+  const createTemplate = new CreateTemplateUseCase(
+    repos.templateRepo,
+    repos.workspaceRepo,
+    services.webhookDispatcher,
+  );
   const getTemplate = new GetTemplateUseCase(repos.templateRepo, repos.workspaceRepo);
   const listTemplates = new ListTemplatesUseCase(repos.templateRepo, repos.workspaceRepo);
   const updateTemplate = new UpdateTemplateUseCase(repos.templateRepo, repos.workspaceRepo);

@@ -7,6 +7,9 @@ import { StructuredAuditLogger } from "../infrastructure/services/audit-logger";
 import { GoogleOAuthProvider } from "../infrastructure/services/google-oauth-provider";
 import { GitHubOAuthProvider } from "../infrastructure/services/github-oauth-provider";
 import { SocketIoRealtimeNotifier } from "../infrastructure/socket/realtime-notifier";
+import { OutboxWebhookDispatcher } from "../infrastructure/services/webhook-dispatcher";
+import { FetchWebhookSender } from "../infrastructure/services/webhook-sender";
+import { WebhookDeliveryService } from "../infrastructure/services/webhook-delivery-service";
 import type { Repositories } from "./repositories";
 
 export function createServices(repos: Repositories) {
@@ -19,6 +22,13 @@ export function createServices(repos: Repositories) {
   const googleOAuthProvider = new GoogleOAuthProvider();
   const githubOAuthProvider = new GitHubOAuthProvider();
   const realtimeNotifier = new SocketIoRealtimeNotifier();
+  // Without an encryption key there is nowhere to keep a webhook secret, so the feature is off.
+  const webhookDispatcher = repos.webhookRepo
+    ? new OutboxWebhookDispatcher(repos.webhookRepo)
+    : undefined;
+  const webhookDelivery = repos.webhookRepo
+    ? new WebhookDeliveryService(repos.webhookRepo, new FetchWebhookSender())
+    : undefined;
 
   return {
     hasher,
@@ -30,6 +40,8 @@ export function createServices(repos: Repositories) {
     googleOAuthProvider,
     githubOAuthProvider,
     realtimeNotifier,
+    webhookDispatcher,
+    webhookDelivery,
   };
 }
 
