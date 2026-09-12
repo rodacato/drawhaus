@@ -67,6 +67,8 @@ export default defineConfig({
         NODE_ENV: "test",
         DATABASE_URL: databaseUrl,
         SESSION_SECRET: process.env.SESSION_SECRET ?? "e2e-test-secret",
+        // Without it the webhook repository is null and its admin surface reports itself unavailable.
+        ENCRYPTION_KEY: "0".repeat(64),
         PORT: "4000",
         FRONTEND_URL: "http://localhost:5173",
       },
