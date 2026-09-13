@@ -12,6 +12,7 @@ import { OfflineRecoveryDialog } from "@/components/OfflineRecoveryDialog";
 import { CommentsPanel } from "@/components/CommentsPanel";
 import { CommentIndicators } from "@/components/CommentIndicators";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
+import { useCollaborationFeedback } from "@/lib/hooks/useCollaborationFeedback";
 import { useOfflineSnapshot } from "@/lib/hooks/collaboration/useOfflineSnapshot";
 import type { OfflineSnapshot } from "@/lib/offline-storage";
 import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
@@ -52,51 +53,16 @@ export default function BoardEditor({
   const { prefs: canvasPrefs, updatePrefs: updateCanvasPrefs } = useCanvasPrefs();
 
   const toast = useToast();
-  const presenceRef = useRef<{ presenceUsers: Array<{ userId: string; name: string }> }>({
-    presenceUsers: [],
-  });
-
-  const handleConflict = useCallback(
-    (conflictIds: string[], fromUserId: string) => {
-      const userName =
-        presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ??
-        "Otro usuario";
-      const target = conflictIds.length === 1 ? "un elemento" : `${conflictIds.length} elementos`;
-      toast(`${userName} modificó ${target} que editabas`, "info");
-    },
-    [toast],
-  );
-
-  const handleRemoteDelete = useCallback(
-    (deletedIds: string[], fromUserId: string) => {
-      const userName =
-        presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ??
-        "Otro usuario";
-      const target = deletedIds.length === 1 ? "un elemento" : `${deletedIds.length} elementos`;
-      toast(`${userName} eliminó ${target} que editabas`, "info");
-    },
-    [toast],
-  );
-
-  const handleEditsReplaced = useCallback(
-    (discardedIds: string[]) => {
-      const target = discardedIds.length === 1 ? "un elemento" : `${discardedIds.length} elementos`;
-      toast(`El diagrama fue reemplazado; se descartaron tus cambios en ${target}`, "error");
-    },
-    [toast],
-  );
-
+  const feedback = useCollaborationFeedback();
   const collab = useCollaboration({
     diagramId,
     joinMode: { type: "authenticated", roomId: diagramId },
     initialElements,
     initialAppState,
     canvasPrefs,
-    onConflict: handleConflict,
-    onRemoteDelete: handleRemoteDelete,
-    onEditsReplaced: handleEditsReplaced,
+    ...feedback.callbacks,
   });
-  presenceRef.current = collab;
+  feedback.collabRef.current = collab;
 
   const handleCanvasPrefsChange = useCallback(
     (patch: Partial<CanvasPrefs>) => {

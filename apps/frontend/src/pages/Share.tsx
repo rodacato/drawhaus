@@ -7,6 +7,7 @@ import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/components/BoardToolbar";
 import { CollaborationBadge } from "@/components/CollaborationBadge";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
+import { useCollaborationFeedback } from "@/lib/hooks/useCollaborationFeedback";
 import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import { ui } from "@/lib/ui";
 
@@ -263,13 +264,16 @@ function ShareCanvas({
   readonly guestName: string;
 }) {
   const { prefs: canvasPrefs } = useCanvasPrefs();
+  const feedback = useCollaborationFeedback();
   const collab = useCollaboration({
     diagramId: data.diagramId,
     joinMode: { type: "guest", shareToken, guestName },
     initialElements: data.elements,
     initialAppState: data.appState,
     canvasPrefs,
+    ...feedback.callbacks,
   });
+  feedback.collabRef.current = collab;
   const { canEdit } = collab;
 
   // No lock acquisition needed — concurrent editing
