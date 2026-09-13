@@ -21,7 +21,11 @@
   },
   "remoteUser": "vscode",
   "updateRemoteUserUID": true,
-  "forwardPorts": [3000, 4000, 5173, 5432, 6479],
+  "forwardPorts": [4000, 5173],
+  "portsAttributes": {
+    "4000": { "label": "Backend (npm run dev)" },
+    "5173": { "label": "Frontend (Vite)" }
+  },
   "postCreateCommand": "bash .devcontainer/post-install.sh",
   "customizations": {
     "vscode": {
