@@ -10,7 +10,7 @@ If you discover a security vulnerability in Drawhaus, please report it responsib
 
 **Do NOT open a public issue.** Instead:
 
-1. Send an email to **security@drawhaus.dev** with:
+1. Open a private report through [GitHub's private vulnerability reporting](https://github.com/rodacato/drawhaus/security/advisories/new) (**Security → Report a vulnerability**) with:
    - A description of the vulnerability.
    - Steps to reproduce it.
    - The potential impact.
