@@ -32,7 +32,7 @@ This Code of Conduct applies within all community spaces, and also applies when 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project maintainer at **security@drawhaus.dev**. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project maintainer privately through a [private security advisory](https://github.com/rodacato/drawhaus/security/advisories/new), the repository's only private channel, or to GitHub through **Report abuse**. All complaints will be reviewed and investigated promptly and fairly.
 
 ## Attribution
 
