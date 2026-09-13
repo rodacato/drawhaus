@@ -29,7 +29,7 @@ export class ResendEmailService implements EmailService {
       : config.fromEmail;
 
     if (!apiKey) return null;
-    return { client: new Resend(apiKey), from: from || "noreply@drawhaus.app" };
+    return { client: new Resend(apiKey), from: from || config.fromEmail };
   }
 
   async sendInviteEmail(

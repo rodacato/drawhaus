@@ -8,13 +8,25 @@ function requireEnv(name: string): string {
   return value ?? "";
 }
 
+// An empty or host-less URL would leave CORS, the socket origin and every emailed link pointing nowhere.
+function requirePublicUrl(name: string): string {
+  const value = requireEnv(name);
+  const url = URL.canParse(value) ? new URL(value) : null;
+  if (!url || !["http:", "https:"].includes(url.protocol) || !url.hostname) {
+    throw new Error(`${name} must be an absolute http(s) URL with a hostname, got "${value}"`);
+  }
+  return value;
+}
+
+const frontendUrl = isProduction
+  ? requirePublicUrl("FRONTEND_URL")
+  : process.env.FRONTEND_URL || "http://localhost:5173";
+
 export const config = {
   port: Number(process.env.PORT) || 4000,
   metricsEnabled: process.env.METRICS_ENABLED === "true",
   metricsToken: process.env.METRICS_TOKEN ?? "",
-  frontendUrl: isProduction
-    ? requireEnv("FRONTEND_URL")
-    : (process.env.FRONTEND_URL ?? "http://localhost:5173"),
+  frontendUrl,
   databaseUrl: isProduction
     ? requireEnv("DATABASE_URL")
     : (process.env.DATABASE_URL ?? "postgres://drawhaus:drawhaus@db:5432/drawhaus"),
@@ -30,7 +42,7 @@ export const config = {
   sentryTracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0),
   sentryRelease: process.env.SENTRY_RELEASE ?? process.env.GIT_COMMIT ?? undefined,
   resendApiKey: process.env.RESEND_API_KEY ?? "",
-  fromEmail: process.env.FROM_EMAIL ?? "noreply@drawhaus.app",
+  fromEmail: process.env.FROM_EMAIL || `noreply@${new URL(frontendUrl).hostname}`,
   // Google OAuth (optional — feature disabled when not set)
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",

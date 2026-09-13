@@ -1,3 +1,5 @@
+<%# The public hostnames every derived URL comes from. An empty host makes kamal-proxy route every hostname. %>
+<% %w[APP_HOST API_HOST].each { |name| raise "#{name} must be set to a bare public hostname such as draw.example.com, got #{ENV[name].inspect}" unless ENV[name].to_s.match?(/\A[a-z0-9-]+(\.[a-z0-9-]+)+\z/i) } %>
 service: drawhaus-backend
 
 # Image name without registry prefix; Kamal prepends `registry.server` automatically.
@@ -13,7 +15,7 @@ servers:
 
 proxy:
   ssl: false
-  host: drawhaus-api.notdefined.dev
+  host: <%= ENV["API_HOST"] %>
   app_port: 4000
   healthcheck:
     interval: 10
@@ -42,6 +44,11 @@ env:
     METRICS_ENABLED: "<%= ENV.fetch("METRICS_ENABLED", "false") %>"
     NODE_ENV: production
     FILES_PATH: /data/files
+    FRONTEND_URL: "https://<%= ENV["APP_HOST"] %>"
+    GH_REDIRECT_URI: "https://<%= ENV["API_HOST"] %>/api/auth/github/callback"
+    GOOGLE_REDIRECT_URI: "https://<%= ENV["API_HOST"] %>/api/auth/google/callback"
+    # Empty falls back to noreply@APP_HOST in the backend.
+    FROM_EMAIL: "<%= ENV.fetch("FROM_EMAIL", "") %>"
     SENTRY_ENVIRONMENT: "<%= ENV.fetch("SENTRY_ENVIRONMENT", "production") %>"
     SENTRY_TRACES_SAMPLE_RATE: "<%= ENV.fetch("SENTRY_TRACES_SAMPLE_RATE", "0") %>"
     SENTRY_RELEASE: "<%= ENV.fetch("SENTRY_RELEASE", "") %>"
@@ -49,14 +56,10 @@ env:
     - COOKIE_DOMAIN
     - DATABASE_URL
     - ENCRYPTION_KEY
-    - FROM_EMAIL
-    - FRONTEND_URL
     - GH_CLIENT_ID
     - GH_CLIENT_SECRET
-    - GH_REDIRECT_URI
     - GOOGLE_CLIENT_ID
     - GOOGLE_CLIENT_SECRET
-    - GOOGLE_REDIRECT_URI
     - METRICS_TOKEN
     - REDIS_URL
     - RESEND_API_KEY

@@ -1,3 +1,5 @@
+<%# The public hostnames every derived URL comes from. An empty host makes kamal-proxy route every hostname. %>
+<% %w[APP_HOST API_HOST].each { |name| raise "#{name} must be set to a bare public hostname such as draw.example.com, got #{ENV[name].inspect}" unless ENV[name].to_s.match?(/\A[a-z0-9-]+(\.[a-z0-9-]+)+\z/i) } %>
 service: drawhaus-frontend
 
 # Image name without registry prefix; Kamal prepends `registry.server` automatically.
@@ -13,7 +15,7 @@ servers:
 
 proxy:
   ssl: false
-  host: drawhaus.notdefined.dev
+  host: <%= ENV["APP_HOST"] %>
   app_port: 80
   healthcheck:
     interval: 10
@@ -32,8 +34,8 @@ builder:
   target: production
   arch: amd64
   args:
-    VITE_API_URL: "<%= ENV.fetch("VITE_API_URL", "") %>"
-    VITE_WS_URL: "<%= ENV.fetch("VITE_WS_URL", "") %>"
+    VITE_API_URL: "https://<%= ENV["API_HOST"] %>"
+    VITE_WS_URL: "https://<%= ENV["API_HOST"] %>"
     VITE_GOOGLE_API_KEY: "<%= ENV.fetch("VITE_GOOGLE_API_KEY", "") %>"
     VITE_SENTRY_DSN: "<%= ENV.fetch("VITE_SENTRY_DSN", "") %>"
     VITE_SENTRY_ENVIRONMENT: "<%= ENV.fetch("VITE_SENTRY_ENVIRONMENT", "production") %>"
