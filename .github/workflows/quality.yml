@@ -1,6 +1,4 @@
-# Standardized quality + security gate — calls rodacato/sector-7g.
-# Update the reusable workflows there → this repo inherits the change.
-name: Sector 7g - Quality
+name: Quality
 
 on:
   workflow_dispatch:
@@ -11,17 +9,66 @@ on:
 permissions:
   contents: read
 
+env:
+  # Report-only: findings show in the job log without failing the check.
+  # Set to "true" to make Semgrep, Trivy and Gitleaks block a merge.
+  SECURITY_BLOCKING: "false"
+
 jobs:
-  security:
-    uses: rodacato/sector-7g/.github/workflows/security.yml@master
-    with:
-      blocking: false # report-only for now; flip to true (or remove) to enforce
+  semgrep:
+    name: semgrep (SAST)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Scan
+        continue-on-error: ${{ env.SECURITY_BLOCKING != 'true' }}
+        run: semgrep scan --config p/default --config p/security-audit --error
+
+  trivy:
+    name: trivy (deps + secrets + IaC)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        continue-on-error: ${{ env.SECURITY_BLOCKING != 'true' }}
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+  gitleaks:
+    name: gitleaks (secret scan)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Scan
+        uses: gitleaks/gitleaks-action@v3
+        continue-on-error: ${{ env.SECURITY_BLOCKING != 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Free for personal accounts; a repo under an organization needs this secret.
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
   sonar:
-    # Manual-only for now: runs on "Run workflow", not on every push/PR.
+    # Opt-in and manual: runs on "Run workflow" only, and only where a SonarQube
+    # server is configured (SONAR_HOST_URL variable + SONAR_TOKEN secret).
     # Monorepo → one Sonar project per workspace (own bridge = lower memory).
-    # Each app has its own sonar-project.properties; scanned via project_base_dir.
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    # Each app has its own sonar-project.properties; scanned via projectBaseDir.
+    if: ${{ github.event_name == 'workflow_dispatch' && vars.SONAR_HOST_URL != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -43,6 +90,7 @@ jobs:
       - name: Build workspace packages
         run: |
           npm run build --workspace=@drawhaus/helpers
+          npm run build --workspace=@drawhaus/mcp
           npm run build --workspace=@drawhaus/plantuml-to-excalidraw
           npm run build --workspace=@drawhaus/mermaid-to-excalidraw
 
@@ -60,17 +108,21 @@ jobs:
       # JS/TS analyzer's memory footprint down). Frontend uses skipTypechecking
       # + maxspace=8192 in its sonar-project.properties to dodge OOM from the
       # three.js/excalidraw type graph. Packages are still unscanned for the
-      # same reason — security.yml covers them.
+      # same reason — the Semgrep, Trivy and Gitleaks jobs cover them.
       - name: Scan backend
-        uses: rodacato/sector-7g/actions/sonar-scan@master
+        uses: sonarsource/sonarqube-scan-action@v8.2.0
         with:
-          host_url: ${{ vars.SONAR_HOST_URL }}
-          token: ${{ secrets.SONAR_TOKEN }}
-          project_base_dir: apps/backend
+          projectBaseDir: apps/backend
+          args: -Dsonar.projectVersion=${{ github.sha }}
+        env:
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Scan frontend
-        uses: rodacato/sector-7g/actions/sonar-scan@master
+        uses: sonarsource/sonarqube-scan-action@v8.2.0
         with:
-          host_url: ${{ vars.SONAR_HOST_URL }}
-          token: ${{ secrets.SONAR_TOKEN }}
-          project_base_dir: apps/frontend
+          projectBaseDir: apps/frontend
+          args: -Dsonar.projectVersion=${{ github.sha }}
+        env:
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
