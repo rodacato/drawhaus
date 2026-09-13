@@ -75,18 +75,18 @@ troubleshooting.
 
 > These must be set as env vars (GitHub Actions secrets or deploy config). They are needed at server boot before DB is available and **cannot** be moved to the database.
 
-| Variable          | Required   | Default                 | Description                                                                                                                                              |
-| ----------------- | ---------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`    | Yes        | —                       | PostgreSQL connection string                                                                                                                             |
-| `SESSION_SECRET`  | Yes (prod) | `dev-secret`            | Session cookie signing key                                                                                                                               |
-| `PORT`            | No         | `4000`                  | Server port                                                                                                                                              |
-| `METRICS_ENABLED` | No         | `false`                 | Set to `true` to expose Prometheus `GET /metrics`. Opt-in — left off, there's no endpoint and no instrumentation overhead                                |
-| `METRICS_TOKEN`   | No         | —                       | Bearer token guarding `/metrics`. **Required in production** when metrics are enabled (without it the endpoint returns 404); in dev it's optional (open) |
-| `FRONTEND_URL`    | No         | `http://localhost:5173` | Allowed CORS origin                                                                                                                                      |
-| `COOKIE_DOMAIN`   | No         | —                       | Cookie domain for subdomain sharing (e.g. `.drawhaus.dev`)                                                                                               |
-| `REDIS_URL`       | No         | —                       | Redis connection string. Required for multi-container deployments (Socket.IO scaling)                                                                    |
-| `ENCRYPTION_KEY`  | No         | —                       | 32-byte hex key for encrypting integration secrets and webhook secrets in DB. Generate with `openssl rand -hex 32`                                       |
-| `BACKUP_PATH`     | No         | `/data/backups`         | Directory to store backup files (filesystem path, must be an env var)                                                                                    |
+| Variable          | Required   | Default                 | Description                                                                                                                                                      |
+| ----------------- | ---------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`    | Yes        | —                       | PostgreSQL connection string                                                                                                                                     |
+| `SESSION_SECRET`  | Yes (prod) | `dev-secret`            | Session cookie signing key                                                                                                                                       |
+| `PORT`            | No         | `4000`                  | Server port                                                                                                                                                      |
+| `METRICS_ENABLED` | No         | `false`                 | Set to `true` to expose Prometheus `GET /metrics`. Opt-in — left off, there's no endpoint and no instrumentation overhead                                        |
+| `METRICS_TOKEN`   | No         | —                       | Bearer token guarding `/metrics`. **Required in production** when metrics are enabled (without it the endpoint returns 404); in dev it's optional (open)         |
+| `FRONTEND_URL`    | Yes (prod) | `http://localhost:5173` | Public frontend URL: CORS and socket origin, links in emails, OAuth redirects. Must be an absolute `http(s)` URL in production; Kamal derives it from `APP_HOST` |
+| `COOKIE_DOMAIN`   | No         | —                       | Cookie domain for subdomain sharing (e.g. `.drawhaus.dev`)                                                                                                       |
+| `REDIS_URL`       | No         | —                       | Redis connection string. Required for multi-container deployments (Socket.IO scaling)                                                                            |
+| `ENCRYPTION_KEY`  | No         | —                       | 32-byte hex key for encrypting integration secrets and webhook secrets in DB. Generate with `openssl rand -hex 32`                                               |
+| `BACKUP_PATH`     | No         | `/data/backups`         | Directory to store backup files (filesystem path, must be an env var)                                                                                            |
 
 > **Backup schedule, retention, and enable/disable** are configured from the admin panel (Settings → Database Backups) or during the setup wizard. They are stored in the `site_settings` table. Env vars `BACKUP_ENABLED`, `BACKUP_CRON`, and `BACKUP_RETENTION_DAYS` are used as fallback defaults only if the DB values are not yet set.
 
@@ -94,29 +94,29 @@ troubleshooting.
 
 > When `ENCRYPTION_KEY` is set, these can be managed from the **admin panel** (Settings → Integrations) instead of env vars. The app checks the DB first, then falls back to env vars. After migrating to the DB, you can remove these from GitHub secrets.
 
-| Variable                    | Default                | Description                                                                                                      |
-| --------------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `GOOGLE_CLIENT_ID`          | —                      | Google OAuth client ID. Leave blank to disable Google login                                                      |
-| `GOOGLE_CLIENT_SECRET`      | —                      | Google OAuth client secret                                                                                       |
-| `GOOGLE_REDIRECT_URI`       | —                      | Google OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/google/callback`)                           |
-| `GH_CLIENT_ID`              | —                      | GitHub OAuth client ID. Leave blank to disable GitHub login. Uses `GH_` prefix because GitHub reserves `GITHUB_` |
-| `GH_CLIENT_SECRET`          | —                      | GitHub OAuth client secret                                                                                       |
-| `GH_REDIRECT_URI`           | —                      | GitHub OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/github/callback`)                           |
-| `RESEND_API_KEY`            | —                      | Resend API key for emails. If blank, emails log to console                                                       |
-| `FROM_EMAIL`                | `noreply@drawhaus.dev` | Sender address for transactional emails                                                                          |
-| `SENTRY_DSN`                | —                      | Sentry DSN for backend error monitoring (optional)                                                               |
-| `SENTRY_ENVIRONMENT`        | `NODE_ENV`             | Sentry environment label (e.g. `staging`, `production`)                                                          |
-| `SENTRY_TRACES_SAMPLE_RATE` | `0`                    | Performance tracing sample rate (0..1)                                                                           |
+| Variable                    | Default                              | Description                                                                                                              |
+| --------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `GOOGLE_CLIENT_ID`          | —                                    | Google OAuth client ID. Leave blank to disable Google login                                                              |
+| `GOOGLE_CLIENT_SECRET`      | —                                    | Google OAuth client secret                                                                                               |
+| `GOOGLE_REDIRECT_URI`       | —                                    | Google OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/google/callback`). Kamal derives it from `API_HOST` |
+| `GH_CLIENT_ID`              | —                                    | GitHub OAuth client ID. Leave blank to disable GitHub login. Uses `GH_` prefix because GitHub reserves `GITHUB_`         |
+| `GH_CLIENT_SECRET`          | —                                    | GitHub OAuth client secret                                                                                               |
+| `GH_REDIRECT_URI`           | —                                    | GitHub OAuth callback URL (e.g. `https://api.yourdomain.com/api/auth/github/callback`). Kamal derives it from `API_HOST` |
+| `RESEND_API_KEY`            | —                                    | Resend API key for emails. If blank, emails log to console                                                               |
+| `FROM_EMAIL`                | `noreply@` + the `FRONTEND_URL` host | Sender address for transactional emails                                                                                  |
+| `SENTRY_DSN`                | —                                    | Sentry DSN for backend error monitoring (optional)                                                                       |
+| `SENTRY_ENVIRONMENT`        | `NODE_ENV`                           | Sentry environment label (e.g. `staging`, `production`)                                                                  |
+| `SENTRY_TRACES_SAMPLE_RATE` | `0`                                  | Performance tracing sample rate (0..1)                                                                                   |
 
 ### Frontend
 
-| Variable                  | Required | Default     | Description                                                          |
-| ------------------------- | -------- | ----------- | -------------------------------------------------------------------- |
-| `VITE_API_URL`            | No       | —           | Backend URL. Leave empty in dev (Vite proxy handles it)              |
-| `VITE_WS_URL`             | No       | —           | WebSocket URL. Leave empty in dev                                    |
-| `VITE_GOOGLE_API_KEY`     | No       | —           | Google Picker API key for Drive file browser. Leave blank to disable |
-| `VITE_SENTRY_DSN`         | No       | —           | Sentry DSN for frontend error monitoring. Leave blank to disable     |
-| `VITE_SENTRY_ENVIRONMENT` | No       | Vite `MODE` | Sentry environment label baked into the bundle                       |
+| Variable                  | Required | Default     | Description                                                                               |
+| ------------------------- | -------- | ----------- | ----------------------------------------------------------------------------------------- |
+| `VITE_API_URL`            | No       | —           | Backend URL. Leave empty in dev (Vite proxy handles it); Kamal derives it from `API_HOST` |
+| `VITE_WS_URL`             | No       | —           | WebSocket URL. Leave empty in dev; Kamal derives it from `API_HOST`                       |
+| `VITE_GOOGLE_API_KEY`     | No       | —           | Google Picker API key for Drive file browser. Leave blank to disable                      |
+| `VITE_SENTRY_DSN`         | No       | —           | Sentry DSN for frontend error monitoring. Leave blank to disable                          |
+| `VITE_SENTRY_ENVIRONMENT` | No       | Vite `MODE` | Sentry environment label baked into the bundle                                            |
 
 > **Local dev:** Copy `.env.example` to `.env` — Docker Compose loads it automatically. For production, configure secrets in GitHub Actions (see [Deployment](#deployment)).
 
@@ -314,28 +314,27 @@ This triggers the GitHub Actions [deploy workflow](.github/workflows/build-push.
 
 Configure these in your GitHub repo under **Settings → Environments → production** (both backend and frontend deploy jobs use the `production` environment):
 
-| Secret                 | Description                                                                                                |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `HOST_IP`              | Your server's IP address                                                                                   |
-| `SSH_PRIVATE_KEY`      | SSH key for the `deploy` user on your server                                                               |
-| `DATABASE_URL`         | PostgreSQL connection string (e.g. `postgres://drawhaus:PASSWORD@localhost:5433/drawhaus_production`)      |
-| `SESSION_SECRET`       | Random string for session signing (`openssl rand -hex 32`)                                                 |
-| `FRONTEND_URL`         | Your frontend URL (e.g. `https://yourdomain.com`)                                                          |
-| `COOKIE_DOMAIN`        | (Optional) Parent domain for cookies (e.g. `.yourdomain.com`) — only needed for cross-subdomain setups     |
-| `POSTGRES_PASSWORD`    | PostgreSQL password (`openssl rand -hex 32`)                                                               |
-| `SENTRY_DSN`           | (Optional) Sentry DSN for backend error monitoring                                                         |
-| `VITE_SENTRY_DSN`      | (Optional) Sentry DSN for frontend error monitoring                                                        |
-| `SENTRY_AUTH_TOKEN`    | (Optional) Auth token for source-map upload during the frontend build                                      |
-| `RESEND_API_KEY`       | (Optional) Resend API key for emails — without it, emails log to console                                   |
-| `FROM_EMAIL`           | (Optional) Sender address for transactional emails                                                         |
-| `GOOGLE_CLIENT_ID`     | (Optional) Google OAuth client ID — leave blank to disable Google login                                    |
-| `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth client secret                                                                      |
-| `GOOGLE_REDIRECT_URI`  | (Optional) Google OAuth redirect URI (e.g. `https://api.yourdomain.com/api/auth/google/callback`)          |
-| `GH_CLIENT_ID`         | (Optional) GitHub OAuth client ID — leave blank to disable GitHub login                                    |
-| `GH_CLIENT_SECRET`     | (Optional) GitHub OAuth client secret                                                                      |
-| `GH_REDIRECT_URI`      | (Optional) GitHub OAuth redirect URI (e.g. `https://api.yourdomain.com/api/auth/github/callback`)          |
-| `REDIS_URL`            | (Optional) Redis connection string for Socket.IO scaling                                                   |
-| `ENCRYPTION_KEY`       | (Optional) 32-byte hex key for encrypting integration secrets and webhook secrets (`openssl rand -hex 32`) |
+| Secret                 | Description                                                                                                                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `HOST_IP`              | Your server's IP address                                                                                                                                                                                |
+| `SSH_PRIVATE_KEY`      | SSH key for the `deploy` user on your server                                                                                                                                                            |
+| `DATABASE_URL`         | PostgreSQL connection string (e.g. `postgres://drawhaus:PASSWORD@localhost:5433/drawhaus_production`)                                                                                                   |
+| `SESSION_SECRET`       | Random string for session signing (`openssl rand -hex 32`)                                                                                                                                              |
+| `APP_HOST`             | **Required variable.** Public frontend hostname, no scheme (e.g. `yourdomain.com`). Kamal's frontend proxy host, `FRONTEND_URL` and the default mail sender derive from it; the deploy stops without it |
+| `API_HOST`             | **Required variable.** Public backend hostname, no scheme (e.g. `api.yourdomain.com`). Kamal's backend proxy host, `VITE_API_URL`, `VITE_WS_URL` and both OAuth redirect URIs derive from it            |
+| `COOKIE_DOMAIN`        | (Optional) Parent domain for cookies (e.g. `.yourdomain.com`) — only needed for cross-subdomain setups                                                                                                  |
+| `POSTGRES_PASSWORD`    | PostgreSQL password (`openssl rand -hex 32`)                                                                                                                                                            |
+| `SENTRY_DSN`           | (Optional) Sentry DSN for backend error monitoring                                                                                                                                                      |
+| `VITE_SENTRY_DSN`      | (Optional) Sentry DSN for frontend error monitoring                                                                                                                                                     |
+| `SENTRY_AUTH_TOKEN`    | (Optional) Auth token for source-map upload during the frontend build                                                                                                                                   |
+| `RESEND_API_KEY`       | (Optional) Resend API key for emails — without it, emails log to console                                                                                                                                |
+| `FROM_EMAIL`           | (Optional) Sender address for transactional emails — defaults to `noreply@APP_HOST`                                                                                                                     |
+| `GOOGLE_CLIENT_ID`     | (Optional) Google OAuth client ID — leave blank to disable Google login                                                                                                                                 |
+| `GOOGLE_CLIENT_SECRET` | (Optional) Google OAuth client secret                                                                                                                                                                   |
+| `GH_CLIENT_ID`         | (Optional) GitHub OAuth client ID — leave blank to disable GitHub login                                                                                                                                 |
+| `GH_CLIENT_SECRET`     | (Optional) GitHub OAuth client secret                                                                                                                                                                   |
+| `REDIS_URL`            | (Optional) Redis connection string for Socket.IO scaling                                                                                                                                                |
+| `ENCRYPTION_KEY`       | (Optional) 32-byte hex key for encrypting integration secrets and webhook secrets (`openssl rand -hex 32`)                                                                                              |
 
 ### Manual deploy commands
 

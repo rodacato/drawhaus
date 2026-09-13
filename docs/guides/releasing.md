@@ -174,10 +174,10 @@ After deploying:
 
 ```bash
 # Health check
-curl https://drawhaus-api.notdefined.dev/health
+curl https://$API_HOST/health
 
 # Check version endpoint
-curl https://drawhaus-api.notdefined.dev/api/version
+curl https://$API_HOST/api/version
 
 # View running containers
 kamal app details -c config/deploy.backend.yml

@@ -86,19 +86,16 @@ Go to **Settings → Secrets and variables → Actions** in your GitHub repo.
 | `POSTGRES_PASSWORD`    | 64-char hex string                 | `openssl rand -hex 32`                                                         |
 | `ENCRYPTION_KEY`       | 64-char hex string                 | `openssl rand -hex 32`                                                         |
 | `REDIS_URL`            | Redis connection string            | `redis://localhost:6379/0`                                                     |
-| `FRONTEND_URL`         | Frontend URL                       | `https://drawhaus.notdefined.dev`                                              |
-| `COOKIE_DOMAIN`        | Cookie domain (if cross-subdomain) | `.notdefined.dev` or leave empty                                               |
+| `COOKIE_DOMAIN`        | Cookie domain (if cross-subdomain) | `.example.com` or leave empty                                                  |
 | `SENTRY_DSN`           | Backend error monitoring DSN       | From your Sentry Node project _(optional)_                                     |
 | `VITE_SENTRY_DSN`      | Frontend error monitoring DSN      | From your Sentry React project _(optional)_                                    |
 | `SENTRY_AUTH_TOKEN`    | Source-map upload token            | Sentry → Account → Auth Tokens _(optional)_                                    |
 | `RESEND_API_KEY`       | Email service key                  | From Resend dashboard _(optional)_                                             |
-| `FROM_EMAIL`           | System email sender                | `noreply@yourdomain.com` _(optional)_                                          |
+| `FROM_EMAIL`           | System email sender                | defaults to `noreply@APP_HOST` _(optional)_                                    |
 | `GOOGLE_CLIENT_ID`     | Google OAuth client ID             | _(optional, enables Google login)_                                             |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret         | _(optional)_                                                                   |
-| `GOOGLE_REDIRECT_URI`  | OAuth callback URL                 | _(optional)_                                                                   |
 | `GH_CLIENT_ID`         | GitHub OAuth client ID             | _(optional, enables GitHub login)_                                             |
 | `GH_CLIENT_SECRET`     | GitHub OAuth client secret         | _(optional)_                                                                   |
-| `GH_REDIRECT_URI`      | GitHub OAuth callback URL          | _(optional)_                                                                   |
 
 > **Note:** `KAMAL_REGISTRY_PASSWORD` uses `GITHUB_TOKEN` automatically — no PAT needed.
 
@@ -106,11 +103,13 @@ Go to **Settings → Secrets and variables → Actions** in your GitHub repo.
 
 Go to **Settings → Secrets and variables → Actions → Variables tab**.
 
-| Variable              | Value                       | Example                               |
-| --------------------- | --------------------------- | ------------------------------------- |
-| `VITE_API_URL`        | Backend API URL             | `https://drawhaus-api.notdefined.dev` |
-| `VITE_WS_URL`         | WebSocket URL               | `wss://drawhaus-api.notdefined.dev`   |
-| `VITE_GOOGLE_API_KEY` | Google API key for frontend | _(optional)_                          |
+| Variable              | Value                               | Example                |
+| --------------------- | ----------------------------------- | ---------------------- |
+| `APP_HOST`            | Public frontend hostname, no scheme | `draw.example.com`     |
+| `API_HOST`            | Public backend hostname, no scheme  | `draw-api.example.com` |
+| `VITE_GOOGLE_API_KEY` | Google API key for frontend         | _(optional)_           |
+
+`APP_HOST` and `API_HOST` are required and have no default: `config/deploy.*.yml` refuses to render without a bare hostname, and the workflow stops before Kamal runs. Every public URL derives from them — Kamal's proxy hosts, `FRONTEND_URL`, `VITE_API_URL` / `VITE_WS_URL`, the OAuth redirect URIs (`https://API_HOST/api/auth/{google,github}/callback`) and the default mail sender.
 
 > **Important:** `DATABASE_URL` must use the same password as `POSTGRES_PASSWORD`.
 
@@ -126,12 +125,11 @@ tunnel: <your-tunnel-id>
 credentials-file: /root/.cloudflared/<tunnel-id>.json
 
 ingress:
-  # Both drawhaus.notdefined.dev and drawhaus-api.notdefined.dev
-  # kamal-proxy routes based on Host header
-  - hostname: drawhaus.notdefined.dev
+  # Both APP_HOST and API_HOST; kamal-proxy routes based on Host header
+  - hostname: draw.example.com
     service: http://localhost:80
 
-  - hostname: drawhaus-api.notdefined.dev
+  - hostname: draw-api.example.com
     service: http://localhost:80
 
   - service: http_status:404
@@ -167,7 +165,8 @@ export SESSION_SECRET=<generated>
 export POSTGRES_PASSWORD=<generated>
 export ENCRYPTION_KEY=<generated>
 export REDIS_URL=redis://localhost:6379/0
-export FRONTEND_URL=https://drawhaus.notdefined.dev
+export APP_HOST=draw.example.com
+export API_HOST=draw-api.example.com
 # ... (all other secrets from .kamal/secrets)
 
 # Setup backend (boots postgres + redis accessories)
@@ -190,13 +189,13 @@ This will:
 
 ```bash
 # Backend health check
-curl https://drawhaus-api.notdefined.dev/health
+curl https://$API_HOST/health
 
 # Version info
-curl https://drawhaus-api.notdefined.dev/api/version
+curl https://$API_HOST/api/version
 
 # Frontend
-curl -I https://drawhaus.notdefined.dev
+curl -I https://$APP_HOST
 ```
 
 ---
@@ -231,10 +230,10 @@ single production secret. Copy the example file once and set the server address:
 
 ```bash
 cp .devcontainer/local.env.example .devcontainer/local.env
-$EDITOR .devcontainer/local.env      # set HOST_IP; the file is gitignored
+$EDITOR .devcontainer/local.env      # set HOST_IP, APP_HOST and API_HOST; the file is gitignored
 ```
 
-`.devcontainer/kamal-env.sh` is sourced by every shell and supplies `HOST_IP` from that
+`.devcontainer/kamal-env.sh` is sourced by every shell and supplies those three from that
 file — what GitHub Actions supplies for free in CI. Without it the ERB in
 `config/deploy.*.yml` renders empty and Kamal aborts before it reaches the server.
 
@@ -310,11 +309,14 @@ kamal app details -c config/deploy.frontend.yml
 
 ### Backend (clear)
 
-| Variable     | Value         | Description         |
-| ------------ | ------------- | ------------------- |
-| `PORT`       | `4000`        | Express server port |
-| `NODE_ENV`   | `production`  | Environment mode    |
-| `FILES_PATH` | `/data/files` | Upload storage path |
+| Variable                                  | Value                                                      | Description         |
+| ----------------------------------------- | ---------------------------------------------------------- | ------------------- |
+| `PORT`                                    | `4000`                                                     | Express server port |
+| `NODE_ENV`                                | `production`                                               | Environment mode    |
+| `FILES_PATH`                              | `/data/files`                                              | Upload storage path |
+| `FRONTEND_URL`                            | `https://APP_HOST`                                         | Public frontend URL |
+| `GH_REDIRECT_URI` / `GOOGLE_REDIRECT_URI` | `https://API_HOST/api/auth/{github,google}/callback`       | OAuth callbacks     |
+| `FROM_EMAIL`                              | the `FROM_EMAIL` variable, or empty for `noreply@APP_HOST` | Mail sender         |
 
 ### Backend (secret)
 
@@ -324,8 +326,8 @@ Defined in `.kamal/secrets` and injected via GitHub Actions secrets. See Step 2 
 
 | Variable              | Description               |
 | --------------------- | ------------------------- |
-| `VITE_API_URL`        | Backend API base URL      |
-| `VITE_WS_URL`         | WebSocket connection URL  |
+| `VITE_API_URL`        | `https://API_HOST`        |
+| `VITE_WS_URL`         | `https://API_HOST`        |
 | `VITE_GOOGLE_API_KEY` | Google API key (optional) |
 
 These are baked into the frontend at build time via Vite.

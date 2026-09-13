@@ -75,13 +75,12 @@ jobs:
       ACTION: ${{ inputs.action || 'deploy' }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       HOST_IP: ${{ vars.HOST_IP }}
+      APP_HOST: ${{ vars.APP_HOST }}
+      API_HOST: ${{ vars.API_HOST }}
       COOKIE_DOMAIN: ${{ vars.COOKIE_DOMAIN }}
       FROM_EMAIL: ${{ vars.FROM_EMAIL }}
-      FRONTEND_URL: ${{ vars.FRONTEND_URL }}
       GH_CLIENT_ID: ${{ vars.GH_CLIENT_ID }}
-      GH_REDIRECT_URI: ${{ vars.GH_REDIRECT_URI }}
       GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
-      GOOGLE_REDIRECT_URI: ${{ vars.GOOGLE_REDIRECT_URI }}
       METRICS_ENABLED: ${{ vars.METRICS_ENABLED || 'false' }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
@@ -98,6 +97,12 @@ jobs:
       SENTRY_RELEASE: ${{ github.sha }}
 
     steps:
+      - name: Require APP_HOST and API_HOST
+        run: |
+          for name in APP_HOST API_HOST; do
+            [ -n "${!name}" ] || { echo "::error::Set the $name variable on the production environment"; exit 1; }
+          done
+
       - uses: actions/checkout@v7
 
       - name: Set up Ruby
@@ -139,7 +144,17 @@ jobs:
     environment: production
     timeout-minutes: 10
 
+    env:
+      APP_HOST: ${{ vars.APP_HOST }}
+      API_HOST: ${{ vars.API_HOST }}
+
     steps:
+      - name: Require APP_HOST and API_HOST
+        run: |
+          for name in APP_HOST API_HOST; do
+            [ -n "${!name}" ] || { echo "::error::Set the $name variable on the production environment"; exit 1; }
+          done
+
       - uses: actions/checkout@v7
 
       - name: Login to Docker Hub
@@ -168,8 +183,8 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/drawhaus-frontend:latest
             ghcr.io/${{ github.repository_owner }}/drawhaus-frontend:${{ github.sha }}
           build-args: |
-            VITE_API_URL=${{ vars.VITE_API_URL }}
-            VITE_WS_URL=${{ vars.VITE_WS_URL }}
+            VITE_API_URL=https://${{ vars.API_HOST }}
+            VITE_WS_URL=https://${{ vars.API_HOST }}
             VITE_GOOGLE_API_KEY=${{ vars.VITE_GOOGLE_API_KEY }}
             VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
             VITE_SENTRY_ENVIRONMENT=${{ vars.VITE_SENTRY_ENVIRONMENT || vars.SENTRY_ENVIRONMENT || 'production' }}
@@ -191,8 +206,8 @@ jobs:
       ACTION: ${{ inputs.action || 'deploy' }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
       HOST_IP: ${{ vars.HOST_IP }}
-      VITE_API_URL: ${{ vars.VITE_API_URL }}
-      VITE_WS_URL: ${{ vars.VITE_WS_URL }}
+      APP_HOST: ${{ vars.APP_HOST }}
+      API_HOST: ${{ vars.API_HOST }}
       VITE_GOOGLE_API_KEY: ${{ vars.VITE_GOOGLE_API_KEY }}
       VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
       VITE_SENTRY_ENVIRONMENT: ${{ vars.VITE_SENTRY_ENVIRONMENT || vars.SENTRY_ENVIRONMENT || 'production' }}
@@ -202,6 +217,12 @@ jobs:
       SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'drawhaus-frontend' }}
 
     steps:
+      - name: Require APP_HOST and API_HOST
+        run: |
+          for name in APP_HOST API_HOST; do
+            [ -n "${!name}" ] || { echo "::error::Set the $name variable on the production environment"; exit 1; }
+          done
+
       - uses: actions/checkout@v7
 
       - name: Set up Ruby

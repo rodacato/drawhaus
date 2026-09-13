@@ -68,7 +68,7 @@ beforeEach(() => {
   Object.assign(mutableConfig, {
     frontendUrl: "https://app.example.test",
     resendApiKey: "",
-    fromEmail: "noreply@drawhaus.app",
+    fromEmail: "noreply@app.example.test",
   });
 });
 
@@ -356,7 +356,7 @@ describe("ResendEmailService.getResend — resolution paths", () => {
     assert.equal(resolved, null);
   });
 
-  it("falls back to 'noreply@drawhaus.app' when FROM_EMAIL is empty via configProvider", async () => {
+  it("falls back to the configured sender when FROM_EMAIL is empty via configProvider", async () => {
     const provider = makeConfigProvider({ RESEND_API_KEY: "re_test_key", FROM_EMAIL: "" });
     const service = new ResendEmailService(provider);
 
@@ -367,6 +367,6 @@ describe("ResendEmailService.getResend — resolution paths", () => {
     ).getResend();
 
     assert.ok(resolved);
-    assert.equal(resolved.from, "noreply@drawhaus.app");
+    assert.equal(resolved.from, "noreply@app.example.test");
   });
 });
