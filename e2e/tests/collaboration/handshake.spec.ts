@@ -45,7 +45,7 @@ test.describe("Socket handshake", () => {
     await expect(guest.connectionBadge).toHaveCount(0);
   });
 
-  test("a guest whose link was revoked is told why when the socket reconnects", async ({
+  test("a guest whose link is revoked is disconnected at once and told why", async ({
     createUser,
     openAs,
   }) => {
@@ -59,7 +59,6 @@ test.describe("Socket handshake", () => {
     await expect.poll(() => socket.roomJoins).toBe(1);
 
     expect((await owner.api.delete(`/api/share/link/${token}`)).ok()).toBeTruthy();
-    socket.drop();
 
     await expect(guest.page.getByText("Este enlace ya no es válido. Pide uno nuevo.")).toBeVisible({
       timeout: 20_000,
@@ -67,7 +66,7 @@ test.describe("Socket handshake", () => {
     expect(socket.roomJoins).toBe(1);
   });
 
-  test("a board whose session ended is told why when the socket reconnects", async ({
+  test("a board whose session is logged out is disconnected at once and told why", async ({
     createUser,
     openAs,
   }) => {
@@ -79,7 +78,6 @@ test.describe("Socket handshake", () => {
     await expect.poll(() => socket.roomJoins).toBe(1);
 
     expect((await owner.api.post("/api/auth/logout")).ok()).toBeTruthy();
-    socket.drop();
 
     await expect(
       board.page.getByText("Tu sesión terminó. Recarga la página para volver a entrar."),

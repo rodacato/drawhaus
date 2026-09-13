@@ -1,5 +1,6 @@
 import type { Server } from "socket.io";
 import type {
+  AccessRevoked,
   CommentChanged,
   RealtimeNotifier,
   SceneReplaced,
@@ -9,12 +10,19 @@ import type {
 import { formatReply, formatThread } from "../serializers/comment";
 import { formatSnapshot } from "../serializers/snapshot";
 import { logger } from "../logger";
+import { accessRoom } from "./access-rooms";
 
 const COMMENT_EVENTS = {
   created: "comment-created",
   replied: "comment-replied",
   resolved: "comment-resolved",
   deleted: "comment-deleted",
+} as const;
+
+const REVOKED_REASONS = {
+  session: "session-ended",
+  "user-sessions": "session-ended",
+  "share-link": "share-link-revoked",
 } as const;
 
 function commentPayload(event: CommentChanged): Record<string, unknown> {
@@ -73,6 +81,17 @@ export class SocketIoRealtimeNotifier implements RealtimeNotifier {
 
   commentChanged(event: CommentChanged): void {
     this.emit(event.diagramId, COMMENT_EVENTS[event.kind], commentPayload(event));
+  }
+
+  accessRevoked(event: AccessRevoked): void {
+    if (!this.io) return;
+    const room = accessRoom(event);
+    try {
+      this.io.to(room).emit("access-revoked", { reason: REVOKED_REASONS[event.kind] });
+      this.io.in(room).disconnectSockets(true);
+    } catch (err) {
+      logger.warn({ err, kind: event.kind }, "revoked sockets not disconnected");
+    }
   }
 
   // A write that already committed must not fail on its notification.

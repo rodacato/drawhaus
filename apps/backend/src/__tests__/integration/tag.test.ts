@@ -38,6 +38,7 @@ import { NoopAuditLogger } from "../fakes/noop-audit-logger";
 import { InMemoryDriveBackupRepository } from "../fakes/in-memory-drive-backup-repository";
 import { InMemorySiteSettingsRepository } from "../fakes/in-memory-site-settings-repository";
 import { FakeOAuthProvider } from "../fakes/fake-oauth-provider";
+import { FakeRealtimeNotifier } from "../fakes/fake-realtime-notifier";
 
 let tags: InMemoryTagRepository;
 let diagrams: InMemoryDiagramRepository;
@@ -70,14 +71,26 @@ function createApp() {
           new InMemorySiteSettingsRepository(),
         ),
         login: new LoginUseCase(users, sessions, hasher, new NoopAuditLogger()),
-        logout: new LogoutUseCase(sessions),
+        logout: new LogoutUseCase(sessions, new FakeRealtimeNotifier()),
         getCurrentUser,
         updateProfile: new UpdateProfileUseCase(users),
         changePassword: new ChangePasswordUseCase(users, hasher),
         acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
         forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
-        resetPassword: new ResetPasswordUseCase(users, sessions, passwordResets, hasher),
-        deleteAccount: new DeleteAccountUseCase(users, hasher, new NoopAuditLogger(), workspaces),
+        resetPassword: new ResetPasswordUseCase(
+          users,
+          sessions,
+          passwordResets,
+          hasher,
+          new FakeRealtimeNotifier(),
+        ),
+        deleteAccount: new DeleteAccountUseCase(
+          users,
+          hasher,
+          new NoopAuditLogger(),
+          workspaces,
+          new FakeRealtimeNotifier(),
+        ),
         googleAuth: new GoogleAuthUseCase(
           users,
           sessions,

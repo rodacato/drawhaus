@@ -3,11 +3,12 @@ import assert from "node:assert/strict";
 import { LogoutUseCase } from "../../../application/use-cases/auth/logout";
 import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
+import { FakeRealtimeNotifier } from "../../fakes/fake-realtime-notifier";
 
 function setup() {
   const users = new InMemoryUserRepository();
   const sessions = new InMemorySessionRepository(() => users.store);
-  const useCase = new LogoutUseCase(sessions);
+  const useCase = new LogoutUseCase(sessions, new FakeRealtimeNotifier());
   return { users, sessions, useCase };
 }
 

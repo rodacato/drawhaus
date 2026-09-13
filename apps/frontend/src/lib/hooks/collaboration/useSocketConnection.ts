@@ -20,13 +20,18 @@ export interface UseSocketConnectionReturn {
 
 type ConnectError = Error & { data?: { reason?: string } };
 
+const SESSION_ENDED = "Tu sesión terminó. Recarga la página para volver a entrar.";
+const LINK_INVALID = "Este enlace ya no es válido. Pide uno nuevo.";
+
 function refusalMessage(joinMode: JoinMode, reason: string | undefined): string {
   if (reason === "unauthenticated") {
-    return joinMode.type === "guest"
-      ? "Este enlace ya no es válido. Pide uno nuevo."
-      : "Tu sesión terminó. Recarga la página para volver a entrar.";
+    return joinMode.type === "guest" ? LINK_INVALID : SESSION_ENDED;
   }
   return "No se pudo verificar tu acceso. Recarga la página.";
+}
+
+function revokedMessage(joinMode: JoinMode, reason: string | undefined): string {
+  return reason === "session-ended" ? SESSION_ENDED : refusalMessage(joinMode, "unauthenticated");
 }
 
 export function useSocketConnection({
@@ -77,11 +82,21 @@ export function useSocketConnection({
       // An inactive socket was refused by the server and socket.io will not retry it.
       setConnectionError(socket.active ? err.message : refusalMessage(joinMode, err.data?.reason));
     });
+    let revokedReason: string | undefined;
+    socket.on("access-revoked", ({ reason }: { reason?: string }) => {
+      revokedReason = reason;
+    });
     socket.on("disconnect", (reason) => {
       if (cancelled) {
         return;
       }
       console.warn("Socket disconnected:", reason);
+      // socket.io-client never retries a server-initiated disconnect, and the handshake would refuse it.
+      if (reason === "io server disconnect") {
+        setConnectionState("error");
+        setConnectionError(revokedMessage(joinMode, revokedReason));
+        return;
+      }
       setConnectionState("disconnected");
     });
     socket.on("room-error", ({ message }: { message: string }) => {
