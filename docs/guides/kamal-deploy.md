@@ -205,24 +205,7 @@ There is no path straight to `production`. Fix on a branch, open a pull request 
 
 ### From the devcontainer
 
-The devcontainer ships Kamal and can run the _read-only_ commands below without holding a
-single production secret. Copy the example file once and set the server address:
-
-```bash
-cp .devcontainer/local.env.example .devcontainer/local.env
-$EDITOR .devcontainer/local.env      # set HOST_IP, APP_HOST and API_HOST; the file is gitignored
-```
-
-`.devcontainer/kamal-env.sh` is sourced by every shell and supplies those three from that
-file — what GitHub Actions supplies for free in CI. Without it the ERB in
-`config/deploy.*.yml` renders empty and Kamal aborts before it reaches the server.
-
-Available, since these only read: `kamal config`, `kamal app details`, `kamal app logs`,
-`kamal app versions`, `kamal accessory details`, `kamal audit`.
-
-Not available, because they need the secrets in `.kamal/secrets` or a local Docker daemon:
-`deploy`, `rollback`, `build`, `env push`, and the interactive aliases (`shell`, `db`,
-`redis`). Run those from the host, or deploy through GitHub Actions as usual.
+What the devcontainer inherits, which Kamal commands work from it and why: [.devcontainer/README.md](../../.devcontainer/README.md).
 
 ### View logs
 
