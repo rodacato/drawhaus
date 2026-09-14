@@ -12,6 +12,8 @@ services:
     command: sleep infinity
     mem_limit: 8g
 
+  # No host ports: the workspace reaches db and redis over the compose network, and
+  # forwardPorts exposes db on a free local port, so repos sharing a host never collide.
   db:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -19,16 +21,12 @@ services:
       POSTGRES_DB: drawhaus
       POSTGRES_USER: drawhaus
       POSTGRES_PASSWORD: drawhaus
-    ports:
-      - "5432:5432"
     volumes:
       - devcontainer-pgdata:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    ports:
-      - "6479:6379"
 
 volumes:
   devcontainer-pgdata:

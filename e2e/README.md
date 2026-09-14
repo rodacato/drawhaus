@@ -5,14 +5,16 @@ canvas behaviour is tested: Excalidraw does not load in jsdom or Node. CI runs t
 
 ## Running locally
 
+In the devcontainer, `post-create.sh` does steps 1 and 2 on every rebuild.
+
 1. **Database.** Create a disposable database once. The default is `drawhaus_e2e` on host `db`:
    ```bash
    psql -h db -U drawhaus -d postgres -c "CREATE DATABASE drawhaus_e2e"
    ```
    The suite refuses any database whose name does not end in `_e2e` or `_test`, because it drops
    and recreates the schema every time it starts the backend.
-2. **Browser.** Install Chromium once (`npx playwright install chromium`). If it cannot launch
-   for lack of system libraries, run `sudo npx playwright install-deps chromium`.
+2. **Browser.** Install Chromium and its system libraries once
+   (`npx playwright install --with-deps chromium`).
 3. **Ports.** 4000 and 5173 must be free. Playwright starts the backend (`tsx src/main.ts`,
    `NODE_ENV=test`) and the Vite dev server itself, and never attaches to a server it did not
    start unless you ask for it.

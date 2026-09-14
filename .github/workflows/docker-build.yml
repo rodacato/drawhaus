@@ -1,0 +1,50 @@
+name: Docker build
+
+# Images are otherwise built only on a push to production, so a broken Dockerfile
+# surfaced at deploy time. This builds both production targets without pushing.
+on:
+  pull_request:
+    branches: [master, main]
+    paths: &image-inputs
+      - apps/**
+      - packages/**
+      - e2e/package.json
+      - package.json
+      - package-lock.json
+      - .github/workflows/docker-build.yml
+  push:
+    branches: [master, main]
+    paths: *image-inputs
+
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.service }} image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [backend, frontend]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: apps/${{ matrix.service }}/Dockerfile
+          target: production
+          push: false
+          cache-from: type=gha,scope=${{ matrix.service }}-ci
+          # PRs can read the default branch's cache but only master pushes write it.
+          cache-to: ${{ github.event_name == 'push' && format('type=gha,mode=max,scope={0}-ci', matrix.service) || '' }}
