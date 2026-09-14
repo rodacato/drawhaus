@@ -86,6 +86,8 @@ All notable changes to Drawhaus are documented here.
 
 ### Changed
 
+- **The Docker Hub login is opt-in, and gone from CI.** In `ci.yml` it ran after "Initialize containers", the only point where a job pulls from Docker Hub (the Postgres and Redis services), so it authenticated nothing, and a fork without `DOCKERHUB_USERNAME` failed on it. The image builds in `build-push.yml`, which do pull `node` and `nginx` base images, keep it when `DOCKERHUB_USERNAME` is set and skip it otherwise, as the deploy jobs already did.
+
 - **Security and conduct reports go through GitHub instead of `security@drawhaus.dev`.** Neither `drawhaus.dev` nor `drawhaus.app` publishes an MX or A record, so a report sent there most likely reached nobody. `SECURITY.md` now points at the repository's private vulnerability reporting, which is enabled, and `CODE_OF_CONDUCT.md` at the same private channel or GitHub's Report abuse.
 
 - **Devcontainer: dead port forwards and a broken config copy removed.** `forwardPorts` drops 3000 (nothing in the project uses it) and 5432/6479, which forwarded the `workspace` container's own ports while Postgres and Redis listen in their sibling containers — the compose `ports` already publish those to the host. The two that remain, 4000 and 5173, get labels. `post-install.sh` no longer copies the gitignored `.claude/` into `~/.claude`: on a fresh clone it copied nothing, and where the folder existed it copied relative symlinks that no longer resolve from the home directory.
