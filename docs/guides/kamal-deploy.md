@@ -48,6 +48,7 @@ Production ✓
 
 - VPS with SSH access (Ubuntu 22.04+ recommended)
 - Docker installed on the VPS (`curl -fsSL https://get.docker.com | sh`)
+- A `deploy` user on the VPS with Docker access (`adduser deploy && usermod -aG docker deploy`)
 - GitHub repository with Actions enabled
 - Cloudflare Tunnel configured on VPS (handles TLS)
 
