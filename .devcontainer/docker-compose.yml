@@ -9,6 +9,12 @@ services:
       # The shell-history feature writes here (/dc/shellhistory, per its
       # devcontainer-feature.json); without the volume every rebuild starts empty.
       - devcontainer-commandhistory:/dc/shellhistory
+    # .host.env comes from initialize.sh, local.env from you; the later file wins. See README.md.
+    env_file:
+      - path: .host.env
+        required: false
+      - path: local.env
+        required: false
     command: sleep infinity
     mem_limit: 8g
 
