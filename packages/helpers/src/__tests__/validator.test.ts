@@ -126,7 +126,8 @@ describe("validateElements", () => {
   it("rejects invalid type", () => {
     const result = validateElements([{ type: "circle", x: 0, y: 0, width: 100, height: 100 }]);
     assert.equal(result.valid, false);
-    assert.ok(result.errors[0].message.includes("Invalid enum value"));
+    assert.equal(result.errors[0].field, "type");
+    assert.ok(result.errors[0].message.includes("rectangle"));
   });
 
   it("rejects missing type", () => {

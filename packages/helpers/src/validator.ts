@@ -44,7 +44,7 @@ const baseElementSchema = z
     x: z.number(),
     y: z.number(),
   })
-  .passthrough();
+  .loose();
 
 function hasDangerousKeys(obj: Record<string, unknown>): string | null {
   for (const key of Object.keys(obj)) {
