@@ -53,6 +53,8 @@ logging:
     max-size: 10m
     max-file: "3"
 
+# Every alias reuses the running container. Without it Kamal starts a fresh one,
+# which means a registry login, which means a token nobody has outside CI.
 aliases:
-  shell: app exec --interactive 'sh'
+  shell: app exec --reuse --interactive 'sh'
   logs: app logs -f

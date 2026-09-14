@@ -97,9 +97,11 @@ accessories:
     directories:
       - drawhaus-redis-data:/data
 
+# Every alias reuses the running container. Without it Kamal starts a fresh one,
+# which means a registry login, which means a token nobody has outside CI.
 aliases:
   console: app exec --reuse --interactive 'node'
-  shell: app exec --interactive 'sh'
-  db: accessory exec postgres --interactive 'psql -U drawhaus drawhaus_production'
-  redis: accessory exec redis --interactive 'redis-cli'
+  shell: app exec --reuse --interactive 'sh'
+  db: accessory exec postgres --reuse --interactive 'psql -U drawhaus drawhaus_production'
+  redis: accessory exec redis --reuse --interactive 'redis-cli'
   logs: app logs -f
