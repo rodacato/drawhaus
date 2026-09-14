@@ -21,9 +21,6 @@ Only `v*` tags are releases.
 number and move with it in the same command. The packages under `packages/` version on their own;
 `@drawhaus/mcp` is published with the tag's version whatever its `package.json` says.
 
-The running backend does not report this number: `/api/version` reads `npm_package_version`, which
-the production image's `node dist/main.js` never sets, so it answers `0.0.0`.
-
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Changes land under
 `## [Unreleased]` as they merge; a release renames that section. Earlier sections keep their
 original `## vX.Y.Z — Title (YYYY-MM)` headings, up to v0.12.0.
