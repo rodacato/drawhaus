@@ -106,7 +106,7 @@ The Decision Log in `docs/ROADMAP.md` serves as an executive summary. ADRs hold 
 - Frontend tests: `npm test --workspace=frontend`
 - Lint, typecheck, format: `npm run lint && npm run typecheck && npm run format:check`
 - E2E tests: `cd e2e && npm test` (also runs in CI; local setup in `e2e/README.md`)
-- Follow `docs/guides/releasing.md` for version bump, changelog, tag, and deploy.
+- Follow `RELEASING.md` for version bump, changelog, tag and GitHub Release; deploying is separate (`docs/guides/kamal-deploy.md`).
 
 ---
 
@@ -174,6 +174,6 @@ I want both perspectives before deciding."
 ### For releases
 
 ```
-"Prepare a release for v[X.Y.Z]. Follow docs/guides/releasing.md.
-Update CHANGELOG, ROADMAP, and package.json versions."
+"Prepare a release for v[X.Y.Z]. Follow RELEASING.md.
+Bump the version and move the CHANGELOG's [Unreleased] section."
 ```
