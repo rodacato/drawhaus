@@ -26,6 +26,7 @@
     "5173": { "label": "Frontend (Vite)" },
     "db:5432": { "label": "PostgreSQL", "onAutoForward": "silent" }
   },
+  "initializeCommand": "sh .devcontainer/initialize.sh || exit 0",
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
