@@ -1,4 +1,13 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 const isProduction = process.env.NODE_ENV === "production";
+
+// npm_package_version exists only under npm; the production image starts node directly.
+function readRootVersion(): string {
+  const rootManifest = path.resolve(__dirname, "../../../../package.json");
+  return JSON.parse(readFileSync(rootManifest, "utf8")).version;
+}
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -55,7 +64,7 @@ export const config = {
   redisUrl: process.env.REDIS_URL,
   encryptionKey: process.env.ENCRYPTION_KEY ?? "",
   backupPath: process.env.BACKUP_PATH ?? "/data/backups",
-  appVersion: process.env.npm_package_version ?? "0.0.0",
+  appVersion: readRootVersion(),
   gitCommit: process.env.GIT_COMMIT ?? "unknown",
   deployedAt: process.env.DEPLOYED_AT ?? new Date().toISOString(),
 } as const;
