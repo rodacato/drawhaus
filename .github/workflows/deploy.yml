@@ -23,7 +23,7 @@ permissions:
   packages: write
 
 env:
-  KAMAL_VERSION: "~> 2.7"
+  KAMAL_VERSION: "2.12.0"
   RUBY_VERSION: "4.0"
 
 jobs:
