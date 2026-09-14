@@ -27,47 +27,8 @@ env:
   RUBY_VERSION: "4.0"
 
 jobs:
-  build:
-    name: Build backend
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Login to Docker Hub
-        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
-        uses: docker/login-action@v4
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - uses: docker/setup-buildx-action@v4
-
-      - name: Login to GHCR
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: apps/backend/Dockerfile
-          target: production
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/drawhaus-backend:latest
-            ghcr.io/${{ github.repository_owner }}/drawhaus-backend:${{ github.sha }}
-          build-args: GIT_COMMIT=${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
   deploy:
     name: Deploy backend (${{ inputs.action || 'deploy' }})
-    needs: build
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 20
@@ -150,67 +111,9 @@ jobs:
       - name: Run kamal ${{ env.ACTION }}
         run: kamal "$ACTION" --config-file config/deploy.backend.yml
 
-  build-frontend:
-    name: Build frontend
-    runs-on: ubuntu-latest
-    environment: production
-    timeout-minutes: 10
-
-    env:
-      APP_HOST: ${{ vars.APP_HOST }}
-      API_HOST: ${{ vars.API_HOST }}
-
-    steps:
-      - name: Require APP_HOST and API_HOST
-        run: |
-          for name in APP_HOST API_HOST; do
-            [ -n "${!name}" ] || { echo "::error::Set the $name variable on the production environment"; exit 1; }
-          done
-
-      - uses: actions/checkout@v7
-
-      - name: Login to Docker Hub
-        if: ${{ vars.DOCKERHUB_USERNAME != '' }}
-        uses: docker/login-action@v4
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - uses: docker/setup-buildx-action@v4
-
-      - name: Login to GHCR
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: apps/frontend/Dockerfile
-          target: production
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/drawhaus-frontend:latest
-            ghcr.io/${{ github.repository_owner }}/drawhaus-frontend:${{ github.sha }}
-          build-args: |
-            VITE_API_URL=https://${{ vars.API_HOST }}
-            VITE_WS_URL=https://${{ vars.API_HOST }}
-            VITE_GOOGLE_API_KEY=${{ vars.VITE_GOOGLE_API_KEY }}
-            VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
-            VITE_SENTRY_ENVIRONMENT=${{ vars.VITE_SENTRY_ENVIRONMENT || vars.SENTRY_ENVIRONMENT || 'production' }}
-            VITE_SENTRY_RELEASE=${{ github.sha }}
-            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
-            SENTRY_ORG=${{ vars.SENTRY_ORG }}
-            SENTRY_PROJECT=${{ vars.SENTRY_PROJECT || 'drawhaus-frontend' }}
-          cache-from: type=gha,scope=frontend
-          cache-to: type=gha,mode=max,scope=frontend
-
   deploy-frontend:
     name: Deploy frontend (${{ inputs.action || 'deploy' }})
-    needs: [deploy, build-frontend]
+    needs: deploy
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 10
