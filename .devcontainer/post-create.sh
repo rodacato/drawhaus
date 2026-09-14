@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "[post-install] Installing workspace dependencies..."
+echo "[post-create] Installing workspace dependencies..."
 npm install
 
-echo "[post-install] Verifying toolchain..."
+echo "[post-create] Verifying toolchain..."
 node -v
 npm -v
 gh --version | head -n 1
 git --version
 psql --version | head -n 1
 
-echo "[post-install] Installing Kamal for the read-only deploy commands..."
+echo "[post-create] Installing Kamal for the read-only deploy commands..."
 # Deploys still run in CI — nothing installed here holds a secret. Version tracks
 # .github/workflows/build-push.yml's KAMAL_VERSION.
 if ! gem list -i '^kamal$' >/dev/null 2>&1; then
