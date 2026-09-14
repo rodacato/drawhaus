@@ -5,6 +5,7 @@ Thanks for your interest in contributing to Drawhaus! This guide will help you g
 ## Getting Started
 
 1. **Fork** the repository and clone it locally.
+   Using VS Code? **Dev Containers: Reopen in Container** skips steps 2 and 3; see [.devcontainer/README.md](.devcontainer/README.md).
 2. **Install dependencies**:
    ```bash
    npm install
