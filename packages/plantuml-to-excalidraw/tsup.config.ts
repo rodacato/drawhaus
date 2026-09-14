@@ -6,6 +6,6 @@ export default defineConfig({
   target: "node18",
   outDir: "dist",
   clean: true,
-  dts: true,
+  dts: { compilerOptions: { ignoreDeprecations: "6.0" } },
   minify: false,
 });

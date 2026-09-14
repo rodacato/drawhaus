@@ -13,8 +13,6 @@ COPY packages/mermaid-to-excalidraw/package.json packages/mermaid-to-excalidraw/
 COPY packages/plantuml-to-excalidraw/package.json packages/plantuml-to-excalidraw/
 COPY e2e/package.json e2e/
 
-# Must stay npm ci: without the lockfile npm hoists TypeScript 6 to satisfy
-# @typescript-eslint's peer range, and tsup's dts build then fails with TS5101
 RUN npm ci
 
 # Copy source for frontend and its workspace dependencies

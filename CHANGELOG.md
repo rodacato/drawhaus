@@ -86,6 +86,8 @@ All notable changes to Drawhaus are documented here.
 
 ### Changed
 
+- **React 19, TypeScript 7, zod 4 everywhere, c8 12.** React, React DOM and their types move together across the frontend and both diagram packages. Root `overrides` keep one React in the tree: `@excalidraw/excalidraw` 0.18.1 pins `@radix-ui/react-tabs` 1.0.2, whose peers stop at React 18, so a fresh resolution otherwise hoists React 18 beside Excalidraw while the app renders with 19. TypeScript follows the side-by-side setup from the 7.0 release: `tsc` is the native 7.0 compiler, while the `typescript` package is aliased to `@typescript/typescript6`, because typescript-eslint and tsup's declaration build need the programmatic API that 7.0 does not ship yet. TypeScript is declared once at the root instead of in every workspace. The backend's CommonJS output is byte-identical to the 5.9 build. Two 6.0 defaults needed config: `types` is now empty, so the frontend and MCP tsconfigs list `node`, and tsup's dts step injects a deprecated `baseUrl`, silenced with `ignoreDeprecations` in both tsup configs. `@drawhaus/helpers` joins the backend and MCP on zod 4, which leaves one zod major in the tree.
+
 - **Devcontainer aligned with the other repos' conventions.** The post-create script is `post-create.sh`, named after the lifecycle hook that runs it, and the `postgres-client` feature is pinned to `:1` instead of following `latest`, so the Dependabot updates now watching the features cannot bring a new major in unasked. The lock keeps the same 1.2.0 digest under the new key.
 
 - **Dependabot watches the devcontainer features.** `devcontainer-lock.json` pins each feature to a digest, and nothing proposed updates to it.
