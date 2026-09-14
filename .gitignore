@@ -14,8 +14,10 @@ docs/api/index.html
 .env.prod
 .env.production
 
-# Local, non-secret Kamal values for the devcontainer.
-.devcontainer/local.env
+# Devcontainer environment: written by you (local.env) and by initialize.sh (.host.env).
+/.devcontainer/local.env
+/.devcontainer/.host.env
+/.devcontainer/.host.env.tmp
 
 # Logs
 *.log
