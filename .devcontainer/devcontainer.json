@@ -14,7 +14,7 @@
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/sshd:1": {},
     "ghcr.io/stuartleeks/dev-container-features/shell-history:0": {},
-    "ghcr.io/devcontainers/features/ruby:1": {
+    "ghcr.io/devcontainers/features/ruby:2": {
       "version": "3.2"
     },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
