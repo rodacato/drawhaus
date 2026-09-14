@@ -34,7 +34,10 @@ backend, so `:5173` is the only URL you need. (The backend is also exposed direc
 1. Open the folder in VS Code and run **Dev Containers: Reopen in Container**.
 2. `npm run dev`
 
-Includes Node 24, the PostgreSQL client, and forwarded ports.
+Includes Node 24, the PostgreSQL client, Chromium and the `drawhaus_e2e` database for the E2E
+suite, and Kamal for read-only deploy commands. PostgreSQL and Redis publish no host ports, so
+the container never collides with another project; VS Code forwards PostgreSQL on a free local
+port.
 
 ## Path 3 — Bare metal
 

@@ -15,16 +15,16 @@
     "ghcr.io/devcontainers/features/sshd:1": {},
     "ghcr.io/stuartleeks/dev-container-features/shell-history:0": {},
     "ghcr.io/devcontainers/features/ruby:2": {
-      "version": "3.2"
-    },
-    "ghcr.io/devcontainers/features/docker-in-docker:4": {}
+      "version": "4.0"
+    }
   },
   "remoteUser": "vscode",
   "updateRemoteUserUID": true,
-  "forwardPorts": [4000, 5173],
+  "forwardPorts": [4000, 5173, "db:5432"],
   "portsAttributes": {
     "4000": { "label": "Backend (npm run dev)" },
-    "5173": { "label": "Frontend (Vite)" }
+    "5173": { "label": "Frontend (Vite)" },
+    "db:5432": { "label": "PostgreSQL", "onAutoForward": "silent" }
   },
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {
