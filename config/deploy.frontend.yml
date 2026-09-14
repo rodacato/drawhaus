@@ -30,7 +30,6 @@ registry:
     - KAMAL_REGISTRY_PASSWORD
 
 builder:
-  context: .
   dockerfile: apps/frontend/Dockerfile
   target: production
   arch: amd64
