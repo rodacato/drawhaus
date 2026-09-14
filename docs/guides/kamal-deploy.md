@@ -235,18 +235,19 @@ kamal accessory logs redis -c config/deploy.backend.yml     # Redis logs
 
 ### Database operations
 
-```bash
-# Run migrations
-kamal app exec 'node dist/migrations/run.js' -c config/deploy.backend.yml
+Migrations run on every backend boot, after an automatic pre-migration backup, so a deploy applies them; there is no separate step.
 
-# Database backup
-kamal accessory exec postgres \
+```bash
+# On-demand backup into the drawhaus-backups volume, with the retention set in Site Settings
+kamal app exec --reuse 'node dist/scripts/db-backup.js' -c config/deploy.backend.yml
+
+# Plain SQL dump to your machine
+kamal accessory exec postgres --reuse --raw \
   'pg_dump -U drawhaus drawhaus_production' \
   -c config/deploy.backend.yml > backup.sql
-
-# Or use the built-in backup system
-kamal app exec 'npm run db:backup' -c config/deploy.backend.yml
 ```
+
+`--reuse` runs the command in the container already up on the server, so it needs no registry login, and `--raw` keeps Kamal's log prefixes out of the dump.
 
 ### Rollback
 
