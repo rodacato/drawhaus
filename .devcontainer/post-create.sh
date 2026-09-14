@@ -26,14 +26,3 @@ echo "[post-create] Installing Kamal for the read-only deploy commands..."
 if ! gem list -i '^kamal$' -v 2.12.0 >/dev/null 2>&1; then
   gem install kamal -v 2.12.0 --no-document
 fi
-
-# Load the non-secret Kamal environment in every shell. Idempotent across rebuilds.
-for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
-  [ -f "$rc" ] || continue
-  grep -q 'devcontainer/kamal-env.sh' "$rc" && continue
-  {
-    echo ''
-    echo 'export DRAWHAUS_ROOT="/workspaces/drawhaus"'
-    echo '[ -r "$DRAWHAUS_ROOT/.devcontainer/kamal-env.sh" ] && . "$DRAWHAUS_ROOT/.devcontainer/kamal-env.sh"'
-  } >> "$rc"
-done
