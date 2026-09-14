@@ -9,7 +9,7 @@ Zero-downtime deploys via Kamal, automated through GitHub Actions. Merge to `pro
 ```
 Push/merge to production
     ↓
-GitHub Actions (.github/workflows/build-push.yml)
+GitHub Actions (.github/workflows/deploy.yml)
     ↓
 Docker Build & Push (2 images → ghcr.io)
     ↓
@@ -210,7 +210,7 @@ git merge master
 git push origin production
 ```
 
-The workflow (`.github/workflows/build-push.yml`) handles everything:
+The workflow (`.github/workflows/deploy.yml`) handles everything:
 
 1. Builds backend image → pushes to GHCR
 2. Deploys backend via Kamal (boots accessories if needed)
@@ -293,15 +293,15 @@ kamal app details -c config/deploy.frontend.yml
 
 ## Key Config Files
 
-| File                               | Purpose                                         |
-| ---------------------------------- | ----------------------------------------------- |
-| `config/deploy.backend.yml`        | Kamal config for backend (includes accessories) |
-| `config/deploy.frontend.yml`       | Kamal config for frontend                       |
-| `.kamal/secrets`                   | Secret env var references                       |
-| `.github/workflows/build-push.yml` | CI/CD deploy workflow                           |
-| `.github/workflows/ci.yml`         | CI tests (runs on PRs and master)               |
-| `apps/backend/Dockerfile`          | Backend multi-stage build                       |
-| `apps/frontend/Dockerfile`         | Frontend multi-stage build (nginx)              |
+| File                           | Purpose                                         |
+| ------------------------------ | ----------------------------------------------- |
+| `config/deploy.backend.yml`    | Kamal config for backend (includes accessories) |
+| `config/deploy.frontend.yml`   | Kamal config for frontend                       |
+| `.kamal/secrets`               | Secret env var references                       |
+| `.github/workflows/deploy.yml` | CI/CD deploy workflow                           |
+| `.github/workflows/ci.yml`     | CI tests (runs on PRs and master)               |
+| `apps/backend/Dockerfile`      | Backend multi-stage build                       |
+| `apps/frontend/Dockerfile`     | Frontend multi-stage build (nginx)              |
 
 ---
 

@@ -22,7 +22,7 @@ psql --version | head -n 1
 
 echo "[post-create] Installing Kamal for the read-only deploy commands..."
 # Deploys still run in CI — nothing installed here holds a secret. Version tracks
-# .github/workflows/build-push.yml's KAMAL_VERSION.
+# .github/workflows/deploy.yml's KAMAL_VERSION.
 if ! gem list -i '^kamal$' >/dev/null 2>&1; then
   gem install kamal -v '~> 2.7' --no-document
 fi
