@@ -23,15 +23,15 @@ type ConnectError = Error & { data?: { reason?: string } };
 const SESSION_ENDED = "Tu sesión terminó. Recarga la página para volver a entrar.";
 const LINK_INVALID = "Este enlace ya no es válido. Pide uno nuevo.";
 
-function refusalMessage(joinMode: JoinMode, reason: string | undefined): string {
+function refusalMessage(isGuest: boolean, reason: string | undefined): string {
   if (reason === "unauthenticated") {
-    return joinMode.type === "guest" ? LINK_INVALID : SESSION_ENDED;
+    return isGuest ? LINK_INVALID : SESSION_ENDED;
   }
   return "No se pudo verificar tu acceso. Recarga la página.";
 }
 
-function revokedMessage(joinMode: JoinMode, reason: string | undefined): string {
-  return reason === "session-ended" ? SESSION_ENDED : refusalMessage(joinMode, "unauthenticated");
+function revokedMessage(isGuest: boolean, reason: string | undefined): string {
+  return reason === "session-ended" ? SESSION_ENDED : refusalMessage(isGuest, "unauthenticated");
 }
 
 export function useSocketConnection({
@@ -44,24 +44,24 @@ export function useSocketConnection({
   const [selfUserId, setSelfUserId] = useState<string | null>(null);
   const [socketGeneration, setSocketGeneration] = useState(0);
   const socketRef = useRef<Socket | null>(null);
+  // Callers pass joinMode as a fresh object literal; the connection depends on its values.
+  const roomId = joinMode.type === "authenticated" ? joinMode.roomId : null;
+  const shareToken = joinMode.type === "guest" ? joinMode.shareToken : null;
+  const guestName = joinMode.type === "guest" ? joinMode.guestName : null;
 
   useEffect(() => {
     let cancelled = false;
-    const socket = createSocket(
-      joinMode.type === "guest" ? { shareToken: joinMode.shareToken } : undefined,
-    );
+    const isGuest = shareToken !== null;
+    const socket = createSocket(isGuest ? { shareToken } : undefined);
     socketRef.current = socket;
     setSocketGeneration((g) => g + 1);
 
     function joinRoom() {
       if (cancelled) return;
-      if (joinMode.type === "authenticated") {
-        socket.emit("join-room", { roomId: joinMode.roomId });
+      if (isGuest) {
+        socket.emit("join-room-guest", { shareToken, guestName });
       } else {
-        socket.emit("join-room-guest", {
-          shareToken: joinMode.shareToken,
-          guestName: joinMode.guestName,
-        });
+        socket.emit("join-room", { roomId });
       }
     }
 
@@ -80,7 +80,7 @@ export function useSocketConnection({
       console.warn("Socket connect_error:", err.message);
       setConnectionState("error");
       // An inactive socket was refused by the server and socket.io will not retry it.
-      setConnectionError(socket.active ? err.message : refusalMessage(joinMode, err.data?.reason));
+      setConnectionError(socket.active ? err.message : refusalMessage(isGuest, err.data?.reason));
     });
     let revokedReason: string | undefined;
     socket.on("access-revoked", ({ reason }: { reason?: string }) => {
@@ -94,7 +94,7 @@ export function useSocketConnection({
       // socket.io-client never retries a server-initiated disconnect, and the handshake would refuse it.
       if (reason === "io server disconnect") {
         setConnectionState("error");
-        setConnectionError(revokedMessage(joinMode, revokedReason));
+        setConnectionError(revokedMessage(isGuest, revokedReason));
         return;
       }
       setConnectionState("disconnected");
@@ -136,7 +136,7 @@ export function useSocketConnection({
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [diagramId]);
+  }, [diagramId, roomId, shareToken, guestName]);
 
   return { socketRef, socketGeneration, connectionState, connectionError, userRole, selfUserId };
 }

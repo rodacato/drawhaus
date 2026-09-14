@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { driveApi, type DriveFileItem } from "@/api/drive";
 import { formatSize, formatDate } from "@/lib/format-utils";
 
@@ -19,6 +19,8 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
   const [currentFolderId, setCurrentFolderId] = useState<string>("");
   const [driveConnected, setDriveConnected] = useState<boolean | null>(null);
 
+  const loadOnOpen = useEffectEvent(() => checkStatusAndLoad());
+
   useEffect(() => {
     if (!open) return;
     // Reset state on open
@@ -27,7 +29,7 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
     setFolderStack([]);
     setCurrentFolderId("");
     setDriveConnected(null);
-    checkStatusAndLoad();
+    loadOnOpen();
   }, [open]);
 
   async function checkStatusAndLoad() {

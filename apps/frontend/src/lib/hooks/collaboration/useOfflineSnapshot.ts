@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import type { ExcalidrawApi } from "@/lib/types";
 import type { ConnectionState } from "@/lib/types";
 import {
@@ -36,6 +36,21 @@ export function useOfflineSnapshot({
   const offlineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const disconnectedAtRef = useRef<number | null>(null);
 
+  const saveSnapshot = useEffectEvent(() => {
+    const api = excalidrawApiRef.current;
+    if (!api || !selfUserId) return Promise.resolve(false);
+    return saveOfflineSnapshot({
+      diagramId,
+      userId: selfUserId,
+      userName: selfUserName ?? "Unknown",
+      elements: [...api.getSceneElements()],
+      appState: api.getAppState(),
+      savedAt: new Date().toISOString(),
+    }).then(() => true);
+  });
+  const offlineSaved = useEffectEvent(() => onOfflineSave?.());
+  const reportConflict = useEffectEvent((snapshot: OfflineSnapshot) => onConflict?.(snapshot));
+
   useEffect(() => {
     const wasConnected = prevConnectionState.current === "connected";
     const isDisconnected = connectionState === "disconnected" || connectionState === "error";
@@ -49,24 +64,13 @@ export function useOfflineSnapshot({
 
       offlineTimerRef.current = setTimeout(() => {
         // Still disconnected after grace period — save snapshot
-        const api = excalidrawApiRef.current;
-        if (api && selfUserId) {
-          const elements = [...api.getSceneElements()];
-          const appState = api.getAppState();
-          saveOfflineSnapshot({
-            diagramId,
-            userId: selfUserId,
-            userName: selfUserName ?? "Unknown",
-            elements,
-            appState,
-            savedAt: new Date().toISOString(),
+        saveSnapshot()
+          .then((saved) => {
+            if (!saved) return;
+            hasOfflineEdits.current = true;
+            offlineSaved();
           })
-            .then(() => {
-              hasOfflineEdits.current = true;
-              onOfflineSave?.();
-            })
-            .catch(() => {});
-        }
+          .catch(() => {});
       }, graceMs);
     }
 
@@ -82,7 +86,7 @@ export function useOfflineSnapshot({
         getOfflineSnapshot(diagramId)
           .then((snapshot) => {
             if (snapshot) {
-              onConflict?.(snapshot);
+              reportConflict(snapshot);
             }
             hasOfflineEdits.current = false;
           })
@@ -93,7 +97,7 @@ export function useOfflineSnapshot({
     }
 
     prevConnectionState.current = connectionState;
-  }, [connectionState, diagramId]);
+  }, [connectionState, diagramId, graceMs]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -103,29 +107,18 @@ export function useOfflineSnapshot({
   }, []);
 
   // Save on beforeunload if disconnected long enough
-  useEffect(() => {
-    function handleBeforeUnload() {
-      const api = excalidrawApiRef.current;
-      const isOffline = connectionState === "disconnected" || connectionState === "error";
-      const offlineLongEnough =
-        disconnectedAtRef.current && Date.now() - disconnectedAtRef.current >= graceMs;
-      if (api && selfUserId && isOffline && offlineLongEnough) {
-        const elements = [...api.getSceneElements()];
-        const appState = api.getAppState();
-        saveOfflineSnapshot({
-          diagramId,
-          userId: selfUserId,
-          userName: selfUserName ?? "Unknown",
-          elements,
-          appState,
-          savedAt: new Date().toISOString(),
-        }).catch(() => {});
-      }
-    }
+  const saveIfOfflineLongEnough = useEffectEvent(() => {
+    const isOffline = connectionState === "disconnected" || connectionState === "error";
+    const offlineLongEnough =
+      disconnectedAtRef.current && Date.now() - disconnectedAtRef.current >= graceMs;
+    if (isOffline && offlineLongEnough) saveSnapshot().catch(() => {});
+  });
 
+  useEffect(() => {
+    const handleBeforeUnload = () => saveIfOfflineLongEnough();
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [connectionState, diagramId, selfUserId]);
+  }, []);
 
   return {
     clearOfflineSnapshot: () => deleteOfflineSnapshot(diagramId),

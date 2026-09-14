@@ -69,7 +69,7 @@ export function Dashboard() {
   useEffect(() => {
     if (searchQuery) return;
     if (folderIdParam === null) {
-      if (sidebarView !== "recent" && sidebarView !== "starred") setSidebarView("all");
+      setSidebarView((view) => (view === "recent" || view === "starred" ? view : "all"));
     } else if (folderIdParam === "null") setSidebarView("unfiled");
     else setSidebarView("folder");
   }, [folderIdParam, searchQuery]);
