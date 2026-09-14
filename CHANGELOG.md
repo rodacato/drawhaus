@@ -124,6 +124,7 @@ All notable changes to Drawhaus are documented here.
 
 ### Removed
 
+- **`.notdefined.yml` and its `docs/screenshots/notdefined.png`.** Metadata for the maintainer's site, whose sync from repository files no longer exists; nothing else read either file.
 - **`dompurify` and `@types/dompurify` dropped from `apps/frontend`.** Neither was imported anywhere in the frontend — the declared `^3.3.3` range mirrored what `mermaid` already depends on, and `@types/dompurify` is a deprecated stub (DOMPurify has shipped its own types since 3.2). Removing them changes nothing at runtime: `dompurify` stays at 3.4.15 in the tree via `mermaid@11.17.2` (`^3.3.3`), and `npm audit` is unchanged at 14 findings.
 - `@honeybadger-io/js` dependency and the `HONEYBADGER_API_KEY` env var.
 
