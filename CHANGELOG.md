@@ -86,6 +86,8 @@ All notable changes to Drawhaus are documented here.
 
 ### Changed
 
+- **Dependabot watches the devcontainer features.** `devcontainer-lock.json` pins each feature to a digest, and nothing proposed updates to it.
+
 - **The image owner comes from the repository, not a literal `rodacato`.** Both Kamal configs name their image `<owner>/drawhaus-*` and log in to GHCR as that owner, from `GITHUB_REPOSITORY_OWNER` — set by GitHub Actions in CI, derived from the `origin` remote by `.devcontainer/kamal-env.sh` locally — so a fork deploys to its own registry, which is where its build jobs already pushed. The image name is lowercased, as GHCR requires; an empty owner stops Kamal before it renders.
 
 - **The Docker Hub login is opt-in, and gone from CI.** In `ci.yml` it ran after "Initialize containers", the only point where a job pulls from Docker Hub (the Postgres and Redis services), so it authenticated nothing, and a fork without `DOCKERHUB_USERNAME` failed on it. The image builds in `build-push.yml`, which do pull `node` and `nginx` base images, keep it when `DOCKERHUB_USERNAME` is set and skip it otherwise, as the deploy jobs already did.

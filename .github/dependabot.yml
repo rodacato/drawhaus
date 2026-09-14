@@ -16,3 +16,7 @@ updates:
     directory: "/apps/frontend"
     schedule:
       interval: weekly
+  - package-ecosystem: devcontainers
+    directory: "/"
+    schedule:
+      interval: weekly
