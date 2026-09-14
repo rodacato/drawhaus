@@ -74,11 +74,11 @@ never logs in. `accessory exec` (the `db` and `redis` aliases) takes the same fl
 without a registry login is still **to verify** from this container.
 
 **What does not work here**, and must not be forced: `deploy`, `redeploy`, `rollback`, `setup`,
-`build`, `app boot`, and `app exec` without `--reuse` — which includes the migration and backup
-commands in the deploy runbook. They push an image, need the registry, or write the container's
-env file from `.kamal/secrets`, which in this container resolves every secret to an empty string,
-silently. Run them through GitHub Actions (`deploy.yml`), or from the host with the secrets
-exported, per [docs/guides/kamal-deploy.md](../docs/guides/kamal-deploy.md).
+`build`, `app boot`, and `app exec` or `accessory exec` without `--reuse`. They push an image, need
+the registry, or write the container's env file from `.kamal/secrets`, which in this container
+resolves every secret to an empty string, silently. Run them through GitHub Actions (`deploy.yml`),
+or from the host with the secrets exported, per
+[docs/guides/kamal-deploy.md](../docs/guides/kamal-deploy.md). The runbook's backup and dump commands pass `--reuse`, so they need no registry login.
 
 ## Security model
 
