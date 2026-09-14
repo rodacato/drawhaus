@@ -1,10 +1,10 @@
 # Changelog
 
-All notable changes to Drawhaus are documented here.
+All notable changes to Drawhaus are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) from the next release on, and versions follow [Semantic Versioning](https://semver.org/); see [RELEASING.md](RELEASING.md).
 
 ---
 
-## Unreleased
+## [Unreleased]
 
 ### Added
 
@@ -146,6 +146,8 @@ All notable changes to Drawhaus are documented here.
 - **Kamal logs in to GHCR as `GITHUB_ACTOR`, requires `HOST_IP`, and every alias reuses the running container.** An unset `HOST_IP` used to render an empty host; it now stops rendering with the variable's name. `shell`, `db` and `redis` add `--reuse`, which runs `docker exec` in the running container instead of starting a new one, so they no longer need the registry token that only CI holds.
 
 - **The devcontainer inherits the host's `gh` login and the repository identity.** Before every start, `initialize.sh` runs on the host and writes `.devcontainer/.host.env` (mode 600, gitignored) with `GH_TOKEN` and `GITHUB_REPOSITORY`, `GITHUB_REPOSITORY_OWNER` and `GITHUB_ACTOR` derived from `origin`; Compose hands it to the container, then `local.env` for `HOST_IP`, `APP_HOST` and `API_HOST`. `gh` no longer starts logged out after a rebuild, and the values reach every process, including non-interactive ones that never read a shell rc file. `kamal-env.sh` and the rc hook that sourced it are gone. `.devcontainer/README.md` documents what is inherited, what survives a rebuild, and which Kamal commands work from the container.
+
+- **The release process moves to `RELEASING.md`.** A release is an annotated tag on a merged commit plus a GitHub Release built from its changelog section, and it no longer deploys: promoting `master` to `production` is a separate step in the deploy runbook. The old guide pushed `master --tags`, merged hotfix branches straight into `production`, and bumped three `package.json` files by hand; one `npm version` command now moves the root, backend and frontend together. The changelog's pending section is `## [Unreleased]`, per Keep a Changelog.
 
 ### Removed
 
