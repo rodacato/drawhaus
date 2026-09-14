@@ -303,7 +303,7 @@ git checkout master && git pull
 git push origin master:production
 ```
 
-This triggers the GitHub Actions [deploy workflow](.github/workflows/build-push.yml):
+This triggers the GitHub Actions [deploy workflow](.github/workflows/deploy.yml):
 
 1. **Build backend** → push image to GHCR
 2. **Build frontend** → push image to GHCR (runs in parallel with step 1)

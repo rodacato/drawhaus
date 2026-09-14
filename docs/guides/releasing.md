@@ -126,7 +126,7 @@ git merge master
 git push origin production
 ```
 
-The GitHub Actions workflow (`.github/workflows/build-push.yml`) will:
+The GitHub Actions workflow (`.github/workflows/deploy.yml`) will:
 
 1. Build backend and frontend Docker images
 2. Push to `ghcr.io/<owner>/drawhaus-backend` and `ghcr.io/<owner>/drawhaus-frontend`
