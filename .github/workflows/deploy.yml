@@ -75,7 +75,7 @@ jobs:
     env:
       ACTION: ${{ inputs.action || 'deploy' }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-      HOST_IP: ${{ vars.HOST_IP }}
+      HOST_IP: ${{ secrets.HOST_IP }}
       APP_HOST: ${{ vars.APP_HOST }}
       API_HOST: ${{ vars.API_HOST }}
       COOKIE_DOMAIN: ${{ vars.COOKIE_DOMAIN }}
@@ -218,7 +218,7 @@ jobs:
     env:
       ACTION: ${{ inputs.action || 'deploy' }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-      HOST_IP: ${{ vars.HOST_IP }}
+      HOST_IP: ${{ secrets.HOST_IP }}
       APP_HOST: ${{ vars.APP_HOST }}
       API_HOST: ${{ vars.API_HOST }}
       VITE_GOOGLE_API_KEY: ${{ vars.VITE_GOOGLE_API_KEY }}
