@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { templatesApi, type TemplateDTO } from "@/api/templates";
 import { builtInTemplates, type BuiltInTemplate } from "@/data/templates";
@@ -14,7 +14,7 @@ type TemplatePickerProps = {
 };
 
 /** SVG icons for built-in templates (fallback-safe, no emoji rendering issues) */
-const TEMPLATE_ICONS: Record<string, JSX.Element> = {
+const TEMPLATE_ICONS: Record<string, ReactElement> = {
   "🏗": (
     <svg
       width="28"

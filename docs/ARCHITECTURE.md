@@ -75,7 +75,7 @@ Real-time collaboration uses Socket.IO with msgpack encoding (~30% smaller than 
 | Real-time          | Socket.IO + msgpack                      | Binary encoding, room model, automatic reconnection, Redis adapter for scaling                             |
 | Database           | PostgreSQL                               | Proven, JSONB for Excalidraw elements, strong transaction support                                          |
 | Cache / Pub-Sub    | Redis (optional)                         | Rate limiting, Socket.IO adapter, snapshot deduplication. Falls back to in-memory                          |
-| Frontend framework | React 18                                 | Excalidraw is React-based — no choice here                                                                 |
+| Frontend framework | React 19                                 | Excalidraw is React-based — no choice here                                                                 |
 | Build tool         | Vite                                     | Fast HMR, ESM-native, simple config                                                                        |
 | Styling            | Tailwind CSS 4                           | Utility-first, rapid iteration                                                                             |
 | Router             | React Router v7                          | Standard for React SPAs                                                                                    |
