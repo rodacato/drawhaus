@@ -9,7 +9,7 @@
     "ghcr.io/devcontainers/features/node:1": {
       "version": "24"
     },
-    "ghcr.io/rails/devcontainer/features/postgres-client": {},
+    "ghcr.io/rails/devcontainer/features/postgres-client:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/sshd:1": {},
@@ -26,7 +26,7 @@
     "4000": { "label": "Backend (npm run dev)" },
     "5173": { "label": "Frontend (Vite)" }
   },
-  "postCreateCommand": "bash .devcontainer/post-install.sh",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
       "extensions": [

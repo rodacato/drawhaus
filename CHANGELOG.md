@@ -86,6 +86,8 @@ All notable changes to Drawhaus are documented here.
 
 ### Changed
 
+- **Devcontainer aligned with the other repos' conventions.** The post-create script is `post-create.sh`, named after the lifecycle hook that runs it, and the `postgres-client` feature is pinned to `:1` instead of following `latest`, so the Dependabot updates now watching the features cannot bring a new major in unasked. The lock keeps the same 1.2.0 digest under the new key.
+
 - **Dependabot watches the devcontainer features.** `devcontainer-lock.json` pins each feature to a digest, and nothing proposed updates to it.
 
 - **The image owner comes from the repository, not a literal `rodacato`.** Both Kamal configs name their image `<owner>/drawhaus-*` and log in to GHCR as that owner, from `GITHUB_REPOSITORY_OWNER` — set by GitHub Actions in CI, derived from the `origin` remote by `.devcontainer/kamal-env.sh` locally — so a fork deploys to its own registry, which is where its build jobs already pushed. The image name is lowercased, as GHCR requires; an empty owner stops Kamal before it renders.
