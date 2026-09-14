@@ -1,29 +1,29 @@
 # Deploy with Kamal + GitHub Actions
 
-Zero-downtime deploys via Kamal, automated through GitHub Actions. Merge to `production`, everything else is automatic.
+Zero-downtime deploys via Kamal, run only by GitHub Actions. `master` is the only source of what ships; `production` is a pointer that moves forward by fast-forward, and every push to it deploys.
 
 ---
 
 ## Architecture
 
 ```
-Push/merge to production
+git push origin origin/master:production
     ↓
 GitHub Actions (.github/workflows/deploy.yml)
     ↓
-Docker Build & Push (2 images → ghcr.io)
+Guard: the commit must already be on master
     ↓
-Kamal deploy → VPS
+kamal deploy: build → push to ghcr.io → deploy to the VPS
     ↓
 Production ✓
 ```
 
 **Images built:**
 
-| Image                               | Source                     | Purpose                           |
-| ----------------------------------- | -------------------------- | --------------------------------- |
-| `ghcr.io/<owner>/drawhaus-backend`  | `apps/backend/Dockerfile`  | Express API + Socket.IO (Node.js) |
-| `ghcr.io/<owner>/drawhaus-frontend` | `apps/frontend/Dockerfile` | React SPA (nginx)                 |
+| Image                               | Source                     | Tags              | Purpose                           |
+| ----------------------------------- | -------------------------- | ----------------- | --------------------------------- |
+| `ghcr.io/<owner>/drawhaus-backend`  | `apps/backend/Dockerfile`  | `<sha>`, `latest` | Express API + Socket.IO (Node.js) |
+| `ghcr.io/<owner>/drawhaus-frontend` | `apps/frontend/Dockerfile` | `<sha>`, `latest` | React SPA (nginx)                 |
 
 **Kamal manages on the VPS:**
 
@@ -37,10 +37,10 @@ Production ✓
 
 **Deploy order** (enforced by CI job dependencies):
 
-1. Build backend image → push to GHCR
-2. Deploy backend via Kamal (with health check gate on `/health`)
-3. Build frontend image → push to GHCR (parallel with step 2)
-4. Deploy frontend via Kamal (depends on backend deploy + frontend build)
+1. Deploy backend: `kamal deploy` builds and pushes the image, then swaps containers behind the `/health` check
+2. Deploy frontend: the same, once the backend job succeeds
+
+`kamal deploy` is the only thing that builds and publishes a production image. `docker-build.yml` builds both images on every pull request without pushing, so a broken Dockerfile fails before it merges.
 
 ---
 
@@ -50,7 +50,6 @@ Production ✓
 - Docker installed on the VPS (`curl -fsSL https://get.docker.com | sh`)
 - GitHub repository with Actions enabled
 - Cloudflare Tunnel configured on VPS (handles TLS)
-- Ruby 3.2+ locally (only needed for `kamal setup` — not for CI deploys)
 
 ---
 
@@ -71,43 +70,45 @@ openssl rand -hex 32
 
 ---
 
-## Step 2: Configure GitHub Secrets
+## Step 2: Configure the production environment
 
-Go to **Settings → Secrets and variables → Actions** in your GitHub repo.
+Go to **Settings → Environments → production**; both deploy jobs run in it. A **secret** is masked in the Actions logs, a **var** is printed. The repository is public, and so are its logs: anything that identifies the server is a secret, even when it is not sensitive in itself.
 
-### Required Secrets
+| Name                        | Kind   | Required | Value                                                                          |
+| --------------------------- | ------ | -------- | ------------------------------------------------------------------------------ |
+| `HOST_IP`                   | secret | yes      | Server's public IP. Kamal and `ssh-keyscan` print it, so it must be masked     |
+| `SSH_PRIVATE_KEY`           | secret | yes      | Private key of the `deploy` user; must match `~/.ssh/authorized_keys` on VPS   |
+| `DATABASE_URL`              | secret | yes      | `postgresql://drawhaus:<POSTGRES_PASSWORD>@localhost:5432/drawhaus_production` |
+| `POSTGRES_PASSWORD`         | secret | yes      | `openssl rand -hex 32`                                                         |
+| `SESSION_SECRET`            | secret | yes      | `openssl rand -hex 64`                                                         |
+| `ENCRYPTION_KEY`            | secret | yes      | `openssl rand -hex 32`                                                         |
+| `REDIS_URL`                 | secret | yes      | `redis://localhost:6379/0`                                                     |
+| `APP_HOST`                  | var    | yes      | Public frontend hostname, no scheme: `draw.example.com`                        |
+| `API_HOST`                  | var    | yes      | Public backend hostname, no scheme: `draw-api.example.com`                     |
+| `COOKIE_DOMAIN`             | var    | no       | `.example.com` for cross-subdomain cookies; empty otherwise                    |
+| `FROM_EMAIL`                | var    | no       | Mail sender; defaults to `noreply@APP_HOST`                                    |
+| `RESEND_API_KEY`            | secret | no       | Resend API key; without it emails log to the console                           |
+| `GOOGLE_CLIENT_ID`          | var    | no       | Enables Google login                                                           |
+| `GOOGLE_CLIENT_SECRET`      | secret | no       | Google OAuth client secret                                                     |
+| `GH_CLIENT_ID`              | var    | no       | Enables GitHub login (GitHub reserves the `GITHUB_` prefix)                    |
+| `GH_CLIENT_SECRET`          | secret | no       | GitHub OAuth client secret                                                     |
+| `METRICS_ENABLED`           | var    | no       | `true` exposes `/metrics`; defaults to `false`                                 |
+| `METRICS_TOKEN`             | secret | no       | Bearer token for `/metrics`; required when metrics are enabled                 |
+| `SENTRY_DSN`                | secret | no       | Backend Sentry DSN                                                             |
+| `SENTRY_ENVIRONMENT`        | var    | no       | Defaults to `production`                                                       |
+| `SENTRY_TRACES_SAMPLE_RATE` | var    | no       | Defaults to `0`                                                                |
+| `VITE_SENTRY_DSN`           | secret | no       | Frontend Sentry DSN, baked into the build                                      |
+| `VITE_SENTRY_ENVIRONMENT`   | var    | no       | Defaults to `SENTRY_ENVIRONMENT`, then `production`                            |
+| `SENTRY_AUTH_TOKEN`         | secret | no       | Source-map upload during the frontend build                                    |
+| `SENTRY_ORG`                | var    | no       | Sentry organization for the source-map upload                                  |
+| `SENTRY_PROJECT`            | var    | no       | Defaults to `drawhaus-frontend`                                                |
+| `VITE_GOOGLE_API_KEY`       | var    | no       | Google API key for the frontend                                                |
+| `DOCKERHUB_USERNAME`        | var    | no       | Logs in to Docker Hub before building, against base-image pull limits          |
+| `DOCKERHUB_TOKEN`           | secret | no       | Docker Hub token, used with `DOCKERHUB_USERNAME`                               |
 
-| Secret                 | Value                              | How to generate                                                                |
-| ---------------------- | ---------------------------------- | ------------------------------------------------------------------------------ |
-| `HOST_IP`              | Your server's public IP            | `curl ifconfig.me` on VPS                                                      |
-| `SSH_PRIVATE_KEY`      | Full SSH private key content       | Must match `~/.ssh/authorized_keys` on VPS                                     |
-| `DATABASE_URL`         | PostgreSQL connection string       | `postgresql://drawhaus:<POSTGRES_PASSWORD>@localhost:5432/drawhaus_production` |
-| `SESSION_SECRET`       | 128-char hex string                | `openssl rand -hex 64`                                                         |
-| `POSTGRES_PASSWORD`    | 64-char hex string                 | `openssl rand -hex 32`                                                         |
-| `ENCRYPTION_KEY`       | 64-char hex string                 | `openssl rand -hex 32`                                                         |
-| `REDIS_URL`            | Redis connection string            | `redis://localhost:6379/0`                                                     |
-| `COOKIE_DOMAIN`        | Cookie domain (if cross-subdomain) | `.example.com` or leave empty                                                  |
-| `SENTRY_DSN`           | Backend error monitoring DSN       | From your Sentry Node project _(optional)_                                     |
-| `VITE_SENTRY_DSN`      | Frontend error monitoring DSN      | From your Sentry React project _(optional)_                                    |
-| `SENTRY_AUTH_TOKEN`    | Source-map upload token            | Sentry → Account → Auth Tokens _(optional)_                                    |
-| `RESEND_API_KEY`       | Email service key                  | From Resend dashboard _(optional)_                                             |
-| `FROM_EMAIL`           | System email sender                | defaults to `noreply@APP_HOST` _(optional)_                                    |
-| `GOOGLE_CLIENT_ID`     | Google OAuth client ID             | _(optional, enables Google login)_                                             |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret         | _(optional)_                                                                   |
-| `GH_CLIENT_ID`         | GitHub OAuth client ID             | _(optional, enables GitHub login)_                                             |
-| `GH_CLIENT_SECRET`     | GitHub OAuth client secret         | _(optional)_                                                                   |
+GitHub resolves each name on the environment first and the repository second, so a repository-level value also works; keep deploy values on the environment.
 
-> **Note:** `KAMAL_REGISTRY_PASSWORD` uses `GITHUB_TOKEN` automatically — no PAT needed.
-
-### Required Variables (not secrets)
-
-Go to **Settings → Secrets and variables → Actions → Variables tab**.
-
-| Variable              | Value                               | Example                |
-| --------------------- | ----------------------------------- | ---------------------- |
-| `APP_HOST`            | Public frontend hostname, no scheme | `draw.example.com`     |
-| `API_HOST`            | Public backend hostname, no scheme  | `draw-api.example.com` |
-| `VITE_GOOGLE_API_KEY` | Google API key for frontend         | _(optional)_           |
+Not configured anywhere: `KAMAL_REGISTRY_PASSWORD` is the workflow's own `GITHUB_TOKEN`; `GITHUB_REPOSITORY_OWNER` and `GITHUB_ACTOR` are set by the runner; `SENTRY_RELEASE` and the image's `GIT_COMMIT` come from the commit SHA.
 
 `APP_HOST` and `API_HOST` are required and have no default: `config/deploy.*.yml` refuses to render without a bare hostname, and the workflow stops before Kamal runs. Every public URL derives from them — Kamal's proxy hosts, `FRONTEND_URL`, `VITE_API_URL` / `VITE_WS_URL`, the OAuth redirect URIs (`https://API_HOST/api/auth/{google,github}/callback`) and the default mail sender.
 
@@ -149,41 +150,22 @@ sudo systemctl restart cloudflared
 
 ---
 
-## Step 4: First Deploy (kamal setup)
+## Step 4: First Deploy (setup)
 
-The first deploy must be run manually to install Docker, kamal-proxy, and boot accessories.
+On a new host, open **Actions → Deploy → Run workflow**, pick `master`, and set `action` to `setup`. `kamal setup` installs Docker if needed, starts kamal-proxy, boots the accessories (PostgreSQL 16, Redis 7), and then builds, pushes and deploys the backend; the frontend job runs `setup` against the same host after it.
+
+**Emergency only: from a host shell.** If Actions is unavailable, the same commands run from a machine with Kamal 2.12.0 (the `KAMAL_VERSION` in `deploy.yml`), SSH access as `deploy`, and every name in `.kamal/secrets` exported. A name missing from the environment resolves to an empty string without any error, so check the list before running:
 
 ```bash
-# On your local machine
-gem install kamal
+export HOST_IP=<your-vps-ip> APP_HOST=draw.example.com API_HOST=draw-api.example.com
+export GITHUB_REPOSITORY_OWNER=<owner> GITHUB_ACTOR=<owner>
+export KAMAL_REGISTRY_PASSWORD=<a token with write:packages>
+export DATABASE_URL=... POSTGRES_PASSWORD=... SESSION_SECRET=... ENCRYPTION_KEY=... REDIS_URL=...
+# ...and every other name in .kamal/secrets
 
-# Export all secrets as environment variables
-export HOST_IP=<your-vps-ip>
-export KAMAL_REGISTRY_PASSWORD=<your-github-pat>
-export DATABASE_URL=postgresql://drawhaus:<password>@localhost:5432/drawhaus_production
-export SESSION_SECRET=<generated>
-export POSTGRES_PASSWORD=<generated>
-export ENCRYPTION_KEY=<generated>
-export REDIS_URL=redis://localhost:6379/0
-export APP_HOST=draw.example.com
-export API_HOST=draw-api.example.com
-# ... (all other secrets from .kamal/secrets)
-
-# Setup backend (boots postgres + redis accessories)
 kamal setup -c config/deploy.backend.yml
-
-# Setup frontend
 kamal setup -c config/deploy.frontend.yml
 ```
-
-This will:
-
-1. Install Docker on the VPS (if needed)
-2. Start kamal-proxy (reverse proxy on port 80)
-3. Boot accessories: PostgreSQL 16, Redis 7
-4. Build and push Docker images
-5. Deploy backend and frontend containers
-6. Run health checks to verify
 
 ### Verify
 
@@ -200,24 +182,21 @@ curl -I https://$APP_HOST
 
 ---
 
-## Step 5: Automatic Deploys (CI/CD)
+## Step 5: Deploying
 
-After the first setup, every push to `production` triggers automatic deployment:
+A deploy is promoting `master` to `production`:
 
 ```bash
-git checkout production
-git merge master
-git push origin production
+git fetch origin && git push origin origin/master:production
 ```
 
-The workflow (`.github/workflows/deploy.yml`) handles everything:
+Without `--force`, git rejects any push that is not a fast-forward, so `production` only ever moves to a commit that is already on `master`. The workflow checks the same thing on its own: its first step compares the commit with `master` and stops unless it is identical or behind, so a **Run workflow** from any other branch fails before Kamal starts.
 
-1. Builds backend image → pushes to GHCR
-2. Deploys backend via Kamal (boots accessories if needed)
-3. Builds frontend image → pushes to GHCR (parallel)
-4. Deploys frontend via Kamal (waits for backend health check)
+**Run workflow** on `master` with `action` set to `deploy` or `redeploy` deploys the head of `master` without moving `production`. Prefer the push, so the branch keeps recording what runs.
 
-No manual steps needed after the initial setup.
+### Hotfix
+
+There is no path straight to `production`. Fix on a branch, open a pull request to `master`, merge it once the checks pass, and promote as above.
 
 ---
 
@@ -320,7 +299,7 @@ kamal app details -c config/deploy.frontend.yml
 
 ### Backend (secret)
 
-Defined in `.kamal/secrets` and injected via GitHub Actions secrets. See Step 2 for the full list.
+Defined in `.kamal/secrets` and injected from the production environment. See Step 2 for the full list.
 
 ### Frontend (build args)
 
@@ -365,7 +344,7 @@ far below that, so a `429` there means something else is polling it.
 
 ### Images not found in GHCR
 
-Check that the build jobs succeeded in GitHub Actions. Images should be at:
+Kamal builds and pushes them in the Deploy workflow's `kamal deploy` step; check that step's log. Images are tagged with the commit SHA and `latest`:
 
 - `ghcr.io/<owner>/drawhaus-backend:latest`
 - `ghcr.io/<owner>/drawhaus-frontend:latest`
@@ -399,4 +378,4 @@ curl http://localhost:80  # Test kamal-proxy directly
 | Health check gating   | No             | Yes                  |
 | Setup complexity      | Low            | Medium (one-time)    |
 | Rollback              | Manual         | `kamal rollback`     |
-| Requires Ruby locally | No             | Only for first setup |
+| Requires Ruby locally | No             | No, Kamal runs in CI |
