@@ -1,13 +1,14 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 
 const CONFIG_MODULE = path.resolve(__dirname, "../../infrastructure/config.ts");
 
 function loadProductionConfig(env: Record<string, string | undefined>) {
   const script = `import(${JSON.stringify(CONFIG_MODULE)}).then(({ config }) =>
-    console.log(JSON.stringify({ frontendUrl: config.frontendUrl, fromEmail: config.fromEmail })))`;
+    console.log(JSON.stringify({ frontendUrl: config.frontendUrl, fromEmail: config.fromEmail, appVersion: config.appVersion })))`;
   const result = spawnSync(process.execPath, ["--import", "tsx", "-e", script], {
     env: {
       PATH: process.env.PATH,
@@ -32,10 +33,21 @@ describe("production config", () => {
     });
 
     assert.equal(exitCode, 0);
-    assert.deepEqual(config, {
-      frontendUrl: "https://draw.example.com",
-      fromEmail: "noreply@draw.example.com",
+    assert.equal(config.frontendUrl, "https://draw.example.com");
+    assert.equal(config.fromEmail, "noreply@draw.example.com");
+  });
+
+  it("reports the version from the root package.json when not started through npm", () => {
+    const rootManifest = path.resolve(__dirname, "../../../../../package.json");
+    const { version } = JSON.parse(readFileSync(rootManifest, "utf8"));
+
+    const { exitCode, config } = loadProductionConfig({
+      FRONTEND_URL: "https://draw.example.com",
     });
+
+    assert.equal(exitCode, 0);
+    assert.equal(config.appVersion, version);
+    assert.notEqual(config.appVersion, "0.0.0");
   });
 
   it("keeps an explicit FROM_EMAIL over the derived sender", () => {
