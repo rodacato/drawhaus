@@ -91,6 +91,8 @@ All notable changes to Drawhaus are documented here.
 - **Drive ID validation tightened on `/api/drive` routes** (CodeQL `js/request-forgery`). `fileId` / `targetFolderId` / `folderId` now match `^[A-Za-z0-9_-]{10,128}$` via Zod before reaching the Google Drive `fetch` call, blocking path-traversal / special-char payloads.
 - **Workflow permissions tightened** (CodeQL `actions/missing-workflow-permissions`). `ci.yml` and `quality.yml` now declare `permissions: contents: read` at workflow level; matches the existing convention in `build-push.yml` and `publish-mcp.yml`.
 
+- **`HOST_IP` is read from a secret.** As a variable, Kamal and `ssh-keyscan` printed the server address in the Actions logs of a public repository; secrets are masked. Runs from before the change still show it until their logs expire or are deleted.
+
 ### Changed
 
 - **Docker images are built on every PR that can change them.** A new `docker-build.yml` workflow builds the backend and frontend production targets without pushing, on PRs and master pushes touching `apps/`, `packages/`, the manifests or the lockfile. Until now the only image build ran on a push to `production`, so a broken Dockerfile surfaced at deploy time. Master pushes write the GitHub Actions layer cache and PRs read it.
@@ -136,6 +138,12 @@ All notable changes to Drawhaus are documented here.
 - **CI Docker Hub login skipped for Dependabot PRs**. The `docker/login-action` step in `ci.yml` is now gated by `if: github.actor != 'dependabot[bot]'`. Dependabot lacks access to `secrets.DOCKERHUB_TOKEN`, so the unconditional login was failing the `Validate` job on every Dependabot PR and blocking dependency review.
 - **Error monitoring migrated from Honeybadger to Sentry** ([ADR-023](docs/adr/023-sentry-error-monitoring.md)). Backend now uses `@sentry/node` (`Sentry.captureException` + `setupExpressErrorHandler`); frontend ships `@sentry/react` initialized at boot and `@sentry/vite-plugin` for source-map upload at build time. Both are gated by env vars and stay disabled when DSNs are absent.
 - **Deploy env vars split into `vars` vs `secrets` in the GitHub `production` environment**. Repo-level secrets are now limited to `SSH_PRIVATE_KEY` and `DOCKERHUB_TOKEN`; everything else lives in the environment. Adds `SENTRY_*`, `VITE_SENTRY_*`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`.
+
+- **Deploys ship only commits already on `master`.** The workflow, renamed `.github/workflows/deploy.yml`, starts each Kamal job by comparing the commit with `master` and stops unless it is identical or behind, so a Run workflow from an unmerged branch fails before Kamal starts. Promotion is `git push origin origin/master:production`, a fast-forward; a hotfix goes through a pull request to `master` like any change; the first `setup` runs from Run workflow instead of a local machine. The deploy runbook gains a table saying which production values are secrets and which are variables, and the README's deployment steps now point to it.
+
+- **Each production image is built once, by `kamal deploy`.** The separate build-push jobs pushed `<sha>` and `latest`, and `kamal deploy` then rebuilt and pushed the same tags, so production already ran Kamal's build, which never received `GIT_COMMIT`; the backend config now passes it. Kamal is pinned to 2.12.0 instead of `~> 2.7`.
+
+- **Kamal logs in to GHCR as `GITHUB_ACTOR`, requires `HOST_IP`, and every alias reuses the running container.** An unset `HOST_IP` used to render an empty host; it now stops rendering with the variable's name. `shell`, `db` and `redis` add `--reuse`, which runs `docker exec` in the running container instead of starting a new one, so they no longer need the registry token that only CI holds.
 
 ### Removed
 
