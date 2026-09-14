@@ -98,6 +98,17 @@ jobs:
       SENTRY_RELEASE: ${{ github.sha }}
 
     steps:
+      # Deploys ship only what master already has; branch protection on master makes that a tested commit.
+      - name: Require a commit that is on master
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          status=$(gh api "repos/$GITHUB_REPOSITORY/compare/master...$GITHUB_SHA" --jq .status)
+          case "$status" in
+            identical|behind) ;;
+            *) echo "::error::$GITHUB_SHA is not on master ($status); only merged commits deploy"; exit 1 ;;
+          esac
+
       - name: Require APP_HOST and API_HOST
         run: |
           for name in APP_HOST API_HOST; do
@@ -219,6 +230,17 @@ jobs:
       SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'drawhaus-frontend' }}
 
     steps:
+      # Deploys ship only what master already has; branch protection on master makes that a tested commit.
+      - name: Require a commit that is on master
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          status=$(gh api "repos/$GITHUB_REPOSITORY/compare/master...$GITHUB_SHA" --jq .status)
+          case "$status" in
+            identical|behind) ;;
+            *) echo "::error::$GITHUB_SHA is not on master ($status); only merged commits deploy"; exit 1 ;;
+          esac
+
       - name: Require APP_HOST and API_HOST
         run: |
           for name in APP_HOST API_HOST; do
