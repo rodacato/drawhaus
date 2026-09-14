@@ -34,6 +34,8 @@ builder:
   dockerfile: apps/backend/Dockerfile
   target: production
   arch: amd64
+  args:
+    GIT_COMMIT: "<%= ENV.fetch("GITHUB_SHA", "unknown") %>"
   cache:
     type: gha
 
