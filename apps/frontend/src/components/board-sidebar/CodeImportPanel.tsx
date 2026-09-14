@@ -48,7 +48,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
   const [replaceAll, setReplaceAll] = useState(false);
   const [isFallback, setIsFallback] = useState(false);
   const [validationInfo, setValidationInfo] = useState<ValidationInfo>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const userOverrodeFormat = useRef(false);
 
   // Auto-detect format on code change (unless user manually overrode)

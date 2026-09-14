@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/rodacato/drawhaus/actions/workflows/ci.yml"><img src="https://github.com/rodacato/drawhaus/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/rodacato/drawhaus/actions/workflows/quality.yml"><img src="https://github.com/rodacato/drawhaus/actions/workflows/quality.yml/badge.svg" alt="Quality" /></a>
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-7.0-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
   <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React" /></a>
   <a href="https://vite.dev/"><img src="https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white" alt="Vite" /></a>
   <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white" alt="Express" /></a>
@@ -191,7 +191,7 @@ drawhaus/
 
 | Layer      | Technology                                    |
 | ---------- | --------------------------------------------- |
-| Frontend   | React 18 + Vite + React Router + Tailwind CSS |
+| Frontend   | React 19 + Vite + React Router + Tailwind CSS |
 | Editor     | Excalidraw                                    |
 | Backend    | Express + Socket.IO + Zod                     |
 | Database   | PostgreSQL 16                                 |
