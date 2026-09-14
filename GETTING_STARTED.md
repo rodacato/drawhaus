@@ -39,6 +39,9 @@ suite, and Kamal for read-only deploy commands. PostgreSQL and Redis publish no 
 the container never collides with another project; VS Code forwards PostgreSQL on a free local
 port.
 
+What the container inherits from the host (`gh` login, SSH agent) and which Kamal commands
+work from it: [.devcontainer/README.md](.devcontainer/README.md).
+
 ## Path 3 — Bare metal
 
 Requires Node ≥ 24 and a PostgreSQL 16 reachable on `localhost` (Redis optional — without it
