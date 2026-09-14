@@ -1,9 +1,10 @@
 <%# The public hostnames every derived URL comes from. An empty host makes kamal-proxy route every hostname. %>
 <% %w[APP_HOST API_HOST].each { |name| raise "#{name} must be set to a bare public hostname such as draw.example.com, got #{ENV[name].inspect}" unless ENV[name].to_s.match?(/\A[a-z0-9-]+(\.[a-z0-9-]+)+\z/i) } %>
+<% raise "GITHUB_REPOSITORY_OWNER must be set to the GitHub account that owns the images" if ENV["GITHUB_REPOSITORY_OWNER"].to_s.empty? %>
 service: drawhaus-backend
 
 # Image name without registry prefix; Kamal prepends `registry.server` automatically.
-image: rodacato/drawhaus-backend
+image: <%= ENV["GITHUB_REPOSITORY_OWNER"].downcase %>/drawhaus-backend
 
 ssh:
   user: deploy
@@ -24,7 +25,7 @@ proxy:
 
 registry:
   server: ghcr.io
-  username: rodacato
+  username: <%= ENV["GITHUB_REPOSITORY_OWNER"] %>
   password:
     - KAMAL_REGISTRY_PASSWORD
 
