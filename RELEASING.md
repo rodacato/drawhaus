@@ -1,185 +1,102 @@
-# Releasing a New Version
+# Releasing
 
-How to cut a new release of Drawhaus.
+A release is an annotated `vX.Y.Z` tag on a commit that is already on `master`, with a GitHub
+Release carrying its changelog section. Releasing and deploying are independent: tagging deploys
+nothing, and deploying tags nothing. Deploys are in the
+[deploy runbook](docs/guides/kamal-deploy.md#step-5-deploying).
 
 ---
 
 ## Versioning
 
-Drawhaus follows [Semantic Versioning](https://semver.org/):
+Drawhaus follows [Semantic Versioning](https://semver.org/), with tags `vX.Y.Z` or `vX.Y.Z-rc.N`:
 
 - **MAJOR** (`X.0.0`) — breaking API or config changes
 - **MINOR** (`0.X.0`) — new features, backward-compatible
 - **PATCH** (`0.0.X`) — bug fixes only
 
----
+Only `v*` tags are releases.
 
-## Files Involved
+**The version lives in the root `package.json`.** `apps/backend` and `apps/frontend` carry the same
+number and move with it in the same command. The packages under `packages/` version on their own;
+`@drawhaus/mcp` is published with the tag's version whatever its `package.json` says.
 
-| File                         | What to update                                        |
-| ---------------------------- | ----------------------------------------------------- |
-| `package.json` (root)        | `"version": "X.Y.Z"`                                  |
-| `apps/backend/package.json`  | `"version": "X.Y.Z"`                                  |
-| `apps/frontend/package.json` | `"version": "X.Y.Z"`                                  |
-| `CHANGELOG.md`               | New version section with Added/Improved/Fixed/Removed |
-| `docs/ROADMAP.md`            | Mark completed items as done (if applicable)          |
+The running backend does not report this number: `/api/version` reads `npm_package_version`, which
+the production image's `node dist/main.js` never sets, so it answers `0.0.0`.
 
----
-
-## Release Checklist
-
-### 1. Update version numbers
-
-Bump the version in all three package files:
-
-```bash
-# Root
-# package.json → "version": "X.Y.Z"
-
-# Backend
-# apps/backend/package.json → "version": "X.Y.Z"
-
-# Frontend
-# apps/frontend/package.json → "version": "X.Y.Z"
-```
-
-### 2. Update CHANGELOG.md
-
-Add a new version section at the top (below the header):
-
-```markdown
-## vX.Y.Z — Short Description (YYYY-MM)
-
-### Added
-
-- **Feature name** — description
-
-### Improved
-
-- **Area** — what changed
-
-### Removed
-
-- **Feature name** — why it was removed
-
-### Fixed
-
-- **Bug description** — what was wrong and how it was fixed
-```
-
-**Naming convention for the version title:**
-
-- Pick 2–3 headline features separated by `&` or `,`
-- Example: `v0.10.0 — Snapshots, Editor Lock & Single-Scene (2026-03)`
-
-### 3. Update ROADMAP.md
-
-If any roadmap items were completed in this release, mark them as done.
-
-### 4. Commit the release
-
-Use the `release:` prefix for the commit message:
-
-```bash
-git add package.json apps/backend/package.json apps/frontend/package.json CHANGELOG.md docs/ROADMAP.md
-git commit -m "release: vX.Y.Z"
-```
-
-### 5. Create and push the tag
-
-Tag the release commit (or a specific commit):
-
-```bash
-# Tag the current commit
-git tag -a vX.Y.Z -m "vX.Y.Z — Short Description"
-
-# Or tag a specific commit
-git tag -a vX.Y.Z <commit-sha> -m "vX.Y.Z — Short Description"
-
-# Push to remote
-git push origin master --tags
-```
-
-### 6. Create GitHub Release
-
-```bash
-gh release create vX.Y.Z \
-  --title "vX.Y.Z — Short Description" \
-  --notes-from-tag
-```
-
-Or auto-generate notes from commits:
-
-```bash
-gh release create vX.Y.Z \
-  --title "vX.Y.Z — Short Description" \
-  --generate-notes
-```
-
-### 7. Deploy to production
-
-Merge or push to the `production` branch to trigger the deploy workflow:
-
-```bash
-git checkout production
-git merge master
-git push origin production
-```
-
-The GitHub Actions workflow (`.github/workflows/deploy.yml`) will:
-
-1. Build backend and frontend Docker images
-2. Push to `ghcr.io/<owner>/drawhaus-backend` and `ghcr.io/<owner>/drawhaus-frontend`
-3. Deploy both services via Kamal to the VPS
+`CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Changes land under
+`## [Unreleased]` as they merge; a release renames that section. Earlier sections keep their
+original `## vX.Y.Z — Title (YYYY-MM)` headings, up to v0.12.0.
 
 ---
 
-## Hotfix Releases
-
-For urgent fixes on production:
+## 1. Bump the version and the changelog, by pull request
 
 ```bash
-# Branch from the release tag
-git checkout -b hotfix/vX.Y.Z vX.Y.Z
-
-# Make fixes, then bump patch version + update changelog
-git commit -m "fix: description"
-git commit -m "release: vX.Y.Z+1"
-git tag -a vX.Y.Z+1 -m "vX.Y.Z+1"
-
-# Merge back to production and master
-git checkout production && git merge hotfix/vX.Y.Z
-git push origin production --tags
-
-git checkout master && git merge hotfix/vX.Y.Z
-git push origin master
+git fetch origin && git checkout -b release/vX.Y.Z origin/master --no-track
+npm version X.Y.Z --no-git-tag-version --include-workspace-root --workspace=backend --workspace=frontend
 ```
 
----
-
-## Docker Image Tags
-
-Each release produces these images:
-
-| Image                               | Tags              |
-| ----------------------------------- | ----------------- |
-| `ghcr.io/<owner>/drawhaus-backend`  | `latest`, `<sha>` |
-| `ghcr.io/<owner>/drawhaus-frontend` | `latest`, `<sha>` |
-
----
-
-## Verify Release
-
-After deploying:
+In `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` and add an empty
+`## [Unreleased]` above it, separated by `---`. Then:
 
 ```bash
-# Health check
-curl https://$API_HOST/health
+git commit -am "release: vX.Y.Z"
+git push -u origin release/vX.Y.Z:release/vX.Y.Z
+gh pr create --base master --title "release: vX.Y.Z"
+```
 
-# Check version endpoint
-curl https://$API_HOST/api/version
+Merge it once the checks pass, like any change.
 
-# View running containers
-kamal app details -c config/deploy.backend.yml
-kamal app details -c config/deploy.frontend.yml
+## 2. Tag the merged commit
+
+```bash
+git fetch origin
+sha=<the release pull request's merge commit>
+git merge-base --is-ancestor "$sha" origin/master && git tag -a vX.Y.Z "$sha" -m "vX.Y.Z"
+git push origin vX.Y.Z
+```
+
+Push only the tag. Never `git push origin master --tags`: it pushes straight to `master`, skipping the pull request,
+and publishes every tag you have locally.
+
+## 3. Publish the GitHub Release
+
+```bash
+v=X.Y.Z
+awk -v h="## [$v]" 'index($0, h) == 1 { f = 1; next } /^## / { f = 0 } f && !/^---$/' CHANGELOG.md > "release-notes-$v.md"
+gh release create "v$v" --verify-tag --title "v$v" --notes-file "release-notes-$v.md"
+rm "release-notes-$v.md"
+```
+
+`--verify-tag` refuses to run when the tag is not on GitHub, instead of creating one on the
+default branch's head.
+
+---
+
+## What a tag publishes
+
+| Workflow          | On a `v*` tag                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `publish-mcp.yml` | Builds `@drawhaus/mcp`, sets its version from the tag, publishes it to GitHub Packages |
+
+No Docker image is tagged with the version. `kamal deploy` tags each image with the deployed
+commit's SHA and `latest`, whether or not that commit is a release.
+
+## Deploying a release
+
+A separate step, done when you choose: promote `master` to `production` as the
+[deploy runbook](docs/guides/kamal-deploy.md#step-5-deploying) describes. Production then runs
+`master`'s head, which may already be past the tag.
+
+## Hotfix
+
+There are no hotfix branches and no path straight to `production`. The fix merges to `master` by
+pull request, is released as a patch with the steps above, and is promoted like any deploy.
+
+## Verify
+
+```bash
+gh release view vX.Y.Z
+git ls-remote --tags origin vX.Y.Z
 ```
