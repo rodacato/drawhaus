@@ -17,7 +17,7 @@
     "ghcr.io/devcontainers/features/ruby:1": {
       "version": "3.2"
     },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {}
   },
   "remoteUser": "vscode",
   "updateRemoteUserUID": true,
