@@ -20,10 +20,10 @@ Production ✓
 
 **Images built:**
 
-| Image                                | Source                     | Purpose                           |
-| ------------------------------------ | -------------------------- | --------------------------------- |
-| `ghcr.io/rodacato/drawhaus-backend`  | `apps/backend/Dockerfile`  | Express API + Socket.IO (Node.js) |
-| `ghcr.io/rodacato/drawhaus-frontend` | `apps/frontend/Dockerfile` | React SPA (nginx)                 |
+| Image                               | Source                     | Purpose                           |
+| ----------------------------------- | -------------------------- | --------------------------------- |
+| `ghcr.io/<owner>/drawhaus-backend`  | `apps/backend/Dockerfile`  | Express API + Socket.IO (Node.js) |
+| `ghcr.io/<owner>/drawhaus-frontend` | `apps/frontend/Dockerfile` | React SPA (nginx)                 |
 
 **Kamal manages on the VPS:**
 
@@ -367,8 +367,8 @@ far below that, so a `429` there means something else is polling it.
 
 Check that the build jobs succeeded in GitHub Actions. Images should be at:
 
-- `ghcr.io/rodacato/drawhaus-backend:latest`
-- `ghcr.io/rodacato/drawhaus-frontend:latest`
+- `ghcr.io/<owner>/drawhaus-backend:latest`
+- `ghcr.io/<owner>/drawhaus-frontend:latest`
 
 ### Database connection refused
 

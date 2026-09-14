@@ -129,7 +129,7 @@ git push origin production
 The GitHub Actions workflow (`.github/workflows/build-push.yml`) will:
 
 1. Build backend and frontend Docker images
-2. Push to `ghcr.io/rodacato/drawhaus-backend` and `ghcr.io/rodacato/drawhaus-frontend`
+2. Push to `ghcr.io/<owner>/drawhaus-backend` and `ghcr.io/<owner>/drawhaus-frontend`
 3. Deploy both services via Kamal to the VPS
 
 ---
@@ -161,10 +161,10 @@ git push origin master
 
 Each release produces these images:
 
-| Image                                | Tags              |
-| ------------------------------------ | ----------------- |
-| `ghcr.io/rodacato/drawhaus-backend`  | `latest`, `<sha>` |
-| `ghcr.io/rodacato/drawhaus-frontend` | `latest`, `<sha>` |
+| Image                               | Tags              |
+| ----------------------------------- | ----------------- |
+| `ghcr.io/<owner>/drawhaus-backend`  | `latest`, `<sha>` |
+| `ghcr.io/<owner>/drawhaus-frontend` | `latest`, `<sha>` |
 
 ---
 
