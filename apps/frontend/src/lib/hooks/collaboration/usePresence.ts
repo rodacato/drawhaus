@@ -68,7 +68,7 @@ export function usePresence({
   useEffect(() => {
     followingUserIdRef.current = followingUserId;
     if (!followingUserId) followedViewportRef.current = null;
-  }, [followingUserId]);
+  }, [followingUserId, followingUserIdRef, followedViewportRef]);
 
   /* ─── stale cursor cleanup ─── */
   useEffect(() => {
@@ -103,7 +103,7 @@ export function usePresence({
         targetUserId: followingUserId,
       });
     }
-  }, [followingUserId, diagramId]);
+  }, [followingUserId, diagramId, socketRef]);
 
   /* ─── Mejora 1: socket event listeners — use socketGeneration as dep ─── */
   useEffect(() => {
@@ -193,7 +193,14 @@ export function usePresence({
       socket.off("hand-raised", handleHandRaised);
       socket.off("hand-lowered", handleHandLowered);
     };
-  }, [socketGeneration, diagramId]);
+  }, [
+    socketGeneration,
+    diagramId,
+    socketRef,
+    excalidrawApiRef,
+    followingUserIdRef,
+    followedViewportRef,
+  ]);
 
   /* ─── cursor emit ─── */
   const onPointerMove = useCallback(
@@ -204,7 +211,7 @@ export function usePresence({
         socketRef.current?.emit("cursor-move", { roomId: diagramId, x: e.clientX, y: e.clientY });
       }
     },
-    [diagramId],
+    [diagramId, socketRef],
   );
 
   /* ─── raise / lower hand ─── */
@@ -212,7 +219,7 @@ export function usePresence({
     socketRef.current?.emit("raise-hand", { roomId: diagramId });
     setIsHandRaised(true);
     setRaisedHands((prev) => (selfUserId ? new Set(prev).add(selfUserId) : prev));
-  }, [diagramId, selfUserId]);
+  }, [diagramId, selfUserId, socketRef]);
 
   const lowerHand = useCallback(() => {
     socketRef.current?.emit("lower-hand", { roomId: diagramId });
@@ -225,7 +232,7 @@ export function usePresence({
       next.delete(selfUserId);
       return next;
     });
-  }, [diagramId, selfUserId]);
+  }, [diagramId, selfUserId, socketRef]);
 
   /* ─── clear raised hands for users who leave ─── */
   useEffect(() => {

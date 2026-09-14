@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
   useState,
@@ -52,11 +53,13 @@ export function ConfirmProvider({ children }: { readonly children: React.ReactNo
     }
   }, [state]);
 
+  const cancelOnEscape = useEffectEvent(handleCancel);
+
   // Close on Escape
   useEffect(() => {
     if (!state) return;
     function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") handleCancel();
+      if (e.key === "Escape") cancelOnEscape();
     }
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);

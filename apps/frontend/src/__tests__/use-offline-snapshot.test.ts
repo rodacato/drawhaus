@@ -139,6 +139,35 @@ describe("useOfflineSnapshot", () => {
     expect(onOfflineSave).toHaveBeenCalledTimes(1);
   });
 
+  test("the grace-period save reports to the callback from the latest render", async () => {
+    const first = vi.fn<OnOfflineSave>();
+    const latest = vi.fn<OnOfflineSave>();
+    const excalidrawApiRef = makeRef(createExcalidrawApiStub({ elements: [{ id: "e1" }] }));
+    const { rerender } = renderHook(
+      ({ connection, onOfflineSave }) =>
+        useOfflineSnapshot({
+          diagramId: "diag-1",
+          connectionState: connection,
+          excalidrawApiRef: excalidrawApiRef as never,
+          selfUserId: "user-1",
+          onOfflineSave,
+        }),
+      { initialProps: { connection: "connected" as ConnectionState, onOfflineSave: first } },
+    );
+    rerender({ connection: "disconnected", onOfflineSave: first });
+    rerender({ connection: "disconnected", onOfflineSave: latest });
+    act(() => {
+      vi.advanceTimersByTime(OFFLINE_GRACE_MS + 100);
+    });
+    for (let i = 0; i < 3; i++)
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+    expect(latest).toHaveBeenCalledTimes(1);
+    expect(first).not.toHaveBeenCalled();
+  });
+
   test("after an offline save, reconnecting fires onConflict when a snapshot exists", async () => {
     const onConflict = vi.fn<OnConflict>();
     const snapshot = {

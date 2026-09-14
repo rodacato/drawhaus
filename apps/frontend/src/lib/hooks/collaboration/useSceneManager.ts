@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { mergeElements, mergeDelta } from "@/lib/collaboration";
 import { applyRemoteScene, type ExcalidrawApi } from "@/lib/excalidraw";
@@ -52,11 +52,18 @@ export function useSceneManager({
   onEditsReplaced,
 }: UseSceneManagerParams): UseSceneManagerReturn {
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
+  const editsReplaced = useEffectEvent((ids: string[]) => onEditsReplaced?.(ids));
+  const conflict = useEffectEvent((ids: string[], fromUserId: string) =>
+    onConflict?.(ids, fromUserId),
+  );
+  const remoteDelete = useEffectEvent((ids: string[], fromUserId: string) =>
+    onRemoteDelete?.(ids, fromUserId),
+  );
 
   /* ─── sync activeSceneIdRef ─── */
   useEffect(() => {
     activeSceneIdRef.current = activeSceneId;
-  }, [activeSceneId]);
+  }, [activeSceneId, activeSceneIdRef]);
 
   /* ─── socket event listeners for scene data ─── */
   useEffect(() => {
@@ -83,7 +90,7 @@ export function useSceneManager({
         const discardedIds = replaced ? sync.editedIds(current) : null;
         const localEdits = replaced ? [] : sync.localEdits(current);
         sync.reset(serverElements, revision ?? null);
-        if (discardedIds?.size) onEditsReplaced?.([...discardedIds]);
+        if (discardedIds?.size) editsReplaced([...discardedIds]);
         const scene =
           localEdits.length > 0 ? mergeElements(localEdits, serverElements) : serverElements;
         if (!api) {
@@ -138,9 +145,9 @@ export function useSceneManager({
       applyRemoteScene(api, { elements });
       sync.markShared(takenFrom(elements, changed));
       sync.forget(deletedIds);
-      if (conflictIds.length > 0) onConflict?.(conflictIds, fromUserId);
+      if (conflictIds.length > 0) conflict(conflictIds, fromUserId);
       const deletedWhileEdited = deletedIds.filter((id) => edited.has(id));
-      if (deletedWhileEdited.length > 0) onRemoteDelete?.(deletedWhileEdited, fromUserId);
+      if (deletedWhileEdited.length > 0) remoteDelete(deletedWhileEdited, fromUserId);
     };
 
     socket.on("scene-from-db", handleSceneFromDb);
@@ -152,7 +159,7 @@ export function useSceneManager({
       socket.off("scene-updated", handleSceneUpdated);
       socket.off("scene-delta-received", handleSceneDeltaReceived);
     };
-  }, [socketGeneration]);
+  }, [socketGeneration, socketRef, excalidrawApiRef, pendingSceneRef, sync]);
 
   return { activeSceneId };
 }

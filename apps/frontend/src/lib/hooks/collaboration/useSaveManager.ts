@@ -101,7 +101,7 @@ export function useSaveManager({
     } catch {
       /* thumbnail is best-effort */
     }
-  }, [diagramId]);
+  }, [diagramId, excalidrawApiRef]);
 
   /* ─── persist scene ─── */
   const persistScene = useCallback(
@@ -189,7 +189,7 @@ export function useSaveManager({
         return false;
       }
     },
-    [diagramId, cacheKey, generateThumbnail],
+    [diagramId, cacheKey, generateThumbnail, activeSceneIdRef, socketRef, sync],
   );
 
   /* ─── listen for scene-saved from server ─── */
@@ -204,7 +204,7 @@ export function useSaveManager({
     return () => {
       socket.off("scene-saved", handler);
     };
-  }, [socketGeneration]);
+  }, [socketGeneration, socketRef]);
 
   /* ─── send the room what changed here since the last broadcast ─── */
   const broadcast = useCallback(() => {
@@ -232,7 +232,7 @@ export function useSaveManager({
         removedIds,
       });
     }
-  }, [diagramId]);
+  }, [diagramId, activeSceneIdRef, socketRef, sync]);
 
   const flushBroadcast = useCallback(() => {
     if (throttleTimer.current) {
@@ -265,22 +265,25 @@ export function useSaveManager({
       if (!scene || !sync.hasUnsaved()) return;
       persistScene([...scene.elements], scene.appState, capturedSceneId);
     }, SAVE_DEBOUNCE_MS);
-  }, [flushBroadcast, persistScene]);
+  }, [flushBroadcast, persistScene, activeSceneIdRef, sync]);
   scheduleSaveRef.current = scheduleSave;
 
   /* ─── while following, hold the viewport on the followed user's ─── */
-  const snapToFollowedViewport = useCallback((appState: Record<string, unknown>) => {
-    const fv = followedViewportRef.current;
-    const api = excalidrawApiRef.current;
-    if (!fv || !api) return;
-    const zoom = (appState.zoom as { value: number })?.value ?? 1;
-    if (appState.scrollX === fv.scrollX && appState.scrollY === fv.scrollY && zoom === fv.zoom) {
-      return;
-    }
-    applyRemoteScene(api, {
-      appState: { scrollX: fv.scrollX, scrollY: fv.scrollY, zoom: { value: fv.zoom } },
-    });
-  }, []);
+  const snapToFollowedViewport = useCallback(
+    (appState: Record<string, unknown>) => {
+      const fv = followedViewportRef.current;
+      const api = excalidrawApiRef.current;
+      if (!fv || !api) return;
+      const zoom = (appState.zoom as { value: number })?.value ?? 1;
+      if (appState.scrollX === fv.scrollX && appState.scrollY === fv.scrollY && zoom === fv.zoom) {
+        return;
+      }
+      applyRemoteScene(api, {
+        appState: { scrollX: fv.scrollX, scrollY: fv.scrollY, zoom: { value: fv.zoom } },
+      });
+    },
+    [excalidrawApiRef, followedViewportRef],
+  );
 
   const emitViewport = useCallback(
     (appState: Record<string, unknown>) => {
@@ -294,7 +297,7 @@ export function useSaveManager({
         zoom: (appState.zoom as { value: number })?.value ?? 1,
       });
     },
-    [diagramId],
+    [diagramId, socketRef],
   );
 
   /* ─── onChange handler ─── */
@@ -312,7 +315,15 @@ export function useSaveManager({
       throttledBroadcast();
       scheduleSave();
     },
-    [canEdit, snapToFollowedViewport, emitViewport, throttledBroadcast, scheduleSave],
+    [
+      canEdit,
+      snapToFollowedViewport,
+      emitViewport,
+      throttledBroadcast,
+      scheduleSave,
+      followingUserIdRef,
+      sync,
+    ],
   );
 
   /* ─── cancel pending timers (used by scene manager) ─── */
@@ -336,7 +347,7 @@ export function useSaveManager({
     latestRef.current = scene;
     flushBroadcast();
     return persistScene([...scene.elements], scene.appState, activeSceneIdRef.current);
-  }, [canEdit, flushBroadcast, persistScene]);
+  }, [canEdit, flushBroadcast, persistScene, activeSceneIdRef, excalidrawApiRef]);
 
   /* ─── derived values ─── */
   const saveLabel = deriveSaveLabel(saveState, lastSavedAt.current);

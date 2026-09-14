@@ -67,7 +67,7 @@ export function useCollaboration({
         theme: "light",
       },
     };
-  }, [initialElements, initialAppState, cacheKey]);
+  }, [initialElements, initialAppState, cacheKey, canvasPrefs]);
 
   /* ─── 1. Socket connection ─── */
   const { socketRef, socketGeneration, connectionState, connectionError, userRole, selfUserId } =
@@ -80,6 +80,7 @@ export function useCollaboration({
 
   /* ─── 2. Edit lock (stub — concurrent editing) ─── */
   const editLock = useEditLock({ socketRef, socketGeneration, selfUserId });
+  const { touchCountdown } = editLock;
 
   /* ─── 3. Save manager ─── */
   const {
@@ -104,10 +105,10 @@ export function useCollaboration({
   // Wrap onChange to reset lock countdown on each edit
   const onChange = useCallback(
     (elements: readonly unknown[], appState: Record<string, unknown>) => {
-      editLock.touchCountdown();
+      touchCountdown();
       rawOnChange(elements, appState);
     },
-    [rawOnChange, editLock.touchCountdown],
+    [rawOnChange, touchCountdown],
   );
 
   /* ─── 4. Presence ─── */

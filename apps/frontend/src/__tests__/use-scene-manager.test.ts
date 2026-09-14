@@ -321,6 +321,36 @@ describe("useSceneManager", () => {
     expect(onConflict).toHaveBeenCalledWith(["a"], "user-other");
   });
 
+  test("a conflict reaches the callback from the latest render, not the one the listeners saw", () => {
+    const first = vi.fn<OnConflict>();
+    const latest = vi.fn<OnConflict>();
+    const sync = new SceneSync();
+    sync.reset([{ id: "a", version: 1 }], null);
+    const params = {
+      socketRef: makeRef(socket as unknown as Socket | null),
+      socketGeneration: 1,
+      excalidrawApiRef: makeRef(createExcalidrawApiStub({ elements: [{ id: "a", version: 2 }] })),
+      sync,
+      activeSceneIdRef: makeRef<string | null>(null),
+      pendingSceneRef: makeRef<{ elements: unknown[] } | null>(null),
+    };
+    const { rerender } = renderHook(
+      ({ onConflict }) =>
+        useSceneManager({
+          ...params,
+          excalidrawApiRef: params.excalidrawApiRef as never,
+          onConflict,
+        }),
+      { initialProps: { onConflict: first } },
+    );
+    rerender({ onConflict: latest });
+
+    receiveDelta(socket, [{ id: "a", version: 5 }]);
+
+    expect(latest).toHaveBeenCalledWith(["a"], "user-other");
+    expect(first).not.toHaveBeenCalled();
+  });
+
   test("a teammate's change to an element nobody here touched is no conflict", () => {
     const onConflict = vi.fn<OnConflict>();
     const api = createExcalidrawApiStub({ elements: [{ id: "a", version: 1 }] });

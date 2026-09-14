@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/api/auth";
@@ -18,7 +18,7 @@ export function ConnectedAccounts() {
     message: string;
   } | null>(null);
 
-  useEffect(() => {
+  const consumeLinkResult = useEffectEvent(() => {
     const linked = searchParams.get("linked");
     const linkError = searchParams.get("link_error");
     if (linked) {
@@ -39,7 +39,9 @@ export function ConnectedAccounts() {
       params.delete("link_error");
       setSearchParams(params);
     }
-  }, []);
+  });
+
+  useEffect(() => consumeLinkResult(), []);
 
   async function handleUnlinkProvider(provider: Provider) {
     setUnlinkPending(provider);
