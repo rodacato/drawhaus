@@ -42,7 +42,7 @@
     "react-dom": "^18",
     "tsup": "^8.4.0",
     "tsx": "^4.19.4",
-    "typescript": "^5.7.3",
+    "typescript": "^7.0.2",
     "vite": "^8.3.0"
   },
   "engines": {
