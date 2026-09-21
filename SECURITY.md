@@ -10,6 +10,10 @@ If you discover a security vulnerability in Drawhaus, please report it responsib
 
 **Do NOT open a public issue.** Instead:
 
+**There is no issue to open.** A public issue describes the weakness from the moment it is
+written, and closing it later does not unpublish it. The `ctx:security` label marks the area of
+the code a change touches; it is not a way to file a vulnerability.
+
 1. Open a private report through [GitHub's private vulnerability reporting](https://github.com/rodacato/drawhaus/security/advisories/new) (**Security → Report a vulnerability**) with:
    - A description of the vulnerability.
    - Steps to reproduce it.
@@ -25,7 +29,13 @@ If you discover a security vulnerability in Drawhaus, please report it responsib
 - **0 days**: Vulnerability reported.
 - **48 hours**: Acknowledgment sent to reporter.
 - **7 days**: Initial assessment and fix development.
-- **30 days**: Fix released and advisory published (if applicable).
+- **30 days**: Fix released and advisory published.
+
+The advisory is not conditional, and it is not a second disclosure. Drawhaus is self-hosted, so an
+operator running an older copy learns they must upgrade **from the published advisory and from
+nothing else** — it is what `npm audit` and Dependabot read. Patching in silence leaves them
+exposed. The advisory is drafted privately and published only once the fix has shipped, which is
+the opposite of describing an unpatched weakness in the open.
 
 We ask that you give us reasonable time to address the issue before disclosing it publicly.
 
