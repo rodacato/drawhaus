@@ -1,0 +1,55 @@
+name: Pages
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "site/**"
+      - "apps/frontend/public/screenshots/**"
+      - "docs/branding/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: bash site/build.sh
+
+      - name: Fail on a reference to a file that will 404
+        run: |
+          cd site/_site
+          missing=$(grep -oE '(src|href)="[^"]+"' index.html \
+            | sed -E 's/^[a-z]+="//; s/"$//' \
+            | grep -vE '^(https?:|#|mailto:|data:)' \
+            | sort -u \
+            | while read -r f; do [ -f "$f" ] || echo "$f"; done)
+          if [ -n "$missing" ]; then
+            echo "missing assets:"; echo "$missing"; exit 1
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
