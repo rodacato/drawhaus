@@ -1,7 +1,6 @@
 #!/bin/sh
-# Runs on the HOST before the container starts (devcontainer.json initializeCommand).
-# Writes .devcontainer/.host.env, which docker-compose.yml hands to the container.
-# Always exits 0: a missing gh or git must never keep the container from opening.
+# Runs on the HOST before the container starts (devcontainer.json initializeCommand); always exits 0.
+# Writes .devcontainer/.host.env with the GITHUB_* values from origin, and no credential of any kind.
 
 case "$0" in */*) cd "${0%/*}" || exit 0 ;; esac
 
@@ -11,10 +10,6 @@ tmp=.host.env.tmp
 umask 077
 rm -f "$tmp"
 : > "$tmp" || exit 0
-
-if command -v gh >/dev/null 2>&1; then
-  token=$(gh auth token 2>/dev/null) && [ -n "$token" ] && echo "GH_TOKEN=$token" >> "$tmp"
-fi
 
 if command -v git >/dev/null 2>&1; then
   slug=$(git config --get remote.origin.url 2>/dev/null |
