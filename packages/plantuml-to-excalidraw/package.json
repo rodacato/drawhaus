@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@drawhaus/helpers": "*",
-    "pako": "^2.1.0"
+    "pako": "^3.0.2"
   },
   "devDependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
