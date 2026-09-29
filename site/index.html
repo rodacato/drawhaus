@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Drawhaus — Your whiteboard, on your server.</title>
+    <meta
+      name="description"
+      content="Self-hosted collaborative diagramming built on Excalidraw. Accounts, workspaces, real-time collaboration, a REST API and an MCP server — on your own box. MIT."
+    />
+    <link rel="icon" href="img/favicon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Drawhaus — Your whiteboard, on your server." />
+    <meta
+      property="og:description"
+      content="Self-hosted collaborative diagramming built on Excalidraw. One command to run it. MIT."
+    />
+    <meta property="og:url" content="https://rodacato.github.io/drawhaus/" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Sora:wght@600;700&display=swap"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="lockup" href="#top">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <path d="M20 20 L80 20 L80 60 Q80 80 60 80 L20 80 Z" fill="#111827" />
+            <path d="M20 20 L50 20 L50 50 L20 50 Z" fill="#FBBF24" />
+            <path d="M20 50 L50 50 L50 80 L20 80 Z" fill="#2563EB" />
+            <circle cx="65" cy="65" r="10" fill="#F8FAF3" />
+            <circle cx="65" cy="65" r="4" fill="#111827" />
+          </svg>
+          Drawhaus
+        </a>
+        <nav class="header-links">
+          <a href="#what">What it does</a>
+          <a href="#run">Run it</a>
+          <a class="ghost" href="https://github.com/rodacato/drawhaus">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+              />
+            </svg>
+            GitHub
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="wrap">
+          <div class="hero-copy">
+            <div class="badges">
+              <span class="badge">v0.12.0</span>
+              <span class="badge">MIT</span>
+              <span class="badge">built on Excalidraw</span>
+            </div>
+            <h1>Your whiteboard,<br /><span>on your server.</span></h1>
+            <p class="lede">
+              Drawhaus is the infrastructure around Excalidraw's editor — accounts, workspaces,
+              real-time collaboration, share links, a REST API, and an MCP server so AI agents can
+              draw. You run it, you own the database.
+            </p>
+            <div class="hero-actions">
+              <div class="command">
+                <code id="cmd-hero">docker compose up</code>
+                <button class="copy" type="button" data-copy="cmd-hero" aria-live="polite">
+                  Copy
+                </button>
+              </div>
+              <p class="also">
+                Needs Docker, or Node&nbsp;≥&nbsp;24 and PostgreSQL&nbsp;16. Then open
+                <code>localhost:5173</code>.
+              </p>
+            </div>
+          </div>
+
+          <figure class="shot">
+            <figcaption>paste Mermaid → editable Excalidraw elements</figcaption>
+            <img
+              src="img/code-import-mermaid.png"
+              alt="The Drawhaus editor with a Mermaid diagram pasted on the left and the converted, fully editable Excalidraw shapes on the canvas"
+              width="1917"
+              height="962"
+            />
+          </figure>
+        </div>
+      </section>
+
+      <section class="honest">
+        <div class="wrap">
+          <p class="eyebrow"><span class="mark" aria-hidden="true"></span> The honest version</p>
+          <h2>One person built this. One person maintains it.</h2>
+          <p class="lede">
+            I made Drawhaus to own my diagrams and to learn full-stack by shipping something I
+            actually use. I run one instance, for me and a handful of friends. It's MIT, it's v0.12,
+            and there is no company behind it.
+          </p>
+          <p class="lede">
+            <strong>Excalidraw is the editor, and it stays theirs.</strong> It's the best drawing
+            tool I've used and there is nothing about it worth rebuilding. Drawhaus is the part
+            around it: persistence, accounts, sharing, an API, and a way for agents to draw into the
+            same canvas you do.
+          </p>
+          <p class="lede">
+            If that's the trade you want, the whole thing is <code>docker compose up</code>. If you
+            need SSO and an SLA, there's a section below that says so plainly.
+          </p>
+        </div>
+      </section>
+
+      <section id="what">
+        <div class="wrap">
+          <p class="eyebrow"><span class="mark blue" aria-hidden="true"></span> What it does</p>
+          <h2>Everything around the editor</h2>
+          <p class="lede">
+            The infrastructure layer Excalidraw's open-source build doesn't ship, because it was
+            never meant to.
+          </p>
+
+          <div class="row">
+            <figure class="shot">
+              <figcaption>admin — users, metrics, integrations, backups</figcaption>
+              <img
+                src="img/admin.png"
+                alt="Drawhaus admin panel showing the user list, instance metrics and integration settings"
+                width="1440"
+                height="900"
+              />
+            </figure>
+            <div>
+              <h3>It's your box</h3>
+              <p>
+                Diagrams live in your PostgreSQL, on your machine. Nothing phones home, and there is
+                no tier that unlocks a feature.
+              </p>
+              <ul>
+                <li>Docker Compose locally, Kamal for a VPS</li>
+                <li>Three-step setup wizard — no <code>.env</code> editing to get started</li>
+                <li>Scheduled database backups with retention</li>
+                <li>Integration secrets encrypted at rest (AES-256-GCM)</li>
+                <li>Audit log, rate limiting, hardened cookies and headers</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="row flip">
+            <figure class="shot">
+              <figcaption>two people on one canvas</figcaption>
+              <img
+                src="img/collab.png"
+                alt="Two users editing the same Drawhaus canvas at once, with live cursors and presence avatars"
+                width="1440"
+                height="900"
+              />
+            </figure>
+            <div>
+              <h3>People in the same canvas</h3>
+              <p>
+                Concurrent editing with element-level merge, not a lock — two people can work on the
+                same diagram without one of them waiting.
+              </p>
+              <ul>
+                <li>Live cursors, presence and viewport follow</li>
+                <li>Workspaces with admin, editor and viewer roles</li>
+                <li>Share links with a role and an expiry date</li>
+                <li>Guest access by token — no account needed to join</li>
+                <li>Threaded comments with a resolve workflow</li>
+                <li>Snapshots you can preview and restore</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="row">
+            <figure class="shot">
+              <figcaption>dashboard — folders, search, starred</figcaption>
+              <img
+                src="img/dashboard.png"
+                alt="The Drawhaus dashboard listing diagrams as thumbnail cards, with folders and a workspace switcher"
+                width="1440"
+                height="900"
+              />
+            </figure>
+            <div>
+              <h3>Somewhere for the diagrams to live</h3>
+              <p>
+                Folders, search, thumbnails and starred boards, so a diagram you drew four months
+                ago is still findable.
+              </p>
+              <ul>
+                <li>Seven built-in templates, plus your own</li>
+                <li>PNG and SVG export, <code>.excalidraw</code> import</li>
+                <li>Read-only embeds for a wiki or a README</li>
+                <li>Google Drive backup on save, if you want it</li>
+                <li>Signed webhooks on diagram events</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <p class="eyebrow"><span class="mark coral" aria-hidden="true"></span> Three ways in</p>
+          <h2>Humans, code and agents draw the same diagram</h2>
+          <p class="lede">
+            A diagram an agent created is the same element array as one you drew by hand, in the
+            same table. No format translation, no flat image you can't edit afterwards.
+          </p>
+          <pre><code><span class="c"># REST — OpenAPI 3.1 spec, API-key auth</span>
+curl -H "Authorization: Bearer $DRAWHAUS_API_KEY" \
+     https://draw.example.com/v1/diagrams
+
+<span class="c"># MCP — Claude Code, Cursor, VS Code</span>
+claude mcp add drawhaus \
+  -e DRAWHAUS_URL=http://localhost:4000 \
+  -e DRAWHAUS_API_KEY=dhk_... \
+  -- npx @drawhaus/mcp</code></pre>
+          <p class="also note">
+            Mermaid and PlantUML paste straight into the canvas as editable shapes.
+            <code>@drawhaus/mcp</code> is published to GitHub Packages —
+            <a href="https://github.com/rodacato/drawhaus/tree/master/packages/mcp"
+              >setup is in its README</a
+            >.
+          </p>
+        </div>
+      </section>
+
+      <section id="run">
+        <div class="wrap">
+          <p class="eyebrow"><span class="mark" aria-hidden="true"></span> Run it</p>
+          <h2>Three steps, about five minutes</h2>
+
+          <ol class="steps">
+            <li>
+              <h3>Clone it</h3>
+              <div class="command">
+                <code id="cmd-clone">git clone https://github.com/rodacato/drawhaus.git</code>
+                <button class="copy" type="button" data-copy="cmd-clone" aria-live="polite">
+                  Copy
+                </button>
+              </div>
+            </li>
+            <li>
+              <h3>Start the stack</h3>
+              <p>
+                Frontend, backend, PostgreSQL and Redis with hot reload. The defaults work — copying
+                <code>.env.example</code> is optional.
+              </p>
+              <div class="command">
+                <code id="cmd-up">docker compose up</code>
+                <button class="copy" type="button" data-copy="cmd-up" aria-live="polite">
+                  Copy
+                </button>
+              </div>
+            </li>
+            <li>
+              <h3>Make yourself admin</h3>
+              <p>
+                Open <code>http://localhost:5173</code>. On an empty database it sends you to the
+                setup wizard, and the first account registered becomes the admin.
+              </p>
+            </li>
+          </ol>
+
+          <p class="lede note">
+            Putting it on a real box? <code>config/deploy.*.yml</code> holds the Kamal setup —
+            kamal-proxy, images on ghcr.io, TLS terminated upstream.
+            <a href="https://github.com/rodacato/drawhaus/blob/master/GETTING_STARTED.md"
+              >GETTING_STARTED.md</a
+            >
+            covers all three paths — Compose, Dev Container and bare metal — plus what to do when it
+            doesn't come up.
+          </p>
+        </div>
+      </section>
+
+      <section class="notfor">
+        <div class="wrap">
+          <p class="eyebrow"><span class="mark blue" aria-hidden="true"></span> What this is not</p>
+          <h2>Before you spend an afternoon on it</h2>
+          <ul>
+            <li>
+              <strong>Not a hosted service.</strong> There is no drawhaus.com to sign up for. If you
+              don't run a server, this gives you nothing.
+            </li>
+            <li>
+              <strong>Not for enterprises</strong> that need SSO/SAML, compliance audit trails or a
+              99.99% SLA. It's a single-VPS tool.
+            </li>
+            <li>
+              <strong>Not a design tool.</strong> If you want pixel-perfect UI work, this is the
+              wrong shape — it's for diagrams and sketches.
+            </li>
+            <li>
+              <strong>Not for people who don't want to run Docker.</strong> Self-hosted means you
+              are your own ops team, including the day it breaks.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <div class="wrap">
+          <p class="eyebrow">
+            <span class="mark coral" aria-hidden="true"></span> Read before you trust it
+          </p>
+          <h2>The files that actually answer the question</h2>
+          <ul class="reads">
+            <li>
+              <a href="https://github.com/rodacato/drawhaus/blob/master/docker-compose.yml">
+                <span class="name">docker-compose.yml</span>
+                <span class="what">Exactly what runs on your machine.</span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://github.com/rodacato/drawhaus/blob/master/README.md#environment-variables"
+              >
+                <span class="name">Environment variables</span>
+                <span class="what">Every variable, its default and whether it's required.</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/rodacato/drawhaus/tree/master/docs/adr">
+                <span class="name">docs/adr/</span>
+                <span class="what"
+                  >Why things are built the way they are, and what was rejected.</span
+                >
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/rodacato/drawhaus/blob/master/SECURITY.md">
+                <span class="name">SECURITY.md</span>
+                <span class="what">How to report something privately, and what's in scope.</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/rodacato/drawhaus/tree/master/docs/api/v1">
+                <span class="name">docs/api/v1</span>
+                <span class="what">The OpenAPI 3.1 spec for the public REST API.</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/rodacato/drawhaus/blob/master/CHANGELOG.md">
+                <span class="name">CHANGELOG.md</span>
+                <span class="what">What shipped when, all the way back to v0.1.</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>
+          MIT. Built on <a href="https://github.com/excalidraw/excalidraw">Excalidraw</a>, which is
+          the reason any of this exists.
+        </p>
+        <nav>
+          <a href="https://github.com/rodacato/drawhaus">Source</a>
+          <a href="https://github.com/rodacato/drawhaus/blob/master/GETTING_STARTED.md">Docs</a>
+          <a href="https://github.com/rodacato/drawhaus/blob/master/LICENSE.md">License</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script>
+      document.querySelectorAll(".copy").forEach((button) => {
+        const say = (text) => {
+          button.textContent = text;
+          setTimeout(() => (button.textContent = "Copy"), 1600);
+        };
+        button.addEventListener("click", async () => {
+          const source = document.getElementById(button.dataset.copy);
+          try {
+            await navigator.clipboard.writeText(source.textContent);
+            say("Copied");
+          } catch {
+            // Clipboard is unavailable over file:// and when the permission is refused
+            say("Select it");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
