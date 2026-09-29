@@ -5,7 +5,6 @@
   "workspaceFolder": "/workspaces/drawhaus",
   "runServices": ["workspace", "db", "redis"],
   "features": {
-    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
     "ghcr.io/devcontainers/features/node:2": {
       "version": "24"
     },
