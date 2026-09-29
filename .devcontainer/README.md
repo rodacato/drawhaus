@@ -15,16 +15,16 @@ from inside it. For getting the app running, see [GETTING_STARTED.md](../GETTING
 
 ## What the container inherits
 
-| Credential                                                     | How it arrives                                                                        | Survives a rebuild?                   |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------- |
-| `git push` / `git pull` over SSH                               | VS Code forwards the host's SSH agent (`SSH_AUTH_SOCK`)                               | Yes                                   |
-| SSH to your server (Kamal)                                     | The same forwarded agent                                                              | Yes                                   |
-| `gh` CLI                                                       | Not inherited. You log it in from the host with the scoped token (First open, step 4) | **No** — log in again after a rebuild |
-| `GITHUB_REPOSITORY`, `GITHUB_REPOSITORY_OWNER`, `GITHUB_ACTOR` | `initialize.sh` derives them from the `origin` remote                                 | Yes                                   |
-| Git author name and email                                      | VS Code copies the host's `~/.gitconfig`                                              | Yes                                   |
-| `HOST_IP`, `APP_HOST`, `API_HOST`                              | `local.env`, which you write                                                          | Yes                                   |
-| Claude Code or any other tool's login                          | Not inherited — it lives in the container layer                                       | **No**                                |
-| Production secrets                                             | Not inherited, by design — they live in the `production` GitHub Environment           | **No**                                |
+| Credential                                                     | How it arrives                                                                             | Survives a rebuild?                                  |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| `git push` / `git pull` over SSH                               | VS Code forwards the host's SSH agent (`SSH_AUTH_SOCK`)                                    | Yes                                                  |
+| SSH to your server (Kamal)                                     | The same forwarded agent                                                                   | Yes                                                  |
+| `gh` CLI                                                       | Not inherited. You log it in from the host with the scoped token (First open, step 4)      | **No** — log in again after a rebuild                |
+| `GITHUB_REPOSITORY`, `GITHUB_REPOSITORY_OWNER`, `GITHUB_ACTOR` | `initialize.sh` derives them from the `origin` remote                                      | Yes                                                  |
+| Git author name and email                                      | VS Code copies the host's `~/.gitconfig`                                                   | Yes                                                  |
+| `HOST_IP`, `APP_HOST`, `API_HOST`                              | `local.env`, which you write                                                               | Yes                                                  |
+| AI coding agents (Claude Code, Codex…)                         | Not part of this devcontainer: install and log in the one you use, from the host or inside | Only if its home is kept outside the container layer |
+| Production secrets                                             | Not inherited, by design — they live in the `production` GitHub Environment                | **No**                                               |
 
 `initializeCommand` runs `initialize.sh` **on the host** before every start. It writes
 `.devcontainer/.host.env` (mode 600, gitignored) with no credential in it, and always exits 0,
