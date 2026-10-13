@@ -34,7 +34,7 @@
   "devDependencies": {
     "@redocly/cli": "^2.34.0",
     "@typescript/native": "npm:typescript@^7.0.2",
-    "concurrently": "^10.0.3",
+    "concurrently": "^10.0.6",
     "eslint-plugin-sonarjs": "^4.1.0",
     "prettier": "^3.9.6",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
