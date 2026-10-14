@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-labelledby="title">
+  <title id="title">Drawhaus proposal D: Canvas Stroke</title>
+  <path d="M74 48V76H24V24H52" fill="none" stroke="#22594A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M47 53L76 24" fill="none" stroke="#D9643B" stroke-width="10" stroke-linecap="round"/>
+</svg>

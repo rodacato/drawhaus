@@ -19,4 +19,21 @@ cp "$shots/screenshot-admin.png" "$out/img/admin.png"
 cp "$shots/screenshot-collab.png" "$out/img/collab.png"
 cp "$shots/screenshot-dashboard.png" "$out/img/dashboard.png"
 
+mkdir -p "$out/brand/logos/assets"
+cp "$repo/site/brand/logos/index.html" "$repo/site/brand/logos/styles.css" "$out/brand/logos/"
+for name in open-d drawing-house shared-frame; do
+  cp "$repo/docs/branding/proposals/$name.svg" "$out/brand/logos/assets/$name.svg"
+  sed 's/#111827/#F8FAF3/g' "$repo/docs/branding/proposals/$name.svg" \
+    > "$out/brand/logos/assets/$name-light.svg"
+done
+
+for name in canvas-stroke modular-d drawn-dh; do
+  source="$repo/docs/branding/proposals/$name.svg"
+  cp "$source" "$out/brand/logos/assets/$name.svg"
+  sed -E 's/#[[:xdigit:]]{6}/#111827/g' "$source" \
+    > "$out/brand/logos/assets/$name-mono.svg"
+  sed -E 's/#[[:xdigit:]]{6}/#F8FAF3/g' "$source" \
+    > "$out/brand/logos/assets/$name-light.svg"
+done
+
 echo "built $out"
