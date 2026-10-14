@@ -61,7 +61,7 @@ export function Board() {
 
   if ("error" in loaded) {
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-red-600">
+      <div className="flex h-screen items-center justify-center text-sm text-error">
         {loaded.error}
       </div>
     );

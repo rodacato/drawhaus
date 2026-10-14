@@ -477,7 +477,7 @@ export function DiagramCard({
 
             {/* Delete */}
             <button
-              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-red-500 transition hover:bg-red-500/10"
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-error transition hover:bg-error/10"
               type="button"
               onClick={() => {
                 closeMenu();
@@ -544,7 +544,7 @@ export function DiagramCard({
               )}
             </p>
             {diagram.createdVia && diagram.createdVia !== "ui" && (
-              <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-violet-600">
+              <span className="rounded-full bg-accent-violet/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-accent-violet">
                 {diagram.createdVia}
               </span>
             )}
@@ -576,7 +576,7 @@ export function DiagramCard({
           {/* Star button */}
           <button
             onClick={() => onToggleStar(diagram.id, !diagram.starred)}
-            className={`rounded p-0.5 transition ${diagram.starred ? "text-yellow-500" : "text-text-muted hover:text-yellow-500"}`}
+            className={`rounded p-0.5 transition ${diagram.starred ? "text-accent-yellow" : "text-text-muted hover:text-accent-yellow"}`}
             title={diagram.starred ? "Unstar" : "Star"}
             type="button"
           >

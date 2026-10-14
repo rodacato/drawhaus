@@ -10,9 +10,9 @@ type TemplatesViewProps = {
 
 const CATEGORY_COLORS: Record<string, string> = {
   architecture: "bg-selection text-primary",
-  database: "bg-green-50 text-green-700",
-  agile: "bg-orange-50 text-orange-700",
-  process: "bg-purple-50 text-purple-700",
+  database: "bg-success/10 text-success",
+  agile: "bg-warning/10 text-warning",
+  process: "bg-accent-violet/10 text-accent-violet",
   general: "bg-selection text-text-secondary",
 };
 

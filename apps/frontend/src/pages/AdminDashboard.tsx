@@ -87,9 +87,9 @@ function ApiMetricsCards({ metrics }: { readonly metrics: Metrics }) {
   return (
     <div className="grid grid-cols-3 gap-4">
       <div className={`${ui.card} group relative overflow-hidden`}>
-        <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-violet-500/5 transition-colors group-hover:bg-violet-500/10" />
+        <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-accent-violet/5 transition-colors group-hover:bg-accent-violet/10" />
         <div className="relative z-10">
-          <div className="mb-2 text-violet-600">
+          <div className="mb-2 text-accent-violet">
             <svg
               width="20"
               height="20"
@@ -115,9 +115,9 @@ function ApiMetricsCards({ metrics }: { readonly metrics: Metrics }) {
         </div>
       </div>
       <div className={`${ui.card} group relative overflow-hidden`}>
-        <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-violet-500/5 transition-colors group-hover:bg-violet-500/10" />
+        <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full bg-accent-violet/5 transition-colors group-hover:bg-accent-violet/10" />
         <div className="relative z-10">
-          <div className="mb-2 text-violet-600">
+          <div className="mb-2 text-accent-violet">
             <svg
               width="20"
               height="20"

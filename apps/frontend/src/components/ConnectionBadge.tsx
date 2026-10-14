@@ -1,10 +1,10 @@
 import type { ConnectionState } from "@/lib/types";
 
 const BADGE_CLASSES: Partial<Record<ConnectionState, string>> = {
-  error: "bg-red-100 text-red-700",
-  disconnected: "bg-amber-100 text-amber-700",
+  error: "bg-error/10 text-error",
+  disconnected: "bg-warning/10 text-warning",
 };
-const DEFAULT_BADGE_CLASS = "bg-blue-100 text-blue-700";
+const DEFAULT_BADGE_CLASS = "bg-info/10 text-info";
 
 export function connectionLabel(state: ConnectionState, error: string | null): string {
   if (state === "error") return error ?? "Connection error";

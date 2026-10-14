@@ -304,7 +304,7 @@ export function CommentsPanel({
                   <p className="mt-1 text-sm text-text-secondary">{thread.body}</p>
 
                   {!exists && (
-                    <p className="mt-1 text-[10px] italic text-amber-500">Element removed</p>
+                    <p className="mt-1 text-[10px] italic text-warning">Element removed</p>
                   )}
 
                   {/* Action buttons row */}
@@ -330,7 +330,7 @@ export function CommentsPanel({
                     <div className="flex-1" />
                     <button
                       onClick={() => onResolve(thread.id, !thread.resolved)}
-                      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] hover:bg-surface-raised ${thread.resolved ? "text-green-500" : "text-text-muted hover:text-green-500"}`}
+                      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] hover:bg-surface-raised ${thread.resolved ? "text-success" : "text-text-muted hover:text-success"}`}
                       title={thread.resolved ? "Unresolve" : "Resolve"}
                     >
                       <IconCheck />
@@ -338,7 +338,7 @@ export function CommentsPanel({
                     </button>
                     <button
                       onClick={() => onDelete(thread.id)}
-                      className="rounded p-0.5 text-text-muted hover:bg-surface-raised hover:text-red-500"
+                      className="rounded p-0.5 text-text-muted hover:bg-surface-raised hover:text-error"
                       title="Delete"
                     >
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

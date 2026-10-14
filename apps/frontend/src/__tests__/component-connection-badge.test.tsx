@@ -13,8 +13,8 @@ describe("ConnectionBadge", () => {
   test("renders error styling and error message when in error state", () => {
     render(<ConnectionBadge connectionState="error" connectionError="socket dropped" />);
     const badge = screen.getByText("socket dropped");
-    expect(badge.className).toContain("bg-red-100");
-    expect(badge.className).toContain("text-red-700");
+    expect(badge.className).toContain("bg-error/10");
+    expect(badge.className).toContain("text-error");
   });
 
   test("falls back to a generic error label when in error state with no message", () => {
@@ -25,12 +25,12 @@ describe("ConnectionBadge", () => {
   test("renders the Reconnecting label with amber styling when disconnected", () => {
     render(<ConnectionBadge connectionState="disconnected" connectionError={null} />);
     const badge = screen.getByText("Reconnecting...");
-    expect(badge.className).toContain("bg-amber-100");
+    expect(badge.className).toContain("bg-warning/10");
   });
 
   test("renders the Connecting label with default styling for connecting state", () => {
     render(<ConnectionBadge connectionState="connecting" connectionError={null} />);
     const badge = screen.getByText("Connecting...");
-    expect(badge.className).toContain("bg-blue-100");
+    expect(badge.className).toContain("bg-info/10");
   });
 });

@@ -294,7 +294,7 @@ export function AdminUsers() {
                             <button
                               type="button"
                               title="Delete user"
-                              className="rounded-lg p-1.5 text-text-muted hover:bg-red-50 hover:text-red-600 transition-colors"
+                              className="rounded-lg p-1.5 text-text-muted hover:bg-error/10 hover:text-error transition-colors"
                               onClick={() => handleDeleteUser(user)}
                             >
                               <svg

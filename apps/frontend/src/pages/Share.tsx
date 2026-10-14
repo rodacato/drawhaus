@@ -43,7 +43,7 @@ export function Share() {
 
   if (error)
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-red-600">{error}</div>
+      <div className="flex h-screen items-center justify-center text-sm text-error">{error}</div>
     );
   if (!data)
     return (
@@ -293,7 +293,7 @@ function ShareCanvas({
               {data.title || "Untitled"}
             </span>
           </div>
-          <div className="pointer-events-auto rounded-full bg-purple-100 px-2.5 py-1 text-[10px] font-medium text-purple-700 shadow-sm">
+          <div className="pointer-events-auto rounded-full bg-accent-violet/10 px-2.5 py-1 text-[10px] font-medium text-accent-violet shadow-sm">
             {guestName} (guest)
           </div>
           <div className="pointer-events-auto relative">

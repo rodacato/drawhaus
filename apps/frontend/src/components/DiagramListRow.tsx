@@ -84,7 +84,7 @@ export function DiagramListRow({
 
       <button
         onClick={() => onToggleStar(diagram.id, !diagram.starred)}
-        className={`shrink-0 rounded p-1 transition ${diagram.starred ? "text-yellow-500" : "text-text-muted opacity-0 group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"} hover:text-yellow-500`}
+        className={`shrink-0 rounded p-1 transition ${diagram.starred ? "text-accent-yellow" : "text-text-muted opacity-0 group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"} hover:text-accent-yellow`}
         title={diagram.starred ? "Unstar" : "Star"}
         type="button"
       >
@@ -187,7 +187,7 @@ export function DiagramListRow({
         </button>
         <button
           onClick={() => onDelete(diagram.id, diagram.title)}
-          className="rounded p-1 text-text-muted hover:text-red-500"
+          className="rounded p-1 text-text-muted hover:text-error"
           title="Delete"
           type="button"
         >

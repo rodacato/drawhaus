@@ -34,11 +34,11 @@ describe("deriveSaveLabel", () => {
 
 describe("deriveSaveColor", () => {
   test("returns correct class for each state", () => {
-    assert.ok(deriveSaveColor("idle").includes("bg-white"));
-    assert.ok(deriveSaveColor("pending").includes("bg-amber"));
-    assert.ok(deriveSaveColor("saving").includes("bg-blue"));
-    assert.ok(deriveSaveColor("saved").includes("bg-emerald"));
-    assert.ok(deriveSaveColor("error").includes("bg-red"));
+    assert.ok(deriveSaveColor("idle").includes("text-text-secondary"));
+    assert.ok(deriveSaveColor("pending").includes("text-warning"));
+    assert.ok(deriveSaveColor("saving").includes("text-info"));
+    assert.ok(deriveSaveColor("saved").includes("text-success"));
+    assert.ok(deriveSaveColor("error").includes("text-error"));
   });
 });
 

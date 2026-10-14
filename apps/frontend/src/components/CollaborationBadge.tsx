@@ -24,7 +24,7 @@ export function CollaborationBadge({
   return (
     <div className="flex items-center gap-2">
       {handCount > 0 && !isHandRaised && (
-        <div className="flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-1 text-[10px] font-medium text-yellow-700 shadow-sm animate-pulse">
+        <div className="flex items-center gap-1 rounded-full bg-warning/10 px-2 py-1 text-[10px] font-medium text-warning shadow-sm animate-pulse">
           <span aria-hidden>✋</span> {handCount}
         </div>
       )}
@@ -32,8 +32,8 @@ export function CollaborationBadge({
         onClick={isHandRaised ? onLowerHand : onRaiseHand}
         className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium shadow-sm transition-colors ${
           isHandRaised
-            ? "bg-yellow-200 text-yellow-800"
-            : "bg-selection text-text-secondary hover:bg-yellow-100 hover:text-yellow-700"
+            ? "bg-warning/10 text-warning"
+            : "bg-selection text-text-secondary hover:bg-warning/10 hover:text-warning"
         }`}
         title={isHandRaised ? "Lower hand" : "Raise hand"}
         type="button"

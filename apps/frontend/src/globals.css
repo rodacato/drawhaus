@@ -46,6 +46,7 @@
   --color-accent-coral: #e95b2d;
   --color-accent-yellow: #fbbf24;
   --color-accent-orange: #f97316;
+  --color-accent-violet: #5b3fb8;
 
   --color-surface: var(--color-brand-canvas);
   --color-surface-raised: var(--color-brand-paper);
@@ -97,6 +98,7 @@
   --color-text-muted: #94b3bd;
   --color-on-danger: var(--color-brand-dark);
   --color-info: var(--color-brand-dark-action);
+  --color-accent-violet: #c4b5fd;
 }
 
 .brand-on-dark {
