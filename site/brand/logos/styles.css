@@ -190,6 +190,35 @@
   height: 160px;
 }
 
+.study-gesture-note {
+  max-width: 760px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.study-gesture-artboard {
+  background: #191a22;
+  color: var(--paper);
+  border-color: #191a22;
+}
+
+.study-gesture-artboard .study-artboard-label {
+  color: var(--paper);
+}
+
+.study-dark-lockup.study-light-lockup {
+  background: var(--raised);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-top: 0;
+}
+
+.study-light-lockup .study-dark-label {
+  color: var(--muted);
+  opacity: 1;
+}
+
 .study-wordmark {
   font-family: var(--font-heading);
   font-size: 35px;

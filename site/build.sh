@@ -36,4 +36,11 @@ for name in canvas-stroke modular-d drawn-dh; do
     > "$out/brand/logos/assets/$name-light.svg"
 done
 
+for name in freehand-dh signature-dh looped-d; do
+  source="$repo/docs/branding/proposals/$name.svg"
+  cp "$source" "$out/brand/logos/assets/$name.svg"
+  sed 's/#2F7058/#111827/g' "$source" > "$out/brand/logos/assets/$name-mono.svg"
+  sed 's/#2F7058/#A6D9BB/g' "$source" > "$out/brand/logos/assets/$name-light.svg"
+done
+
 echo "built $out"
