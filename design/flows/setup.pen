@@ -921,7 +921,7 @@
                           "id": "tPtUC",
                           "name": "Hint",
                           "fill": "$text-muted",
-                          "content": "Daily at 3AM UTC. Use crontab syntax.",
+                          "content": "Crontab syntax, UTC. Default: 0 3 * * * (daily at 3AM).",
                           "fontFamily": "$font-sans",
                           "fontSize": 12
                         },
@@ -1214,7 +1214,7 @@
                           "fill": "$text-secondary",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "Configure optional integrations like Google OAuth, email, and error monitoring. You can set these up later from the admin settings.",
+                          "content": "Configure optional integrations like Google OAuth and email. You can set these up later in Site Settings.",
                           "fontFamily": "$font-sans",
                           "fontSize": 14
                         }
@@ -1291,40 +1291,6 @@
                               "name": "Description",
                               "fill": "$text-muted",
                               "content": "Send invitations and password reset emails",
-                              "fontFamily": "$font-sans",
-                              "fontSize": 12
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "R17L1",
-                          "name": "Error Monitoring",
-                          "width": "fill_container",
-                          "fill": "$surface",
-                          "cornerRadius": 8,
-                          "stroke": "$border",
-                          "strokeWidth": 1,
-                          "layout": "vertical",
-                          "gap": 2,
-                          "padding": 16,
-                          "children": [
-                            {
-                              "type": "text",
-                              "id": "MOzcg",
-                              "name": "Title",
-                              "fill": "$text-primary",
-                              "content": "Error Monitoring",
-                              "fontFamily": "$font-sans",
-                              "fontSize": 14,
-                              "fontWeight": "500"
-                            },
-                            {
-                              "type": "text",
-                              "id": "v2MlqY",
-                              "name": "Description",
-                              "fill": "$text-muted",
-                              "content": "Sentry error tracking",
                               "fontFamily": "$font-sans",
                               "fontSize": 12
                             }
