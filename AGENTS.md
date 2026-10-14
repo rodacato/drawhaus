@@ -27,6 +27,7 @@ This project is built with an AI-first workflow. Agents should maximize delivery
 - Planned work lives in the private [GitHub Project](https://github.com/users/rodacato/projects/8), the single source of truth for the backlog (features, bugs, debt, decisions).
 - [ROADMAP.md](docs/ROADMAP.md) holds strategy: intent, principles, what's built, what we won't build, and the decision log.
 - Workflow and documentation conventions in [WORKFLOW.md](docs/WORKFLOW.md).
+- Design lives in `design/` (Pencil `.pen` files): read [design/README.md](design/README.md) before touching UI; findings are numbered in [design/DECISIONS.md](design/DECISIONS.md).
 - Architecture decisions in [docs/adr/](docs/adr/).
 - Keep scope aligned to MVP for personal use + friends/coworkers.
 - Avoid overengineering and enterprise-only complexity.

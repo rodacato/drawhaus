@@ -54,3 +54,6 @@ tests/.auth/
 
 # GitHub Pages build output
 site/_site/
+
+# Design: local-only device captures (real user data)
+design/references/
