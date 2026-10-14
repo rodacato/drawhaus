@@ -45,34 +45,20 @@ describe("deriveSaveColor", () => {
 // ── isCursorStale ──────────────────────────────────────────
 
 describe("isCursorStale", () => {
-  test("returns false when cursor is fresh", () => {
+  test.each([
+    ["fresh cursor", 1000, false],
+    ["cursor exceeding the threshold", 5000, true],
+    ["cursor well past the threshold", 10000, true],
+    ["exactly at the default threshold", 5000, true],
+    ["just under the default threshold", 4999, false],
+  ])("%s: age %i ms -> stale %s", (_name, age, expected) => {
     const now = Date.now();
-    assert.equal(isCursorStale(now - 1000, now), false);
-  });
-
-  test("returns true when cursor exceeds threshold", () => {
-    const now = Date.now();
-    assert.equal(isCursorStale(now - 5000, now), true);
-  });
-
-  test("returns true when cursor is well past threshold", () => {
-    const now = Date.now();
-    assert.equal(isCursorStale(now - 10000, now), true);
+    assert.equal(isCursorStale(now - age, now), expected);
   });
 
   test("uses custom threshold", () => {
     const now = Date.now();
     assert.equal(isCursorStale(now - 2000, now, 3000), false);
     assert.equal(isCursorStale(now - 3000, now, 3000), true);
-  });
-
-  test("boundary: exactly at default threshold is stale", () => {
-    const now = Date.now();
-    assert.equal(isCursorStale(now - 5000, now), true);
-  });
-
-  test("boundary: just under default threshold is not stale", () => {
-    const now = Date.now();
-    assert.equal(isCursorStale(now - 4999, now), false);
   });
 });

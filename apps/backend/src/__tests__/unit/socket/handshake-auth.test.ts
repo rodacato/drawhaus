@@ -263,7 +263,9 @@ describe("socket handshake auth — admitted", () => {
       expiresAt: null,
     });
 
-    await connected(open({ cookie: "drawhaus_session=expired-long-ago", shareToken: link.token }));
+    await assert.doesNotReject(
+      connected(open({ cookie: "drawhaus_session=expired-long-ago", shareToken: link.token })),
+    );
   });
 
   it("gives a share-token socket nothing on another board", async () => {
