@@ -48,10 +48,11 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "Sign in, create an account, recover a password. First-run admin setup lives in the Setup flow of the same layout and is not drawn here yet.",
+          "content": "Sign in, create an account, recover a password. First-run admin setup is drawn in the Setup flow with the same shell.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -75,7 +76,8 @@
           "content": "/login, /register (also invite mode via token), /forgot-password, /reset-password, any unknown route (NotFound). AuthLayout redirects a signed-in user to /dashboard and a fresh instance to /setup.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -99,7 +101,8 @@
           "content": "Login (Default, Error) · Register (Default) · Forgot password (Default, Sent) · Reset password (Default, Invalid link) · Not found. Base frame 1280×800, light theme.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -123,7 +126,8 @@
           "content": "Email + password (min. 8) or Google/GitHub OAuth. The first registered user becomes admin. Password reset never reveals whether the email exists. Rate limiting is off only in NODE_ENV=test.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -147,7 +151,8 @@
           "content": "pages/Login.tsx, Register.tsx, ForgotPassword.tsx, ResetPassword.tsx, NotFound.tsx. Legal line is one text node; in code Terms and Privacy Policy are underlined links.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -171,7 +176,8 @@
           "content": "Pending (“Please wait...” / “Sending...” / “Resetting...”) is a label swap. Register invite mode, “Validating invitation...” and “Validating reset link...” loaders, dark theme, 320px layout: not drawn; the dark mapping is shown in the kit.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -192,10 +198,11 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "D1 password toggle has no accessible name · D2 Log in / Create account is not a tab control · D3 errors are not announced (no role=alert anywhere) · D4 Setup and NotFound lack the blobs and theme toggle · D5 WorkspaceInvite uses its own card · D6 Register submit has no arrow.",
+          "content": "None open. D1, D2, D3, D4 were fixed in code on 2026-10-14 and are drawn as shipped: the show/hide control is named and pressed-aware, the account switch is a nav with aria-current, alerts have role=alert, and every auth screen shares one AuthShell (blobs, theme toggle). D6 was a wrong finding: Register always had the arrow; the drawing was missing it and now matches.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -219,7 +226,8 @@
           "content": "See the Log frame below this band.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         }
       ]
     },
@@ -334,7 +342,8 @@
                   "fill": "$text-muted",
                   "content": "you@example.com",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -361,7 +370,8 @@
               "fill": "$error",
               "content": "Error",
               "fontFamily": "$font-sans",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontWeight": "normal"
             }
           ]
         },
@@ -406,7 +416,8 @@
               "fill": "$text-secondary",
               "content": "Subtitle text",
               "fontFamily": "$font-sans",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontWeight": "normal"
             }
           ]
         },
@@ -588,7 +599,8 @@
                       "fill": "$text-secondary",
                       "content": "Sign in to your Drawhaus instance.",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -842,7 +854,8 @@
                                       "fill": "$text-muted",
                                       "content": "you@example.com",
                                       "fontFamily": "$font-sans",
-                                      "fontSize": 14
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -924,7 +937,8 @@
                                       "fill": "$text-muted",
                                       "content": "Enter your password",
                                       "fontFamily": "$font-sans",
-                                      "fontSize": 14
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -998,7 +1012,8 @@
                       "fill": "$text-muted",
                       "content": "By continuing, you agree to our Terms and Privacy Policy.",
                       "fontFamily": "$font-sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -1112,7 +1127,8 @@
                       "fill": "$text-secondary",
                       "content": "Sign in to your Drawhaus instance.",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1366,7 +1382,8 @@
                                       "fill": "$text-muted",
                                       "content": "you@example.com",
                                       "fontFamily": "$font-sans",
-                                      "fontSize": 14
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -1448,7 +1465,8 @@
                                       "fill": "$text-muted",
                                       "content": "Enter your password",
                                       "fontFamily": "$font-sans",
-                                      "fontSize": 14
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -1534,7 +1552,8 @@
                       "fill": "$text-muted",
                       "content": "By continuing, you agree to our Terms and Privacy Policy.",
                       "fontFamily": "$font-sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -1651,7 +1670,8 @@
                       "content": "Start diagramming on your own server.",
                       "textAlign": "center",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1905,7 +1925,8 @@
                                       "fill": "$text-muted",
                                       "content": "Your name",
                                       "fontFamily": "$font-sans",
-                                      "fontSize": 14
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -1960,7 +1981,8 @@
                                       "fill": "$text-muted",
                                       "content": "you@example.com",
                                       "fontFamily": "$font-sans",
-                                      "fontSize": 14
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -2015,7 +2037,8 @@
                                       "fill": "$text-muted",
                                       "content": "Min. 8 characters",
                                       "fontFamily": "$font-sans",
-                                      "fontSize": 14
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -2036,16 +2059,42 @@
                       }
                     },
                     {
-                      "id": "niC4n",
-                      "type": "ref",
-                      "ref": "kSg3J",
+                      "type": "frame",
+                      "id": "Wy8Z0",
                       "name": "Create account",
                       "width": "fill_container",
-                      "descendants": {
-                        "tQ5aC": {
-                          "content": "Create account"
+                      "height": 40,
+                      "fill": "$primary",
+                      "cornerRadius": 8,
+                      "gap": 8,
+                      "padding": [
+                        0,
+                        16
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dzKq1",
+                          "name": "Label",
+                          "fill": "$on-primary",
+                          "content": "Create account",
+                          "fontFamily": "$font-sans",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "i5Rhh",
+                          "name": "arrow-right",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "arrow-right",
+                          "library": "feather",
+                          "fill": "$on-primary"
                         }
-                      }
+                      ]
                     }
                   ]
                 },
@@ -2063,7 +2112,8 @@
                       "fill": "$text-muted",
                       "content": "By continuing, you agree to our Terms and Privacy Policy.",
                       "fontFamily": "$font-sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -2180,7 +2230,8 @@
                       "content": "Enter the email address associated with your account and we'll send you a link to reset your password.",
                       "textAlign": "center",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2237,7 +2288,8 @@
                                       "fill": "$text-muted",
                                       "content": "you@example.com",
                                       "fontFamily": "$font-sans",
-                                      "fontSize": 14
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -2393,7 +2445,8 @@
                       "content": "Enter the email address associated with your account and we'll send you a link to reset your password.",
                       "textAlign": "center",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2591,7 +2644,8 @@
                                       "fill": "$text-muted",
                                       "content": "Minimum 8 characters",
                                       "fontFamily": "$font-sans",
-                                      "fontSize": 14
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 },
@@ -2656,7 +2710,8 @@
                                       "fill": "$text-muted",
                                       "content": "Repeat your password",
                                       "fontFamily": "$font-sans",
-                                      "fontSize": 14
+                                      "fontSize": 14,
+                                      "fontWeight": "normal"
                                     }
                                   ]
                                 }
@@ -2891,7 +2946,7 @@
           "type": "ref",
           "ref": "ZNzPP",
           "name": "Card",
-          "width": 512,
+          "width": 440,
           "gap": 16,
           "descendants": {
             "FWFCP": {
@@ -2940,7 +2995,8 @@
                       "content": "The page you are looking for does not exist or was moved.",
                       "textAlign": "center",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2977,6 +3033,45 @@
               ]
             }
           }
+        },
+        {
+          "type": "ellipse",
+          "id": "cdVdP",
+          "layoutPosition": "absolute",
+          "x": -128,
+          "y": -128,
+          "name": "Blob primary",
+          "fill": "$primary-10",
+          "width": 384,
+          "height": 384,
+          "effect": {
+            "type": "blur",
+            "radius": 64
+          }
+        },
+        {
+          "type": "ellipse",
+          "id": "i9Cii",
+          "layoutPosition": "absolute",
+          "x": 1024,
+          "y": 544,
+          "name": "Blob coral",
+          "fill": "$coral-10",
+          "width": 384,
+          "height": 384,
+          "effect": {
+            "type": "blur",
+            "radius": 64
+          }
+        },
+        {
+          "id": "f8iMAw",
+          "type": "ref",
+          "ref": "HMivl",
+          "name": "ThemeToggle",
+          "layoutPosition": "absolute",
+          "x": 1232,
+          "y": 16
         }
       ]
     },
@@ -3014,9 +3109,10 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "2026-10-14 · Flow drawn from the code at master 3d69c7a on kit 0.1.0: 8 screens. Findings D1–D6 logged.",
+          "content": "2026-10-14 · Flow drawn from the code at master 3d69c7a on kit 0.1.0: 8 screens. Findings D1–D6 logged. Redrawn after the code fixes: Register submit arrow (D6 was a wrong finding), Not found in the shared shell with blobs, theme toggle and the 440 px card (D4).",
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         }
       ]
     }
