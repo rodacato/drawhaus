@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { LoadError } from "@/components/LoadError";
 import type { AdminWebhook, AdminWebhookDelivery } from "@/api/admin";
 import { adminApi } from "@/api/admin";
 import { ui } from "@/lib/ui";
@@ -32,7 +33,11 @@ export function WebhooksPanel() {
   const toast = useToast();
   const confirm = useConfirm();
 
-  useEffect(() => {
+  const [loadError, setLoadError] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     adminApi
       .listWebhooks()
       .then((data) => {
@@ -40,9 +45,13 @@ export function WebhooksPanel() {
         setAvailableEvents(data.events);
         setEncryptionEnabled(data.encryptionEnabled);
       })
-      .catch(() => {})
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function reload() {
     const data = await adminApi.listWebhooks();
@@ -169,6 +178,7 @@ export function WebhooksPanel() {
   }
 
   if (loading) return <p className={ui.muted}>Loading webhooks...</p>;
+  if (loadError) return <LoadError message="Could not load the webhooks." onRetry={load} />;
 
   if (!encryptionEnabled) {
     return (

@@ -81,9 +81,6 @@ vi.mock("@/pages/AdminUsers", () => ({ AdminUsers: () => <div data-testid="admin
 vi.mock("@/pages/AdminSettings", () => ({
   AdminSettings: () => <div data-testid="admin-settings" />,
 }));
-vi.mock("@/pages/AdminStyleGuide", () => ({
-  AdminStyleGuide: () => <div data-testid="admin-style" />,
-}));
 vi.mock("@/pages/AdminDashboard", () => ({
   AdminOverview: () => <div data-testid="admin-overview" />,
 }));

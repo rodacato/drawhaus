@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { LoadError } from "@/components/LoadError";
 import { adminApi } from "@/api/admin";
 import { ui } from "@/lib/ui";
 import { getErrorMessage } from "@/lib/api-error";
@@ -20,7 +21,10 @@ export function AdminSettings() {
   const [pending, setPending] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
+  const [loadError, setLoadError] = useState(false);
+
+  const loadSettings = useCallback(() => {
+    setLoadError(false);
     adminApi
       .getSettings()
       .then((data) => {
@@ -36,8 +40,12 @@ export function AdminSettings() {
         setBackupRetentionDays(s.backupRetentionDays ?? 7);
         setLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => setLoadError(true));
   }, []);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,7 +71,13 @@ export function AdminSettings() {
     }
   }
 
-  if (!loaded) return <div className="text-sm text-text-muted">Loading...</div>;
+  if (!loaded) {
+    return loadError ? (
+      <LoadError message="Could not load the site settings." onRetry={loadSettings} />
+    ) : (
+      <div className="text-sm text-text-muted">Loading...</div>
+    );
+  }
 
   return (
     <div className="space-y-6">

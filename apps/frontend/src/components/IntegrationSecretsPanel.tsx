@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { LoadError } from "@/components/LoadError";
 import { adminApi } from "@/api/admin";
 import { ui } from "@/lib/ui";
 import { useToast } from "@/components/Toast";
@@ -38,16 +39,24 @@ export function IntegrationSecretsPanel() {
   const [saving, setSaving] = useState(false);
   const toast = useToast();
 
-  useEffect(() => {
+  const [loadError, setLoadError] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     adminApi
       .getIntegrations()
       .then((data) => {
         setIntegrations(data.integrations);
         setEncryptionEnabled(data.encryptionEnabled);
       })
-      .catch(() => {})
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function handleSave(key: string) {
     setSaving(true);
@@ -81,6 +90,7 @@ export function IntegrationSecretsPanel() {
   }
 
   if (loading) return <p className="text-sm text-text-muted">Loading integrations...</p>;
+  if (loadError) return <LoadError message="Could not load the integrations." onRetry={load} />;
 
   if (!encryptionEnabled) {
     return (
