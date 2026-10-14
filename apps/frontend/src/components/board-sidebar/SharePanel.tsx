@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "@/components/Toast";
 import type { PresenceUserWithSelf } from "@/lib/types";
 
 export function SharePanel({
@@ -20,6 +21,7 @@ export function SharePanel({
   const [embedSnippet, setEmbedSnippet] = useState<string | null>(null);
   const [embedCopied, setEmbedCopied] = useState(false);
   const [embedLoading, setEmbedLoading] = useState(false);
+  const toast = useToast();
 
   const selfUser = presenceUsers.find((u) => u.isSelf);
   const otherUsers = presenceUsers.filter((u) => !u.isSelf);
@@ -34,9 +36,11 @@ export function SharePanel({
         await navigator.clipboard.writeText(url);
         setShareCopied(true);
         setTimeout(() => setShareCopied(false), 2000);
+      } else {
+        toast("Could not create the share link", "error");
       }
     } catch {
-      /* silent */
+      toast("Could not create or copy the share link", "error");
     } finally {
       setShareLoading(false);
     }
@@ -174,9 +178,11 @@ export function SharePanel({
                 await navigator.clipboard.writeText(snippet);
                 setEmbedCopied(true);
                 setTimeout(() => setEmbedCopied(false), 2000);
+              } else {
+                toast("Could not create the embed link", "error");
               }
             } catch {
-              /* silent */
+              toast("Could not create or copy the embed snippet", "error");
             } finally {
               setEmbedLoading(false);
             }
