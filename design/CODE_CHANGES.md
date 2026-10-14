@@ -75,3 +75,13 @@
 
 - Done: `Setup.tsx` shows the error when `setupApi.complete()` fails and stays on step 3; `SetupStep3.tsx` shows a failed skip and re-enables the button; the “coming soon” note is gone; checkboxes use `border-border-input`; the progress connectors are `w-3`.
 - Open: show/hide password in `SetupStep1.tsx`, with the aria-label from item 1.
+
+## 9. Settings and admin (D30–D40)
+
+**Status:** open · D30, D33 and D34 are bugs with no design dependency
+
+- `ToggleSwitch.tsx`: `role="switch"`, `aria-checked`, and a required label (D30, with item 2).
+- Error states and retry for the admin lists, metrics, secrets, webhooks, Drive and Site settings (D33).
+- `ApiKeysSettings.tsx`: confirm before revoking; handle clipboard failure; show the empty state with the form open (D34, D39).
+- `Settings.tsx`: validate the tab against the role (D31); one `h1` and a subtitle per tab (D32); collapse the nav on narrow screens (D40).
+- Delete `AdminDashboard` (D35). Decide on Sentry in Setup step 3 (D36). A kit `Select` and `Checkbox` (D37). Client validation for the numeric and cron fields (D38).
