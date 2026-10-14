@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCallback, useState } from "react";
-import { createPortal } from "react-dom";
+import { Dialog } from "@/components/Dialog";
 import { ui } from "@/lib/ui";
 import type { ExcalidrawApi, PresenceUserWithSelf } from "@/lib/types";
 import { SidebarButton } from "./board-sidebar/SidebarButton";
@@ -237,45 +237,41 @@ export function BoardSidebar({
         )}
       </SidebarDrawer>
 
-      {leaveOpen &&
-        createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <button
-              type="button"
-              aria-label="Cancel"
-              disabled={leaving}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => !leaving && setLeaveOpen(false)}
-            />
-            <div className={`${ui.card} relative z-10 w-full max-w-sm space-y-4 shadow-2xl`}>
-              <h2 className={ui.h2}>Leave Diagram</h2>
-              <p className="text-sm text-text-secondary">
-                {saveState === "pending" || saveState === "saving"
-                  ? "You have unsaved changes. They will be saved before leaving."
-                  : "Are you sure you want to go back to the Dashboard?"}
-              </p>
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setLeaveOpen(false)}
-                  disabled={leaving}
-                  className={`${ui.btn} ${ui.btnSecondary}`}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={leaving}
-                  className={`${ui.btn} ${ui.btnPrimary}`}
-                  onClick={handleLeave}
-                >
-                  {leaving ? "Saving..." : "Leave"}
-                </button>
-              </div>
+      {leaveOpen && (
+        <Dialog
+          label="Leave Diagram"
+          onClose={() => setLeaveOpen(false)}
+          dismissible={!leaving}
+          className={`${ui.card} max-w-sm space-y-4 shadow-2xl`}
+        >
+          <>
+            <h2 className={ui.h2}>Leave Diagram</h2>
+            <p className="text-sm text-text-secondary">
+              {saveState === "pending" || saveState === "saving"
+                ? "You have unsaved changes. They will be saved before leaving."
+                : "Are you sure you want to go back to the Dashboard?"}
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setLeaveOpen(false)}
+                disabled={leaving}
+                className={`${ui.btn} ${ui.btnSecondary}`}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={leaving}
+                className={`${ui.btn} ${ui.btnPrimary}`}
+                onClick={handleLeave}
+              >
+                {leaving ? "Saving..." : "Leave"}
+              </button>
             </div>
-          </div>,
-          document.body,
-        )}
+          </>
+        </Dialog>
+      )}
     </div>
   );
 }

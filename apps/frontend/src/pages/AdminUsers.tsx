@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { Dialog } from "@/components/Dialog";
 import { adminApi } from "@/api/admin";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/Toast";
@@ -11,28 +11,10 @@ import { ToggleSwitch } from "@/components/ToggleSwitch";
 
 // --- Invite User Modal ---
 
-function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function InviteUserModal({ onClose }: { onClose: () => void }) {
   const [pending, setPending] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [role, setRole] = useState("user");
-
-  useEffect(() => {
-    if (!open) {
-      setStatus(null);
-      setRole("user");
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose]);
-
-  if (!open) return null;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,25 +36,75 @@ function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void
     }
   }
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <button
-        type="button"
-        aria-label="Close"
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className={`${ui.card} relative z-10 w-full max-w-md space-y-5 shadow-2xl`}>
-        <div className="flex items-center justify-between">
-          <h2 className={ui.h2}>Invite User</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1 text-text-muted hover:text-text-primary transition-colors"
+  return (
+    <Dialog
+      label="Invite User"
+      onClose={onClose}
+      className={`${ui.card} max-w-md space-y-5 shadow-2xl`}
+    >
+      <div className="flex items-center justify-between">
+        <h2 className={ui.h2}>Invite User</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg p-1 text-text-muted hover:text-text-primary transition-colors"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <p className={ui.muted}>
+        Send an invitation email. This link works even when public registration is disabled.
+      </p>
+
+      <form className="space-y-4" onSubmit={onSubmit}>
+        <label className={ui.label}>
+          <span>Email address</span>
+          <input
+            className={ui.input}
+            type="email"
+            name="email"
+            placeholder="colleague@company.com"
+            required
+          />
+        </label>
+        <label className={ui.label}>
+          <span>Role</span>
+          <select className={ui.input} value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </label>
+
+        {status && (
+          <p
+            role={status.type === "error" ? "alert" : "status"}
+            className={status.type === "error" ? ui.alertError : ui.alertSuccess}
+          >
+            {status.message}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-3 pt-2">
+          <button type="button" onClick={onClose} className={`${ui.btn} ${ui.btnSecondary}`}>
+            Cancel
+          </button>
+          <button type="submit" disabled={pending} className={`${ui.btn} ${ui.btnPrimary} gap-2`}>
             <svg
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -80,69 +112,14 @@ function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
+              <path d="M22 2L11 13" />
+              <path d="M22 2l-7 20-4-9-9-4 20-7z" />
             </svg>
+            {pending ? "Sending..." : "Send Invitation"}
           </button>
         </div>
-
-        <p className={ui.muted}>
-          Send an invitation email. This link works even when public registration is disabled.
-        </p>
-
-        <form className="space-y-4" onSubmit={onSubmit}>
-          <label className={ui.label}>
-            <span>Email address</span>
-            <input
-              className={ui.input}
-              type="email"
-              name="email"
-              placeholder="colleague@company.com"
-              required
-            />
-          </label>
-          <label className={ui.label}>
-            <span>Role</span>
-            <select className={ui.input} value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </label>
-
-          {status && (
-            <p
-              role={status.type === "error" ? "alert" : "status"}
-              className={status.type === "error" ? ui.alertError : ui.alertSuccess}
-            >
-              {status.message}
-            </p>
-          )}
-
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className={`${ui.btn} ${ui.btnSecondary}`}>
-              Cancel
-            </button>
-            <button type="submit" disabled={pending} className={`${ui.btn} ${ui.btnPrimary} gap-2`}>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M22 2L11 13" />
-                <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-              </svg>
-              {pending ? "Sending..." : "Send Invitation"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>,
-    document.body,
+      </form>
+    </Dialog>
   );
 }
 
@@ -348,7 +325,7 @@ export function AdminUsers() {
         )}
       </div>
 
-      <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+      {inviteOpen && <InviteUserModal onClose={() => setInviteOpen(false)} />}
     </div>
   );
 }

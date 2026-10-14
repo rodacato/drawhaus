@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createPortal } from "react-dom";
+import { Dialog } from "@/components/Dialog";
 import { ui } from "@/lib/ui";
 import type { OfflineSnapshot } from "@/lib/offline-storage";
 import { snapshotsApi } from "@/api/snapshots";
@@ -50,52 +50,53 @@ export function OfflineRecoveryDialog({
     onSaveAsSnapshot();
   }
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div className={`${ui.card} relative z-10 w-full max-w-md space-y-4 shadow-2xl`}>
-        <h2 className={ui.h2}>Offline Changes Detected</h2>
-        <p className="text-sm text-text-secondary">
-          You were disconnected and have local changes saved{" "}
-          <strong>{timeAgo(snapshot.savedAt)}</strong>. The server may have been updated by other
-          users while you were offline.
-        </p>
+  return (
+    <Dialog
+      label="Offline Changes Detected"
+      onClose={_onClose}
+      dismissible={false}
+      className={`${ui.card} max-w-md space-y-4 shadow-2xl`}
+    >
+      <h2 className={ui.h2}>Offline Changes Detected</h2>
+      <p className="text-sm text-text-secondary">
+        You were disconnected and have local changes saved{" "}
+        <strong>{timeAgo(snapshot.savedAt)}</strong>. The server may have been updated by other
+        users while you were offline.
+      </p>
 
-        <div className="space-y-2 pt-2">
-          <button
-            type="button"
-            className={`${ui.btn} ${ui.btnPrimary} w-full`}
-            onClick={handleKeepMine}
-            disabled={loading}
-          >
-            Keep my offline version
-          </button>
-          <button
-            type="button"
-            className={`${ui.btn} ${ui.btnSecondary} w-full`}
-            onClick={() => {
-              setLoading(true);
-              onKeepServer();
-            }}
-            disabled={loading}
-          >
-            Keep server version
-          </button>
-          <button
-            type="button"
-            className={`${ui.btn} ${ui.btnSecondary} w-full`}
-            onClick={handleSaveAsSnapshot}
-            disabled={loading}
-          >
-            Save my version as snapshot
-          </button>
-        </div>
-
-        <p className="text-xs text-text-muted text-center">
-          Choosing "Keep server version" will discard your offline changes.
-        </p>
+      <div className="space-y-2 pt-2">
+        <button
+          type="button"
+          className={`${ui.btn} ${ui.btnPrimary} w-full`}
+          onClick={handleKeepMine}
+          disabled={loading}
+        >
+          Keep my offline version
+        </button>
+        <button
+          type="button"
+          className={`${ui.btn} ${ui.btnSecondary} w-full`}
+          onClick={() => {
+            setLoading(true);
+            onKeepServer();
+          }}
+          disabled={loading}
+        >
+          Keep server version
+        </button>
+        <button
+          type="button"
+          className={`${ui.btn} ${ui.btnSecondary} w-full`}
+          onClick={handleSaveAsSnapshot}
+          disabled={loading}
+        >
+          Save my version as snapshot
+        </button>
       </div>
-    </div>,
-    document.body,
+
+      <p className="text-xs text-text-muted text-center">
+        Choosing "Keep server version" will discard your offline changes.
+      </p>
+    </Dialog>
   );
 }
