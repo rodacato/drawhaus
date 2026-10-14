@@ -1,7 +1,45 @@
 @import "tailwindcss";
 
-@theme {
-  /* Brand colors — docs/branding/BRANDING.md */
+/* Static export keeps brand roles available to plain CSS integration as well as utilities. */
+@theme static {
+  /* Ocean Ink presentation roles — docs/BRANDING.md.
+     Existing operational UI roles below are preserved until app adoption. */
+  --color-brand-canvas: #f2f7fa;
+  --color-brand-paper: #ffffff;
+  --color-brand-ink: #102633;
+  --color-brand-secondary: #496270;
+  --color-brand-line: #d1e2e8;
+  --color-brand-action: #2457d6;
+  --color-brand-action-hover: #1642b2;
+  --color-brand-on-action: #ffffff;
+  --color-brand-selection: #e2f0f5;
+  --color-brand-logo-start: #2457d6;
+  --color-brand-logo-end: #087e84;
+  --color-brand-dark: #10232e;
+  --color-brand-dark-paper: #193440;
+  --color-brand-dark-ink: #ecf6fa;
+  --color-brand-dark-secondary: #adcdd6;
+  --color-brand-dark-line: #365461;
+  --color-brand-dark-action: #82adff;
+  --color-brand-dark-action-hover: #a7c5ff;
+  --color-brand-dark-logo-start: #82adff;
+  --color-brand-dark-logo-end: #4dd6c9;
+  --color-brand-success: #176344;
+  --color-brand-danger: #b42318;
+  --color-brand-warning: #8a4b08;
+  --color-brand-dark-success: #86d7af;
+  --color-brand-dark-danger: #ffb4a9;
+  --color-brand-dark-warning: #f2c17b;
+  --spacing-brand-unit: 0.25rem;
+  --radius-brand-control: 0.5rem;
+  --radius-brand-panel: 1rem;
+  --text-brand-display: clamp(2.75rem, 5vw, 4rem);
+  --text-brand-title: clamp(1.75rem, 3vw, 2.5rem);
+  --text-brand-body: 1rem;
+  --text-brand-label: 0.875rem;
+  --duration-brand-feedback: 120ms;
+
+  /* Operational application colors */
   --color-primary: #0ea5e9;
   --color-primary-hover: #0284c7;
   --color-accent-coral: #e95b2d;

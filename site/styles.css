@@ -1,19 +1,19 @@
 :root {
-  --coral: #e95b2d;
-  --yellow: #fbbf24;
-  --blue: #2563eb;
-  --ink: #111827;
-  --paper: #f8faf3;
-  --raised: #ffffff;
-  --border: #e2e8f0;
-  --text: #0f172a;
-  --muted: #475569;
-  --faint: #5c6a7d;
-  --hairline: #94a3b8;
+  --coral: var(--color-brand-logo-end);
+  --yellow: var(--color-brand-selection);
+  --blue: var(--color-brand-action);
+  --ink: var(--color-brand-ink);
+  --paper: var(--color-brand-canvas);
+  --raised: var(--color-brand-paper);
+  --border: var(--color-brand-line);
+  --text: var(--color-brand-ink);
+  --muted: var(--color-brand-secondary);
+  --faint: var(--color-brand-secondary);
+  --hairline: var(--color-brand-secondary);
 
-  --font-heading: "Sora", system-ui, -apple-system, sans-serif;
-  --font-body: "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-heading: var(--font-family-heading);
+  --font-body: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
 
   --gutter: 24px;
   --measure: 1080px;
@@ -142,6 +142,88 @@ a:hover {
   height: 30px;
 }
 
+.lockup img {
+  width: 36px;
+  height: 36px;
+}
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: -80px;
+  padding: 12px 18px;
+  z-index: 100;
+  background: var(--raised);
+  border: 2px solid var(--blue);
+  border-radius: 8px;
+}
+.skip-link:focus {
+  top: 12px;
+}
+:focus-visible {
+  outline: 3px solid var(--color-brand-action);
+  outline-offset: 4px;
+}
+.cta-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid var(--color-brand-action);
+  border-radius: var(--radius-brand-control);
+  background: var(--color-brand-action);
+  color: var(--color-brand-on-action);
+  font: 600 14px/1.5 var(--font-family-sans);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--duration-brand-feedback) ease-out;
+}
+.button:hover {
+  background: var(--color-brand-action-hover);
+  color: var(--color-brand-on-action);
+  text-decoration: none;
+}
+.button.secondary {
+  background: transparent;
+  border-color: var(--color-brand-action);
+  color: var(--color-brand-action);
+}
+.button.secondary:hover {
+  background: var(--color-brand-selection);
+  color: var(--color-brand-action);
+}
+.text-link {
+  font-size: 14px;
+  font-weight: 500;
+}
+.share-product {
+  background: none;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.share-status {
+  min-height: 24px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.site-footer nav {
+  flex-wrap: wrap;
+}
+
 .header-links {
   display: flex;
   align-items: center;
@@ -241,7 +323,7 @@ h2 {
 }
 
 .hero h1 {
-  font-size: clamp(36px, 7vw, 58px);
+  font-size: var(--text-brand-display);
   font-weight: 700;
   color: var(--ink);
 }

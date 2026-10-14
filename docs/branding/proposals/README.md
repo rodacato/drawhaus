@@ -1,6 +1,6 @@
 # Drawhaus logo directions
 
-Nine proposed symbols for a self-hosted collaborative whiteboard. No replacement identity has been selected.
+Nine explored symbols for a self-hosted collaborative whiteboard. **I · Looped d is selected by Adrian (2026-10-14).** Ocean Ink is selected. The finished [brand guide](../../BRANDING.md) defines the identity.
 
 | Candidate         | Idea                                                              | Main tradeoff                                                                   |
 | ----------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -14,7 +14,7 @@ Nine proposed symbols for a self-hosted collaborative whiteboard. No replacement
 | H · Signature dh  | A slanted loop flows into an arched h.                            | The most expressive gesture; its crossing is denser at favicon size.            |
 | I · Looped d      | One slanted d with an open loop.                                  | The simplest silhouette; deliberately drops the h.                              |
 
-**Recommended direction after round three:** G. It keeps the d/h relationship that Adrian liked in F and loosens the stroke without losing the letter cues. H tests a more expressive signature; I tests the smallest, simplest mark. F remains the geometric baseline.
+**Decision:** I. The simple single d is the selected symbol. The original mint/green is not selected; compare the new color directions at `site/brand/colors/`. The other marks remain an archive of the exploration.
 
 G–I use the supplied Skynot image as a reference for fluid strokes, round terminals, and mint on charcoal. They use Drawhaus's letter cues rather than the reference's R. Each is one editable SVG path with one continuous stroke. Their color values remain exploratory.
 
@@ -44,16 +44,6 @@ The [comparison page](../../../site/brand/logos/index.html) uses the existing si
 | Product share image    | Explain the product in link previews with the final identity and a real screenshot.                 |
 | Shared diagram preview | Represent the specific document; keep its title, privacy, and permissions independent of marketing. |
 
-## Integration after selection
+## Final identity
 
-1. Refine the chosen geometry and inspect monochrome/light/dark and small sizes. Keep its proportions; preserve the padding built into the SVG viewBox.
-2. Generate final wordmarks, icons, and share assets from a canonical source rather than hand-editing copies. The current app assets are in `apps/frontend/public/branding/`; current docs assets are in `docs/branding/`.
-3. Evolve the existing app token source, `apps/frontend/src/globals.css`, and arrange for the brand guide and marketing site to consume the same values. Document semantic roles rather than maintaining another token table by hand.
-4. Put the final brand guide in the existing static site with English asset purposes and integration steps. The public marketing home already lives at `/drawhaus/`; this comparison is built at `/drawhaus/brand/logos/` when the site is deployed.
-5. Align the README and product-site sharing metadata with the selected identity. Publish only after direct loads, downloads, mobile layout, and links pass.
-
-This round adds the comparison without changing the app's identity or the marketing home. The full branding and marketing page remains dependent on the logo choice.
-
-## Verification
-
-The nine-logo comparison passed the site build, local-reference and SVG-geometry checks. Chromium rendered it from 320 to 1440 px without overflow; all 24 downloads worked. Monochrome 16/24/32 px samples, keyboard focus, 200% zoom, reduced motion, and contrast were checked. The freehand marks and their light/dark previews were inspected visually. VoiceOver was not tested. The page is a local proposal; it has not been published.
+See [the source guide](../../BRANDING.md) for the chosen Looped d / Ocean Ink identity and integration. This directory is an archive; its provisional colors are not production tokens.

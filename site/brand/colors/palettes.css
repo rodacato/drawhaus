@@ -1,0 +1,53 @@
+.palette-architect {
+  --palette-surface: #f5f7fc;
+  --palette-raised: #ffffff;
+  --palette-ink: #142138;
+  --palette-muted: #526177;
+  --palette-border: #d8e0ee;
+  --palette-action: #2d58c6;
+  --palette-action-hover: #2045a6;
+  --palette-selection: #e8eeff;
+  --palette-logo-start: #2d58c6;
+  --palette-logo-end: #2d58c6;
+  --palette-dark: #142138;
+  --palette-dark-ink: #eff3ff;
+  --palette-dark-muted: #b1c2de;
+  --palette-dark-start: #8fb0ff;
+  --palette-dark-end: #8fb0ff;
+}
+
+.palette-amber {
+  --palette-surface: #faf7f0;
+  --palette-raised: #ffffff;
+  --palette-ink: #252a2d;
+  --palette-muted: #665f56;
+  --palette-border: #e4ddd0;
+  --palette-action: #a34d0c;
+  --palette-action-hover: #813b06;
+  --palette-selection: #fbeadb;
+  --palette-logo-start: #a34d0c;
+  --palette-logo-end: #a34d0c;
+  --palette-dark: #23272b;
+  --palette-dark-ink: #f8f1e7;
+  --palette-dark-muted: #cfbda5;
+  --palette-dark-start: #f2b05e;
+  --palette-dark-end: #f2b05e;
+}
+
+.palette-ocean {
+  --palette-surface: #f2f7fa;
+  --palette-raised: #ffffff;
+  --palette-ink: #102633;
+  --palette-muted: #496270;
+  --palette-border: #d1e2e8;
+  --palette-action: #2457d6;
+  --palette-action-hover: #1642b2;
+  --palette-selection: #e2f0f5;
+  --palette-logo-start: #2457d6;
+  --palette-logo-end: #087e84;
+  --palette-dark: #10232e;
+  --palette-dark-ink: #ecf6fa;
+  --palette-dark-muted: #adcdd6;
+  --palette-dark-start: #82adff;
+  --palette-dark-end: #4dd6c9;
+}
