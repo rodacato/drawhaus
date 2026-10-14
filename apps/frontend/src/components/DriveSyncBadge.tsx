@@ -21,7 +21,7 @@ export function DriveSyncBadge({
 }) {
   if (state === "idle") return null;
 
-  const className = `pointer-events-auto rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${BADGE_CLASSES[state]}`;
+  const className = `pointer-events-auto rounded-full px-2.5 py-1 text-xs font-medium shadow-sm ${BADGE_CLASSES[state]}`;
   const label = syncLabel(state, error);
 
   return (

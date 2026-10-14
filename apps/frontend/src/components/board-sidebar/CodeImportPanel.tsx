@@ -192,7 +192,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
           PlantUML
         </button>
         {autoDetected && code.trim() && (
-          <span className="text-[10px] text-text-muted italic">auto-detected</span>
+          <span className="text-xs text-text-muted italic">auto-detected</span>
         )}
       </div>
 
@@ -245,7 +245,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
       {/* Preview area (Mermaid SVG) */}
       {preview && (
         <div className="rounded-lg border border-border bg-surface-raised p-3">
-          <div className="text-[10px] font-medium uppercase tracking-wider text-text-muted mb-2">
+          <div className="text-xs font-medium uppercase tracking-wider text-text-muted mb-2">
             Preview
           </div>
           <div
@@ -259,7 +259,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
       {error && !isFallback && (
         <div className="rounded-lg bg-error/10 px-3 py-2 text-xs text-error space-y-1">
           <div className="font-medium">Syntax error</div>
-          <pre className="whitespace-pre-wrap font-mono text-[11px] text-error leading-relaxed">
+          <pre className="whitespace-pre-wrap font-mono text-xs text-error leading-relaxed">
             {error}
           </pre>
         </div>

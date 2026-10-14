@@ -41,7 +41,7 @@ export function DiagramListRow({
         {diagram.thumbnail ? (
           <img src={diagram.thumbnail} alt="" className="h-full w-full object-contain" />
         ) : (
-          <div className="flex h-full items-center justify-center text-[10px] text-text-muted">
+          <div className="flex h-full items-center justify-center text-xs text-text-muted">
             —
           </div>
         )}

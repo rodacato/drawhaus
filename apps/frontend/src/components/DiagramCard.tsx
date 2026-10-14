@@ -408,7 +408,7 @@ export function DiagramCard({
                 <div className="absolute left-full top-0 ml-1 w-48 rounded-lg border border-border bg-surface-raised py-1 shadow-xl max-h-64 overflow-y-auto">
                   {moveOptions.length > 0 && (
                     <>
-                      <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                      <div className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-text-muted">
                         Folders
                       </div>
                       {moveOptions.map((opt) => (
@@ -429,7 +429,7 @@ export function DiagramCard({
                   {otherWorkspaces.length > 0 && (
                     <>
                       <div
-                        className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-text-muted${moveOptions.length > 0 ? " mt-1 border-t border-border pt-2" : ""}`}
+                        className={`px-3 py-1 text-xs font-bold uppercase tracking-wider text-text-muted${moveOptions.length > 0 ? " mt-1 border-t border-border pt-2" : ""}`}
                       >
                         Workspaces
                       </div>
@@ -535,7 +535,7 @@ export function DiagramCard({
           <div className="mt-1 flex items-center gap-1.5">
             {updatedLabel && <p className="text-xs text-text-secondary">{updatedLabel}</p>}
             {diagram.createdVia && diagram.createdVia !== "ui" && (
-              <span className="rounded-full bg-accent-violet/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-accent-violet">
+              <span className="rounded-full bg-accent-violet/10 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-accent-violet">
                 {diagram.createdVia}
               </span>
             )}
@@ -545,7 +545,7 @@ export function DiagramCard({
           {/* Snapshot count badge */}
           {!!diagram.namedSnapshotCount && diagram.namedSnapshotCount > 0 && (
             <span
-              className="flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+              className="flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary"
               title={`${diagram.namedSnapshotCount} saved snapshot${diagram.namedSnapshotCount > 1 ? "s" : ""}`}
             >
               <svg

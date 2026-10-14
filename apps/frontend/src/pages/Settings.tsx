@@ -16,10 +16,20 @@ import { ConnectedAccounts } from "@/components/settings/ConnectedAccounts";
 import { DangerZone } from "@/components/settings/DangerZone";
 import { userTabs, adminTabs, type Tab, type TabItem } from "@/components/settings/tabs";
 
+const USER_TAB_IDS = new Set<string>(userTabs.map((tab) => tab.id));
+const ADMIN_TAB_IDS = new Set<string>(adminTabs.map((tab) => tab.id));
+
+function resolveTab(requested: string | null, isAdmin: boolean): Tab {
+  if (requested && USER_TAB_IDS.has(requested)) return requested as Tab;
+  if (requested && isAdmin && ADMIN_TAB_IDS.has(requested)) return requested as Tab;
+  return "profile";
+}
+
 export function Settings() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = (searchParams.get("tab") as Tab) || "profile";
   const { user, refreshUser, logout } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const initialTab = resolveTab(searchParams.get("tab"), isAdmin);
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
@@ -88,13 +98,11 @@ export function Settings() {
     }
   }
 
-  const isAdmin = user?.role === "admin";
-
   function NavItem({ tab }: { readonly tab: TabItem }) {
     return (
       <button
         onClick={() => switchTab(tab.id)}
-        className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition ${
+        className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition md:w-full ${
           activeTab === tab.id
             ? "bg-primary/10 font-medium text-primary"
             : "text-text-secondary hover:bg-surface-raised"
@@ -111,19 +119,21 @@ export function Settings() {
     <div className="space-y-6">
       <div>
         <h1 className={ui.h1}>Settings</h1>
-        <p className={ui.subtitle}>Manage your profile and security.</p>
+        {!activeTab.startsWith("admin-") && (
+          <p className={ui.subtitle}>Manage your profile and security.</p>
+        )}
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 md:flex-row">
         {/* Sidebar navigation */}
-        <nav className="w-48 shrink-0 flex flex-col gap-1">
+        <nav className="flex w-full gap-1 overflow-x-auto pb-1 md:w-48 md:shrink-0 md:flex-col md:overflow-visible md:pb-0">
           {userTabs.map((tab) => (
             <NavItem key={tab.id} tab={tab} />
           ))}
 
           {isAdmin && (
-            <div className="mt-2 border-t border-border pt-2">
-              <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-text-muted">
+            <div className="flex gap-1 md:mt-2 md:flex-col md:border-t md:border-border md:pt-2">
+              <p className="mb-1 hidden px-3 text-xs font-bold uppercase tracking-widest text-text-muted md:block">
                 Admin
               </p>
               {adminTabs.map((tab) => (
@@ -132,13 +142,13 @@ export function Settings() {
             </div>
           )}
 
-          <div className="mt-2 border-t border-border pt-2">
+          <div className="flex md:mt-2 md:flex-col md:border-t md:border-border md:pt-2">
             <button
               onClick={async () => {
                 await logout();
                 navigate("/login");
               }}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-danger transition hover:bg-danger/10"
+              className="flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm text-danger transition hover:bg-danger/10 md:w-full"
               type="button"
             >
               <svg
@@ -161,7 +171,7 @@ export function Settings() {
         </nav>
 
         {/* Content area */}
-        <div className="flex-1 space-y-6">
+        <div className="min-w-0 flex-1 space-y-6">
           {activeTab === "profile" && (
             <div className={ui.card}>
               <h2 className={ui.h2}>Profile</h2>
@@ -397,10 +407,10 @@ export function Settings() {
           )}
 
           {/* Admin tabs */}
-          {activeTab === "admin-overview" && <AdminOverview onNavigate={switchTab} />}
-          {activeTab === "admin-users" && <AdminUsers />}
-          {activeTab === "admin-site" && <AdminSiteSettings />}
-          {activeTab === "admin-style" && <AdminStyleGuide />}
+          {isAdmin && activeTab === "admin-overview" && <AdminOverview onNavigate={switchTab} />}
+          {isAdmin && activeTab === "admin-users" && <AdminUsers />}
+          {isAdmin && activeTab === "admin-site" && <AdminSiteSettings />}
+          {isAdmin && activeTab === "admin-style" && <AdminStyleGuide />}
         </div>
       </div>
     </div>

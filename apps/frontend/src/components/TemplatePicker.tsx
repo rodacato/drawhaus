@@ -239,15 +239,15 @@ export function TemplatePicker({
             {template.description || "Custom template"}
           </span>
           <span className="mt-auto flex items-center gap-2 pt-2">
-            <span className="inline-block rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-medium text-text-muted">
+            <span className="inline-block rounded-full bg-surface-raised px-2 py-0.5 text-xs font-medium text-text-muted">
               {template.category}
             </span>
             {template.workspaceId && (
-              <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+              <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                 workspace
               </span>
             )}
-            <span className="text-[10px] text-text-muted">Used {template.usageCount}x</span>
+            <span className="text-xs text-text-muted">Used {template.usageCount}x</span>
           </span>
         </button>
         {/* Delete button */}
@@ -383,7 +383,7 @@ export function TemplatePicker({
                     {template.description}
                   </span>
                   <span className="mt-auto pt-2">
-                    <span className="inline-block rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-medium text-text-muted">
+                    <span className="inline-block rounded-full bg-surface-raised px-2 py-0.5 text-xs font-medium text-text-muted">
                       {template.category}
                     </span>
                   </span>

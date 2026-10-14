@@ -153,15 +153,15 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
             )}
             <div className="mt-auto flex items-center gap-2 flex-wrap">
               <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${CATEGORY_COLORS[t.category] ?? CATEGORY_COLORS.general}`}
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_COLORS[t.category] ?? CATEGORY_COLORS.general}`}
               >
                 {t.category}
               </span>
-              <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-medium text-text-muted ring-1 ring-inset ring-border">
+              <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-text-muted ring-1 ring-inset ring-border">
                 {scopeLabel(t)}
               </span>
               {t.usageCount > 0 && (
-                <span className="text-[10px] text-text-muted">Used {t.usageCount}x</span>
+                <span className="text-xs text-text-muted">Used {t.usageCount}x</span>
               )}
             </div>
           </div>
@@ -170,14 +170,14 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
           <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100">
             <button
               onClick={() => handleUse(t)}
-              className="rounded-md bg-primary px-2.5 py-1 text-[11px] font-medium text-on-primary shadow-sm transition hover:bg-primary-hover"
+              className="rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-on-primary shadow-sm transition hover:bg-primary-hover"
               title="Create diagram from template"
             >
               Use
             </button>
             <button
               onClick={() => handleDelete(t.id)}
-              className="rounded-md bg-surface-raised px-2 py-1 text-[11px] font-medium text-error shadow-sm ring-1 ring-border transition hover:bg-error/5"
+              className="rounded-md bg-surface-raised px-2 py-1 text-xs font-medium text-error shadow-sm ring-1 ring-border transition hover:bg-error/5"
               title="Delete template"
             >
               <svg

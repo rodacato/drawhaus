@@ -149,7 +149,7 @@ export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
 
   if (!open) return null;
 
-  const sectionLabel = "mb-3 text-[11px] font-semibold uppercase tracking-widest text-text-muted";
+  const sectionLabel = "mb-3 text-xs font-semibold uppercase tracking-widest text-text-muted";
 
   function renderCopyButtonContent({
     copied: isCopied,
@@ -209,7 +209,7 @@ export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
               {link.role.charAt(0).toUpperCase() + link.role.slice(1)} Link
             </span>
             <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${badgeClass}`}
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset ${badgeClass}`}
             >
               {badgeText}
             </span>

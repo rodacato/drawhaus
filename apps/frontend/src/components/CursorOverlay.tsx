@@ -8,7 +8,7 @@ export function CursorOverlay({ cursors }: { readonly cursors: Record<string, Cu
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M0 0L6 14L8 8L14 6L0 0Z" fill="#6366f1" stroke="#fff" strokeWidth="1" />
           </svg>
-          <span className="ml-3 -mt-1 inline-block rounded bg-indigo-500 px-1.5 py-0.5 text-[10px] font-medium text-white shadow-sm whitespace-nowrap">
+          <span className="ml-3 -mt-1 inline-block rounded bg-indigo-500 px-1.5 py-0.5 text-xs font-medium text-white shadow-sm whitespace-nowrap">
             {cursor.name}
           </span>
         </div>

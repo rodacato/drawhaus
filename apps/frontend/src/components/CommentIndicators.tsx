@@ -51,7 +51,7 @@ export function CommentIndicators({
       {indicators.map(({ elementId, x, y, count }) => (
         <button
           key={elementId}
-          className="pointer-events-auto absolute flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-on-primary shadow-sm transition hover:scale-110 hover:bg-primary"
+          className="pointer-events-auto absolute flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary shadow-sm transition hover:scale-110 hover:bg-primary"
           style={{ left: x - 2, top: y - 2, transform: "translate(-50%, -50%)" }}
           onClick={() => onClickIndicator(elementId)}
           title={`${count} comment${count > 1 ? "s" : ""}`}

@@ -64,7 +64,6 @@ export function useCollaboration({
         ...appState,
         ...canvasPrefs,
         collaborators: new Map(),
-        theme: "light",
       },
     };
   }, [initialElements, initialAppState, cacheKey, canvasPrefs]);

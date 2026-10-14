@@ -134,6 +134,25 @@ describe("Settings page", () => {
     expect(screen.getByRole("heading", { name: "Change Password" })).toBeTruthy();
   });
 
+  test("an admin tab in the URL falls back to Profile for a non-admin", () => {
+    renderSettings(["/settings?tab=admin-users"]);
+    expect(screen.queryByTestId("admin-users")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Profile" })).toBeTruthy();
+  });
+
+  test("an unknown tab falls back to Profile instead of an empty page", () => {
+    renderSettings(["/settings?tab=nope"]);
+    expect(screen.getByRole("heading", { name: "Profile" })).toBeTruthy();
+  });
+
+  test("an admin reaches the admin tabs and the page keeps a single h1", () => {
+    resetUser({ role: "admin" });
+    renderSettings(["/settings?tab=admin-users"]);
+    expect(screen.getByTestId("admin-users")).toBeTruthy();
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.queryByText("Manage your profile and security.")).toBeNull();
+  });
+
   test("clicking Security switches to that tab", async () => {
     const user = userEvent.setup();
     renderSettings();

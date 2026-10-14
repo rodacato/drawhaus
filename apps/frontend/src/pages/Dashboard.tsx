@@ -1,3 +1,4 @@
+import { ui } from "@/lib/ui";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -200,9 +201,7 @@ export function Dashboard() {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-8">
           <div className="mb-6">
-            <h2 className="font-[family-name:var(--font-family-heading)] text-3xl font-bold tracking-tight text-text-primary">
-              {data.heading}
-            </h2>
+            <h1 className={ui.display}>{data.heading}</h1>
             <p className="mt-1 text-text-secondary">{data.subtitle}</p>
           </div>
 

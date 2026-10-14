@@ -24,13 +24,13 @@ export function CollaborationBadge({
   return (
     <div className="flex items-center gap-2">
       {handCount > 0 && !isHandRaised && (
-        <div className="flex items-center gap-1 rounded-full bg-warning/10 px-2 py-1 text-[10px] font-medium text-warning shadow-sm animate-pulse">
+        <div className="flex items-center gap-1 rounded-full bg-warning/10 px-2 py-1 text-xs font-medium text-warning shadow-sm animate-pulse">
           <span aria-hidden>✋</span> {handCount}
         </div>
       )}
       <button
         onClick={isHandRaised ? onLowerHand : onRaiseHand}
-        className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium shadow-sm transition-colors ${
+        className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium shadow-sm transition-colors ${
           isHandRaised
             ? "bg-warning/10 text-warning"
             : "bg-selection text-text-secondary hover:bg-warning/10 hover:text-warning"

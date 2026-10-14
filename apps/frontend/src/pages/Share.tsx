@@ -148,7 +148,7 @@ function ShareViewInner({
               <p className="text-xs font-semibold uppercase tracking-widest text-primary">
                 Drawhaus Workspace
               </p>
-              <h1 className="text-2xl font-bold tracking-tight text-text-primary">
+              <h1 className={ui.h1}>
                 {data.title || "Shared Diagram"}
               </h1>
               <p className="text-sm text-text-muted">
@@ -232,7 +232,7 @@ function ShareViewInner({
                   Viewing as {data.role}
                 </span>
               </div>
-              <p className="text-center text-[11px] text-text-muted/60 px-4 leading-relaxed">
+              <p className="text-center text-xs text-text-muted/60 px-4 leading-relaxed">
                 By joining, you agree to the workspace terms and real-time collaboration protocols.
               </p>
             </div>
@@ -302,7 +302,7 @@ function ShareCanvas({
               {data.title || "Untitled"}
             </span>
           </div>
-          <div className="pointer-events-auto rounded-full bg-accent-violet/10 px-2.5 py-1 text-[10px] font-medium text-accent-violet shadow-sm">
+          <div className="pointer-events-auto rounded-full bg-accent-violet/10 px-2.5 py-1 text-xs font-medium text-accent-violet shadow-sm">
             {guestName} (guest)
           </div>
           <div className="pointer-events-auto relative">
@@ -330,7 +330,7 @@ function ShareCanvas({
         </div>
         <div className="pointer-events-auto flex items-center gap-2">
           <div
-            className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${statusBadge.className}`}
+            className={`w-fit rounded-full px-2.5 py-1 text-xs font-medium shadow-sm ${statusBadge.className}`}
           >
             {statusBadge.label}
           </div>
