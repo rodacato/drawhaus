@@ -296,7 +296,7 @@ export function AdminUsers() {
                           <div className="flex items-center gap-2">
                             {!isSelf && (
                               <select
-                                className="rounded-lg border border-border bg-surface px-2 py-1.5 text-sm text-text-primary transition focus:border-primary focus:ring-2 focus:ring-primary/25"
+                                className={ui.select}
                                 value={user.role}
                                 onChange={(e) => updateUser(user.id, { role: e.target.value })}
                                 disabled={isPending}

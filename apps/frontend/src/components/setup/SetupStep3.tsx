@@ -25,8 +25,8 @@ export function SetupStep3({ onComplete }: { readonly onComplete: () => void | P
       <div className="space-y-1">
         <h2 className={ui.h2}>Integrations</h2>
         <p className="text-sm text-text-secondary">
-          Configure optional integrations like Google OAuth, email, and error monitoring. You can
-          set these up later from the admin settings.
+          Configure optional integrations like Google OAuth and email. You can set these up later
+          from the admin settings.
         </p>
       </div>
 
@@ -38,10 +38,6 @@ export function SetupStep3({ onComplete }: { readonly onComplete: () => void | P
         <div className="rounded-lg border border-border bg-surface p-4">
           <p className="text-sm font-medium text-text-primary">Email (Resend)</p>
           <p className="text-xs text-text-muted">Send invitations and password reset emails</p>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <p className="text-sm font-medium text-text-primary">Error Monitoring</p>
-          <p className="text-xs text-text-muted">Sentry error tracking</p>
         </div>
       </div>
 

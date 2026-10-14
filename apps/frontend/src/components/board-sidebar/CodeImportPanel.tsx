@@ -271,7 +271,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
           type="checkbox"
           checked={replaceAll}
           onChange={(e) => setReplaceAll(e.target.checked)}
-          className="rounded border-border-input"
+          className={ui.checkbox}
         />
         <span>Replace existing elements</span>
       </label>

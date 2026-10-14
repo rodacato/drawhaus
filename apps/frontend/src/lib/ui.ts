@@ -21,6 +21,11 @@ export const ui = {
   input:
     "block h-10 w-full rounded-lg border border-border-input bg-surface-raised px-3 text-sm text-text-primary outline-none transition placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/40",
 
+  select:
+    "h-9 rounded-lg border border-border-input bg-surface-raised px-2 text-sm text-text-primary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/40",
+  checkbox:
+    "h-4 w-4 shrink-0 rounded border-border-input text-primary focus-visible:ring-2 focus-visible:ring-primary",
+
   // Buttons
   btn: "inline-flex items-center justify-center rounded-lg px-4 h-10 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-50",
   btnPrimary: "bg-primary text-on-primary hover:bg-primary-hover shadow-sm",
