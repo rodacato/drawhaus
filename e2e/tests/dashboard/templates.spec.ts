@@ -5,7 +5,7 @@ import { createTemplate } from "../../fixtures/api";
 async function openMyTemplates(page: Page) {
   await page.goto("/dashboard");
   await page.locator("nav").getByText("My Templates").first().click();
-  await expect(page.locator("main h2").first()).toContainText("My Templates");
+  await expect(page.locator("main h1").first()).toContainText("My Templates");
 }
 
 test.describe("Dashboard — My Templates", () => {

@@ -11,7 +11,7 @@ async function setStar(request: APIRequestContext, diagramId: string, starred: b
 async function openStarred(page: Page) {
   await page.goto("/dashboard");
   await page.locator("nav").getByText("Starred").first().click();
-  await expect(page.locator("main h2").first()).toContainText("Starred");
+  await expect(page.locator("main h1").first()).toContainText("Starred");
 }
 
 test.describe("Star Diagrams", () => {

@@ -32,7 +32,7 @@ test.describe("Share join form", () => {
   test("shows error for invalid share token", async ({ page }) => {
     await page.goto("/share/invalid-token-xyz-12345");
 
-    await expect(page.getByText("Share link not found or expired")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Link unavailable" })).toBeVisible();
     await expect(page.getByText(/your name/i)).toHaveCount(0);
   });
 });
