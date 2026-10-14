@@ -75,7 +75,7 @@ export function SharePanel({
                   <p className="truncate text-sm font-medium text-text-primary">
                     {user.name}
                     {raisedHands?.has(user.userId) && (
-                      <span className="ml-1" title="Mano levantada">
+                      <span className="ml-1" title="Hand raised">
                         ✋
                       </span>
                     )}

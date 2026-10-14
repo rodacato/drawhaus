@@ -83,7 +83,7 @@ export function SnapshotItem({
         <div className="relative shrink-0">
           <button
             type="button"
-            className="rounded p-1 text-text-muted opacity-0 transition hover:bg-surface-raised hover:text-text-primary group-hover:opacity-100"
+            className="rounded p-1 text-text-muted opacity-0 transition hover:bg-surface-raised hover:text-text-primary group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">

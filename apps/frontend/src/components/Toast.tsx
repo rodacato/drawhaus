@@ -50,6 +50,7 @@ export function ToastProvider({ children }: { readonly children: React.ReactNode
             {toasts.map((t) => (
               <div
                 key={t.id}
+                role={t.type === "error" ? "alert" : "status"}
                 className={`pointer-events-auto flex items-center gap-3 rounded-2xl border bg-surface-raised px-5 py-3.5 text-sm font-medium shadow-xl backdrop-blur-sm transition-all duration-300 ${TOAST_BORDER_CLASSES[t.type]}`}
               >
                 {t.type === "success" && (

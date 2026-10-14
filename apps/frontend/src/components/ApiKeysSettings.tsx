@@ -121,7 +121,11 @@ export function ApiKeysSettings() {
         </button>
       </div>
 
-      {error && <div className={ui.alertError}>{error}</div>}
+      {error && (
+        <div role="alert" className={ui.alertError}>
+          {error}
+        </div>
+      )}
 
       {/* Post-create: show the plain key once */}
       {createdKey && (

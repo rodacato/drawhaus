@@ -84,7 +84,7 @@ export function DiagramListRow({
 
       <button
         onClick={() => onToggleStar(diagram.id, !diagram.starred)}
-        className={`shrink-0 rounded p-1 transition ${diagram.starred ? "text-yellow-500" : "text-text-muted opacity-0 group-hover:opacity-100"} hover:text-yellow-500`}
+        className={`shrink-0 rounded p-1 transition ${diagram.starred ? "text-yellow-500" : "text-text-muted opacity-0 group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"} hover:text-yellow-500`}
         title={diagram.starred ? "Unstar" : "Star"}
         type="button"
       >
@@ -102,7 +102,7 @@ export function DiagramListRow({
         </svg>
       </button>
 
-      <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
+      <div className="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100">
         <button
           onClick={startRenaming}
           className="rounded p-1 text-text-muted hover:text-primary"

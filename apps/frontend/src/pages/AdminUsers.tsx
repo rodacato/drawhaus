@@ -110,7 +110,10 @@ function InviteUserModal({ open, onClose }: { open: boolean; onClose: () => void
           </label>
 
           {status && (
-            <p className={status.type === "error" ? ui.alertError : ui.alertSuccess}>
+            <p
+              role={status.type === "error" ? "alert" : "status"}
+              className={status.type === "error" ? ui.alertError : ui.alertSuccess}
+            >
               {status.message}
             </p>
           )}
@@ -238,7 +241,11 @@ export function AdminUsers() {
         </button>
       </div>
       <div className={ui.card}>
-        {error && <p className={`${ui.alertError} mb-4`}>{error}</p>}
+        {error && (
+          <p role="alert" className={`${ui.alertError} mb-4`}>
+            {error}
+          </p>
+        )}
         {users.length === 0 ? (
           <div className={ui.empty}>No users found.</div>
         ) : (
@@ -286,6 +293,7 @@ export function AdminUsers() {
                           <span className="text-xs text-text-muted">Active</span>
                         ) : (
                           <ToggleSwitch
+                            label={`${user.name} is active`}
                             checked={!user.disabled}
                             onChange={(enabled) => updateUser(user.id, { disabled: !enabled })}
                             disabled={isPending}

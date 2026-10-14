@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, act, within } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 const { toastFn, confirmFn } = vi.hoisted(() => ({ toastFn: vi.fn(), confirmFn: vi.fn() }));
@@ -214,8 +214,8 @@ describe("WebhooksPanel", () => {
     const user = userEvent.setup();
     await renderLoaded();
 
-    const row = screen.getByText(webhook.url).closest("div.rounded-lg") as HTMLElement;
-    const toggle = within(row).getAllByRole("button")[0];
+    const toggle = screen.getByRole("switch", { name: `Webhook ${webhook.url} is active` });
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
     await user.click(toggle);
 
     await waitFor(() =>

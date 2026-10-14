@@ -167,7 +167,7 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
           </div>
 
           {/* Hover actions */}
-          <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100">
             <button
               onClick={() => handleUse(t)}
               className="rounded-md bg-primary px-2.5 py-1 text-[11px] font-medium text-on-primary shadow-sm transition hover:bg-primary-hover"

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { driveApi, type DriveStatus } from "@/api/drive";
 import { ui } from "@/lib/ui";
+import { ToggleSwitch } from "@/components/ToggleSwitch";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -104,7 +105,10 @@ export function DriveIntegrationCard() {
       </div>
 
       {message && (
-        <p className={`mb-4 ${message.type === "error" ? ui.alertError : ui.alertSuccess}`}>
+        <p
+          role={message.type === "error" ? "alert" : "status"}
+          className={`mb-4 ${message.type === "error" ? ui.alertError : ui.alertSuccess}`}
+        >
           {message.text}
         </p>
       )}
@@ -140,20 +144,12 @@ export function DriveIntegrationCard() {
                 Automatically save diagrams to Drive on every change
               </p>
             </div>
-            <button
-              type="button"
-              onClick={handleToggleBackup}
+            <ToggleSwitch
+              label="Auto-backup"
+              checked={status.autoBackupEnabled}
+              onChange={handleToggleBackup}
               disabled={toggling}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                status.autoBackupEnabled ? "bg-primary" : "bg-border-input"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  status.autoBackupEnabled ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
+            />
           </div>
 
           {status.autoBackupEnabled && (

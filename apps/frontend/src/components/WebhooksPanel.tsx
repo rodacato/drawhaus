@@ -172,7 +172,7 @@ export function WebhooksPanel() {
 
   if (!encryptionEnabled) {
     return (
-      <div className={ui.alertError}>
+      <div role="alert" className={ui.alertError}>
         <strong>ENCRYPTION_KEY</strong> is not set, so a webhook signing secret cannot be stored and
         webhooks are unavailable. Set <code className="font-mono text-xs">ENCRYPTION_KEY</code> (64
         hex chars) to enable them.
@@ -204,7 +204,11 @@ export function WebhooksPanel() {
         </div>
       )}
 
-      {error && <div className={ui.alertError}>{error}</div>}
+      {error && (
+        <div role="alert" className={ui.alertError}>
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleCreate} className="space-y-4 rounded-lg border border-border p-4">
         <h3 className="text-sm font-semibold text-text-primary">Add Webhook</h3>
@@ -274,6 +278,7 @@ export function WebhooksPanel() {
                 <div className="flex shrink-0 items-center gap-2">
                   <span className={ui.muted}>{webhook.active ? "Active" : "Paused"}</span>
                   <ToggleSwitch
+                    label={`Webhook ${webhook.url} is active`}
                     checked={webhook.active}
                     onChange={() => handleToggleActive(webhook)}
                     disabled={busyId === webhook.id}

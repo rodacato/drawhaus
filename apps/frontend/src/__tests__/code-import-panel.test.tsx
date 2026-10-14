@@ -47,7 +47,7 @@ describe("CodeImportPanel", () => {
 
     await typeAndImport(FLOWCHART);
 
-    expect(await screen.findByText(/no produjo ningún elemento/i)).toBeTruthy();
+    expect(await screen.findByText(/produced no elements/i)).toBeTruthy();
     expect(updateScene).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
   });
@@ -62,6 +62,6 @@ describe("CodeImportPanel", () => {
     expect(updateScene).toHaveBeenCalledWith({
       elements: [{ id: "el-1", type: "rectangle" }],
     });
-    expect(screen.queryByText(/no produjo ningún elemento/i)).toBeNull();
+    expect(screen.queryByText(/produced no elements/i)).toBeNull();
   });
 });

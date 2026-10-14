@@ -132,7 +132,7 @@ export function DashboardSidebar({
               {!ws.isPersonal && onOpenWorkspaceSettings && (
                 <button
                   onClick={() => onOpenWorkspaceSettings(ws.id)}
-                  className="hidden rounded px-1 text-text-muted hover:text-primary group-hover:block"
+                  className="hidden rounded px-1 text-text-muted hover:text-primary group-hover:block group-focus-within:block pointer-coarse:block"
                   title="Workspace settings"
                   type="button"
                 >

@@ -86,9 +86,9 @@ describe("useSocketConnection", () => {
   const refused = { message: "Not authorized to connect. Reload the page." };
 
   test.each([
-    ["authenticated", "unauthenticated", authJoin, /sesión terminó/],
-    ["guest", "unauthenticated", guestJoin, /enlace ya no es válido/],
-    ["guest", "server-error", guestJoin, /verificar tu acceso/],
+    ["authenticated", "unauthenticated", authJoin, /session ended/],
+    ["guest", "unauthenticated", guestJoin, /link is no longer valid/],
+    ["guest", "server-error", guestJoin, /verify your access/],
   ])(
     "a refused %s handshake (%s) says why instead of the raw message",
     (_, reason, joinMode, copy) => {
@@ -126,10 +126,10 @@ describe("useSocketConnection", () => {
   });
 
   test.each([
-    ["authenticated", "session-ended", authJoin, /sesión terminó/],
-    ["guest", "share-link-revoked", guestJoin, /enlace ya no es válido/],
-    ["guest", "session-ended", guestJoin, /sesión terminó/],
-    ["guest", undefined, guestJoin, /enlace ya no es válido/],
+    ["authenticated", "session-ended", authJoin, /session ended/],
+    ["guest", "share-link-revoked", guestJoin, /link is no longer valid/],
+    ["guest", "session-ended", guestJoin, /session ended/],
+    ["guest", undefined, guestJoin, /link is no longer valid/],
   ])(
     "a %s board closed by the server (%s) says why instead of reconnecting",
     (_, reason, joinMode, copy) => {

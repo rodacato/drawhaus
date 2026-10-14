@@ -84,7 +84,7 @@ export function IntegrationSecretsPanel() {
 
   if (!encryptionEnabled) {
     return (
-      <div className={ui.alertError}>
+      <div role="alert" className={ui.alertError}>
         <strong>ENCRYPTION_KEY</strong> is not set. Integration secrets can only be configured via
         environment variables. Set <code className="font-mono text-xs">ENCRYPTION_KEY</code> (64 hex
         chars) to enable admin UI configuration.

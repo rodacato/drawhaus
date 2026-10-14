@@ -153,8 +153,16 @@ export function SaveTemplatePanel({ excalidrawApiRef, workspaceId }: SaveTemplat
         </label>
       )}
 
-      {error && <p className={ui.alertError}>{error}</p>}
-      {saved && <p className={ui.alertSuccess}>Template saved!</p>}
+      {error && (
+        <p role="alert" className={ui.alertError}>
+          {error}
+        </p>
+      )}
+      {saved && (
+        <p role="status" className={ui.alertSuccess}>
+          Template saved!
+        </p>
+      )}
 
       <button
         type="button"

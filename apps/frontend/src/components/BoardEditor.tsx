@@ -60,9 +60,9 @@ export default function BoardEditor({
     (conflictIds: string[], fromUserId: string) => {
       const userName =
         presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ??
-        "Otro usuario";
-      const target = conflictIds.length === 1 ? "un elemento" : `${conflictIds.length} elementos`;
-      toast(`${userName} modificó ${target} que editabas`, "info");
+        "Another user";
+      const target = conflictIds.length === 1 ? "an element" : `${conflictIds.length} elements`;
+      toast(`${userName} changed ${target} you were editing`, "info");
     },
     [toast],
   );
@@ -71,17 +71,17 @@ export default function BoardEditor({
     (deletedIds: string[], fromUserId: string) => {
       const userName =
         presenceRef.current.presenceUsers.find((u) => u.userId === fromUserId)?.name ??
-        "Otro usuario";
-      const target = deletedIds.length === 1 ? "un elemento" : `${deletedIds.length} elementos`;
-      toast(`${userName} eliminó ${target} que editabas`, "info");
+        "Another user";
+      const target = deletedIds.length === 1 ? "an element" : `${deletedIds.length} elements`;
+      toast(`${userName} deleted ${target} you were editing`, "info");
     },
     [toast],
   );
 
   const handleEditsReplaced = useCallback(
     (discardedIds: string[]) => {
-      const target = discardedIds.length === 1 ? "un elemento" : `${discardedIds.length} elementos`;
-      toast(`El diagrama fue reemplazado; se descartaron tus cambios en ${target}`, "error");
+      const target = discardedIds.length === 1 ? "an element" : `${discardedIds.length} elements`;
+      toast(`The diagram was replaced; your changes to ${target} were discarded`, "error");
     },
     [toast],
   );
@@ -179,7 +179,7 @@ export default function BoardEditor({
       restoredBy: { userId: string; userName: string };
     }) => {
       if (restoredBy.userId !== collab.selfUserId) {
-        toast(`${restoredBy.userName} restauro una version anterior`, "info");
+        toast(`${restoredBy.userName} restored a previous version`, "info");
       }
     };
     socket.on("snapshot-restored", handler);

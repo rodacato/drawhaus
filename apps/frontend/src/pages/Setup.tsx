@@ -78,7 +78,11 @@ export function Setup() {
         {step === 1 && <SetupStep1 onComplete={handleStepComplete} />}
         {step === 2 && <SetupStep2 onComplete={handleStepComplete} />}
         {step === 3 && <SetupStep3 onComplete={handleStepComplete} />}
-        {completeError && <p className={ui.alertError}>{completeError}</p>}
+        {completeError && (
+          <p role="alert" className={ui.alertError}>
+            {completeError}
+          </p>
+        )}
       </section>
     </div>
   );

@@ -1,19 +1,20 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
+import { ToggleSwitch } from "@/components/ToggleSwitch";
 
 const GRID_SIZES = [
-  { label: "Pequeña", value: 10 },
-  { label: "Mediana", value: 20 },
-  { label: "Grande", value: 40 },
+  { label: "Small", value: 10 },
+  { label: "Medium", value: 20 },
+  { label: "Large", value: 40 },
 ] as const;
 
 const BG_PRESETS = [
-  { label: "Blanco", color: "#ffffff" },
-  { label: "Gris claro", color: "#f8f9fc" },
-  { label: "Gris", color: "#e8eaed" },
-  { label: "Crema", color: "#fef9ef" },
-  { label: "Azul pálido", color: "#f0f4ff" },
+  { label: "White", color: "#ffffff" },
+  { label: "Light gray", color: "#f8f9fc" },
+  { label: "Gray", color: "#e8eaed" },
+  { label: "Cream", color: "#fef9ef" },
+  { label: "Pale blue", color: "#f0f4ff" },
 ] as const;
 
 type Props = {
@@ -42,18 +43,12 @@ export function SettingsPanel({
 
         {/* Grid toggle */}
         <div className="flex items-center justify-between rounded-lg px-3 py-2.5">
-          <span className="text-sm text-text-secondary">Cuadrícula</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={gridModeEnabled}
-            onClick={() => onCanvasPrefsChange({ gridModeEnabled: !gridModeEnabled })}
-            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors ${gridModeEnabled ? "bg-primary" : "bg-border-input"}`}
-          >
-            <span
-              className={`pointer-events-none inline-block h-4 w-4 translate-y-0.5 rounded-full bg-white shadow transition-transform ${gridModeEnabled ? "translate-x-4" : "translate-x-0.5"}`}
-            />
-          </button>
+          <span className="text-sm text-text-secondary">Grid</span>
+          <ToggleSwitch
+            label="Grid"
+            checked={gridModeEnabled}
+            onChange={(value) => onCanvasPrefsChange({ gridModeEnabled: value })}
+          />
         </div>
 
         {/* Grid size */}
@@ -74,23 +69,17 @@ export function SettingsPanel({
 
         {/* Object snap toggle */}
         <div className="flex items-center justify-between rounded-lg px-3 py-2.5">
-          <span className="text-sm text-text-secondary">Ajuste a objetos</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={objectsSnapModeEnabled}
-            onClick={() => onCanvasPrefsChange({ objectsSnapModeEnabled: !objectsSnapModeEnabled })}
-            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors ${objectsSnapModeEnabled ? "bg-primary" : "bg-border-input"}`}
-          >
-            <span
-              className={`pointer-events-none inline-block h-4 w-4 translate-y-0.5 rounded-full bg-white shadow transition-transform ${objectsSnapModeEnabled ? "translate-x-4" : "translate-x-0.5"}`}
-            />
-          </button>
+          <span className="text-sm text-text-secondary">Snap to objects</span>
+          <ToggleSwitch
+            label="Snap to objects"
+            checked={objectsSnapModeEnabled}
+            onChange={(value) => onCanvasPrefsChange({ objectsSnapModeEnabled: value })}
+          />
         </div>
 
         {/* Background color */}
         <div className="mt-2 px-3">
-          <p className="mb-2 text-sm text-text-secondary">Color de fondo</p>
+          <p className="mb-2 text-sm text-text-secondary">Background color</p>
           <div className="flex flex-wrap gap-2">
             {BG_PRESETS.map((p) => (
               <button
@@ -104,7 +93,7 @@ export function SettingsPanel({
             ))}
             {/* Custom color picker */}
             <label
-              title="Color personalizado"
+              title="Custom color"
               className={`relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-2 transition ${BG_PRESETS.some((p) => p.color === viewBackgroundColor) ? "border-border hover:border-border-input" : "border-primary ring-2 ring-primary/30"}`}
               style={{ background: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)" }}
             >

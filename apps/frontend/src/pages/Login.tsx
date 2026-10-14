@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { formString } from "@/lib/format-utils";
+import { PasswordInput } from "@/components/PasswordInput";
 import { ui } from "@/lib/ui";
 import { getErrorMessage } from "@/lib/api-error";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -15,7 +16,6 @@ export function Login() {
   const [searchParams] = useSearchParams();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
 
   // Handle OAuth error redirect
   useEffect(() => {
@@ -129,101 +129,18 @@ export function Login() {
         <form className="space-y-4" onSubmit={onSubmit}>
           <label className={ui.label}>
             <span>Email</span>
-            <div className="relative">
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-              </svg>
-              <input
-                className={`${ui.input} pl-10`}
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
+            <PasswordInput
+              name="password"
+              placeholder="Enter your password"
+              minLength={8}
+              required
+            />
           </label>
-          <label className={ui.label}>
-            <div className="flex items-center justify-between">
-              <span>Password</span>
-              <Link
-                to="/forgot-password"
-                className="text-xs font-medium text-primary hover:underline"
-              >
-                Forgot?
-              </Link>
-            </div>
-            <div className="relative">
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              <input
-                className={`${ui.input} pl-10 pr-10`}
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Enter your password"
-                minLength={8}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
-              >
-                {showPassword ? (
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                    <line x1="1" y1="1" x2="23" y2="23" />
-                  </svg>
-                ) : (
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                )}
-              </button>
-            </div>
-          </label>
-          {error && <p className={ui.alertError}>{error}</p>}
+          {error && (
+            <p role="alert" className={ui.alertError}>
+              {error}
+            </p>
+          )}
           <button
             className={`${ui.btn} ${ui.btnPrimary} mt-1 w-full gap-2`}
             type="submit"

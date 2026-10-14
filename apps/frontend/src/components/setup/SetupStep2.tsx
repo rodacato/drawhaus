@@ -107,7 +107,11 @@ export function SetupStep2({ onComplete }: { readonly onComplete: () => void }) 
           </div>
         </div>
 
-        {error && <p className={ui.alertError}>{error}</p>}
+        {error && (
+          <p role="alert" className={ui.alertError}>
+            {error}
+          </p>
+        )}
         <button className={`${ui.btn} ${ui.btnPrimary} w-full`} type="submit" disabled={pending}>
           {pending ? "Saving..." : "Continue"}
         </button>

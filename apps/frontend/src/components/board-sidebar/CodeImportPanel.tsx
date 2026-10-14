@@ -146,7 +146,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
         newElements = result.elements;
       }
       if (newElements.length === 0) {
-        setError("El diagrama no produjo ningún elemento. Revisa la sintaxis.");
+        setError("The diagram produced no elements. Check the syntax.");
         return;
       }
       const existing = replaceAll ? [] : (api.getSceneElements() as any[]);

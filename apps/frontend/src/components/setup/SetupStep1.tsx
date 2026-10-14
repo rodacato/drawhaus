@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { formString } from "@/lib/format-utils";
+import { PasswordInput } from "@/components/PasswordInput";
 import { ui } from "@/lib/ui";
 import { getErrorMessage } from "@/lib/api-error";
 
@@ -47,9 +48,13 @@ export function SetupStep1({ onComplete }: { readonly onComplete: () => void }) 
         </label>
         <label className={ui.label}>
           <span>Password</span>
-          <input className={ui.input} type="password" name="password" minLength={8} required />
+          <PasswordInput name="password" minLength={8} required leadingIcon={false} />
         </label>
-        {error && <p className={ui.alertError}>{error}</p>}
+        {error && (
+          <p role="alert" className={ui.alertError}>
+            {error}
+          </p>
+        )}
         <button className={`${ui.btn} ${ui.btnPrimary} w-full`} type="submit" disabled={pending}>
           {pending ? "Creating..." : "Create admin account"}
         </button>

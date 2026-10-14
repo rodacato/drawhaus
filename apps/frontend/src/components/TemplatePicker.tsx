@@ -263,7 +263,7 @@ export function TemplatePicker({
         <button
           type="button"
           onClick={(e) => handleDelete(e, template)}
-          className="absolute right-2 top-2 rounded-lg p-1 text-text-muted opacity-0 transition hover:bg-red-500/10 hover:text-red-500 group-hover:opacity-100"
+          className="absolute right-2 top-2 rounded-lg p-1 text-text-muted opacity-0 transition hover:bg-red-500/10 hover:text-red-500 group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
           title="Delete template"
         >
           <svg

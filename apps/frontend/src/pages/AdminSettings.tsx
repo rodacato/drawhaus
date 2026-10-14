@@ -107,7 +107,11 @@ export function AdminSettings() {
                 <p className="text-sm font-medium text-text-primary">Allow Registration</p>
                 <p className={ui.muted}>New users can create accounts on this instance.</p>
               </div>
-              <ToggleSwitch checked={registrationOpen} onChange={setRegistrationOpen} />
+              <ToggleSwitch
+                label="Allow Registration"
+                checked={registrationOpen}
+                onChange={setRegistrationOpen}
+              />
             </div>
             <div className="border-t border-border" />
             <div className="flex items-center justify-between">
@@ -115,7 +119,11 @@ export function AdminSettings() {
                 <p className="text-sm font-medium text-text-primary">Maintenance Mode</p>
                 <p className={ui.muted}>Only admins can access the instance while enabled.</p>
               </div>
-              <ToggleSwitch checked={maintenanceMode} onChange={setMaintenanceMode} />
+              <ToggleSwitch
+                label="Maintenance Mode"
+                checked={maintenanceMode}
+                onChange={setMaintenanceMode}
+              />
             </div>
           </div>
         </div>
@@ -156,7 +164,11 @@ export function AdminSettings() {
                 <p className="text-sm font-medium text-text-primary">Automated Backups</p>
                 <p className={ui.muted}>Run pg_dump on a cron schedule with automatic cleanup.</p>
               </div>
-              <ToggleSwitch checked={backupEnabled} onChange={setBackupEnabled} />
+              <ToggleSwitch
+                label="Automated Backups"
+                checked={backupEnabled}
+                onChange={setBackupEnabled}
+              />
             </div>
             {backupEnabled && (
               <>
@@ -194,7 +206,10 @@ export function AdminSettings() {
         </div>
 
         {status && (
-          <p className={status.type === "error" ? ui.alertError : ui.alertSuccess}>
+          <p
+            role={status.type === "error" ? "alert" : "status"}
+            className={status.type === "error" ? ui.alertError : ui.alertSuccess}
+          >
             {status.message}
           </p>
         )}

@@ -20,14 +20,14 @@ export interface UseSocketConnectionReturn {
 
 type ConnectError = Error & { data?: { reason?: string } };
 
-const SESSION_ENDED = "Tu sesión terminó. Recarga la página para volver a entrar.";
-const LINK_INVALID = "Este enlace ya no es válido. Pide uno nuevo.";
+const SESSION_ENDED = "Your session ended. Reload the page to sign in again.";
+const LINK_INVALID = "This link is no longer valid. Ask for a new one.";
 
 function refusalMessage(isGuest: boolean, reason: string | undefined): string {
   if (reason === "unauthenticated") {
     return isGuest ? LINK_INVALID : SESSION_ENDED;
   }
-  return "No se pudo verificar tu acceso. Recarga la página.";
+  return "Could not verify your access. Reload the page.";
 }
 
 function revokedMessage(isGuest: boolean, reason: string | undefined): string {

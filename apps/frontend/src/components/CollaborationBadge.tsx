@@ -35,11 +35,11 @@ export function CollaborationBadge({
             ? "bg-yellow-200 text-yellow-800"
             : "bg-selection text-text-secondary hover:bg-yellow-100 hover:text-yellow-700"
         }`}
-        title={isHandRaised ? "Bajar mano" : "Levantar mano"}
+        title={isHandRaised ? "Lower hand" : "Raise hand"}
         type="button"
       >
         <span aria-hidden>✋</span>
-        {isHandRaised ? "Bajar" : "Mano"}
+        {isHandRaised ? "Lower" : "Hand"}
       </button>
     </div>
   );
