@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { setupApi } from "@/api/setup";
 import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
+import { CRON_HINT } from "@/lib/site-settings-validation";
 import { getErrorMessage } from "@/lib/api-error";
 
 export function SetupStep2({ onComplete }: { readonly onComplete: () => void }) {
@@ -58,24 +59,14 @@ export function SetupStep2({ onComplete }: { readonly onComplete: () => void }) 
           />
         </label>
         <label className="flex items-center gap-3 text-sm text-text-secondary">
-          <input
-            type="checkbox"
-            name="registrationOpen"
-            defaultChecked
-            className="h-4 w-4 rounded border-border-input text-primary focus:ring-primary"
-          />
+          <input type="checkbox" name="registrationOpen" defaultChecked className={ui.checkbox} />
           <span>Allow public registration</span>
         </label>
 
         <div className="border-t border-border pt-4">
           <p className="text-sm font-medium text-text-primary mb-3">Database Backups</p>
           <label className="flex items-center gap-3 text-sm text-text-secondary">
-            <input
-              type="checkbox"
-              name="backupEnabled"
-              defaultChecked
-              className="h-4 w-4 rounded border-border-input text-primary focus:ring-primary"
-            />
+            <input type="checkbox" name="backupEnabled" defaultChecked className={ui.checkbox} />
             <span>Enable automated backups</span>
           </label>
           <div className="mt-3 space-y-3">
@@ -88,7 +79,7 @@ export function SetupStep2({ onComplete }: { readonly onComplete: () => void }) 
                 defaultValue="0 3 * * *"
                 placeholder="0 3 * * *"
               />
-              <span className="text-xs text-text-muted">Daily at 3AM UTC. Use crontab syntax.</span>
+              <span className="text-xs text-text-muted">{CRON_HINT}</span>
             </label>
             <label className={ui.label}>
               <span>Retention (days)</span>

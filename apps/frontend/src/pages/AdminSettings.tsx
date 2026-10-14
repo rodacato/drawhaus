@@ -2,6 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { LoadError } from "@/components/LoadError";
 import { adminApi } from "@/api/admin";
 import { ui } from "@/lib/ui";
+import {
+  CRON_HINT,
+  validateSiteSettings,
+  type SiteSettingsErrors,
+} from "@/lib/site-settings-validation";
 import { getErrorMessage } from "@/lib/api-error";
 import { ToggleSwitch } from "@/components/ToggleSwitch";
 import { IntegrationSecretsPanel } from "@/components/IntegrationSecretsPanel";
@@ -12,11 +17,12 @@ export function AdminSettings() {
   const [adminEmail, setAdminEmail] = useState("");
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [maxWorkspacesPerUser, setMaxWorkspacesPerUser] = useState(5);
-  const [maxMembersPerWorkspace, setMaxMembersPerWorkspace] = useState(5);
+  const [maxWorkspacesPerUser, setMaxWorkspacesPerUser] = useState("5");
+  const [maxMembersPerWorkspace, setMaxMembersPerWorkspace] = useState("5");
   const [backupEnabled, setBackupEnabled] = useState(true);
   const [backupCron, setBackupCron] = useState("0 3 * * *");
-  const [backupRetentionDays, setBackupRetentionDays] = useState(7);
+  const [backupRetentionDays, setBackupRetentionDays] = useState("7");
+  const [errors, setErrors] = useState<SiteSettingsErrors>({});
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [pending, setPending] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -33,11 +39,11 @@ export function AdminSettings() {
         setAdminEmail(s.adminEmail ?? "");
         setRegistrationOpen(s.registrationOpen ?? false);
         setMaintenanceMode(s.maintenanceMode ?? false);
-        setMaxWorkspacesPerUser(s.maxWorkspacesPerUser ?? 5);
-        setMaxMembersPerWorkspace(s.maxMembersPerWorkspace ?? 5);
+        setMaxWorkspacesPerUser(String(s.maxWorkspacesPerUser ?? 5));
+        setMaxMembersPerWorkspace(String(s.maxMembersPerWorkspace ?? 5));
         setBackupEnabled(s.backupEnabled ?? true);
         setBackupCron(s.backupCron ?? "0 3 * * *");
-        setBackupRetentionDays(s.backupRetentionDays ?? 7);
+        setBackupRetentionDays(String(s.backupRetentionDays ?? 7));
         setLoaded(true);
       })
       .catch(() => setLoadError(true));
@@ -49,6 +55,18 @@ export function AdminSettings() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const found = validateSiteSettings({
+      maxWorkspacesPerUser,
+      maxMembersPerWorkspace,
+      backupEnabled,
+      backupCron,
+      backupRetentionDays,
+    });
+    setErrors(found);
+    if (Object.keys(found).length > 0) {
+      setStatus({ type: "error", message: "Fix the highlighted fields and try again." });
+      return;
+    }
     setPending(true);
     setStatus(null);
     try {
@@ -56,11 +74,11 @@ export function AdminSettings() {
         instanceName: instanceName.trim(),
         registrationOpen,
         maintenanceMode,
-        maxWorkspacesPerUser,
-        maxMembersPerWorkspace,
+        maxWorkspacesPerUser: Number(maxWorkspacesPerUser),
+        maxMembersPerWorkspace: Number(maxMembersPerWorkspace),
         backupEnabled,
         backupCron: backupCron.trim(),
-        backupRetentionDays,
+        backupRetentionDays: Number(backupRetentionDays),
       });
       setStatus({ type: "success", message: "Settings saved" });
     } catch (err: unknown) {
@@ -153,8 +171,14 @@ export function AdminSettings() {
                 min={1}
                 max={50}
                 value={maxWorkspacesPerUser}
-                onChange={(e) => setMaxWorkspacesPerUser(Number(e.target.value))}
+                onChange={(e) => setMaxWorkspacesPerUser(e.target.value)}
+                aria-invalid={Boolean(errors.maxWorkspacesPerUser)}
               />
+              {errors.maxWorkspacesPerUser && (
+                <span role="alert" className="text-xs text-error">
+                  {errors.maxWorkspacesPerUser}
+                </span>
+              )}
             </label>
             <label className={ui.label}>
               Max Members per Workspace
@@ -164,8 +188,14 @@ export function AdminSettings() {
                 min={1}
                 max={100}
                 value={maxMembersPerWorkspace}
-                onChange={(e) => setMaxMembersPerWorkspace(Number(e.target.value))}
+                onChange={(e) => setMaxMembersPerWorkspace(e.target.value)}
+                aria-invalid={Boolean(errors.maxMembersPerWorkspace)}
               />
+              {errors.maxMembersPerWorkspace && (
+                <span role="alert" className="text-xs text-error">
+                  {errors.maxMembersPerWorkspace}
+                </span>
+              )}
             </label>
           </div>
         </div>
@@ -195,10 +225,14 @@ export function AdminSettings() {
                     value={backupCron}
                     onChange={(e) => setBackupCron(e.target.value)}
                     placeholder="0 3 * * *"
+                    aria-invalid={Boolean(errors.backupCron)}
                   />
-                  <span className={`${ui.muted} text-xs`}>
-                    Default: 0 3 * * * (daily at 3AM UTC)
-                  </span>
+                  {errors.backupCron && (
+                    <span role="alert" className="text-xs text-error">
+                      {errors.backupCron}
+                    </span>
+                  )}
+                  <span className={`${ui.muted} text-xs`}>{CRON_HINT}</span>
                 </label>
                 <label className={ui.label}>
                   Retention (days)
@@ -208,8 +242,14 @@ export function AdminSettings() {
                     min={1}
                     max={365}
                     value={backupRetentionDays}
-                    onChange={(e) => setBackupRetentionDays(Number(e.target.value))}
+                    onChange={(e) => setBackupRetentionDays(e.target.value)}
+                    aria-invalid={Boolean(errors.backupRetentionDays)}
                   />
+                  {errors.backupRetentionDays && (
+                    <span role="alert" className="text-xs text-error">
+                      {errors.backupRetentionDays}
+                    </span>
+                  )}
                   <span className={`${ui.muted} text-xs`}>
                     Backups older than this are deleted automatically.
                   </span>

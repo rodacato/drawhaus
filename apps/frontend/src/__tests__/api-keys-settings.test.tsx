@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, act } from "@testing-library/react";
+import { render, screen, waitFor, act, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@/api/api-keys", () => ({
@@ -19,6 +19,21 @@ vi.mock("@/api/workspaces", () => ({
 import { apiKeysApi, type ApiKeyResponse } from "@/api/api-keys";
 import { workspacesApi } from "@/api/workspaces";
 import { ApiKeysSettings } from "@/components/ApiKeysSettings";
+import { ConfirmProvider } from "@/components/ConfirmDialog";
+
+function renderKeys() {
+  return render(
+    <ConfirmProvider>
+      <ApiKeysSettings />
+    </ConfirmProvider>,
+  );
+}
+
+async function confirmRevoke(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getAllByRole("button", { name: "Revoke" })[0]);
+  const dialog = await screen.findByRole("dialog", { name: "Revoke API key" });
+  await user.click(within(dialog).getByRole("button", { name: "Revoke" }));
+}
 
 const workspaces = [
   {
@@ -88,7 +103,7 @@ describe("ApiKeysSettings", () => {
   test("shows loading then empty state when no keys exist", async () => {
     vi.mocked(apiKeysApi.list).mockResolvedValue({ keys: [] });
     mockWorkspaces();
-    render(<ApiKeysSettings />);
+    renderKeys();
     expect(screen.getByText(/Loading/)).toBeTruthy();
     await waitFor(() => expect(screen.queryByText(/^Loading\.\.\.$/)).toBeNull());
     expect(screen.getByText("No API keys yet")).toBeTruthy();
@@ -103,11 +118,16 @@ describe("ApiKeysSettings", () => {
       ],
     });
     mockWorkspaces();
-    render(<ApiKeysSettings />);
+    renderKeys();
     await waitFor(() => expect(screen.getByText("Active key")).toBeTruthy());
     expect(screen.getByText("Active")).toBeTruthy();
-    expect(screen.getByText("Revoked")).toBeTruthy();
     expect(screen.getByText("Expired")).toBeTruthy();
+    expect(screen.queryByText("Revoked")).toBeNull();
+
+    await userEvent.click(screen.getByRole("button", { name: "Show revoked keys (1)" }));
+    expect(screen.getByText("Revoked")).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Hide revoked keys" }));
+    expect(screen.queryByText("Revoked")).toBeNull();
   });
 
   test("workspaceName falls back to 'Unknown' when workspace is missing", async () => {
@@ -115,7 +135,7 @@ describe("ApiKeysSettings", () => {
       keys: [makeKey({ workspaceId: "missing-ws" })],
     });
     mockWorkspaces();
-    render(<ApiKeysSettings />);
+    renderKeys();
     await waitFor(() => expect(screen.getByText("Unknown")).toBeTruthy());
   });
 
@@ -123,7 +143,7 @@ describe("ApiKeysSettings", () => {
     vi.mocked(apiKeysApi.list).mockResolvedValue({ keys: [] });
     mockWorkspaces();
     const user = userEvent.setup();
-    render(<ApiKeysSettings />);
+    renderKeys();
     await waitFor(() => expect(screen.queryByText(/^Loading\.\.\.$/)).toBeNull());
     // Trigger button is the only "Create key" before modal opens.
     await user.click(screen.getByRole("button", { name: "Create key" }));
@@ -135,7 +155,7 @@ describe("ApiKeysSettings", () => {
     vi.mocked(apiKeysApi.list).mockResolvedValue({ keys: [] });
     mockWorkspaces();
     const user = userEvent.setup();
-    render(<ApiKeysSettings />);
+    renderKeys();
     await waitFor(() => expect(screen.queryByText(/^Loading\.\.\.$/)).toBeNull());
     await user.click(screen.getAllByRole("button", { name: "Create key" })[0]);
     expect(getCreateSubmit().disabled).toBe(true);
@@ -150,7 +170,7 @@ describe("ApiKeysSettings", () => {
     });
 
     const user = userEvent.setup();
-    render(<ApiKeysSettings />);
+    renderKeys();
     await waitFor(() => expect(screen.queryByText(/^Loading\.\.\.$/)).toBeNull());
     await user.click(screen.getByRole("button", { name: "Create key" }));
     await user.type(screen.getByPlaceholderText(/e\.g\. MCP Server/), "My key");
@@ -178,7 +198,7 @@ describe("ApiKeysSettings", () => {
       value: { writeText: clipboardWrite },
     });
 
-    render(<ApiKeysSettings />);
+    renderKeys();
     await waitFor(() => expect(screen.queryByText(/^Loading\.\.\.$/)).toBeNull());
     await user.click(screen.getByRole("button", { name: "Create key" }));
     await user.type(screen.getByPlaceholderText(/e\.g\. MCP Server/), "X");
@@ -198,7 +218,7 @@ describe("ApiKeysSettings", () => {
     });
 
     const user = userEvent.setup();
-    render(<ApiKeysSettings />);
+    renderKeys();
     await waitFor(() => expect(screen.queryByText(/^Loading\.\.\.$/)).toBeNull());
     await user.click(screen.getByRole("button", { name: "Create key" }));
     await user.type(screen.getByPlaceholderText(/e\.g\. MCP Server/), "Dup");
@@ -213,7 +233,7 @@ describe("ApiKeysSettings", () => {
     vi.mocked(apiKeysApi.create).mockRejectedValue(new Error("nope"));
 
     const user = userEvent.setup();
-    render(<ApiKeysSettings />);
+    renderKeys();
     await waitFor(() => expect(screen.queryByText(/^Loading\.\.\.$/)).toBeNull());
     await user.click(screen.getByRole("button", { name: "Create key" }));
     await user.type(screen.getByPlaceholderText(/e\.g\. MCP Server/), "Z");
@@ -226,7 +246,7 @@ describe("ApiKeysSettings", () => {
     vi.mocked(apiKeysApi.list).mockResolvedValue({ keys: [] });
     mockWorkspaces();
     const user = userEvent.setup();
-    render(<ApiKeysSettings />);
+    renderKeys();
     await waitFor(() => expect(screen.queryByText(/^Loading\.\.\.$/)).toBeNull());
     await user.click(screen.getByRole("button", { name: "Create key" }));
     await user.click(screen.getByRole("button", { name: "Cancel" }));
@@ -246,9 +266,9 @@ describe("ApiKeysSettings", () => {
     vi.mocked(apiKeysApi.revoke).mockResolvedValue(undefined as never);
 
     const user = userEvent.setup();
-    render(<ApiKeysSettings />);
+    renderKeys();
     await waitFor(() => expect(screen.getByText("Active")).toBeTruthy());
-    await user.click(screen.getByRole("button", { name: "Revoke" }));
+    await confirmRevoke(user);
     await waitFor(() => expect(apiKeysApi.revoke).toHaveBeenCalledWith("k1"));
     await waitFor(() => expect(screen.queryByRole("button", { name: "Revoke" })).toBeNull());
   });
@@ -259,17 +279,45 @@ describe("ApiKeysSettings", () => {
     vi.mocked(apiKeysApi.revoke).mockRejectedValue(new Error("nope"));
 
     const user = userEvent.setup();
-    render(<ApiKeysSettings />);
+    renderKeys();
+    await waitFor(() => expect(screen.getByText("Active")).toBeTruthy());
+    await confirmRevoke(user);
+    await waitFor(() => expect(screen.getByText("Failed to revoke key")).toBeTruthy());
+  });
+
+  test("Revoke asks first and does nothing when cancelled", async () => {
+    vi.mocked(apiKeysApi.list).mockResolvedValue({ keys: [makeKey({ id: "k1", name: "K1" })] });
+    mockWorkspaces();
+
+    const user = userEvent.setup();
+    renderKeys();
     await waitFor(() => expect(screen.getByText("Active")).toBeTruthy());
     await user.click(screen.getByRole("button", { name: "Revoke" }));
-    await waitFor(() => expect(screen.getByText("Failed to revoke key")).toBeTruthy());
+    const dialog = await screen.findByRole("dialog", { name: "Revoke API key" });
+    expect(dialog.textContent).toMatch(/K1/);
+    await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+    expect(apiKeysApi.revoke).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  test("with every key revoked the list says there are no active keys, even with the form open", async () => {
+    vi.mocked(apiKeysApi.list).mockResolvedValue({
+      keys: [makeKey({ id: "r", revokedAt: "2024-01-02T00:00:00.000Z" })],
+    });
+    mockWorkspaces();
+    const user = userEvent.setup();
+    renderKeys();
+    await waitFor(() => expect(screen.getByText("No active API keys")).toBeTruthy());
+    await user.click(screen.getByRole("button", { name: "Create key" }));
+    expect(screen.getByText("No active API keys")).toBeTruthy();
+    expect(screen.queryByRole("table")).toBeNull();
   });
 
   test("list failure sets the error banner", async () => {
     vi.mocked(apiKeysApi.list).mockRejectedValue(new Error("oh no"));
     mockWorkspaces();
     await act(async () => {
-      render(<ApiKeysSettings />);
+      renderKeys();
     });
     await waitFor(() => expect(screen.getByText("Failed to load API keys")).toBeTruthy());
   });

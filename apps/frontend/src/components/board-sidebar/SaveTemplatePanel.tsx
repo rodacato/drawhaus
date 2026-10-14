@@ -147,7 +147,7 @@ export function SaveTemplatePanel({ excalidrawApiRef, workspaceId }: SaveTemplat
             type="checkbox"
             checked={shareWithWorkspace}
             onChange={(e) => setShareWithWorkspace(e.target.checked)}
-            className="rounded border-border"
+            className={ui.checkbox}
           />
           <span>Share with {wsName || "workspace members"}</span>
         </label>

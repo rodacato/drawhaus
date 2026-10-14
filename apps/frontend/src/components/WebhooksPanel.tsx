@@ -250,6 +250,7 @@ export function WebhooksPanel() {
               <label key={event} className="flex items-center gap-2 text-sm text-text-primary">
                 <input
                   type="checkbox"
+                  className={ui.checkbox}
                   checked={selectedEvents.includes(event)}
                   onChange={() => toggleEvent(event)}
                 />

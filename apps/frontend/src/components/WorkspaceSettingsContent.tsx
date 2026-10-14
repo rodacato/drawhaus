@@ -1,3 +1,4 @@
+import { ui } from "@/lib/ui";
 import { useCallback, useEffect, useState } from "react";
 import { workspacesApi, type Workspace, type WorkspaceMember } from "@/api/workspaces";
 import { useAuth } from "@/contexts/AuthContext";
@@ -311,7 +312,7 @@ export function WorkspaceSettingsContent({
               onChange={(e) => setInviteEmail(e.target.value)}
             />
             <select
-              className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none"
+              className={`${ui.select} px-3`}
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value as "editor" | "viewer" | "admin")}
             >
@@ -346,7 +347,7 @@ export function WorkspaceSettingsContent({
               <div className="flex items-center gap-2">
                 {isAdmin && member.userId !== workspace.ownerId ? (
                   <select
-                    className="rounded-lg border border-border bg-surface px-2 py-1 text-xs text-text-primary outline-none"
+                    className={`${ui.select} h-8 text-xs`}
                     value={member.role}
                     onChange={(e) => handleRoleChange(member.userId, e.target.value)}
                   >
@@ -428,7 +429,7 @@ export function WorkspaceSettingsContent({
                 </label>
                 <select
                   id="workspace-new-owner"
-                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none"
+                  className={`${ui.select} w-full px-3`}
                   value={transferTarget}
                   onChange={(e) => setTransferTarget(e.target.value)}
                 >
@@ -447,7 +448,7 @@ export function WorkspaceSettingsContent({
                   type="checkbox"
                   checked={transferResources}
                   onChange={(e) => setTransferResources(e.target.checked)}
-                  className="rounded border-border"
+                  className={ui.checkbox}
                 />
                 <span>Also transfer my diagrams and templates in this workspace</span>
               </label>

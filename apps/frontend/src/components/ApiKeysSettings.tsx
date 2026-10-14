@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { apiKeysApi, type ApiKeyResponse } from "@/api/api-keys";
 import { workspacesApi, type Workspace } from "@/api/workspaces";
 import { ui } from "@/lib/ui";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { getErrorMessage } from "@/lib/api-error";
 
 function formatDate(iso: string | null): string {
@@ -25,6 +26,8 @@ export function ApiKeysSettings() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showRevoked, setShowRevoked] = useState(false);
+  const confirm = useConfirm();
 
   // Create modal state
   const [showCreate, setShowCreate] = useState(false);
@@ -82,7 +85,15 @@ export function ApiKeysSettings() {
     }
   }
 
-  async function handleRevoke(id: string) {
+  async function handleRevoke(key: ApiKeyResponse) {
+    const ok = await confirm({
+      title: "Revoke API key",
+      message: `Revoke "${key.name}"? Anything using it stops working immediately and this cannot be undone.`,
+      confirmLabel: "Revoke",
+      variant: "danger",
+    });
+    if (!ok) return;
+    const id = key.id;
     try {
       await apiKeysApi.revoke(id);
       await loadKeys();
@@ -91,15 +102,21 @@ export function ApiKeysSettings() {
     }
   }
 
-  function handleCopy() {
-    if (createdKey) {
-      navigator.clipboard.writeText(createdKey);
+  async function handleCopy() {
+    if (!createdKey) return;
+    try {
+      await navigator.clipboard.writeText(createdKey);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError("Could not copy the key. Select it and copy it manually.");
     }
   }
 
   const workspaceName = (id: string) => workspaces.find((w) => w.id === id)?.name ?? "Unknown";
+
+  const revokedCount = keys.filter((k) => k.revokedAt).length;
+  const visibleKeys = showRevoked ? keys : keys.filter((k) => !k.revokedAt);
 
   if (loading) return <p className={ui.muted}>Loading...</p>;
 
@@ -206,12 +223,28 @@ export function ApiKeysSettings() {
       )}
 
       {/* Keys list */}
-      {keys.length === 0 && !showCreate ? (
+      {revokedCount > 0 && (
+        <button
+          type="button"
+          className="text-xs font-medium text-primary hover:underline"
+          onClick={() => setShowRevoked((value) => !value)}
+        >
+          {showRevoked ? "Hide revoked keys" : `Show revoked keys (${revokedCount})`}
+        </button>
+      )}
+
+      {visibleKeys.length === 0 ? (
         <div className={ui.empty}>
-          <p className="font-medium">No API keys yet</p>
-          <p className="mt-1">
-            Create an API key to access diagrams programmatically via the /v1/ API.
-          </p>
+          {keys.length === 0 ? (
+            <>
+              <p className="font-medium">No API keys yet</p>
+              <p className="mt-1">
+                Create an API key to access diagrams programmatically via the /v1/ API.
+              </p>
+            </>
+          ) : (
+            <p className="font-medium">No active API keys</p>
+          )}
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -228,7 +261,7 @@ export function ApiKeysSettings() {
               </tr>
             </thead>
             <tbody>
-              {keys.map((k) => {
+              {visibleKeys.map((k) => {
                 const status = keyStatus(k);
                 const isActive =
                   !k.revokedAt && (!k.expiresAt || new Date(k.expiresAt) >= new Date());
@@ -246,7 +279,7 @@ export function ApiKeysSettings() {
                       {isActive && (
                         <button
                           className={`${ui.btn} ${ui.btnDanger} !h-8 !px-3 !text-xs`}
-                          onClick={() => handleRevoke(k.id)}
+                          onClick={() => handleRevoke(k)}
                         >
                           Revoke
                         </button>

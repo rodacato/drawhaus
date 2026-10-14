@@ -16,6 +16,7 @@ vi.mock("@/api/admin", () => ({
     getMetrics: vi.fn(),
     listUsers: vi.fn(),
     getSettings: vi.fn(),
+    updateSettings: vi.fn(),
     getIntegrations: vi.fn().mockResolvedValue({ integrations: [], encryptionEnabled: false }),
     listWebhooks: vi.fn().mockResolvedValue({ webhooks: [], events: [], encryptionEnabled: false }),
   },
@@ -69,5 +70,21 @@ describe("admin pages report load failures", () => {
     vi.mocked(adminApi.getSettings).mockResolvedValue({ settings: { instanceName: "Drawhaus" } });
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(await screen.findByDisplayValue("Drawhaus")).toBeTruthy();
+  });
+
+  test("an emptied number field blocks the save with a message instead of sending 0", async () => {
+    vi.mocked(adminApi.getSettings).mockResolvedValue({ settings: { instanceName: "Drawhaus" } });
+    renderWithProviders(<AdminSettings />);
+    const field = await screen.findByLabelText("Max Workspaces per User");
+    await userEvent.clear(field);
+    await userEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+
+    expect(
+      screen
+        .getAllByRole("alert")
+        .map((a) => a.textContent)
+        .join(" "),
+    ).toMatch(/Max Workspaces per User must be a whole number from 1 to 50/);
+    expect(adminApi.updateSettings).not.toHaveBeenCalled();
   });
 });
