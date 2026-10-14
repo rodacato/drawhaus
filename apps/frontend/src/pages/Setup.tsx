@@ -6,6 +6,7 @@ import { SetupStep1 } from "@/components/setup/SetupStep1";
 import { SetupStep2 } from "@/components/setup/SetupStep2";
 import { SetupStep3 } from "@/components/setup/SetupStep3";
 import { ui } from "@/lib/ui";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function Setup() {
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ export function Setup() {
     <div className="grid min-h-screen place-items-center bg-surface px-4 py-8">
       <section className={`${ui.card} w-full max-w-md space-y-6`}>
         <div className="space-y-4 text-center">
-          <img src="/logo-icon.svg" alt="Drawhaus" className="mx-auto h-10 w-10" />
+          <BrandLogo alt="Drawhaus" className="mx-auto h-10 w-10" />
           <h1 className={ui.h1}>Setup</h1>
           <SetupProgress current={step} />
         </div>

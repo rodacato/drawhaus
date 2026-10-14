@@ -33,7 +33,7 @@ export function CollaborationBadge({
         className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium shadow-sm transition-colors ${
           isHandRaised
             ? "bg-yellow-200 text-yellow-800"
-            : "bg-gray-100 text-gray-600 hover:bg-yellow-100 hover:text-yellow-700"
+            : "bg-selection text-text-secondary hover:bg-yellow-100 hover:text-yellow-700"
         }`}
         title={isHandRaised ? "Bajar mano" : "Levantar mano"}
         type="button"

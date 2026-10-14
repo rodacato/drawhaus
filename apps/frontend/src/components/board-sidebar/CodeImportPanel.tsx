@@ -165,7 +165,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
 
   return (
     <div className="space-y-3">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
         Import from Code
       </h3>
 
@@ -175,8 +175,8 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
           onClick={() => handleFormatChange("mermaid")}
           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition ${
             format === "mermaid"
-              ? "bg-blue-50 text-blue-700"
-              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              ? "bg-selection text-primary"
+              : "bg-selection text-text-muted hover:bg-border"
           }`}
         >
           Mermaid
@@ -185,14 +185,14 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
           onClick={() => handleFormatChange("plantuml")}
           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition ${
             format === "plantuml"
-              ? "bg-blue-50 text-blue-700"
-              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              ? "bg-selection text-primary"
+              : "bg-selection text-text-muted hover:bg-border"
           }`}
         >
           PlantUML
         </button>
         {autoDetected && code.trim() && (
-          <span className="text-[10px] text-gray-400 italic">auto-detected</span>
+          <span className="text-[10px] text-text-muted italic">auto-detected</span>
         )}
       </div>
 
@@ -202,7 +202,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
         onChange={(e) => setCode(e.target.value)}
         placeholder={placeholder}
         spellCheck={false}
-        className="block h-52 w-full resize-y rounded-lg border border-border bg-gray-50 px-3 py-2.5 font-mono text-[13px] leading-relaxed text-text-primary outline-none transition placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/25"
+        className="block h-52 w-full resize-y rounded-lg border border-border bg-selection px-3 py-2.5 font-mono text-[13px] leading-relaxed text-text-primary outline-none transition placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/25"
       />
 
       {/* PlantUML validation feedback (no SVG preview yet) */}
@@ -244,8 +244,8 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
 
       {/* Preview area (Mermaid SVG) */}
       {preview && (
-        <div className="rounded-lg border border-gray-200 bg-white p-3">
-          <div className="text-[10px] font-medium uppercase tracking-wider text-gray-400 mb-2">
+        <div className="rounded-lg border border-border bg-surface-raised p-3">
+          <div className="text-[10px] font-medium uppercase tracking-wider text-text-muted mb-2">
             Preview
           </div>
           <div
@@ -266,12 +266,12 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
       )}
 
       {/* Replace toggle */}
-      <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer select-none">
+      <label className="flex items-center gap-2 text-xs text-text-muted cursor-pointer select-none">
         <input
           type="checkbox"
           checked={replaceAll}
           onChange={(e) => setReplaceAll(e.target.checked)}
-          className="rounded border-gray-300"
+          className="rounded border-border-input"
         />
         <span>Replace existing elements</span>
       </label>

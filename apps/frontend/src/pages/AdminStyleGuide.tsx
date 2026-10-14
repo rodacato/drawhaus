@@ -1,96 +1,101 @@
 import { ui } from "@/lib/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/components/Toast";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const coreColors = [
   {
+    name: "Action",
+    var: "--color-primary",
+    usage: "Buttons, links, focus and active states (solid, never a gradient)",
+  },
+  { name: "Action Hover", var: "--color-primary-hover", usage: "Hover state for Action" },
+  {
+    name: "On Action",
+    var: "--color-on-primary",
+    usage: "Label on Action; dark ink in dark mode",
+  },
+  { name: "Selection", var: "--color-selection", usage: "Selected rows, subtle highlights" },
+  {
     name: "Accent Coral",
     var: "--color-accent-coral",
-    hex: "#E95B2D",
-    usage: "Brand accent, CTAs, hero elements",
+    usage: "Illustration accent; not text or controls",
   },
   {
     name: "Accent Yellow",
     var: "--color-accent-yellow",
-    hex: "#FBBF24",
     usage: "Highlights, callouts (sparingly)",
-  },
-  {
-    name: "Primary Blue",
-    var: "--color-primary",
-    hex: "#0EA5E9",
-    usage: "Interactive: buttons, links, active states",
-  },
-  {
-    name: "Primary Hover",
-    var: "--color-primary-hover",
-    hex: "#0284c7",
-    usage: "Hover state for primary",
   },
   {
     name: "Accent Orange",
     var: "--color-accent-orange",
-    hex: "#F97316",
     usage: "Badges, tags, attention elements",
   },
-  { name: "Dark Base", var: "--color-surface-dark", hex: "#111827", usage: "Dark mode background" },
-  {
-    name: "Light Base",
-    var: "--color-surface",
-    hex: "#F8FAF3",
-    usage: "Light mode background (warm off-white)",
-  },
+  { name: "Dark Base", var: "--color-surface-dark", usage: "Tooltips and dark overlays" },
 ];
 
 const semanticColors = [
-  { name: "Success", var: "--color-success", hex: "#10B981" },
-  { name: "Warning", var: "--color-warning", hex: "#F59E0B" },
-  { name: "Error", var: "--color-error", hex: "#EF4444" },
-  { name: "Info", var: "--color-info", hex: "#3B87F6" },
-  { name: "Danger", var: "--color-danger", hex: "#dc2626" },
+  { name: "Success", var: "--color-success" },
+  { name: "Warning", var: "--color-warning" },
+  { name: "Error", var: "--color-error" },
+  { name: "Info", var: "--color-info" },
+  { name: "Danger", var: "--color-danger" },
 ];
 
 const surfaceColors = [
-  { name: "Surface", var: "--color-surface", hex: "#F8FAF3" },
-  { name: "Surface Raised", var: "--color-surface-raised", hex: "#ffffff" },
-  { name: "Surface Dark", var: "--color-surface-dark", hex: "#111827" },
-  { name: "Border", var: "--color-border", hex: "#e2e8f0" },
+  { name: "Surface", var: "--color-surface" },
+  { name: "Surface Raised", var: "--color-surface-raised" },
+  { name: "Surface Dark", var: "--color-surface-dark" },
+  { name: "Border", var: "--color-border" },
+  { name: "Input Border", var: "--color-border-input" },
 ];
 
 const textColors = [
-  { name: "Text Primary", var: "--color-text-primary", hex: "#0f172a" },
-  { name: "Text Secondary", var: "--color-text-secondary", hex: "#475569" },
-  { name: "Text Muted", var: "--color-text-muted", hex: "#94a3b8" },
+  { name: "Text Primary", var: "--color-text-primary" },
+  { name: "Text Secondary", var: "--color-text-secondary" },
+  { name: "Text Muted", var: "--color-text-muted" },
 ];
 
 const logos: { label: string; src: string; bg: "light" | "dark" }[] = [
-  { label: "Icon (light bg)", src: "/branding/icon_light_bg.svg", bg: "light" },
-  { label: "Icon (dark bg)", src: "/branding/icon_dark_bg.svg", bg: "dark" },
-  { label: "Horizontal (light)", src: "/branding/logo_horizontal_light.svg", bg: "light" },
-  { label: "Horizontal (dark)", src: "/branding/logo_horizontal_dark.svg", bg: "dark" },
-  { label: "Stacked (light)", src: "/branding/logo_stacked_light.svg", bg: "light" },
-  { label: "Stacked (dark)", src: "/branding/logo_stacked_dark.svg", bg: "dark" },
-  { label: "Wordmark (light)", src: "/branding/wordmark_only_light.svg", bg: "light" },
-  { label: "Wordmark (dark)", src: "/branding/wordmark_only_dark.svg", bg: "dark" },
+  { label: "Mark (light)", src: "/brand/mark-light.svg", bg: "light" },
+  { label: "Mark (dark)", src: "/brand/mark-dark.svg", bg: "dark" },
+  { label: "Horizontal (light)", src: "/brand/logo-horizontal-light.svg", bg: "light" },
+  { label: "Horizontal (dark)", src: "/brand/logo-horizontal-dark.svg", bg: "dark" },
+  { label: "Stacked (light)", src: "/brand/logo-stacked-light.svg", bg: "light" },
+  { label: "Stacked (dark)", src: "/brand/logo-stacked-dark.svg", bg: "dark" },
+  { label: "Wordmark (light)", src: "/brand/wordmark-light.svg", bg: "light" },
+  { label: "Wordmark (dark)", src: "/brand/wordmark-dark.svg", bg: "dark" },
+  { label: "Monochrome (light)", src: "/brand/mark-mono-light.svg", bg: "light" },
+  { label: "Monochrome (dark)", src: "/brand/mark-mono-dark.svg", bg: "dark" },
+  { label: "Solid blue", src: "/brand/mark-solid.svg", bg: "light" },
 ];
+
+function useCssVar(name: string): string {
+  const { theme } = useTheme();
+  const [value, setValue] = useState("");
+  useEffect(() => {
+    setValue(getComputedStyle(document.documentElement).getPropertyValue(name).trim());
+  }, [name, theme]);
+  return value;
+}
 
 function ColorSwatch({
   name,
-  hex,
   cssVar,
   usage,
 }: {
   readonly name: string;
-  readonly hex: string;
   readonly cssVar: string;
   readonly usage?: string;
 }) {
+  const hex = useCssVar(cssVar);
   return (
     <div className="flex flex-col gap-2">
       <div
         className="h-20 w-full rounded-xl border border-border shadow-sm"
-        style={{ backgroundColor: hex }}
+        style={{ backgroundColor: `var(${cssVar})` }}
       />
       <div>
         <p className="text-sm font-medium text-text-primary">{name}</p>
@@ -99,6 +104,24 @@ function ColorSwatch({
           {cssVar}
         </p>
         {usage && <p className="mt-0.5 text-xs text-text-secondary">{usage}</p>}
+      </div>
+    </div>
+  );
+}
+
+function TextSample({ name, cssVar }: { readonly name: string; readonly cssVar: string }) {
+  const hex = useCssVar(cssVar);
+  return (
+    <div className="flex items-center gap-3">
+      <div
+        className="h-10 w-10 shrink-0 rounded-lg border border-border"
+        style={{ backgroundColor: `var(${cssVar})` }}
+      />
+      <div>
+        <p className="text-sm font-medium" style={{ color: `var(${cssVar})` }}>
+          {name}
+        </p>
+        <p className="font-[family-name:var(--font-family-mono)] text-xs text-text-muted">{hex}</p>
       </div>
     </div>
   );
@@ -141,7 +164,7 @@ export function AdminStyleGuide() {
     <div className="space-y-8">
       <div>
         <h1 className={ui.h1}>Style Guide</h1>
-        <p className={ui.subtitle}>Brand colors, typography, logos, and UI components.</p>
+        <p className={ui.subtitle}>Ocean Ink colors, typography, logos, and UI components.</p>
       </div>
 
       {/* Table of Contents */}
@@ -369,7 +392,7 @@ export function AdminStyleGuide() {
       <Section id="brand" title="Brand" description="Core identity and messaging.">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <img src="/logo-icon.svg" alt="Drawhaus" className="h-10 w-10" />
+            <BrandLogo alt="Drawhaus" className="h-10 w-10" />
             <span className="font-[family-name:var(--font-family-heading)] text-2xl font-semibold tracking-tight">
               Drawhaus
             </span>
@@ -435,12 +458,12 @@ export function AdminStyleGuide() {
         <div className="mt-4 rounded-lg bg-surface p-4">
           <SectionLabel>Usage guidelines</SectionLabel>
           <div className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-text-secondary">
-            <p>Landing page hero &rarr; Horizontal logo</p>
-            <p>App header / navbar &rarr; Horizontal (compact)</p>
-            <p>GitHub / CLI / app icon &rarr; Icon</p>
-            <p>Favicon &rarr; 32x32 PNG</p>
-            <p>Social media avatars &rarr; Icon monochrome</p>
-            <p>Email / documents &rarr; Stacked logo</p>
+            <p>Headers, README, documents &rarr; Horizontal logo</p>
+            <p>App navigation, compact signatures &rarr; Mark</p>
+            <p>Square covers &rarr; Stacked logo</p>
+            <p>Mark already nearby &rarr; Wordmark</p>
+            <p>One-color print &rarr; Monochrome; gradient unsuitable &rarr; Solid blue</p>
+            <p>Gradient stays on the identity; controls use solid colors</p>
           </div>
         </div>
       </Section>
@@ -453,7 +476,7 @@ export function AdminStyleGuide() {
       >
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {coreColors.map((c) => (
-            <ColorSwatch key={c.var} name={c.name} hex={c.hex} cssVar={c.var} usage={c.usage} />
+            <ColorSwatch key={c.var} name={c.name} cssVar={c.var} usage={c.usage} />
           ))}
         </div>
       </Section>
@@ -466,7 +489,7 @@ export function AdminStyleGuide() {
       >
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {semanticColors.map((c) => (
-            <ColorSwatch key={c.var} name={c.name} hex={c.hex} cssVar={c.var} />
+            <ColorSwatch key={c.var} name={c.name} cssVar={c.var} />
           ))}
         </div>
       </Section>
@@ -475,25 +498,12 @@ export function AdminStyleGuide() {
       <Section id="surfaces-text" title="Surfaces & Text">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {surfaceColors.map((c) => (
-            <ColorSwatch key={c.var} name={c.name} hex={c.hex} cssVar={c.var} />
+            <ColorSwatch key={c.var} name={c.name} cssVar={c.var} />
           ))}
         </div>
         <div className="mt-6 grid grid-cols-3 gap-4">
           {textColors.map((c) => (
-            <div key={c.var} className="flex items-center gap-3">
-              <div
-                className="h-10 w-10 shrink-0 rounded-lg border border-border"
-                style={{ backgroundColor: c.hex }}
-              />
-              <div>
-                <p className="text-sm font-medium" style={{ color: c.hex }}>
-                  {c.name}
-                </p>
-                <p className="font-[family-name:var(--font-family-mono)] text-xs text-text-muted">
-                  {c.hex}
-                </p>
-              </div>
-            </div>
+            <TextSample key={c.var} name={c.name} cssVar={c.var} />
           ))}
         </div>
       </Section>
@@ -610,7 +620,7 @@ export function AdminStyleGuide() {
                   />
                 </svg>
               </button>
-              <button className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-sm font-bold text-white shadow-xl shadow-primary/25 transition-all hover:bg-primary/90">
+              <button className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-sm font-bold text-on-primary shadow-xl shadow-primary/25 transition-all hover:bg-primary/90">
                 Self-host now
               </button>
               <button className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface-raised px-8 py-4 text-sm font-bold text-text-primary transition-all hover:bg-surface">
@@ -660,7 +670,7 @@ export function AdminStyleGuide() {
                   />
                 </svg>
               </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
+              <button className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-on-primary">
                 <svg
                   className="h-5 w-5"
                   fill="none"
@@ -684,10 +694,10 @@ export function AdminStyleGuide() {
               Used in danger zones and destructive confirmations.
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              <button className="inline-flex items-center justify-center rounded-lg border border-error px-6 py-2 text-sm font-semibold text-error transition-all hover:bg-error hover:text-white">
+              <button className="inline-flex items-center justify-center rounded-lg border border-error px-6 py-2 text-sm font-semibold text-error transition-all hover:bg-error hover:text-on-danger">
                 Delete Account
               </button>
-              <button className="inline-flex items-center justify-center rounded-lg bg-error/10 px-3 py-1.5 text-xs font-bold text-error transition-all hover:bg-error hover:text-white">
+              <button className="inline-flex items-center justify-center rounded-lg bg-error/10 px-3 py-1.5 text-xs font-bold text-error transition-all hover:bg-error hover:text-on-danger">
                 Revoke
               </button>
             </div>
@@ -976,7 +986,7 @@ export function AdminStyleGuide() {
               <button
                 type="button"
                 onClick={() => toast("Failed to delete diagram.", "error")}
-                className={`${ui.btn} bg-error text-white hover:bg-error/80`}
+                className={`${ui.btn} bg-error text-on-danger hover:bg-error/80`}
               >
                 Error Toast
               </button>
@@ -1092,7 +1102,7 @@ export function AdminStyleGuide() {
                   });
                   toast(ok ? "Confirmed!" : "Cancelled", ok ? "success" : "info");
                 }}
-                className={`${ui.btn} bg-error text-white hover:bg-error/80`}
+                className={`${ui.btn} bg-error text-on-danger hover:bg-error/80`}
               >
                 Danger Confirm
               </button>
@@ -1151,7 +1161,7 @@ export function AdminStyleGuide() {
                   </button>
                   <button
                     type="button"
-                    className="inline-flex h-10 items-center justify-center rounded-lg bg-error px-4 text-sm font-semibold text-white shadow-sm"
+                    className="inline-flex h-10 items-center justify-center rounded-lg bg-error px-4 text-sm font-semibold text-on-danger shadow-sm"
                   >
                     Delete Workspace
                   </button>
@@ -1172,7 +1182,7 @@ export function AdminStyleGuide() {
                   </button>
                   <button
                     type="button"
-                    className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white shadow-sm"
+                    className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary shadow-sm"
                   >
                     Publish
                   </button>
@@ -1376,7 +1386,7 @@ export function AdminStyleGuide() {
                     Once you delete your account, there is no going back.
                   </p>
                 </div>
-                <button className="shrink-0 rounded-lg border border-error px-6 py-2 text-sm font-semibold text-error transition-all hover:bg-error hover:text-white">
+                <button className="shrink-0 rounded-lg border border-error px-6 py-2 text-sm font-semibold text-error transition-all hover:bg-error hover:text-on-danger">
                   Delete Account
                 </button>
               </div>
@@ -2286,7 +2296,7 @@ export function AdminStyleGuide() {
         <div className="space-y-4">
           <div className="overflow-hidden rounded-xl">
             <div className="flex h-14 items-center gap-3 bg-surface-dark px-6">
-              <img src="/logo-icon.svg" alt="" className="h-7 w-7" />
+              <img src="/brand/mark-dark.svg" alt="" className="h-7 w-7" />
               <span className="font-[family-name:var(--font-family-heading)] text-sm font-semibold text-white">
                 Drawhaus
               </span>
@@ -2308,9 +2318,9 @@ export function AdminStyleGuide() {
             </div>
             <div
               className="flex h-24 items-end rounded-xl p-3"
-              style={{ backgroundColor: "#0EA5E9" }}
+              style={{ backgroundColor: "var(--color-primary)" }}
             >
-              <span className="text-xs font-medium text-white">Blue</span>
+              <span className="text-xs font-medium text-on-primary">Blue</span>
             </div>
             <div
               className="flex h-24 items-end rounded-xl p-3"

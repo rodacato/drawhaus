@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import type { Workspace } from "@/api/workspaces";
 import { workspacesApi } from "@/api/workspaces";
+import { BrandLogo } from "@/components/BrandLogo";
 
 type User = { name?: string; email?: string };
 
@@ -47,7 +48,7 @@ export function DashboardSidebar({
       <div className="p-6">
         {/* Brand */}
         <Link to="/dashboard" className="mb-10 flex items-center gap-3">
-          <img src="/logo-icon.svg" alt="" className="h-10 w-10 shrink-0" />
+          <BrandLogo alt="" className="h-10 w-10 shrink-0" />
           <div>
             <h1 className="font-[family-name:var(--font-family-heading)] text-xl font-bold tracking-tight text-text-primary">
               Drawhaus

@@ -301,10 +301,10 @@ export default function BoardEditor({
         <div className="pointer-events-none absolute left-2 top-3 z-20 flex flex-col gap-1">
           <div className="flex h-10 items-stretch gap-3">
             {/* Title */}
-            <div className="pointer-events-auto flex min-w-[250px] items-center rounded-lg bg-white px-4 shadow-sm">
+            <div className="pointer-events-auto flex min-w-[250px] items-center rounded-lg bg-surface-raised px-4 shadow-sm">
               {editingTitle ? (
                 <input
-                  className="w-full border-b border-blue-400 bg-transparent text-lg font-medium text-[#1b1b1f] outline-none"
+                  className="w-full border-b border-primary bg-transparent text-lg font-medium text-text-primary outline-none"
                   value={titleDraft}
                   onChange={(e) => setTitleDraft(e.target.value)}
                   onBlur={saveTitle}
@@ -316,7 +316,7 @@ export default function BoardEditor({
                 />
               ) : (
                 <button
-                  className="text-left text-lg font-medium text-[#1b1b1f] hover:text-blue-600 transition-colors"
+                  className="text-left text-lg font-medium text-text-primary hover:text-blue-600 transition-colors"
                   onClick={startEditingTitle}
                   title={canEdit ? "Click to rename" : undefined}
                 >

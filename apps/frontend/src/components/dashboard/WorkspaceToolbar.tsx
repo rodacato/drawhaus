@@ -30,7 +30,7 @@ export function WorkspaceToolbar({
   return (
     <div className="mb-8 flex items-center gap-2 border-b border-border pb-4">
       <button
-        className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white shadow-sm shadow-primary/20 transition hover:bg-primary-hover"
+        className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-on-primary shadow-sm shadow-primary/20 transition hover:bg-primary-hover"
         onClick={onCreateDiagram}
         disabled={actionPending}
         type="button"

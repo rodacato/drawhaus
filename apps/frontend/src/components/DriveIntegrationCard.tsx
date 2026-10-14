@@ -69,7 +69,7 @@ export function DriveIntegrationCard() {
   return (
     <div className={ui.card}>
       <div className="flex items-center gap-3 mb-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-selection">
           <svg width="20" height="20" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
             <path d="M6.6 66.85L14.25 78h58.8l7.65-11.15z" fill="#2684FC" />
             <path d="M29.05 0L6.6 66.85l7.65 11.15 22.45-38.8z" fill="#0066DA" />
@@ -145,7 +145,7 @@ export function DriveIntegrationCard() {
               onClick={handleToggleBackup}
               disabled={toggling}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                status.autoBackupEnabled ? "bg-primary" : "bg-gray-300"
+                status.autoBackupEnabled ? "bg-primary" : "bg-border-input"
               }`}
             >
               <span

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function Privacy() {
   return (
@@ -6,7 +7,7 @@ export function Privacy() {
       <nav className="border-b border-border/50 bg-surface/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-3xl items-center px-6">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/logo-icon.svg" className="h-7 w-7" alt="Drawhaus" />
+            <BrandLogo alt="Drawhaus" className="h-7 w-7" />
             <span className="font-sora text-lg font-semibold tracking-tight">Drawhaus</span>
           </Link>
         </div>

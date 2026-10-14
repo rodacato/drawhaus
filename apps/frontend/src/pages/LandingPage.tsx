@@ -1,6 +1,7 @@
 import { useEffect, lazy, Suspense } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const AnimatedBackground = lazy(() =>
   import("@/components/AnimatedBackground").then((m) => ({ default: m.AnimatedBackground })),
@@ -289,7 +290,7 @@ export function LandingPage() {
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-surface/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <img src="/logo-icon.svg" className="h-9 w-9" alt="Drawhaus" />
+            <BrandLogo alt="Drawhaus" className="h-9 w-9" />
             <span className="font-sora text-xl font-semibold tracking-tight">Drawhaus</span>
           </div>
 
@@ -322,7 +323,7 @@ export function LandingPage() {
             </Link>
             <Link
               to="/register"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-on-primary transition hover:opacity-90"
             >
               Get Started
             </Link>
@@ -357,7 +358,7 @@ export function LandingPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 to="/self-host"
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:opacity-90"
               >
                 Deploy Your Own
                 <svg
@@ -581,7 +582,7 @@ export function LandingPage() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               to="/self-host"
-              className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+              className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:opacity-90"
             >
               Self-Host Guide
             </Link>
@@ -601,7 +602,7 @@ export function LandingPage() {
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 py-10 sm:flex-row">
           <div className="flex items-center gap-2">
-            <img src="/logo-icon.svg" className="h-6 w-6" alt="Drawhaus" />
+            <BrandLogo alt="Drawhaus" className="h-6 w-6" />
             <span className="font-sora text-sm font-semibold">Drawhaus</span>
           </div>
 

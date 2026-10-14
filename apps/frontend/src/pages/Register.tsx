@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
 import { getErrorMessage } from "@/lib/api-error";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -90,7 +91,7 @@ export function Register() {
 
       <section className={`${ui.card} relative w-full max-w-110 space-y-6`}>
         <div className="space-y-2 text-center">
-          <img src="/logo-icon.svg" alt="Drawhaus" className="mx-auto h-10 w-10" />
+          <BrandLogo alt="Drawhaus" className="mx-auto h-10 w-10" />
           <h1 className={ui.h1}>{isInviteMode ? "Accept Invitation" : "Get started"}</h1>
           <p className="text-sm text-text-secondary">
             {isInviteMode
@@ -119,7 +120,7 @@ export function Register() {
                 >
                   Log in
                 </Link>
-                <span className="flex-1 rounded-md bg-primary px-3 py-1.5 text-center text-sm font-medium text-white">
+                <span className="flex-1 rounded-md bg-primary px-3 py-1.5 text-center text-sm font-medium text-on-primary">
                   Create account
                 </span>
               </div>

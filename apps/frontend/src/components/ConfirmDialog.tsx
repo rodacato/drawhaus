@@ -121,10 +121,10 @@ export function ConfirmProvider({ children }: { readonly children: React.ReactNo
                   ref={confirmBtnRef}
                   type="button"
                   onClick={handleConfirm}
-                  className={`inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold text-white shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                  className={`inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
                     isDanger
-                      ? "bg-error hover:bg-error/80 focus-visible:ring-error/50"
-                      : "bg-primary hover:bg-primary-hover focus-visible:ring-primary/50"
+                      ? "bg-error text-on-danger hover:bg-error/80 focus-visible:ring-error/50"
+                      : "bg-primary text-on-primary hover:bg-primary-hover focus-visible:ring-primary/50"
                   }`}
                 >
                   {state.confirmLabel ?? "Confirm"}

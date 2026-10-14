@@ -120,7 +120,7 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
           </div>
           <a
             href={`${API_URL}/api/auth/google/drive`}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white transition hover:bg-primary-hover"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-on-primary transition hover:bg-primary-hover"
           >
             <svg
               width="14"
@@ -202,7 +202,7 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
                 type="button"
                 onClick={() => importFile(file)}
                 disabled={importing !== null}
-                className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition hover:bg-primary-hover disabled:opacity-50"
+                className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
               >
                 {importing === file.id ? "Importing..." : "Import"}
               </button>

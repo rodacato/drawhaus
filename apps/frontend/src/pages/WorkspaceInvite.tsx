@@ -65,7 +65,7 @@ export function WorkspaceInvite() {
             <p className="mb-6 text-text-secondary">{error}</p>
             <button
               onClick={() => navigate("/dashboard")}
-              className="rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-white"
+              className="rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-on-primary"
               type="button"
             >
               Go to Dashboard
@@ -87,7 +87,7 @@ export function WorkspaceInvite() {
             <button
               onClick={handleAccept}
               disabled={accepting}
-              className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-hover"
+              className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-on-primary transition hover:bg-primary-hover"
               type="button"
             >
               {accepting ? "Accepting..." : acceptLabel}
