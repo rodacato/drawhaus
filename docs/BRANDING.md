@@ -34,3 +34,13 @@ Use the guide's integration example to map shared UI classes to the brand roles.
 Check sign-in, dashboard, editor shell and sharing in both themes before adopting globally. Keep Excalidraw content, collaborator colors, permissions and diagram link behavior independent of the presentation palette. The guide's sharing samples are explicitly illustrative, not implemented replacement dialogs.
 
 The selected kit replaces the former modular identity on the marketing site and README. [Logo exploration](branding/proposals/README.md) and [color studies](branding/COLOR_DIRECTIONS.md) remain archived context, not additional token sources.
+
+## Export a portable kit
+
+```sh
+node site/export-brand-kit.mjs /path/to/a/new/brand-kit
+```
+
+This creates a complete site, selected assets/fonts/licenses, editable inputs, English instructions, a file-purpose index, checksums and a matching ZIP. Node and Python 3 are required. The exporter verifies the source build and refuses a nonempty destination. Its [handoff README template](branding/HANDOFF.template.md) explains app adoption, local preview, Pages and social use.
+
+The generated folder ignores its contents in Git to avoid duplicating canonical files. Keep source changes on the branding branch and regenerate a fresh snapshot for each handoff.
