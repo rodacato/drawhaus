@@ -166,7 +166,8 @@
                       "fill": "$text-secondary",
                       "content": "Oct 14, 2026, 09:30 PM",
                       "fontFamily": "$font-sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -262,7 +263,8 @@
                           "fill": "$text-muted",
                           "content": "Diagram Workspace",
                           "fontFamily": "$font-sans",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -298,7 +300,8 @@
                       "fill": "$text-secondary",
                       "content": "Recent",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -332,7 +335,8 @@
                       "fill": "$text-secondary",
                       "content": "Starred",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -366,7 +370,8 @@
                       "fill": "$text-secondary",
                       "content": "My Templates",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -388,7 +393,7 @@
                       "fill": "$text-muted",
                       "content": "WORKSPACES",
                       "fontFamily": "$font-sans",
-                      "fontSize": 10,
+                      "fontSize": 12,
                       "fontWeight": "700",
                       "letterSpacing": 1
                     }
@@ -426,7 +431,8 @@
                           "fill": "$primary",
                           "content": "P",
                           "fontFamily": "$font-sans",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -540,7 +546,8 @@
                       "fill": "$text-muted",
                       "content": "admin@drawhaus.test",
                       "fontFamily": "$font-sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -660,7 +667,8 @@
                       "fill": "$text-muted",
                       "content": "Search diagrams, folders, or contributors...",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -705,7 +713,8 @@
                       "fill": "$text-secondary",
                       "content": "Personal workspace",
                       "fontFamily": "$font-sans",
-                      "fontSize": 16
+                      "fontSize": 16,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -768,7 +777,7 @@
                           "content": "New Diagram",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "700"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -805,7 +814,7 @@
                           "content": "New Folder",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -842,7 +851,7 @@
                           "content": "Import",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -879,7 +888,7 @@
                           "content": "Drive",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -1294,7 +1303,8 @@
                           "fill": "$text-muted",
                           "content": "Diagram Workspace",
                           "fontFamily": "$font-sans",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -1330,7 +1340,8 @@
                       "fill": "$text-secondary",
                       "content": "Recent",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1364,7 +1375,8 @@
                       "fill": "$text-secondary",
                       "content": "Starred",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1398,7 +1410,8 @@
                       "fill": "$text-secondary",
                       "content": "My Templates",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1420,7 +1433,7 @@
                       "fill": "$text-muted",
                       "content": "WORKSPACES",
                       "fontFamily": "$font-sans",
-                      "fontSize": 10,
+                      "fontSize": 12,
                       "fontWeight": "700",
                       "letterSpacing": 1
                     }
@@ -1458,7 +1471,8 @@
                           "fill": "$primary",
                           "content": "P",
                           "fontFamily": "$font-sans",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -1572,7 +1586,8 @@
                       "fill": "$text-muted",
                       "content": "admin@drawhaus.test",
                       "fontFamily": "$font-sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1692,7 +1707,8 @@
                       "fill": "$text-muted",
                       "content": "Search diagrams, folders, or contributors...",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1737,7 +1753,8 @@
                       "fill": "$text-secondary",
                       "content": "Personal workspace",
                       "fontFamily": "$font-sans",
-                      "fontSize": 16
+                      "fontSize": 16,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1800,7 +1817,7 @@
                           "content": "New Diagram",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "700"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -1837,7 +1854,7 @@
                           "content": "New Folder",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -1874,7 +1891,7 @@
                           "content": "Import",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -1911,7 +1928,7 @@
                           "content": "Drive",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -2113,7 +2130,8 @@
                           "fill": "$text-muted",
                           "content": "Diagram Workspace",
                           "fontFamily": "$font-sans",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -2185,7 +2203,8 @@
                       "fill": "$text-secondary",
                       "content": "Starred",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2219,7 +2238,8 @@
                       "fill": "$text-secondary",
                       "content": "My Templates",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2241,7 +2261,7 @@
                       "fill": "$text-muted",
                       "content": "WORKSPACES",
                       "fontFamily": "$font-sans",
-                      "fontSize": 10,
+                      "fontSize": 12,
                       "fontWeight": "700",
                       "letterSpacing": 1
                     }
@@ -2279,7 +2299,8 @@
                           "fill": "$primary",
                           "content": "P",
                           "fontFamily": "$font-sans",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -2290,7 +2311,8 @@
                       "fill": "$text-secondary",
                       "content": "Personal",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2392,7 +2414,8 @@
                       "fill": "$text-muted",
                       "content": "admin@drawhaus.test",
                       "fontFamily": "$font-sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2512,7 +2535,8 @@
                       "fill": "$text-muted",
                       "content": "Search diagrams, folders, or contributors...",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2557,7 +2581,8 @@
                       "fill": "$text-secondary",
                       "content": "Recently edited diagrams",
                       "fontFamily": "$font-sans",
-                      "fontSize": 16
+                      "fontSize": 16,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2666,7 +2691,8 @@
                           "fill": "$text-muted",
                           "content": "Diagram Workspace",
                           "fontFamily": "$font-sans",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -2702,7 +2728,8 @@
                       "fill": "$text-secondary",
                       "content": "Recent",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2736,7 +2763,8 @@
                       "fill": "$text-secondary",
                       "content": "Starred",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2770,7 +2798,8 @@
                       "fill": "$text-secondary",
                       "content": "My Templates",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2792,7 +2821,7 @@
                       "fill": "$text-muted",
                       "content": "WORKSPACES",
                       "fontFamily": "$font-sans",
-                      "fontSize": 10,
+                      "fontSize": 12,
                       "fontWeight": "700",
                       "letterSpacing": 1
                     }
@@ -2830,7 +2859,8 @@
                           "fill": "$primary",
                           "content": "P",
                           "fontFamily": "$font-sans",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -2944,7 +2974,8 @@
                       "fill": "$text-muted",
                       "content": "admin@drawhaus.test",
                       "fontFamily": "$font-sans",
-                      "fontSize": 12
+                      "fontSize": 12,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -3064,7 +3095,8 @@
                       "fill": "$text-muted",
                       "content": "Search diagrams, folders, or contributors...",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -3109,7 +3141,8 @@
                       "fill": "$text-secondary",
                       "content": "Personal workspace",
                       "fontFamily": "$font-sans",
-                      "fontSize": 16
+                      "fontSize": 16,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -3172,7 +3205,7 @@
                           "content": "New Diagram",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "700"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -3209,7 +3242,7 @@
                           "content": "New Folder",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -3246,7 +3279,7 @@
                           "content": "Import",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -3283,7 +3316,7 @@
                           "content": "Drive",
                           "fontFamily": "$font-sans",
                           "fontSize": 14,
-                          "fontWeight": "600"
+                          "fontWeight": "500"
                         }
                       ]
                     },
@@ -4065,7 +4098,8 @@
           "content": "Find, open and organise diagrams across workspaces: recent, starred, templates, and per-workspace folders.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -4089,7 +4123,8 @@
           "content": "/dashboard after sign-in (AuthLayout redirects signed-in users here). Workspace settings, Share and template picker open as overlays from this page.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -4113,7 +4148,8 @@
           "content": "Workspace with folders · Workspace without folders · Recent (empty) · Card actions menu. Base frame 1280×800, light theme. The page scrolls; the frame is the first viewport.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -4137,7 +4173,8 @@
           "content": "Folder sections and the “New Diagram” card exist only when the workspace has folders (WorkspaceView); without folders GeneralView renders the plain grid and the empty message. “New Workspace” is hidden at 5 non-personal workspaces. Recent = latest 10 by update time. Toolbar shows only in workspace view.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -4161,7 +4198,8 @@
           "content": "pages/Dashboard.tsx, components/dashboard/*, components/DiagramCard.tsx, lib/hooks/useDashboardData.ts. Sample data from db:seed (Admin User; Architecture Overview, Sprint Planning Board, User Flow Diagram); “Planning” and “Untitled” are sample data. Card thumbnails: the no-thumbnail state only.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -4185,7 +4223,8 @@
           "content": "Search results, Starred and My Templates views, list view, loading, workspace settings drawer, template picker, share modal (Share flow), dark theme. Dashed borders (New Diagram card, no-thumbnail) are drawn solid: Pencil has no dash. Menu icons are feather equivalents; the email is clipped like the code's truncate.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -4209,7 +4248,8 @@
           "content": "D7 toolbar buttons are hand-rolled, disabled has no style · D8 DiagramCard uses raw palette colours and fails AA on Delete · D9 hover-only controls unreachable by keyboard · D10 heading scale ad hoc · D16 micro type 9–12px · D18 “Invalid Date” fallback.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -4233,7 +4273,8 @@
           "content": "See the Log frame below this band.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         }
       ]
     },
@@ -4273,7 +4314,8 @@
           "width": "fill_container",
           "content": "2026-10-14 · Drawn from the code at master 3d69c7a on kit 0.1.0: 4 screens. Findings D7–D10, D16, D18 logged.",
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         }
       ]
     }
