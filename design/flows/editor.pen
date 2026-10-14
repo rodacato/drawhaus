@@ -137,7 +137,7 @@
               "fill": "$text-secondary",
               "content": "Saved",
               "fontFamily": "$font-sans",
-              "fontSize": 10,
+              "fontSize": 12,
               "fontWeight": "500"
             }
           ]
@@ -435,7 +435,8 @@
                   "fill": "$text-muted",
                   "content": "Third-party editor UI and canvas content are not mirrored here. The canvas stays light in both themes (D13).",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -536,16 +537,17 @@
                           "fill": "$text-primary",
                           "content": "✋",
                           "fontFamily": "$font-sans",
-                          "fontSize": 10
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
                           "id": "a3D8m2",
                           "name": "Label",
                           "fill": "$text-secondary",
-                          "content": "Mano",
+                          "content": "Hand",
                           "fontFamily": "$font-sans",
-                          "fontSize": 10,
+                          "fontSize": 12,
                           "fontWeight": "500"
                         }
                       ]
@@ -914,7 +916,8 @@
                           "fill": "$text-muted",
                           "content": "You",
                           "fontFamily": "$font-sans",
-                          "fontSize": 10
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -927,7 +930,8 @@
                   "fill": "$text-muted",
                   "content": "No one else here yet",
                   "fontFamily": "$font-sans",
-                  "fontSize": 12
+                  "fontSize": 12,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -1125,7 +1129,8 @@
                   "fill": "$text-muted",
                   "content": "Third-party editor UI and canvas content are not mirrored here. The canvas stays light in both themes (D13).",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -1226,16 +1231,17 @@
                           "fill": "$text-primary",
                           "content": "✋",
                           "fontFamily": "$font-sans",
-                          "fontSize": 10
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
                           "id": "A8io9",
                           "name": "Label",
                           "fill": "$text-secondary",
-                          "content": "Mano",
+                          "content": "Hand",
                           "fontFamily": "$font-sans",
-                          "fontSize": 10,
+                          "fontSize": 12,
                           "fontWeight": "500"
                         }
                       ]
@@ -1539,7 +1545,8 @@
                   "fill": "$text-muted",
                   "content": "Third-party editor UI and canvas content are not mirrored here. The canvas stays light in both themes (D13).",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -1624,7 +1631,7 @@
                           "fill": "$pill-amber-fg",
                           "content": "Reconnecting...",
                           "fontFamily": "$font-sans",
-                          "fontSize": 10,
+                          "fontSize": 12,
                           "fontWeight": "500"
                         }
                       ]
@@ -1681,16 +1688,17 @@
                           "fill": "$text-primary",
                           "content": "✋",
                           "fontFamily": "$font-sans",
-                          "fontSize": 10
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
                           "id": "Il9PM",
                           "name": "Label",
                           "fill": "$text-secondary",
-                          "content": "Mano",
+                          "content": "Hand",
                           "fontFamily": "$font-sans",
-                          "fontSize": 10,
+                          "fontSize": 12,
                           "fontWeight": "500"
                         }
                       ]
@@ -1920,7 +1928,8 @@
                   "fill": "$text-muted",
                   "content": "Third-party editor UI and canvas content are not mirrored here. The canvas stays light in both themes (D13).",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2284,7 +2293,8 @@
                   "fill": "$text-muted",
                   "content": "Third-party editor UI and canvas content are not mirrored here. The canvas stays light in both themes (D13).",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2385,16 +2395,17 @@
                           "fill": "$text-primary",
                           "content": "✋",
                           "fontFamily": "$font-sans",
-                          "fontSize": 10
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
                           "id": "VwaaZ",
                           "name": "Label",
                           "fill": "$text-secondary",
-                          "content": "Mano",
+                          "content": "Hand",
                           "fontFamily": "$font-sans",
-                          "fontSize": 10,
+                          "fontSize": 12,
                           "fontWeight": "500"
                         }
                       ]
@@ -2460,7 +2471,8 @@
                   "width": "fill_container",
                   "content": "Are you sure you want to go back to the Dashboard?",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "frame",
@@ -2587,7 +2599,8 @@
           "content": "Draw and edit a diagram with others in real time: the Excalidraw canvas plus the Drawhaus shell around it (icon bar, drawer panels, floating status).",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -2611,7 +2624,8 @@
           "content": "/board/:id from the dashboard card or after creating a diagram. Guests arrive through /share/:token (Share flow). The logo button leaves directly, and asks first only while changes are pending or saving; the Settings drawer's Dashboard button always asks (the dialog drawn here).",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -2635,7 +2649,8 @@
           "content": "Editing (owner/editor) · Share panel open · Reconnecting · View only (viewer) · Leave dialog. Base frame 1280×800, light theme.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -2659,7 +2674,8 @@
           "content": "Create and history tools (Import from Code, Save as Template, Version History) need edit permission; Export, Comments and Share are always there. The status pill and the raise-hand control show only for editors. The connection badge is hidden while connected. Saved state follows idle/pending/saving/saved/error.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -2680,10 +2696,11 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "components/BoardEditor.tsx, BoardSidebar.tsx, board-sidebar/SharePanel.tsx and SidebarButton.tsx, ConnectionBadge.tsx, CollaborationBadge.tsx, lib/save-state.ts. Spanish strings (“Mano”, tooltips) are the code's, kept as is (D11).",
+          "content": "components/BoardEditor.tsx, BoardSidebar.tsx, board-sidebar/SharePanel.tsx and SidebarButton.tsx, ConnectionBadge.tsx, CollaborationBadge.tsx, lib/save-state.ts. UI copy is English now (“Hand”, “Lower”, tooltips) and the micro type is 12 px (D11, D16).",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -2707,7 +2724,8 @@
           "content": "The canvas content, Excalidraw's own toolbar and menus (third-party), Comments panel, Export, Import from Code, Save as Template, Version History and Settings drawers, offline-recovery dialog, following banner, saving and error pills (label swaps), dark theme. Icon-bar icons are feather equivalents of the app's custom SVGs. Pills use flow-local pill-* tokens that mirror the raw Tailwind colours the code uses (D8, D15).",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -2731,7 +2749,8 @@
           "content": "D11 Spanish strings in an English UI · D13 Excalidraw never gets the theme · D15 save pill uses its own palette · D16 10 px pills · D19 the share panel serves a stale cached link · D20 share failures are silent · D25 seven hand-rolled overlays besides ConfirmDialog, this one included.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -2755,7 +2774,8 @@
           "content": "See the Log frame below this band.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         }
       ]
     },
@@ -2795,7 +2815,8 @@
           "width": "fill_container",
           "content": "2026-10-14 · Drawn from the code at master 3d69c7a on kit 0.1.0: 5 screens. Findings D19, D20, D25 logged; D11 extended.",
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         }
       ]
     }

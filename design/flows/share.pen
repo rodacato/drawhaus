@@ -161,7 +161,7 @@
                       "fill": "$text-muted",
                       "content": "CREATE NEW LINK",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11,
+                      "fontSize": 12,
                       "fontWeight": "600",
                       "letterSpacing": 1.6
                     },
@@ -389,7 +389,7 @@
                       "fill": "$text-muted",
                       "content": "ACTIVE LINKS",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11,
+                      "fontSize": 12,
                       "fontWeight": "600",
                       "letterSpacing": 1.6
                     },
@@ -636,7 +636,7 @@
                       "fill": "$text-muted",
                       "content": "CREATE NEW LINK",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11,
+                      "fontSize": 12,
                       "fontWeight": "600",
                       "letterSpacing": 1.6
                     },
@@ -864,7 +864,7 @@
                       "fill": "$text-muted",
                       "content": "ACTIVE LINKS",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11,
+                      "fontSize": 12,
                       "fontWeight": "600",
                       "letterSpacing": 1.6
                     },
@@ -960,7 +960,7 @@
                                           "fill": "$success",
                                           "content": "Active",
                                           "fontFamily": "$font-sans",
-                                          "fontSize": 10,
+                                          "fontSize": 12,
                                           "fontWeight": "600"
                                         }
                                       ]
@@ -1108,7 +1108,7 @@
                                           "fill": "$warning",
                                           "content": "Expires Oct 21",
                                           "fontFamily": "$font-sans",
-                                          "fontSize": 10,
+                                          "fontSize": 12,
                                           "fontWeight": "600"
                                         }
                                       ]
@@ -1256,7 +1256,7 @@
                                           "fill": "$error",
                                           "content": "Expired",
                                           "fontFamily": "$font-sans",
-                                          "fontSize": 10,
+                                          "fontSize": 12,
                                           "fontWeight": "600"
                                         }
                                       ]
@@ -1572,45 +1572,6 @@
                               "fill": "$text-muted"
                             }
                           ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "wcRea",
-                          "layoutPosition": "absolute",
-                          "x": 12,
-                          "y": 12,
-                          "name": "Live badge",
-                          "fill": "$primary",
-                          "cornerRadius": 999,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            12
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "ZWAnU",
-                              "name": "users",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "users",
-                              "library": "feather",
-                              "fill": "$on-primary"
-                            },
-                            {
-                              "type": "text",
-                              "id": "t6d8dQ",
-                              "name": "Label",
-                              "fill": "$on-primary",
-                              "content": "LIVE SESSION",
-                              "fontFamily": "$font-sans",
-                              "fontSize": 12,
-                              "fontWeight": "700",
-                              "letterSpacing": 1
-                            }
-                          ]
                         }
                       ]
                     }
@@ -1842,7 +1803,7 @@
                           "content": "By joining, you agree to the workspace terms and real-time collaboration protocols.",
                           "textAlign": "center",
                           "fontFamily": "$font-sans",
-                          "fontSize": 11
+                          "fontSize": 12
                         }
                       ]
                     }
@@ -2061,45 +2022,6 @@
                               "icon": "layout",
                               "library": "feather",
                               "fill": "$text-muted"
-                            }
-                          ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "p8HTbN",
-                          "layoutPosition": "absolute",
-                          "x": 12,
-                          "y": 12,
-                          "name": "Live badge",
-                          "fill": "$primary",
-                          "cornerRadius": 999,
-                          "gap": 6,
-                          "padding": [
-                            4,
-                            12
-                          ],
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "icon",
-                              "id": "TppAp",
-                              "name": "users",
-                              "width": 14,
-                              "height": 14,
-                              "icon": "users",
-                              "library": "feather",
-                              "fill": "$on-primary"
-                            },
-                            {
-                              "type": "text",
-                              "id": "P6vNro",
-                              "name": "Label",
-                              "fill": "$on-primary",
-                              "content": "LIVE SESSION",
-                              "fontFamily": "$font-sans",
-                              "fontSize": 12,
-                              "fontWeight": "700",
-                              "letterSpacing": 1
                             }
                           ]
                         }
@@ -2333,7 +2255,7 @@
                           "content": "By joining, you agree to the workspace terms and real-time collaboration protocols.",
                           "textAlign": "center",
                           "fontFamily": "$font-sans",
-                          "fontSize": 11
+                          "fontSize": 12
                         }
                       ]
                     }
@@ -2431,13 +2353,98 @@
       "alignItems": "center",
       "children": [
         {
-          "type": "text",
-          "id": "cKJEg",
-          "name": "Message",
-          "fill": "$red-600",
-          "content": "Share link not found or expired",
-          "fontFamily": "$font-sans",
-          "fontSize": 14
+          "type": "frame",
+          "id": "tQmsE",
+          "name": "Unavailable card",
+          "width": 440,
+          "fill": "$surface-raised",
+          "cornerRadius": 16,
+          "stroke": "$border",
+          "strokeWidth": 1,
+          "layout": "vertical",
+          "gap": 24,
+          "padding": 32,
+          "children": [
+            {
+              "type": "frame",
+              "id": "hQLHH",
+              "name": "Header",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "i1kv4J",
+                  "type": "ref",
+                  "ref": "kvTUF",
+                  "name": "Logo",
+                  "width": 40,
+                  "height": 40
+                },
+                {
+                  "type": "text",
+                  "id": "cLDTK",
+                  "name": "Title",
+                  "fill": "$text-primary",
+                  "content": "Link unavailable",
+                  "fontFamily": "Sora",
+                  "fontSize": 24,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "gygdZ",
+                  "name": "Message",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "This share link was not found, was revoked or has expired.",
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "WRumY",
+              "name": "Actions",
+              "width": "fill_container",
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "QbKBS",
+                  "name": "Go to Drawhaus",
+                  "height": 40,
+                  "fill": "$surface-raised",
+                  "cornerRadius": 8,
+                  "stroke": "$border-input",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "cMOnB",
+                      "name": "Label",
+                      "fill": "$text-primary",
+                      "content": "Go to Drawhaus",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -2631,7 +2638,7 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "D19 the editor drawer serves a stale cached link · D20 link creation and copy fail silently · D21 the URL preview is 3.45:1 · D22 the expiry field takes any text and the API caps at 30 days · D23 “Live Session” badge is always shown · D24 the error page is bare red text · D25 hand-rolled dialog.",
+          "content": "D19–D25 are fixed in code and redrawn: the drawer reuses only live links, link creation and copy report failures, the expiry takes 1–30 days with an inline error, the Live Session badge is gone and a failed link has its own card.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
           "fontSize": 14
@@ -2696,7 +2703,7 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "2026-10-14 · Drawn from the code at master 3d69c7a on kit 0.1.0: 5 screens. Findings D19–D25 logged.",
+          "content": "2026-10-14 · Redrawn after the D19–D25 fixes on kit 0.1.0: Live Session badge removed, Link unavailable card added, 12 px type floor.",
           "fontFamily": "$font-sans",
           "fontSize": 14
         }
