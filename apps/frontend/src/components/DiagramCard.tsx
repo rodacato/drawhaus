@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Tag } from "@/api/tags";
+import { formatUpdatedAt } from "@/lib/format-utils";
 import { useInlineRename } from "@/lib/hooks/useInlineRename";
 import type { Diagram } from "./shared/DiagramTypes";
 import { TagBadges } from "./shared/TagBadges";
@@ -55,6 +56,7 @@ export function DiagramCard({
   onCreateTag,
   onSaveAsTemplate,
 }: DiagramCardProps) {
+  const updatedLabel = formatUpdatedAt(diagram.updatedAt ?? diagram.updated_at);
   const [menuOpen, setMenuOpen] = useState(false);
   const [moveSubOpen, setMoveSubOpen] = useState(false);
   const [tagsSubOpen, setTagsSubOpen] = useState(false);
@@ -531,18 +533,7 @@ export function DiagramCard({
             </div>
           )}
           <div className="mt-1 flex items-center gap-1.5">
-            <p className="text-xs text-text-secondary">
-              {new Date(diagram.updatedAt ?? diagram.updated_at ?? "").toLocaleDateString(
-                undefined,
-                {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                },
-              )}
-            </p>
+            {updatedLabel && <p className="text-xs text-text-secondary">{updatedLabel}</p>}
             {diagram.createdVia && diagram.createdVia !== "ui" && (
               <span className="rounded-full bg-accent-violet/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-accent-violet">
                 {diagram.createdVia}
