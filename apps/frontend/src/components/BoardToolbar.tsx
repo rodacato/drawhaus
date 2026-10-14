@@ -172,7 +172,7 @@ export function BoardToolbarPanel({
               </span>
               <div className="flex-1">
                 <p className="text-sm font-medium text-text-primary">{selfUser.name}</p>
-                <p className="text-[10px] text-text-muted">You</p>
+                <p className="text-xs text-text-muted">You</p>
               </div>
             </div>
           )}
@@ -197,7 +197,7 @@ export function BoardToolbarPanel({
                         </span>
                       )}
                     </p>
-                    {user.isGuest && <p className="text-[10px] text-text-muted">Guest</p>}
+                    {user.isGuest && <p className="text-xs text-text-muted">Guest</p>}
                   </div>
                 </div>
                 <button

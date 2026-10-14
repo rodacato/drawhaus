@@ -1,3 +1,4 @@
+import { ui } from "@/lib/ui";
 export function MaintenancePage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface px-4">
@@ -17,7 +18,7 @@ export function MaintenancePage() {
             />
           </svg>
         </div>
-        <h1 className="font-sora text-2xl font-bold text-text-primary">Under Maintenance</h1>
+        <h1 className={ui.h1}>Under Maintenance</h1>
         <p className="mt-3 text-sm text-text-muted leading-relaxed">
           Drawhaus is temporarily unavailable while we perform scheduled maintenance. Please check
           back shortly.

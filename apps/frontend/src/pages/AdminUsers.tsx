@@ -193,7 +193,7 @@ export function AdminUsers() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className={ui.h1}>User Management</h1>
+          <h2 className={ui.h1}>User Management</h2>
           <p className={ui.subtitle}>Manage user roles and access.</p>
         </div>
         <button

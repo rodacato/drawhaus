@@ -282,14 +282,14 @@ export function CommentsPanel({
                     <span className="text-xs font-semibold text-text-primary">
                       {thread.authorName}
                     </span>
-                    <span className="text-[10px] text-text-muted">{timeAgo(thread.createdAt)}</span>
+                    <span className="text-xs text-text-muted">{timeAgo(thread.createdAt)}</span>
                   </div>
 
                   {/* Element badge */}
                   {!isGeneral && el && (
                     <button
                       onClick={() => onHighlightElement(thread.elementId)}
-                      className="mt-1 inline-flex items-center gap-1 rounded bg-surface-raised px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:text-primary"
+                      className="mt-1 inline-flex items-center gap-1 rounded bg-surface-raised px-1.5 py-0.5 text-xs font-medium text-text-secondary hover:text-primary"
                       title="Focus element"
                     >
                       <IconPointer />
@@ -297,14 +297,14 @@ export function CommentsPanel({
                     </button>
                   )}
                   {isGeneral && (
-                    <span className="mt-1 inline-block text-[10px] text-text-muted">General</span>
+                    <span className="mt-1 inline-block text-xs text-text-muted">General</span>
                   )}
 
                   {/* Comment text */}
                   <p className="mt-1 text-sm text-text-secondary">{thread.body}</p>
 
                   {!exists && (
-                    <p className="mt-1 text-[10px] italic text-warning">Element removed</p>
+                    <p className="mt-1 text-xs italic text-warning">Element removed</p>
                   )}
 
                   {/* Action buttons row */}
@@ -312,7 +312,7 @@ export function CommentsPanel({
                     <button
                       type="button"
                       onClick={() => onToggleLike(thread.id)}
-                      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] ${thread.likedByMe ? "text-primary bg-primary/10" : "text-text-muted hover:bg-surface-raised hover:text-text-secondary"}`}
+                      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs ${thread.likedByMe ? "text-primary bg-primary/10" : "text-text-muted hover:bg-surface-raised hover:text-text-secondary"}`}
                       title={thread.likedByMe ? "Unlike" : "Like"}
                     >
                       <IconThumbUp />
@@ -321,7 +321,7 @@ export function CommentsPanel({
                     <button
                       type="button"
                       onClick={() => setReplyingTo(thread.id)}
-                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-text-muted hover:bg-surface-raised hover:text-text-secondary"
+                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-text-muted hover:bg-surface-raised hover:text-text-secondary"
                       title="Reply"
                     >
                       <IconReply />
@@ -330,7 +330,7 @@ export function CommentsPanel({
                     <div className="flex-1" />
                     <button
                       onClick={() => onResolve(thread.id, !thread.resolved)}
-                      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] hover:bg-surface-raised ${thread.resolved ? "text-success" : "text-text-muted hover:text-success"}`}
+                      className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs hover:bg-surface-raised ${thread.resolved ? "text-success" : "text-text-muted hover:text-success"}`}
                       title={thread.resolved ? "Unresolve" : "Resolve"}
                     >
                       <IconCheck />
@@ -360,7 +360,7 @@ export function CommentsPanel({
                   {thread.replies.map((reply) => (
                     <div key={reply.id} className="flex items-start gap-2">
                       {/* Reply avatar */}
-                      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                         {reply.authorName.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -368,7 +368,7 @@ export function CommentsPanel({
                           <span className="text-xs font-semibold text-text-primary">
                             {reply.authorName}
                           </span>
-                          <span className="text-[10px] text-text-muted">
+                          <span className="text-xs text-text-muted">
                             {timeAgo(reply.createdAt)}
                           </span>
                         </div>
@@ -397,7 +397,7 @@ export function CommentsPanel({
                     <button
                       type="submit"
                       disabled={pending || !replyBody.trim()}
-                      className="rounded bg-primary px-2.5 py-1 text-[10px] font-medium text-on-primary hover:bg-primary/90 disabled:opacity-50"
+                      className="rounded bg-primary px-2.5 py-1 text-xs font-medium text-on-primary hover:bg-primary/90 disabled:opacity-50"
                     >
                       Reply
                     </button>
@@ -407,7 +407,7 @@ export function CommentsPanel({
                         setReplyingTo(null);
                         setReplyBody("");
                       }}
-                      className="rounded px-2 py-1 text-[10px] text-text-muted hover:bg-surface-raised"
+                      className="rounded px-2 py-1 text-xs text-text-muted hover:bg-surface-raised"
                     >
                       Cancel
                     </button>

@@ -68,7 +68,7 @@ export function AdminSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className={ui.h1}>Site Settings</h1>
+        <h2 className={ui.h1}>Site Settings</h2>
         <p className={ui.subtitle}>Configure your Drawhaus instance.</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">

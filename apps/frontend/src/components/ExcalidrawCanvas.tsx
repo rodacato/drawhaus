@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import "@excalidraw/excalidraw/index.css";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { ExcalidrawApi } from "@/lib/types";
 
 const ExcalidrawLazy = lazy(async () => {
@@ -17,9 +18,11 @@ type ExcalidrawCanvasProps = {
   readonly viewModeEnabled?: boolean;
   readonly objectsSnapModeEnabled?: boolean;
   readonly UIOptions?: Record<string, unknown>;
+  readonly theme?: "light" | "dark";
 };
 
-export function ExcalidrawCanvas(props: ExcalidrawCanvasProps) {
+export function ExcalidrawCanvas(props: Omit<ExcalidrawCanvasProps, "theme">) {
+  const { theme } = useTheme();
   return (
     <Suspense
       fallback={
@@ -30,6 +33,7 @@ export function ExcalidrawCanvas(props: ExcalidrawCanvasProps) {
     >
       <ExcalidrawLazy
         {...props}
+        theme={theme}
         UIOptions={{
           canvasActions: {
             toggleLibrary: false,

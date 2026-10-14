@@ -8,10 +8,13 @@ export const ui = {
   card: "rounded-2xl border border-border bg-surface-raised p-6 shadow-sm",
 
   // Typography (headings use Sora via CSS base layer)
+  display: "text-3xl font-bold tracking-tight text-text-primary",
   h1: "text-2xl font-semibold tracking-tight text-text-primary",
   h2: "text-lg font-semibold text-text-primary",
   subtitle: "mt-1 text-sm text-text-secondary",
   muted: "text-sm text-text-muted",
+  metric: "text-3xl font-bold text-text-primary",
+  wordmark: "text-lg font-semibold tracking-tight text-text-primary",
 
   // Form
   label: "block space-y-1.5 text-sm font-medium text-text-secondary",

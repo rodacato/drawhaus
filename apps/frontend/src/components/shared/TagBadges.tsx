@@ -7,7 +7,7 @@ export function TagBadges({ tags }: { readonly tags: Tag[] }) {
       {tags.map((tag) => (
         <span
           key={tag.id}
-          className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white"
+          className="inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium text-white"
           style={{ backgroundColor: tag.color }}
         >
           {tag.name}

@@ -303,7 +303,7 @@ export default function BoardEditor({
                 </button>
               )}
               {createdVia && createdVia !== "ui" && (
-                <span className="ml-2 rounded-full bg-accent-violet/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-violet">
+                <span className="ml-2 rounded-full bg-accent-violet/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-accent-violet">
                   {createdVia}
                 </span>
               )}
@@ -320,7 +320,7 @@ export default function BoardEditor({
           <div className="pointer-events-auto flex items-center gap-2">
             {canEdit && (
               <div
-                className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-medium shadow-sm ${collab.saveColor}`}
+                className={`w-fit rounded-full px-2.5 py-1 text-xs font-medium shadow-sm ${collab.saveColor}`}
               >
                 {collab.saveLabel}
               </div>

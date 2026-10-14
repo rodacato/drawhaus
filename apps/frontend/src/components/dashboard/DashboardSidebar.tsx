@@ -1,3 +1,4 @@
+import { ui } from "@/lib/ui";
 import { Link, useNavigate } from "react-router-dom";
 import type { Workspace } from "@/api/workspaces";
 import { workspacesApi } from "@/api/workspaces";
@@ -50,9 +51,9 @@ export function DashboardSidebar({
         <Link to="/dashboard" className="mb-10 flex items-center gap-3">
           <BrandLogo alt="" className="h-10 w-10 shrink-0" />
           <div>
-            <h1 className="font-[family-name:var(--font-family-heading)] text-xl font-bold tracking-tight text-text-primary">
+            <span className={`font-[family-name:var(--font-family-heading)] ${ui.wordmark}`}>
               Drawhaus
-            </h1>
+            </span>
             <p className="text-xs text-text-muted">Diagram Workspace</p>
           </div>
         </Link>
@@ -109,7 +110,7 @@ export function DashboardSidebar({
           </button>
 
           {/* Workspaces section */}
-          <div className="pb-2 pt-4 px-3 text-[10px] font-bold uppercase tracking-wider text-text-muted">
+          <div className="pb-2 pt-4 px-3 text-xs font-bold uppercase tracking-wider text-text-muted">
             Workspaces
           </div>
           {workspaces.map((ws) => (
