@@ -60,7 +60,9 @@ test.describe("Socket handshake", () => {
 
     expect((await owner.api.delete(`/api/share/link/${token}`)).ok()).toBeTruthy();
 
-    await expect(guest.page.getByText("Este enlace ya no es válido. Pide uno nuevo.")).toBeVisible({
+    await expect(
+      guest.page.getByText("This link is no longer valid. Ask for a new one."),
+    ).toBeVisible({
       timeout: 20_000,
     });
     expect(socket.roomJoins).toBe(1);
@@ -80,7 +82,7 @@ test.describe("Socket handshake", () => {
     expect((await owner.api.post("/api/auth/logout")).ok()).toBeTruthy();
 
     await expect(
-      board.page.getByText("Tu sesión terminó. Recarga la página para volver a entrar."),
+      board.page.getByText("Your session ended. Reload the page to sign in again."),
     ).toBeVisible({ timeout: 20_000 });
     expect(socket.roomJoins).toBe(1);
   });
