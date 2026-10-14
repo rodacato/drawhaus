@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { Dialog } from "@/components/Dialog";
 import type { Socket } from "socket.io-client";
 import { ui } from "@/lib/ui";
 import { useSnapshots } from "@/lib/hooks/useSnapshots";
@@ -236,51 +236,47 @@ export function SnapshotPanel({
       )}
 
       {/* Restore confirmation modal */}
-      {confirmRestore &&
-        createPortal(
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <button
-              type="button"
-              aria-label="Cancel"
-              disabled={restoring}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => !restoring && setConfirmRestore(null)}
-            />
-            <div className={`${ui.card} relative z-10 w-full max-w-sm space-y-4 shadow-2xl`}>
-              <h2 className={ui.h2}>Restore Version</h2>
-              <p className="text-sm text-text-secondary">
-                This will replace the current diagram content with the version from{" "}
-                <strong>{confirmRestore.name ?? timeAgo(confirmRestore.createdAt)}</strong>
-                {confirmRestore.createdByName && (
-                  <>
-                    {" "}
-                    by <strong>{confirmRestore.createdByName}</strong>
-                  </>
-                )}
-                . A backup of the current state will be saved automatically.
-              </p>
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setConfirmRestore(null)}
-                  disabled={restoring}
-                  className={`${ui.btn} ${ui.btnSecondary}`}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={restoring}
-                  className={`${ui.btn} ${ui.btnPrimary}`}
-                  onClick={handleRestoreFromConfirm}
-                >
-                  {restoring ? "Restoring..." : "Restore"}
-                </button>
-              </div>
+      {confirmRestore && (
+        <Dialog
+          label="Restore Version"
+          onClose={() => setConfirmRestore(null)}
+          dismissible={!restoring}
+          className={`${ui.card} max-w-sm space-y-4 shadow-2xl`}
+        >
+          <>
+            <h2 className={ui.h2}>Restore Version</h2>
+            <p className="text-sm text-text-secondary">
+              This will replace the current diagram content with the version from{" "}
+              <strong>{confirmRestore.name ?? timeAgo(confirmRestore.createdAt)}</strong>
+              {confirmRestore.createdByName && (
+                <>
+                  {" "}
+                  by <strong>{confirmRestore.createdByName}</strong>
+                </>
+              )}
+              . A backup of the current state will be saved automatically.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmRestore(null)}
+                disabled={restoring}
+                className={`${ui.btn} ${ui.btnSecondary}`}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={restoring}
+                className={`${ui.btn} ${ui.btnPrimary}`}
+                onClick={handleRestoreFromConfirm}
+              >
+                {restoring ? "Restoring..." : "Restore"}
+              </button>
             </div>
-          </div>,
-          document.body,
-        )}
+          </>
+        </Dialog>
+      )}
     </div>
   );
 }

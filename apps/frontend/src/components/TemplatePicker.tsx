@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactElement } from "react";
-import { createPortal } from "react-dom";
+import { Dialog } from "@/components/Dialog";
 import { templatesApi, type TemplateDTO } from "@/api/templates";
 import { builtInTemplates, type BuiltInTemplate } from "@/data/templates";
 import { ui } from "@/lib/ui";
@@ -172,15 +172,6 @@ export function TemplatePicker({
       .finally(() => setLoading(false));
   }, [open, workspaceId]);
 
-  useEffect(() => {
-    if (!open) return;
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    globalThis.addEventListener("keydown", handleKey);
-    return () => globalThis.removeEventListener("keydown", handleKey);
-  }, [open, onClose]);
-
   if (!open) return null;
 
   const personalTemplates = customTemplates.filter((t) => !t.workspaceId);
@@ -286,15 +277,13 @@ export function TemplatePicker({
   const hasResults =
     filteredBuiltIn.length > 0 || filteredPersonal.length > 0 || filteredWorkspace.length > 0;
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <button
-        type="button"
-        aria-label="Close"
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative z-10 flex max-h-[80vh] w-full max-w-3xl flex-col rounded-2xl border border-border bg-surface-raised shadow-2xl">
+  return (
+    <Dialog
+      label="New Diagram"
+      onClose={onClose}
+      className="flex max-h-[80vh] max-w-3xl flex-col rounded-2xl border border-border bg-surface-raised shadow-2xl"
+    >
+      <>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <div>
@@ -419,9 +408,8 @@ export function TemplatePicker({
             </div>
           )}
         </div>
-      </div>
-    </div>,
-    document.body,
+      </>
+    </Dialog>
   );
 }
 

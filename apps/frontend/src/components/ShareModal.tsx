@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
+import { Dialog } from "@/components/Dialog";
 import { ui } from "@/lib/ui";
 import { shareApi } from "@/api/share";
 import {
@@ -74,16 +74,6 @@ export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
       setCopied(false);
     }
   }, [open, loadLinks]);
-
-  // Close on Escape
-  useEffect(() => {
-    if (!open) return;
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [open, onClose]);
 
   const linkUrl = createdToken
     ? `${globalThis.location.origin}/share/${createdToken}`
@@ -233,122 +223,108 @@ export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
     );
   }
 
-  const modal = (
-    <>
-      {/* ── Backdrop ─────────────────────────────────────── */}
-      <div
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden
-      />
-
-      {/* ── Modal container ──────────────────────────────── */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div
-          className="pointer-events-auto w-full max-w-[560px] rounded-xl border border-border bg-surface-raised shadow-2xl"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Share Diagram"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* ── Header ──────────────────────────────────── */}
-          <div className="flex items-start justify-between border-b border-border px-6 py-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <IconShare size={20} />
-              </div>
-              <div>
-                <h2 className={ui.h2}>Share Diagram</h2>
-                <p className="mt-0.5 text-sm text-text-secondary">
-                  Manage access and collaboration links
-                </p>
-              </div>
+  return (
+    <Dialog
+      label="Share Diagram"
+      onClose={onClose}
+      className="max-w-[560px] rounded-xl border border-border bg-surface-raised shadow-2xl"
+    >
+      <>
+        {/* ── Header ──────────────────────────────────── */}
+        <div className="flex items-start justify-between border-b border-border px-6 py-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <IconShare size={20} />
             </div>
-            <button
-              onClick={onClose}
-              className="rounded-lg p-1.5 text-text-muted transition hover:bg-surface hover:text-text-primary"
-              aria-label="Close"
-            >
-              <IconX size={20} />
-            </button>
+            <div>
+              <h2 className={ui.h2}>Share Diagram</h2>
+              <p className="mt-0.5 text-sm text-text-secondary">
+                Manage access and collaboration links
+              </p>
+            </div>
           </div>
-
-          {/* ── Body ────────────────────────────────────── */}
-          <div className="space-y-6 px-6 py-5">
-            {/* ── Create New Link ───────────────────────── */}
-            <section>
-              <p className={sectionLabel}>Create New Link</p>
-
-              <div className="grid grid-cols-2 gap-3">
-                {/* Role selector */}
-                <label className="block space-y-1.5">
-                  <span className="text-xs font-medium text-text-secondary">Role</span>
-                  <select
-                    value={selectedRole}
-                    onChange={(e) => setSelectedRole(e.target.value)}
-                    className={ui.input}
-                  >
-                    <option value="viewer">Viewer</option>
-                    <option value="editor">Editor</option>
-                  </select>
-                </label>
-
-                {/* Expiration input */}
-                <label className="block space-y-1.5">
-                  <span className="text-xs font-medium text-text-secondary">Expires in (days)</span>
-                  <div className="relative">
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
-                      <IconCalendar size={14} />
-                    </span>
-                    <input
-                      type="text"
-                      placeholder="e.g. 7"
-                      value={expiresIn}
-                      onChange={(e) => setExpiresIn(e.target.value)}
-                      className={`${ui.input} pl-8`}
-                    />
-                  </div>
-                </label>
-              </div>
-
-              {/* Generated link preview */}
-              <div className="mt-3 flex items-center gap-2">
-                <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-surface-dark px-3 py-2.5">
-                  <span className="text-text-muted/60 shrink-0">
-                    <IconLink size={14} />
-                  </span>
-                  <span className="truncate font-[family-name:var(--font-family-mono)] text-xs text-text-muted">
-                    {linkUrl}
-                  </span>
-                </div>
-                <button
-                  onClick={handleCreateAndCopy}
-                  disabled={creating}
-                  className={`${ui.btn} ${ui.btnPrimary} shrink-0 gap-1.5`}
-                >
-                  {renderCopyButtonContent({ copied, creating })}
-                </button>
-              </div>
-            </section>
-
-            {/* ── Active Links ──────────────────────────── */}
-            <section>
-              <p className={sectionLabel}>Active Links</p>
-
-              <div className="space-y-2">{renderLinksList()}</div>
-            </section>
-          </div>
-
-          {/* ── Footer ──────────────────────────────────── */}
-          <div className="flex justify-end border-t border-border px-6 py-4">
-            <button onClick={onClose} className={`${ui.btn} ${ui.btnPrimary}`}>
-              Done
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-text-muted transition hover:bg-surface hover:text-text-primary"
+            aria-label="Close"
+          >
+            <IconX size={20} />
+          </button>
         </div>
-      </div>
-    </>
-  );
 
-  return createPortal(modal, document.body);
+        {/* ── Body ────────────────────────────────────── */}
+        <div className="space-y-6 px-6 py-5">
+          {/* ── Create New Link ───────────────────────── */}
+          <section>
+            <p className={sectionLabel}>Create New Link</p>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* Role selector */}
+              <label className="block space-y-1.5">
+                <span className="text-xs font-medium text-text-secondary">Role</span>
+                <select
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                  className={ui.input}
+                >
+                  <option value="viewer">Viewer</option>
+                  <option value="editor">Editor</option>
+                </select>
+              </label>
+
+              {/* Expiration input */}
+              <label className="block space-y-1.5">
+                <span className="text-xs font-medium text-text-secondary">Expires in (days)</span>
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
+                    <IconCalendar size={14} />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="e.g. 7"
+                    value={expiresIn}
+                    onChange={(e) => setExpiresIn(e.target.value)}
+                    className={`${ui.input} pl-8`}
+                  />
+                </div>
+              </label>
+            </div>
+
+            {/* Generated link preview */}
+            <div className="mt-3 flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-surface-dark px-3 py-2.5">
+                <span className="text-text-muted/60 shrink-0">
+                  <IconLink size={14} />
+                </span>
+                <span className="truncate font-[family-name:var(--font-family-mono)] text-xs text-text-muted">
+                  {linkUrl}
+                </span>
+              </div>
+              <button
+                onClick={handleCreateAndCopy}
+                disabled={creating}
+                className={`${ui.btn} ${ui.btnPrimary} shrink-0 gap-1.5`}
+              >
+                {renderCopyButtonContent({ copied, creating })}
+              </button>
+            </div>
+          </section>
+
+          {/* ── Active Links ──────────────────────────── */}
+          <section>
+            <p className={sectionLabel}>Active Links</p>
+
+            <div className="space-y-2">{renderLinksList()}</div>
+          </section>
+        </div>
+
+        {/* ── Footer ──────────────────────────────────── */}
+        <div className="flex justify-end border-t border-border px-6 py-4">
+          <button onClick={onClose} className={`${ui.btn} ${ui.btnPrimary}`}>
+            Done
+          </button>
+        </div>
+      </>
+    </Dialog>
+  );
 }

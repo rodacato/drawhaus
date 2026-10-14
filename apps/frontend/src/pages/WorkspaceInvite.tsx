@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { workspacesApi } from "@/api/workspaces";
 import { useAuth } from "@/contexts/AuthContext";
+import { ui } from "@/lib/ui";
 
 export function WorkspaceInvite() {
   const { token } = useParams<{ token: string }>();
@@ -48,7 +49,7 @@ export function WorkspaceInvite() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-surface text-sm text-text-muted">
+      <div className="flex min-h-screen items-center justify-center bg-surface text-sm text-text-muted">
         Loading...
       </div>
     );
@@ -57,15 +58,15 @@ export function WorkspaceInvite() {
   const acceptLabel = user ? "Accept Invitation" : "Log in to Accept";
 
   return (
-    <div className="flex h-screen items-center justify-center bg-surface">
-      <div className="w-full max-w-md rounded-xl border border-border bg-surface-raised p-8 text-center">
+    <div className="grid min-h-screen place-items-center bg-surface px-4 py-8">
+      <div className={`${ui.card} w-full max-w-md text-center`}>
         {error ? (
           <>
-            <h1 className="mb-2 text-xl font-bold text-text-primary">Oops</h1>
+            <h1 className={`${ui.h1} mb-2`}>Oops</h1>
             <p className="mb-6 text-text-secondary">{error}</p>
             <button
               onClick={() => navigate("/dashboard")}
-              className="rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-on-primary"
+              className={`${ui.btn} ${ui.btnPrimary}`}
               type="button"
             >
               Go to Dashboard
@@ -73,7 +74,7 @@ export function WorkspaceInvite() {
           </>
         ) : (
           <>
-            <h1 className="mb-2 text-xl font-bold text-text-primary">Workspace Invitation</h1>
+            <h1 className={`${ui.h1} mb-2`}>Workspace Invitation</h1>
             <p className="mb-6 text-text-secondary">
               You've been invited to join{" "}
               <strong className="text-text-primary">{workspaceName}</strong> as{" "}
@@ -87,7 +88,7 @@ export function WorkspaceInvite() {
             <button
               onClick={handleAccept}
               disabled={accepting}
-              className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-on-primary transition hover:bg-primary-hover"
+              className={`${ui.btn} ${ui.btnPrimary}`}
               type="button"
             >
               {accepting ? "Accepting..." : acceptLabel}

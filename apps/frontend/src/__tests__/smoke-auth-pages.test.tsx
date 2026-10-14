@@ -26,6 +26,24 @@ describe("auth pages — smoke (render without crashing)", () => {
     expect(screen.getByRole("heading", { name: /welcome back/i })).toBeTruthy();
   });
 
+  test("Login keeps its email field, its password field and the forgot link", () => {
+    renderWithProviders(<Login />);
+    expect(screen.getByPlaceholderText("you@example.com").getAttribute("type")).toBe("email");
+    expect(screen.getByPlaceholderText("Enter your password").getAttribute("type")).toBe(
+      "password",
+    );
+    expect(screen.getByRole("button", { name: "Show password" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Forgot?" })).toBeTruthy();
+  });
+
+  test("Register keeps name, email and a password field with a toggle", () => {
+    renderWithProviders(<Register />);
+    expect(screen.getByPlaceholderText("you@example.com").getAttribute("type")).toBe("email");
+    expect(screen.getByPlaceholderText("Min. 8 characters").getAttribute("type")).toBe("password");
+    expect(screen.getAllByRole("textbox").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("button", { name: "Show password" })).toBeTruthy();
+  });
+
   test("Register renders its heading", () => {
     renderWithProviders(<Register />);
     expect(screen.getByRole("heading", { name: /get started/i })).toBeTruthy();

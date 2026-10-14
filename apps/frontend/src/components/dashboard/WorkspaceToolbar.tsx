@@ -1,3 +1,5 @@
+import { ui } from "@/lib/ui";
+
 type WorkspaceToolbarProps = {
   readonly viewMode: "grid" | "list";
   readonly actionPending: boolean;
@@ -30,7 +32,7 @@ export function WorkspaceToolbar({
   return (
     <div className="mb-8 flex items-center gap-2 border-b border-border pb-4">
       <button
-        className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-on-primary shadow-sm shadow-primary/20 transition hover:bg-primary-hover"
+        className={`${ui.btn} ${ui.btnPrimary} gap-2`}
         onClick={onCreateDiagram}
         disabled={actionPending}
         type="button"
@@ -53,7 +55,7 @@ export function WorkspaceToolbar({
       {!creatingFolder ? (
         <button
           onClick={onStartCreatingFolder}
-          className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold transition hover:bg-surface-raised"
+          className={`${ui.btn} ${ui.btnSecondary} gap-2`}
           type="button"
         >
           <svg
@@ -93,7 +95,7 @@ export function WorkspaceToolbar({
         </form>
       )}
       <button
-        className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold transition hover:bg-surface-raised"
+        className={`${ui.btn} ${ui.btnSecondary} gap-2`}
         onClick={onImport}
         disabled={actionPending}
         type="button"
@@ -115,7 +117,7 @@ export function WorkspaceToolbar({
         <span>Import</span>
       </button>
       <button
-        className="flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold transition hover:bg-surface-raised"
+        className={`${ui.btn} ${ui.btnSecondary} gap-2`}
         onClick={onDriveImport}
         disabled={actionPending}
         type="button"
@@ -133,6 +135,8 @@ export function WorkspaceToolbar({
           onClick={() => onViewModeChange("grid")}
           className={`rounded p-1.5 transition ${viewMode === "grid" ? "bg-surface text-primary" : "text-text-muted hover:text-text-secondary"}`}
           title="Grid view"
+          aria-label="Grid view"
+          aria-pressed={viewMode === "grid"}
           type="button"
         >
           <svg
@@ -155,6 +159,8 @@ export function WorkspaceToolbar({
           onClick={() => onViewModeChange("list")}
           className={`rounded p-1.5 transition ${viewMode === "list" ? "bg-surface text-primary" : "text-text-muted hover:text-text-secondary"}`}
           title="List view"
+          aria-label="List view"
+          aria-pressed={viewMode === "list"}
           type="button"
         >
           <svg
