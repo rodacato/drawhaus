@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { FallbackProps } from "react-error-boundary";
 import { ui } from "@/lib/ui";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function AppErrorFallback({ error, resetErrorBoundary }: Readonly<FallbackProps>) {
   const message = error instanceof Error ? error.message : String(error);
@@ -8,7 +9,7 @@ export function AppErrorFallback({ error, resetErrorBoundary }: Readonly<Fallbac
     <div className="grid min-h-screen place-items-center bg-surface px-4 py-8">
       <div className={`${ui.card} ${ui.centerNarrow} space-y-4`}>
         <div className="space-y-2 text-center">
-          <img src="/logo-icon.svg" alt="Drawhaus" className="mx-auto h-10 w-10" />
+          <BrandLogo alt="Drawhaus" className="mx-auto h-10 w-10" />
           <h1 className={ui.h1}>Something went wrong</h1>
           <p className={ui.subtitle}>This page crashed. Try again, or go back to the dashboard.</p>
         </div>

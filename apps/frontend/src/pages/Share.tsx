@@ -9,6 +9,7 @@ import { CollaborationBadge } from "@/components/CollaborationBadge";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
 import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import { ui } from "@/lib/ui";
+import { BrandLogo } from "@/components/BrandLogo";
 
 type ShareData = {
   diagramId: string;
@@ -112,7 +113,7 @@ function ShareViewInner({
                 </div>
               </div>
               {/* Live session badge */}
-              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold uppercase tracking-wider text-on-primary">
                 <svg
                   width="14"
                   height="14"
@@ -232,7 +233,7 @@ function ShareViewInner({
         {/* Branding footer */}
         <div className="mt-10 flex flex-col items-center gap-3 opacity-60">
           <div className="flex items-center gap-2">
-            <img src="/logo-icon.svg" alt="" className="h-6 w-6" />
+            <BrandLogo alt="" className="h-6 w-6" />
             <span className="text-lg font-bold tracking-tight text-text-primary font-[family-name:var(--font-family-heading)]">
               Drawhaus
             </span>
@@ -280,15 +281,17 @@ function ShareCanvas({
   if (canEdit) {
     statusBadge = { label: collab.saveLabel, className: collab.saveColor };
   } else {
-    statusBadge = { label: "View only", className: "bg-gray-100 text-gray-600" };
+    statusBadge = { label: "View only", className: "bg-selection text-text-secondary" };
   }
 
   return (
     <div className="relative h-screen w-screen">
       <div className="pointer-events-none fixed left-4 top-3 z-20 flex flex-col gap-1">
         <div className="flex items-center gap-3">
-          <div className="pointer-events-auto rounded-lg bg-white px-4 py-2 shadow-sm">
-            <span className="text-lg font-medium text-[#1b1b1f]">{data.title || "Untitled"}</span>
+          <div className="pointer-events-auto rounded-lg bg-surface-raised px-4 py-2 shadow-sm">
+            <span className="text-lg font-medium text-text-primary">
+              {data.title || "Untitled"}
+            </span>
           </div>
           <div className="pointer-events-auto rounded-full bg-purple-100 px-2.5 py-1 text-[10px] font-medium text-purple-700 shadow-sm">
             {guestName} (guest)

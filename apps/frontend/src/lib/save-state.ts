@@ -9,7 +9,7 @@ const SAVE_LABELS: Record<SaveState, string> = {
 };
 
 const SAVE_COLORS: Record<SaveState, string> = {
-  idle: "bg-white/80 text-black/50",
+  idle: "bg-white/80 text-black/70",
   pending: "bg-amber-100 text-amber-700",
   saving: "bg-blue-100 text-blue-700",
   saved: "bg-emerald-100 text-emerald-700",

@@ -9,11 +9,11 @@ type TemplatesViewProps = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  architecture: "bg-blue-50 text-blue-700",
+  architecture: "bg-selection text-primary",
   database: "bg-green-50 text-green-700",
   agile: "bg-orange-50 text-orange-700",
   process: "bg-purple-50 text-purple-700",
-  general: "bg-gray-100 text-gray-600",
+  general: "bg-selection text-text-secondary",
 };
 
 export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
@@ -99,11 +99,11 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
           className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-surface-raised transition hover:shadow-md"
         >
           {/* Thumbnail */}
-          <div className="flex h-36 items-center justify-center bg-gray-50 p-2">
+          <div className="flex h-36 items-center justify-center bg-selection p-2">
             {t.thumbnail ? (
               <img src={t.thumbnail} alt="" className="max-h-full max-w-full object-contain" />
             ) : (
-              <div className="text-3xl text-gray-300">
+              <div className="text-3xl text-text-muted">
                 <svg
                   width="40"
                   height="40"
@@ -170,14 +170,14 @@ export function TemplatesView({ onStatusMessage }: TemplatesViewProps) {
           <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
             <button
               onClick={() => handleUse(t)}
-              className="rounded-md bg-primary px-2.5 py-1 text-[11px] font-medium text-white shadow-sm transition hover:bg-primary-hover"
+              className="rounded-md bg-primary px-2.5 py-1 text-[11px] font-medium text-on-primary shadow-sm transition hover:bg-primary-hover"
               title="Create diagram from template"
             >
               Use
             </button>
             <button
               onClick={() => handleDelete(t.id)}
-              className="rounded-md bg-white px-2 py-1 text-[11px] font-medium text-error shadow-sm ring-1 ring-border transition hover:bg-error/5"
+              className="rounded-md bg-surface-raised px-2 py-1 text-[11px] font-medium text-error shadow-sm ring-1 ring-border transition hover:bg-error/5"
               title="Delete template"
             >
               <svg

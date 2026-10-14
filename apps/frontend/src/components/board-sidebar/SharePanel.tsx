@@ -46,18 +46,18 @@ export function SharePanel({
     <div className="space-y-4">
       {/* Online users */}
       <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
           Online ({presenceUsers.length})
         </h3>
         <div className="space-y-1">
           {selfUser && (
-            <div className="flex items-center gap-2.5 rounded-lg bg-gray-50 px-3 py-2">
+            <div className="flex items-center gap-2.5 rounded-lg bg-selection px-3 py-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-600">
                 {(selfUser.name || "?")[0].toUpperCase()}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="truncate text-sm font-medium text-gray-900">{selfUser.name}</p>
-                <p className="text-[10px] text-gray-400">You</p>
+                <p className="truncate text-sm font-medium text-text-primary">{selfUser.name}</p>
+                <p className="text-[10px] text-text-muted">You</p>
               </div>
             </div>
           )}
@@ -66,13 +66,13 @@ export function SharePanel({
             return (
               <div
                 key={user.userId}
-                className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-gray-50 transition"
+                className="flex items-center justify-between rounded-lg px-3 py-2 hover:bg-selection transition"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-600">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-selection text-xs font-bold text-primary">
                     {(user.name || "?")[0].toUpperCase()}
                   </span>
-                  <p className="truncate text-sm font-medium text-gray-900">
+                  <p className="truncate text-sm font-medium text-text-primary">
                     {user.name}
                     {raisedHands?.has(user.userId) && (
                       <span className="ml-1" title="Mano levantada">
@@ -85,8 +85,8 @@ export function SharePanel({
                   onClick={() => onFollow(isFollowing ? null : user.userId)}
                   className={`ml-2 shrink-0 rounded-full px-2.5 py-1 text-xs font-medium transition ${
                     isFollowing
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600"
+                      ? "bg-primary text-on-primary"
+                      : "bg-selection text-text-muted hover:bg-selection hover:text-primary"
                   }`}
                   type="button"
                 >
@@ -96,21 +96,21 @@ export function SharePanel({
             );
           })}
           {otherUsers.length === 0 && (
-            <p className="px-3 py-2 text-xs text-gray-400">No one else here yet</p>
+            <p className="px-3 py-2 text-xs text-text-muted">No one else here yet</p>
           )}
         </div>
       </div>
 
       {/* Share link */}
       <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
           Share link
         </h3>
         <div className="flex gap-2">
           <button
             onClick={() => handleShare("viewer")}
             disabled={shareLoading}
-            className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-gray-50 text-xs font-medium text-gray-600 transition hover:bg-gray-100 disabled:opacity-50"
+            className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-selection text-xs font-medium text-text-secondary transition hover:bg-selection disabled:opacity-50"
             type="button"
           >
             <svg
@@ -129,7 +129,7 @@ export function SharePanel({
           <button
             onClick={() => handleShare("editor")}
             disabled={shareLoading}
-            className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-indigo-50 text-xs font-medium text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-50"
+            className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-selection text-xs font-medium text-primary transition hover:bg-selection disabled:opacity-50"
             type="button"
           >
             <svg
@@ -147,8 +147,8 @@ export function SharePanel({
           </button>
         </div>
         {shareUrl && (
-          <div className="mt-2 rounded-lg bg-gray-50 p-2.5">
-            <p className="break-all text-[11px] text-gray-500 font-mono">{shareUrl}</p>
+          <div className="mt-2 rounded-lg bg-selection p-2.5">
+            <p className="break-all text-[11px] text-text-muted font-mono">{shareUrl}</p>
             {shareCopied && (
               <p className="mt-1 text-[11px] font-medium text-emerald-600">Copied!</p>
             )}
@@ -158,7 +158,9 @@ export function SharePanel({
 
       {/* Embed */}
       <div>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Embed</h3>
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
+          Embed
+        </h3>
         <button
           onClick={async () => {
             setEmbedLoading(true);
@@ -180,7 +182,7 @@ export function SharePanel({
             }
           }}
           disabled={embedLoading}
-          className="flex h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-gray-50 text-xs font-medium text-gray-600 transition hover:bg-gray-100 disabled:opacity-50"
+          className="flex h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-selection text-xs font-medium text-text-secondary transition hover:bg-selection disabled:opacity-50"
           type="button"
         >
           <svg
@@ -199,8 +201,8 @@ export function SharePanel({
           {embedLoading ? "Generating..." : "Copy embed code"}
         </button>
         {embedSnippet && (
-          <div className="mt-2 rounded-lg bg-gray-50 p-2.5">
-            <p className="break-all text-[11px] text-gray-500 font-mono">{embedSnippet}</p>
+          <div className="mt-2 rounded-lg bg-selection p-2.5">
+            <p className="break-all text-[11px] text-text-muted font-mono">{embedSnippet}</p>
             {embedCopied && (
               <p className="mt-1 text-[11px] font-medium text-emerald-600">Copied!</p>
             )}

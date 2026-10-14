@@ -1,7 +1,7 @@
 const STEPS = ["Admin Account", "Instance Config", "Integrations"];
 
 function stepBadgeClass(isDone: boolean, isActive: boolean): string {
-  if (isDone) return "bg-primary text-white";
+  if (isDone) return "bg-primary text-on-primary";
   if (isActive) return "border-2 border-primary text-primary";
   return "border border-border text-text-muted";
 }

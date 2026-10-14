@@ -4,6 +4,7 @@ import { authApi } from "@/api/auth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { formString } from "@/lib/format-utils";
 import { ui } from "@/lib/ui";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function ForgotPassword() {
   const [pending, setPending] = useState(false);
@@ -39,7 +40,7 @@ export function ForgotPassword() {
 
       <section className={`${ui.card} relative w-full max-w-110 space-y-6`}>
         <div className="space-y-2 text-center">
-          <img src="/logo-icon.svg" alt="Drawhaus" className="mx-auto h-10 w-10" />
+          <BrandLogo alt="Drawhaus" className="mx-auto h-10 w-10" />
           <h1 className={ui.h1}>Reset your password</h1>
           <p className="text-sm text-text-secondary">
             Enter the email address associated with your account and we'll send you a link to reset

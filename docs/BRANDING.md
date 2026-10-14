@@ -7,7 +7,7 @@ The complete English guide is [site/brand/index.html](../site/brand/index.html).
 ## Canonical sources
 
 - [Logo geometry](branding/logo.svg) and [outlined wordmark](branding/wordmark.svg). Preserve geometry and the padded viewBox.
-- [Existing token source](../apps/frontend/src/globals.css). Brand presentation roles are added there; the operational app theme remains unchanged until application adoption.
+- [Existing token source](../apps/frontend/src/globals.css). Brand roles live there and the operational tokens resolve to them.
 - [Licensed local fonts](branding/fonts/README.md). Sora for headings, Inter for reading/UI, JetBrains Mono for code.
 - [Asset generator](../site/build-brand.mjs) and [PNG exporter](../site/export-brand-png.mjs). Generated CSS is consumed by the site; values are not maintained again in this document.
 
@@ -29,11 +29,25 @@ Generated SVG/PNG assets in [branding/generated/](branding/generated/) are check
 
 ## Application adoption
 
-Use the guide's integration example to map shared UI classes to the brand roles. Copy the corresponding logo exports into the existing public asset locations, serve the local fonts with their licenses, and apply the generated dark mapping on the existing theme root. Always pair action backgrounds with their on-action token; light and dark buttons require different label colors.
+The app consumes the brand roles through its existing token source and theme root:
 
-Check sign-in, dashboard, editor shell and sharing in both themes before adopting globally. Keep Excalidraw content, collaborator colors, permissions and diagram link behavior independent of the presentation palette. The guide's sharing samples are explicitly illustrative, not implemented replacement dialogs.
+- [globals.css](../apps/frontend/src/globals.css) defines the brand roles. The operational tokens (`primary`, `surface`, `border`, `text-*`, `success`, `error`) resolve to them, and `:root.dark` remaps the roles once, so `ThemeContext` needed no change.
+- Action backgrounds pair with `text-on-primary`, destructive ones with `text-on-danger`; the dark mapping makes those labels dark ink, so `text-white` on a brand background is a defect. `border-border-input` keeps form controls at 3:1 against their surface.
+- [BrandLogo](../apps/frontend/src/components/BrandLogo.tsx) renders the light and dark mark and lets CSS pick by the theme root, so pages that temporarily force light (the landing page) stay correct.
+- Logos, favicon and licensed fonts are served from `apps/frontend/public/brand/`. Regenerate them with `node site/sync-app-brand.mjs`; never edit them by hand.
+- The admin style guide reads its swatches from the live CSS variables, so it cannot drift from the tokens.
+
+Excalidraw content, collaborator colors, viewer/editor permissions and link expiry do not use the presentation palette and are unchanged. The guide's sharing samples are illustrative, not implemented dialogs.
 
 The selected kit replaces the former modular identity on the marketing site and README. [Logo exploration](branding/proposals/README.md) and [color studies](branding/COLOR_DIRECTIONS.md) remain archived context, not additional token sources.
+
+## Social preview and promotion
+
+`og:image` and `twitter:image` (the app's `index.html` and the Pages home) point at the absolute URL `https://rodacato.github.io/drawhaus/brand/assets/social-card.png`, built from [social-card.svg](branding/generated/social-card.svg). Platforms cache previews; refresh after changing the image.
+
+GitHub's repository social preview is an account setting and is **not** set by any commit. To update it manually: repository Settings → Social preview → Edit → Upload an image, and choose [social-card.png](branding/generated/social-card.png) (1200×630).
+
+Product promotion and diagram sharing are different tasks. The card, the site and the README promote the product with its public outcome. Inviting someone to a diagram uses the app's share links, which show role and expiry; private diagram names, thumbnails and invitation URLs never appear in public marketing images or metadata.
 
 ## Export a portable kit
 

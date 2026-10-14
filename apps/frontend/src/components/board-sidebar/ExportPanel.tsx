@@ -56,11 +56,11 @@ function DriveExportButton({
 
   return (
     <>
-      <div className="my-2 border-t border-gray-100" />
+      <div className="my-2 border-t border-border" />
       <button
         onClick={handleDriveExport}
         disabled={exporting}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-text-secondary transition hover:bg-selection disabled:opacity-50"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-500">
           <svg
@@ -76,7 +76,7 @@ function DriveExportButton({
         </span>
         <div>
           <div className="font-medium">{exporting ? "Saving..." : "Google Drive"}</div>
-          <div className="text-xs text-gray-400">Export to Drive</div>
+          <div className="text-xs text-text-muted">Export to Drive</div>
         </div>
       </button>
     </>
@@ -157,7 +157,9 @@ export function ExportPanel({
 
   return (
     <div className="space-y-1">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Export</h3>
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
+        Export
+      </h3>
       {status && (
         <div className="mb-2 rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
           {status}
@@ -165,7 +167,7 @@ export function ExportPanel({
       )}
       <button
         onClick={() => handleExport("png")}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-text-secondary transition hover:bg-selection"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-orange-500">
           <svg
@@ -183,12 +185,12 @@ export function ExportPanel({
         </span>
         <div>
           <div className="font-medium">PNG</div>
-          <div className="text-xs text-gray-400">Raster image</div>
+          <div className="text-xs text-text-muted">Raster image</div>
         </div>
       </button>
       <button
         onClick={() => handleExport("svg")}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-text-secondary transition hover:bg-selection"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-purple-500">
           <svg
@@ -206,15 +208,15 @@ export function ExportPanel({
         </span>
         <div>
           <div className="font-medium">SVG</div>
-          <div className="text-xs text-gray-400">Vector format</div>
+          <div className="text-xs text-text-muted">Vector format</div>
         </div>
       </button>
-      <div className="my-2 border-t border-gray-100" />
+      <div className="my-2 border-t border-border" />
       <button
         onClick={() => handleExport("copy")}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-text-secondary transition hover:bg-selection"
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-500">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-selection text-primary">
           <svg
             width="16"
             height="16"
@@ -229,7 +231,7 @@ export function ExportPanel({
         </span>
         <div>
           <div className="font-medium">Copy PNG</div>
-          <div className="text-xs text-gray-400">To clipboard</div>
+          <div className="text-xs text-text-muted">To clipboard</div>
         </div>
       </button>
       <DriveExportButton getSceneData={getSceneData} onStatus={setStatus} />

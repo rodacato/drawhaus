@@ -22,6 +22,7 @@ import { CodeImportPanel } from "./board-sidebar/CodeImportPanel";
 import { SnapshotPanel } from "./board-sidebar/SnapshotPanel";
 import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import type { Socket } from "socket.io-client";
+import { BrandLogo } from "@/components/BrandLogo";
 
 /* ───────────────────────── types ───────────────────────── */
 
@@ -111,18 +112,18 @@ export function BoardSidebar({
   return (
     <div id="board-sidebar" className="flex h-full shrink-0">
       {/* Icon bar */}
-      <div className="flex h-full w-14 flex-col items-center border-r border-gray-200 bg-white/95 backdrop-blur-sm py-3">
+      <div className="flex h-full w-14 flex-col items-center border-r border-border bg-surface-raised/95 backdrop-blur-sm py-3">
         {/* Logo — home nav */}
         <button
           type="button"
           onClick={handleLogoClick}
           title="Ir al Dashboard"
-          className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-gray-100"
+          className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-selection"
         >
-          <img src="/logo-icon.svg" alt="Drawhaus" className="h-7 w-7" />
+          <BrandLogo alt="Drawhaus" className="h-7 w-7" />
         </button>
 
-        <div className="mx-3 mb-3 h-px w-6 bg-gray-200" />
+        <div className="mx-3 mb-3 h-px w-6 bg-border" />
 
         {/* Create & Import */}
         {canEdit && (
@@ -136,7 +137,7 @@ export function BoardSidebar({
           </div>
         )}
 
-        {canEdit && <div className="mx-3 my-3 h-px w-6 bg-gray-200" />}
+        {canEdit && <div className="mx-3 my-3 h-px w-6 bg-border" />}
 
         {/* View & Collaborate */}
         <div className="flex flex-col items-center gap-1.5">
@@ -165,7 +166,7 @@ export function BoardSidebar({
           />
         </div>
 
-        <div className="mx-3 my-3 h-px w-6 bg-gray-200" />
+        <div className="mx-3 my-3 h-px w-6 bg-border" />
 
         {/* Save & History */}
         {canEdit && (

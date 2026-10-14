@@ -246,7 +246,7 @@ export function CommentsPanel({
           <button
             type="submit"
             disabled={pending || !newBody.trim()}
-            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-on-primary hover:bg-primary/90 disabled:opacity-50"
           >
             Post
           </button>
@@ -397,7 +397,7 @@ export function CommentsPanel({
                     <button
                       type="submit"
                       disabled={pending || !replyBody.trim()}
-                      className="rounded bg-primary px-2.5 py-1 text-[10px] font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+                      className="rounded bg-primary px-2.5 py-1 text-[10px] font-medium text-on-primary hover:bg-primary/90 disabled:opacity-50"
                     >
                       Reply
                     </button>

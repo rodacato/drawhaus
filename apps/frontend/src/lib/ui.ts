@@ -16,13 +16,13 @@ export const ui = {
   // Form
   label: "block space-y-1.5 text-sm font-medium text-text-secondary",
   input:
-    "block h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-text-primary outline-none transition placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/25",
+    "block h-10 w-full rounded-lg border border-border-input bg-surface-raised px-3 text-sm text-text-primary outline-none transition placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/40",
 
   // Buttons
-  btn: "inline-flex items-center justify-center rounded-lg px-4 h-10 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-  btnPrimary: "bg-primary text-white hover:bg-primary-hover shadow-sm",
+  btn: "inline-flex items-center justify-center rounded-lg px-4 h-10 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-50",
+  btnPrimary: "bg-primary text-on-primary hover:bg-primary-hover shadow-sm",
   btnSecondary: "border border-border bg-surface-raised text-text-primary hover:bg-surface",
-  btnDanger: "bg-danger text-white hover:bg-danger/90",
+  btnDanger: "bg-danger text-on-danger hover:bg-danger/90",
 
   // Feedback
   alertError: "rounded-lg border border-error/30 bg-error/10 px-3 py-2 text-sm text-error",

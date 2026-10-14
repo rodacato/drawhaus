@@ -283,7 +283,7 @@ export function WorkspaceSettingsContent({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-hover"
               type="button"
             >
               {saving ? "Saving..." : "Save Changes"}
@@ -322,7 +322,7 @@ export function WorkspaceSettingsContent({
             <button
               type="submit"
               disabled={inviting}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-hover"
             >
               {inviting ? "Sending..." : "Invite"}
             </button>
@@ -455,7 +455,7 @@ export function WorkspaceSettingsContent({
                 <button
                   onClick={handleTransferOwnership}
                   disabled={!transferTarget || transferring}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-hover disabled:opacity-50"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-hover disabled:opacity-50"
                   type="button"
                 >
                   {transferring ? "Transferring..." : "Confirm Transfer"}
@@ -483,7 +483,7 @@ export function WorkspaceSettingsContent({
           </p>
           <button
             onClick={handleDelete}
-            className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white transition hover:bg-error/80"
+            className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-on-danger transition hover:bg-error/80"
             type="button"
           >
             Delete Workspace

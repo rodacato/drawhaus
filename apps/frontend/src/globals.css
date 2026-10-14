@@ -3,7 +3,7 @@
 /* Static export keeps brand roles available to plain CSS integration as well as utilities. */
 @theme static {
   /* Ocean Ink presentation roles — docs/BRANDING.md.
-     Existing operational UI roles below are preserved until app adoption. */
+     Operational UI roles below resolve to these. */
   --color-brand-canvas: #f2f7fa;
   --color-brand-paper: #ffffff;
   --color-brand-ink: #102633;
@@ -39,34 +39,35 @@
   --text-brand-label: 0.875rem;
   --duration-brand-feedback: 120ms;
 
-  /* Operational application colors */
-  --color-primary: #0ea5e9;
-  --color-primary-hover: #0284c7;
+  /* Operational roles resolve to the brand roles, so the dark mapping below applies once. */
+  --color-primary: var(--color-brand-action);
+  --color-primary-hover: var(--color-brand-action-hover);
+  --color-on-primary: var(--color-brand-on-action);
   --color-accent-coral: #e95b2d;
   --color-accent-yellow: #fbbf24;
   --color-accent-orange: #f97316;
 
-  /* Surfaces (light defaults) */
-  --color-surface: #f8faf3;
-  --color-surface-raised: #ffffff;
+  --color-surface: var(--color-brand-canvas);
+  --color-surface-raised: var(--color-brand-paper);
   --color-surface-dark: #111827;
+  --color-selection: var(--color-brand-selection);
 
-  /* Borders */
-  --color-border: #e2e8f0;
-  --color-border-muted: #e2e8f0cc;
+  --color-border: var(--color-brand-line);
+  --color-border-muted: color-mix(in srgb, var(--color-brand-line) 80%, transparent);
+  --color-border-input: #6f8a97;
 
-  /* Text */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-muted: #94a3b8;
+  --color-text-primary: var(--color-brand-ink);
+  --color-text-secondary: var(--color-brand-secondary);
+  --color-text-muted: #587180;
 
-  --color-danger: #dc2626;
+  --color-danger: var(--color-brand-danger);
+  --color-on-danger: #ffffff;
 
   /* Semantic states */
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b87f6;
+  --color-success: var(--color-brand-success);
+  --color-warning: var(--color-brand-warning);
+  --color-error: var(--color-brand-danger);
+  --color-info: #2457d6;
 
   /* Typography */
   --font-family-heading: "Sora", system-ui, sans-serif;
@@ -76,29 +77,46 @@
 
 /* ── Dark mode overrides ── */
 :root.dark {
-  --color-surface: #101c22;
-  --color-surface-raised: #182b34;
+  --color-brand-canvas: var(--color-brand-dark);
+  --color-brand-paper: var(--color-brand-dark-paper);
+  --color-brand-ink: var(--color-brand-dark-ink);
+  --color-brand-secondary: var(--color-brand-dark-secondary);
+  --color-brand-line: var(--color-brand-dark-line);
+  --color-brand-action: var(--color-brand-dark-action);
+  --color-brand-action-hover: var(--color-brand-dark-action-hover);
+  --color-brand-on-action: var(--color-brand-dark);
+  --color-brand-selection: var(--color-brand-dark-paper);
+  --color-brand-logo-start: var(--color-brand-dark-logo-start);
+  --color-brand-logo-end: var(--color-brand-dark-logo-end);
+  --color-brand-success: var(--color-brand-dark-success);
+  --color-brand-danger: var(--color-brand-dark-danger);
+  --color-brand-warning: var(--color-brand-dark-warning);
+
   --color-surface-dark: #0c161a;
+  --color-border-input: #6a8d9c;
+  --color-text-muted: #94b3bd;
+  --color-on-danger: var(--color-brand-dark);
+  --color-info: var(--color-brand-dark-action);
+}
 
-  --color-border: #1e3a47;
-  --color-border-muted: #1e3a4799;
+.brand-on-dark {
+  display: none;
+}
 
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
+:root.dark .brand-on-light {
+  display: none;
+}
 
-  --color-primary: #0da2e7;
-  --color-primary-hover: #38bdf8;
-
-  --color-danger: #ef4444;
-
-  --color-success: #34d399;
-  --color-warning: #fbbf24;
-  --color-error: #f87171;
-  --color-info: #60a5fa;
+:root.dark .brand-on-dark {
+  display: block;
 }
 
 @layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
   body {
     font-family: var(--font-family-sans);
     color: var(--color-text-primary);

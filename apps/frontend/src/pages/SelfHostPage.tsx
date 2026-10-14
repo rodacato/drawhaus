@@ -1,5 +1,6 @@
 import { useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const AnimatedBackground = lazy(() =>
   import("@/components/AnimatedBackground").then((m) => ({ default: m.AnimatedBackground })),
@@ -46,7 +47,7 @@ export function SelfHostPage() {
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-surface/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-3">
-            <img src="/logo-icon.svg" className="h-9 w-9" alt="Drawhaus" />
+            <BrandLogo alt="Drawhaus" className="h-9 w-9" />
             <span className="font-sora text-xl font-semibold tracking-tight">Drawhaus</span>
           </Link>
 
@@ -279,7 +280,7 @@ git push origin master:production`}</CodeBlock>
               href={`${GITHUB_URL}#deployment`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-on-primary transition hover:opacity-90"
             >
               Full Deploy Guide
               <svg
@@ -344,7 +345,7 @@ git push origin master:production`}</CodeBlock>
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 py-10 sm:flex-row">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/logo-icon.svg" className="h-6 w-6" alt="Drawhaus" />
+            <BrandLogo alt="Drawhaus" className="h-6 w-6" />
             <span className="font-sora text-sm font-semibold">Drawhaus</span>
           </Link>
 

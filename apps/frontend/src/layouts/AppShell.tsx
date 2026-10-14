@@ -1,6 +1,7 @@
 import { Link, Outlet } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ui } from "@/lib/ui";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function AppShell() {
   return (
@@ -8,7 +9,7 @@ export function AppShell() {
       <header className="border-b border-border bg-surface-raised">
         <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/dashboard" className="flex items-center gap-2.5">
-            <img src="/logo-icon.svg" alt="" className="h-7 w-7" />
+            <BrandLogo alt="" className="h-7 w-7" />
             <span className="font-[family-name:var(--font-family-heading)] text-sm font-semibold tracking-tight text-text-primary">
               Drawhaus
             </span>
