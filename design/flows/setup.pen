@@ -1,0 +1,2388 @@
+{
+  "version": "2.21",
+  "children": [
+    {
+      "type": "frame",
+      "id": "U8aZp",
+      "x": 0,
+      "y": -400,
+      "name": "Kit (vendored 0.1.0)",
+      "fill": "$surface",
+      "cornerRadius": 8,
+      "stroke": "$border",
+      "strokeWidth": 1,
+      "gap": 24,
+      "padding": 24,
+      "children": [
+        {
+          "type": "frame",
+          "id": "dn1qE",
+          "name": "Button/Primary/Default",
+          "reusable": true,
+          "height": 40,
+          "fill": "$primary",
+          "cornerRadius": 8,
+          "padding": [
+            0,
+            16
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "MVDOS",
+              "name": "Label",
+              "fill": "$on-primary",
+              "content": "Button",
+              "fontFamily": "$font-sans",
+              "fontSize": 14,
+              "fontWeight": "500"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "lOIUx",
+          "name": "Field/Default",
+          "reusable": true,
+          "width": 320,
+          "layout": "vertical",
+          "gap": 6,
+          "children": [
+            {
+              "type": "text",
+              "id": "rEuqp",
+              "name": "Label",
+              "fill": "$text-secondary",
+              "content": "Email",
+              "fontFamily": "$font-sans",
+              "fontSize": 14,
+              "fontWeight": "500"
+            },
+            {
+              "type": "frame",
+              "id": "bmaOt",
+              "name": "Input",
+              "width": "fill_container",
+              "height": 40,
+              "fill": "$surface-raised",
+              "cornerRadius": 8,
+              "stroke": "$border-input",
+              "strokeWidth": 1,
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "cYQk8",
+                  "name": "Placeholder",
+                  "fill": "$text-muted",
+                  "content": "you@example.com",
+                  "fontFamily": "$font-sans",
+                  "fontSize": 14
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "LQHHQ",
+          "name": "Card",
+          "reusable": true,
+          "width": 300,
+          "fill": "$surface-raised",
+          "cornerRadius": 16,
+          "stroke": "$border",
+          "strokeWidth": 1,
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "$shadow-sm",
+            "offset": {
+              "x": 0,
+              "y": 1
+            },
+            "blur": 3
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "children": [
+            {
+              "type": "text",
+              "id": "VNV0t",
+              "name": "Title",
+              "fill": "$text-primary",
+              "content": "Card title",
+              "fontFamily": "$font-heading",
+              "fontSize": 18,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "Idhcd",
+              "name": "Body",
+              "fill": "$text-secondary",
+              "content": "Subtitle text",
+              "fontFamily": "$font-sans",
+              "fontSize": 14
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "mgvWZ",
+          "name": "Alert/Error",
+          "reusable": true,
+          "fill": "$error-10",
+          "cornerRadius": 8,
+          "stroke": "$error-30",
+          "strokeWidth": 1,
+          "padding": [
+            8,
+            12
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "w2Yw9I",
+              "name": "Message",
+              "fill": "$error",
+              "content": "Error",
+              "fontFamily": "$font-sans",
+              "fontSize": 14
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Mh6oZ",
+          "name": "BrandLogo/Mark",
+          "reusable": true,
+          "width": 40,
+          "height": 40,
+          "children": [
+            {
+              "type": "path",
+              "id": "XAR6U",
+              "name": "Looped d",
+              "geometry": "M76 20l-26 53c-15 14-37 2-34-16 2-18 26-23 38-9 11 16-13 35-26 24",
+              "viewBox": [
+                0,
+                0,
+                100,
+                100
+              ],
+              "fill": "#00000000",
+              "width": 40,
+              "height": 40,
+              "stroke": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 315,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "$brand-logo-start",
+                    "position": 0
+                  },
+                  {
+                    "color": "$brand-logo-end",
+                    "position": 1
+                  }
+                ]
+              },
+              "strokeWidth": 3.4,
+              "strokeLinejoin": "round",
+              "strokeLinecap": "round"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "gMesy",
+      "x": 760,
+      "y": 0,
+      "name": "Setup / Step 1 / Admin account",
+      "clip": true,
+      "width": 1280,
+      "height": 800,
+      "fill": "$surface",
+      "layout": "vertical",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "id": "SPh20",
+          "type": "ref",
+          "ref": "LQHHQ",
+          "name": "Setup card",
+          "width": 448,
+          "gap": 24,
+          "descendants": {
+            "VNV0t": {
+              "enabled": false
+            },
+            "Idhcd": {
+              "type": "frame",
+              "id": "qx2ct",
+              "name": "Content",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ADyv0",
+                  "name": "Header",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "LqZtB",
+                      "type": "ref",
+                      "ref": "Mh6oZ",
+                      "name": "Logo"
+                    },
+                    {
+                      "type": "text",
+                      "id": "VPliz",
+                      "name": "Title",
+                      "fill": "$text-primary",
+                      "content": "Setup",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 24,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "V0E38y",
+                      "name": "Progress",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "j19j7s",
+                          "name": "Admin Account",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Vvvtr",
+                              "name": "Badge",
+                              "width": 24,
+                              "height": 24,
+                              "cornerRadius": 999,
+                              "stroke": "$primary",
+                              "strokeWidth": 2,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "rQTcI",
+                                  "name": "Number",
+                                  "fill": "$primary",
+                                  "content": "1",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "cLILA",
+                              "name": "Step label",
+                              "fill": "$text-primary",
+                              "content": "Admin Account",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "lfB5y",
+                          "name": "Connector",
+                          "fill": "$border",
+                          "width": 24,
+                          "height": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ozCox",
+                          "name": "Instance Config",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "r5i0Mw",
+                              "name": "Badge",
+                              "width": 24,
+                              "height": 24,
+                              "cornerRadius": 999,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "T7RLhH",
+                                  "name": "Number",
+                                  "fill": "$text-muted",
+                                  "content": "2",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "zffoJ",
+                              "name": "Step label",
+                              "fill": "$text-muted",
+                              "content": "Instance Config",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "AYXCv",
+                          "name": "Connector",
+                          "fill": "$border",
+                          "width": 24,
+                          "height": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "O1oFR",
+                          "name": "Integrations",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "I1Aw6",
+                              "name": "Badge",
+                              "width": 24,
+                              "height": 24,
+                              "cornerRadius": 999,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "z5Y6B",
+                                  "name": "Number",
+                                  "fill": "$text-muted",
+                                  "content": "3",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "Y1FHdJ",
+                              "name": "Step label",
+                              "fill": "$text-muted",
+                              "content": "Integrations",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "X9wUs",
+                  "name": "Step",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "roe2D",
+                      "name": "Step header",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "g1LGuj",
+                          "name": "Title",
+                          "fill": "$text-primary",
+                          "content": "Create Admin Account",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 18,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "mm6fk",
+                          "name": "Subtitle",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "This will be the first admin user.",
+                          "fontFamily": "$font-sans",
+                          "fontSize": 14
+                        }
+                      ]
+                    },
+                    {
+                      "id": "YrJ8y",
+                      "type": "ref",
+                      "ref": "lOIUx",
+                      "name": "Field Name",
+                      "width": "fill_container",
+                      "descendants": {
+                        "rEuqp": {
+                          "content": "Name"
+                        },
+                        "cYQk8": {
+                          "content": ""
+                        }
+                      }
+                    },
+                    {
+                      "id": "xvuz1",
+                      "type": "ref",
+                      "ref": "lOIUx",
+                      "name": "Field Email",
+                      "width": "fill_container",
+                      "descendants": {
+                        "rEuqp": {
+                          "content": "Email"
+                        },
+                        "cYQk8": {
+                          "content": ""
+                        }
+                      }
+                    },
+                    {
+                      "id": "U9VCL",
+                      "type": "ref",
+                      "ref": "lOIUx",
+                      "name": "Field Password",
+                      "width": "fill_container",
+                      "descendants": {
+                        "rEuqp": {
+                          "content": "Password"
+                        },
+                        "cYQk8": {
+                          "content": ""
+                        }
+                      }
+                    },
+                    {
+                      "id": "G6eb9",
+                      "type": "ref",
+                      "ref": "dn1qE",
+                      "name": "Create admin account",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MVDOS": {
+                          "content": "Create admin account"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "mZkGp",
+      "x": 2160,
+      "y": 0,
+      "name": "Setup / Step 2 / Instance configuration",
+      "clip": true,
+      "width": 1280,
+      "height": 800,
+      "fill": "$surface",
+      "layout": "vertical",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "id": "AVKgj",
+          "type": "ref",
+          "ref": "LQHHQ",
+          "name": "Setup card",
+          "width": 448,
+          "gap": 24,
+          "descendants": {
+            "VNV0t": {
+              "enabled": false
+            },
+            "Idhcd": {
+              "type": "frame",
+              "id": "Kl1Hn",
+              "name": "Content",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "htsES",
+                  "name": "Header",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "Asqah",
+                      "type": "ref",
+                      "ref": "Mh6oZ",
+                      "name": "Logo"
+                    },
+                    {
+                      "type": "text",
+                      "id": "q2trb",
+                      "name": "Title",
+                      "fill": "$text-primary",
+                      "content": "Setup",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 24,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xuiny",
+                      "name": "Progress",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "IiQaK",
+                          "name": "Admin Account",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "uwyjv",
+                              "name": "Badge",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$primary",
+                              "cornerRadius": 999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "CPA9i",
+                                  "name": "Number",
+                                  "fill": "$on-primary",
+                                  "content": "✓",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "B7c7z",
+                              "name": "Step label",
+                              "fill": "$text-muted",
+                              "content": "Admin Account",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "KDf01",
+                          "name": "Connector",
+                          "fill": "$border",
+                          "width": 24,
+                          "height": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "f14LA",
+                          "name": "Instance Config",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "nQNQL",
+                              "name": "Badge",
+                              "width": 24,
+                              "height": 24,
+                              "cornerRadius": 999,
+                              "stroke": "$primary",
+                              "strokeWidth": 2,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "G1HI0D",
+                                  "name": "Number",
+                                  "fill": "$primary",
+                                  "content": "2",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "VZDMX",
+                              "name": "Step label",
+                              "fill": "$text-primary",
+                              "content": "Instance Config",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "SzH2J",
+                          "name": "Connector",
+                          "fill": "$border",
+                          "width": 24,
+                          "height": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "aEvGG",
+                          "name": "Integrations",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "F3NEXG",
+                              "name": "Badge",
+                              "width": 24,
+                              "height": 24,
+                              "cornerRadius": 999,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "AuZAl",
+                                  "name": "Number",
+                                  "fill": "$text-muted",
+                                  "content": "3",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "WCpXt",
+                              "name": "Step label",
+                              "fill": "$text-muted",
+                              "content": "Integrations",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KFSVi",
+                  "name": "Step",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "QDEsT",
+                      "name": "Step header",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "tq1RO",
+                          "name": "Title",
+                          "fill": "$text-primary",
+                          "content": "Instance Configuration",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 18,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RvTpt",
+                          "name": "Subtitle",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Name your instance and choose who can sign up.",
+                          "fontFamily": "$font-sans",
+                          "fontSize": 14
+                        }
+                      ]
+                    },
+                    {
+                      "id": "kCtzH",
+                      "type": "ref",
+                      "ref": "lOIUx",
+                      "name": "Field Instance Name",
+                      "width": "fill_container",
+                      "descendants": {
+                        "rEuqp": {
+                          "content": "Instance Name"
+                        },
+                        "cYQk8": {
+                          "content": "Drawhaus"
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "w1htx",
+                      "name": "Allow public registration",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "C1sH5",
+                          "name": "Checkbox",
+                          "width": 16,
+                          "height": 16,
+                          "fill": "$primary",
+                          "cornerRadius": 4,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "yLRHW",
+                              "name": "check",
+                              "width": 12,
+                              "height": 12,
+                              "icon": "check",
+                              "library": "feather",
+                              "fill": "$on-primary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "DjmLX",
+                          "name": "Label",
+                          "fill": "$text-secondary",
+                          "content": "Allow public registration",
+                          "fontFamily": "$font-sans",
+                          "fontSize": 14
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "s48fZ",
+                      "name": "Database Backups",
+                      "width": "fill_container",
+                      "stroke": "$border",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": [
+                        16,
+                        0,
+                        0,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "CZ7rF",
+                          "name": "Heading",
+                          "fill": "$text-primary",
+                          "content": "Database Backups",
+                          "fontFamily": "$font-sans",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "j7A9S",
+                          "name": "Enable automated backups",
+                          "gap": 12,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Wqw4S",
+                              "name": "Checkbox",
+                              "width": 16,
+                              "height": 16,
+                              "fill": "$primary",
+                              "cornerRadius": 4,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "l6KGz",
+                                  "name": "check",
+                                  "width": 12,
+                                  "height": 12,
+                                  "icon": "check",
+                                  "library": "feather",
+                                  "fill": "$on-primary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "r480w",
+                              "name": "Label",
+                              "fill": "$text-secondary",
+                              "content": "Enable automated backups",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 14
+                            }
+                          ]
+                        },
+                        {
+                          "id": "K5YBlP",
+                          "type": "ref",
+                          "ref": "lOIUx",
+                          "name": "Field Cron Schedule",
+                          "width": "fill_container",
+                          "descendants": {
+                            "rEuqp": {
+                              "content": "Cron Schedule"
+                            },
+                            "cYQk8": {
+                              "content": "0 3 * * *"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "tPtUC",
+                          "name": "Hint",
+                          "fill": "$text-muted",
+                          "content": "Daily at 3AM UTC. Use crontab syntax.",
+                          "fontFamily": "$font-sans",
+                          "fontSize": 12
+                        },
+                        {
+                          "id": "olTwU",
+                          "type": "ref",
+                          "ref": "lOIUx",
+                          "name": "Field Retention (days)",
+                          "width": "fill_container",
+                          "descendants": {
+                            "rEuqp": {
+                              "content": "Retention (days)"
+                            },
+                            "cYQk8": {
+                              "content": "7"
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "WdxB2",
+                          "name": "Hint",
+                          "fill": "$text-muted",
+                          "content": "Backups older than this are deleted automatically.",
+                          "fontFamily": "$font-sans",
+                          "fontSize": 12
+                        }
+                      ]
+                    },
+                    {
+                      "id": "cbL2W",
+                      "type": "ref",
+                      "ref": "dn1qE",
+                      "name": "Continue",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MVDOS": {
+                          "content": "Continue"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "TPyUd",
+      "x": 3560,
+      "y": 0,
+      "name": "Setup / Step 3 / Integrations",
+      "clip": true,
+      "width": 1280,
+      "height": 800,
+      "fill": "$surface",
+      "layout": "vertical",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "id": "AxKMA",
+          "type": "ref",
+          "ref": "LQHHQ",
+          "name": "Setup card",
+          "width": 448,
+          "gap": 24,
+          "descendants": {
+            "VNV0t": {
+              "enabled": false
+            },
+            "Idhcd": {
+              "type": "frame",
+              "id": "zCLo8",
+              "name": "Content",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NParg",
+                  "name": "Header",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "nEDp1",
+                      "type": "ref",
+                      "ref": "Mh6oZ",
+                      "name": "Logo"
+                    },
+                    {
+                      "type": "text",
+                      "id": "yvD63",
+                      "name": "Title",
+                      "fill": "$text-primary",
+                      "content": "Setup",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 24,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kL4kS",
+                      "name": "Progress",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "V0v2x",
+                          "name": "Admin Account",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "bid7y",
+                              "name": "Badge",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$primary",
+                              "cornerRadius": 999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "UNU8z",
+                                  "name": "Number",
+                                  "fill": "$on-primary",
+                                  "content": "✓",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "A25UAt",
+                              "name": "Step label",
+                              "fill": "$text-muted",
+                              "content": "Admin Account",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "hiTph",
+                          "name": "Connector",
+                          "fill": "$primary",
+                          "width": 24,
+                          "height": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "P8c2JM",
+                          "name": "Instance Config",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "k7HGR",
+                              "name": "Badge",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$primary",
+                              "cornerRadius": 999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "l6nirI",
+                                  "name": "Number",
+                                  "fill": "$on-primary",
+                                  "content": "✓",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "ykgQl",
+                              "name": "Step label",
+                              "fill": "$text-muted",
+                              "content": "Instance Config",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "rectangle",
+                          "id": "oORwK",
+                          "name": "Connector",
+                          "fill": "$border",
+                          "width": 24,
+                          "height": 1
+                        },
+                        {
+                          "type": "frame",
+                          "id": "G5li5",
+                          "name": "Integrations",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "yJtQL",
+                              "name": "Badge",
+                              "width": 24,
+                              "height": 24,
+                              "cornerRadius": 999,
+                              "stroke": "$primary",
+                              "strokeWidth": 2,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "v9AkN",
+                                  "name": "Number",
+                                  "fill": "$primary",
+                                  "content": "3",
+                                  "fontFamily": "$font-sans",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "k3HmJF",
+                              "name": "Step label",
+                              "fill": "$text-primary",
+                              "content": "Integrations",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BQl8n",
+                  "name": "Step",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "tf83R",
+                      "name": "Step header",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 4,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "kMrnH",
+                          "name": "Title",
+                          "fill": "$text-primary",
+                          "content": "Integrations",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 18,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "APaKK",
+                          "name": "Subtitle",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Configure optional integrations like Google OAuth, email, and error monitoring. You can set these up later from the admin settings.",
+                          "fontFamily": "$font-sans",
+                          "fontSize": 14
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hV6nk",
+                      "name": "Integrations list",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "y1rk1P",
+                          "name": "Google OAuth",
+                          "width": "fill_container",
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 2,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "kfBkU",
+                              "name": "Title",
+                              "fill": "$text-primary",
+                              "content": "Google OAuth",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "qEDtA",
+                              "name": "Description",
+                              "fill": "$text-muted",
+                              "content": "Enable Google login and Drive integration",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "MTxdu",
+                          "name": "Email (Resend)",
+                          "width": "fill_container",
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 2,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "QlVjS",
+                              "name": "Title",
+                              "fill": "$text-primary",
+                              "content": "Email (Resend)",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ZK4Ex",
+                              "name": "Description",
+                              "fill": "$text-muted",
+                              "content": "Send invitations and password reset emails",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "R17L1",
+                          "name": "Error Monitoring",
+                          "width": "fill_container",
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 2,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "MOzcg",
+                              "name": "Title",
+                              "fill": "$text-primary",
+                              "content": "Error Monitoring",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "v2MlqY",
+                              "name": "Description",
+                              "fill": "$text-muted",
+                              "content": "Sentry error tracking",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 12
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "g675MO",
+                      "name": "Coming soon note",
+                      "fill": "$text-muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "These integrations will be configurable from the admin panel once integration secrets are stored in the database (coming soon).",
+                      "fontFamily": "$font-sans",
+                      "fontSize": 12
+                    },
+                    {
+                      "id": "Cws6D",
+                      "type": "ref",
+                      "ref": "dn1qE",
+                      "name": "Skip for now & finish setup",
+                      "width": "fill_container",
+                      "descendants": {
+                        "MVDOS": {
+                          "content": "Skip for now & finish setup"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "dSiAe",
+      "x": 4960,
+      "y": 0,
+      "name": "Setup / Loading",
+      "clip": true,
+      "width": 1280,
+      "height": 800,
+      "fill": "$surface",
+      "layout": "vertical",
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "O2fyE",
+          "name": "Message",
+          "fill": "$text-muted",
+          "content": "Loading...",
+          "fontFamily": "$font-sans",
+          "fontSize": 14
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "kRug3",
+      "x": 0,
+      "y": 0,
+      "name": "Setup / Brief",
+      "width": 640,
+      "fill": "$surface-raised",
+      "cornerRadius": 16,
+      "stroke": "$border",
+      "strokeWidth": 1,
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 32,
+      "children": [
+        {
+          "type": "text",
+          "id": "kLuw2",
+          "name": "Title",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Setup — brief",
+          "fontFamily": "$font-heading",
+          "fontSize": 24,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "rEq81",
+          "name": "1 Purpose",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "1 Purpose",
+          "fontFamily": "$font-sans",
+          "fontSize": 14,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "V2MNoB",
+          "name": "1 Purpose body",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "First-run wizard for a fresh instance: create the admin, name the instance and set registration and backups, then optionally note integrations.",
+          "lineHeight": 1.45,
+          "fontFamily": "$font-sans",
+          "fontSize": 14
+        },
+        {
+          "type": "text",
+          "id": "sV27w",
+          "name": "2 Entry points",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "2 Entry points",
+          "fontFamily": "$font-sans",
+          "fontSize": 14,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "R2aYKB",
+          "name": "2 Entry points body",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "/setup. AuthLayout redirects any visitor there while the instance needs setup; a completed setup redirects /setup to /login. Registering the first user auto-completes setup (the page re-checks status after each step).",
+          "lineHeight": 1.45,
+          "fontFamily": "$font-sans",
+          "fontSize": 14
+        },
+        {
+          "type": "text",
+          "id": "gqmw1",
+          "name": "3 Screens",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "3 Screens",
+          "fontFamily": "$font-sans",
+          "fontSize": 14,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "Hbcg1",
+          "name": "3 Screens body",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Step 1 Admin account · Step 2 Instance configuration · Step 3 Integrations · Loading. Base frame 1280×800, light theme, one card of 448 px. There is no back button.",
+          "lineHeight": 1.45,
+          "fontFamily": "$font-sans",
+          "fontSize": 14
+        },
+        {
+          "type": "text",
+          "id": "C8wHNI",
+          "name": "4 Business rules",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "4 Business rules",
+          "fontFamily": "$font-sans",
+          "fontSize": 14,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "h3P3Gb",
+          "name": "4 Business rules body",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "The first registered user becomes admin. Defaults: instance name Drawhaus, public registration on, backups on, cron 0 3 * * * (UTC), retention 7 days (1–365). Password min. 8 characters. Step 3 only skips; nothing is configured there.",
+          "lineHeight": 1.45,
+          "fontFamily": "$font-sans",
+          "fontSize": 14
+        },
+        {
+          "type": "text",
+          "id": "luB4Q",
+          "name": "5 Copy source",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "5 Copy source",
+          "fontFamily": "$font-sans",
+          "fontSize": 14,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "MDdYA",
+          "name": "5 Copy source body",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "pages/Setup.tsx and components/setup/*. Fields in step 1 have no placeholders in the code, so none are drawn. Hints sit under their field.",
+          "lineHeight": 1.45,
+          "fontFamily": "$font-sans",
+          "fontSize": 14
+        },
+        {
+          "type": "text",
+          "id": "mSoBw",
+          "name": "6 States not drawn",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "6 States not drawn",
+          "fontFamily": "$font-sans",
+          "fontSize": 14,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "Z8jjE",
+          "name": "6 States not drawn body",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Pending labels (“Creating...”, “Saving...”, “Finishing...”), the error alert under each form (same alert as Auth), validation messages, dark theme, a 320 px layout. Checkboxes are drawn as the app's default-checked state.",
+          "lineHeight": 1.45,
+          "fontFamily": "$font-sans",
+          "fontSize": 14
+        },
+        {
+          "type": "text",
+          "id": "ySxAa",
+          "name": "7 Open findings",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "7 Open findings",
+          "fontFamily": "$font-sans",
+          "fontSize": 14,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "xm9bQ",
+          "name": "7 Open findings body",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "D4 no blobs or theme toggle here · D26 step 3 says integration secrets are “coming soon” but the admin panel already has them · D27 finishing setup from step 3 fails silently and still navigates · D28 checkbox border is 1.24:1 and step 1 has no show/hide password · D29 the progress row is 416 px in a 400 px area.",
+          "lineHeight": 1.45,
+          "fontFamily": "$font-sans",
+          "fontSize": 14
+        },
+        {
+          "type": "text",
+          "id": "DcCrx",
+          "name": "8 History",
+          "fill": "$text-secondary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "8 History",
+          "fontFamily": "$font-sans",
+          "fontSize": 14,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "y0w79L",
+          "name": "8 History body",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "See the Log frame below this band.",
+          "lineHeight": 1.45,
+          "fontFamily": "$font-sans",
+          "fontSize": 14
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "b1aMTz",
+      "x": 0,
+      "y": 1160,
+      "name": "LOG — Setup",
+      "width": 640,
+      "fill": "$surface-raised",
+      "cornerRadius": 16,
+      "stroke": "$border",
+      "strokeWidth": 1,
+      "layout": "vertical",
+      "gap": 8,
+      "padding": 32,
+      "children": [
+        {
+          "type": "text",
+          "id": "uPzeb",
+          "name": "Title",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "LOG — Setup",
+          "fontFamily": "$font-heading",
+          "fontSize": 18,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "l0ZH9m",
+          "name": "Entry",
+          "fill": "$text-primary",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "2026-10-14 · Drawn from the code at master 019a73a on kit 0.1.0: 4 screens. Findings D26–D29 logged; D4 cited.",
+          "fontFamily": "$font-sans",
+          "fontSize": 14
+        }
+      ]
+    }
+  ],
+  "themes": {
+    "mode": [
+      "light",
+      "dark"
+    ]
+  },
+  "variables": {
+    "kit-version-source": {
+      "type": "string",
+      "value": "0.1.0"
+    },
+    "grid-x0": {
+      "type": "number",
+      "value": 0
+    },
+    "grid-brief-w": {
+      "type": "number",
+      "value": 640
+    },
+    "grid-gutter": {
+      "type": "number",
+      "value": 120
+    },
+    "grid-y0": {
+      "type": "number",
+      "value": 0
+    },
+    "grid-row-gap": {
+      "type": "number",
+      "value": 260
+    },
+    "brand-canvas": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#f2f7fa",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#10232e",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-paper": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#ffffff",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#193440",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-ink": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#102633",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#ecf6fa",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-secondary": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#496270",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#adcdd6",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-line": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#d1e2e8",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#365461",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-action": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2457d6",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#82adff",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-action-hover": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#1642b2",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#a7c5ff",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-on-action": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#ffffff",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#10232e",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-selection": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#e2f0f5",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#193440",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-logo-start": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2457d6",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#82adff",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-logo-end": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#087e84",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#4dd6c9",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-success": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#176344",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#86d7af",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-danger": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#b42318",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#ffb4a9",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "brand-warning": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#8a4b08",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#f2c17b",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "primary": {
+      "type": "color",
+      "value": "$brand-action"
+    },
+    "primary-hover": {
+      "type": "color",
+      "value": "$brand-action-hover"
+    },
+    "on-primary": {
+      "type": "color",
+      "value": "$brand-on-action"
+    },
+    "surface": {
+      "type": "color",
+      "value": "$brand-canvas"
+    },
+    "surface-raised": {
+      "type": "color",
+      "value": "$brand-paper"
+    },
+    "surface-dark": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#111827",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#0c161a",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "selection": {
+      "type": "color",
+      "value": "$brand-selection"
+    },
+    "border": {
+      "type": "color",
+      "value": "$brand-line"
+    },
+    "border-input": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#6f8a97",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#6a8d9c",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "$brand-ink"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "$brand-secondary"
+    },
+    "text-muted": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#587180",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#94b3bd",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "danger": {
+      "type": "color",
+      "value": "$brand-danger"
+    },
+    "on-danger": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#ffffff",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#10232e",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "success": {
+      "type": "color",
+      "value": "$brand-success"
+    },
+    "warning": {
+      "type": "color",
+      "value": "$brand-warning"
+    },
+    "error": {
+      "type": "color",
+      "value": "$brand-danger"
+    },
+    "info": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2457d6",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#82adff",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "accent-coral": {
+      "type": "color",
+      "value": "#e95b2d"
+    },
+    "accent-yellow": {
+      "type": "color",
+      "value": "#fbbf24"
+    },
+    "accent-orange": {
+      "type": "color",
+      "value": "#f97316"
+    },
+    "font-heading": {
+      "type": "string",
+      "value": "Sora"
+    },
+    "font-sans": {
+      "type": "string",
+      "value": "Inter"
+    },
+    "font-mono": {
+      "type": "string",
+      "value": "JetBrains Mono"
+    },
+    "radius-control": {
+      "type": "number",
+      "value": 8
+    },
+    "radius-card": {
+      "type": "number",
+      "value": 16
+    },
+    "error-10": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#b423181a",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#ffb4a91a",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "error-15": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#b4231826",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#ffb4a926",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "error-20": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#b4231833",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#ffb4a933",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "error-25": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#b4231840",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#ffb4a940",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "error-30": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#b423184d",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#ffb4a94d",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "success-10": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#1763441a",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#86d7af1a",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "success-15": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#17634426",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#86d7af26",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "success-20": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#17634433",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#86d7af33",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "success-25": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#17634440",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#86d7af40",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "success-30": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#1763444d",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#86d7af4d",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "warning-10": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#8a4b081a",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#f2c17b1a",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "warning-20": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#8a4b0833",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#f2c17b33",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "primary-10": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2457d61a",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#82adff1a",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "primary-15": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2457d626",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#82adff26",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "primary-25": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2457d640",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#82adff40",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "coral-10": {
+      "type": "color",
+      "value": "#e95b2d1a"
+    },
+    "shadow-sm": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#0000000d",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#0000004d",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "shadow-lg": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#00000026",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#00000080",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "white": {
+      "type": "color",
+      "value": "#ffffff"
+    }
+  },
+  "fileToken": "6834f5af-d12d-417e-b728-f6a369cfe0d4"
+}

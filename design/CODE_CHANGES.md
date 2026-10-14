@@ -68,3 +68,12 @@
 - `BoardEditor.tsx:65,76,84,182`: one language, with accents.
 - Pass the app theme to Excalidraw (`ExcalidrawCanvas.tsx`) and decide how exports behave.
 - `DiagramCard.tsx:535`: omit the date line when there is no timestamp.
+
+## 8. Setup wizard (D26, D27, D28, D29)
+
+**Status:** open · D27 is a bug with no design dependency
+
+- `Setup.tsx:32-39`: on a failed `setupApi.complete()`, toast the error and stay on step 3.
+- `SetupStep3.tsx`: replace the “coming soon” note (the secrets panel exists in `AdminSettings.tsx`).
+- `SetupStep2.tsx`: checkbox border `border-input`; `SetupStep1.tsx`: show/hide password with the aria-label from item 1.
+- `SetupProgress.tsx`: stop overflowing the 400 px content area.
