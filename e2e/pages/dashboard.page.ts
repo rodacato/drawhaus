@@ -9,7 +9,7 @@ export class DashboardPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.locator("main h2").first();
+    this.heading = page.locator("main h1").first();
     this.searchInput = page.locator('input[type="search"]');
     this.newDiagramButton = page.getByRole("button", {
       name: /new diagram/i,
