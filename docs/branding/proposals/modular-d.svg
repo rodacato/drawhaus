@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-labelledby="title">
+  <title id="title">Drawhaus proposal E: Modular D</title>
+  <rect x="22" y="22" width="14" height="56" rx="3" fill="#254E8E"/>
+  <path d="M44 22H52C70 22 82 33 82 50S70 78 52 78H44V64H52C62 64 68 59 68 50S62 36 52 36H44Z" fill="#C05732"/>
+</svg>
