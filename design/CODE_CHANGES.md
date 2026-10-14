@@ -45,7 +45,23 @@
 - `DiagramCard.tsx` (Delete item, tag pill, star), `lib/save-state.ts`, `ConnectionBadge.tsx`, `DriveSyncBadge.tsx`, `CollaborationBadge.tsx`, `FolderSection.tsx`, `board-sidebar/*`, `CodeImportPanel.tsx`, `ExportPanel.tsx`.
 - `lib/save-state.ts` has a test asserting `bg-white` for the idle state; update it with the change.
 
-## 5. Copy and canvas theme (D11, D13, D18)
+## 5. Share links: validate, report errors, honour expiry (D19, D20, D22, D21)
+
+**Status:** open · three bugs with no design dependency
+
+- `BoardEditor.tsx:198-202`: drop the `localStorage` link cache or re-validate it against the server; offer role and expiry in the drawer.
+- `SharePanel.tsx:38,178`, `ShareModal.tsx:62,105,117`: replace the silent `catch` blocks with `toast(…, "error")`.
+- `ShareModal.tsx:96-98`: number input with `min=1 max=30`, reject 0 and negatives client-side (API accepts 1–720 hours, `share.routes.ts:15`).
+- `ShareModal.tsx` URL preview: use a text token with 4.5:1 on `surface-dark`.
+
+## 6. One dialog primitive (D25, D24)
+
+**Status:** open · measured: 7 hand-rolled overlays besides `ConfirmDialog`
+
+- `BoardSidebar.tsx` (leave), `OfflineRecoveryDialog.tsx`, `TemplatePicker.tsx`, `ShareModal.tsx`, `SnapshotPreview.tsx`, `SnapshotPanel.tsx`, `AdminUsers.tsx`.
+- `pages/Share.tsx:38-45`: render the failed-link state with the auth card pattern.
+
+## 7. Copy and canvas theme (D11, D13, D18)
 
 **Status:** open · product calls
 

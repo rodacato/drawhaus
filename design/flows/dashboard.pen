@@ -3,18 +3,6 @@
   "children": [
     {
       "type": "frame",
-      "id": "bi8Au",
-      "x": 0,
-      "y": 0,
-      "name": "Frame",
-      "clip": true,
-      "width": 800,
-      "height": 600,
-      "fill": "#FFFFFF",
-      "layout": "none"
-    },
-    {
-      "type": "frame",
       "id": "edBSm",
       "x": 0,
       "y": -500,
@@ -4956,6 +4944,74 @@
     "white": {
       "type": "color",
       "value": "#ffffff"
+    },
+    "warning-10": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#8a4b081a",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#f2c17b1a",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "warning-20": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#8a4b0833",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#f2c17b33",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "success-20": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#17634433",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#86d7af33",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "error-20": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#b4231833",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#ffb4a933",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
     }
   },
   "fileToken": "6834f5af-d12d-417e-b728-f6a369cfe0d4"
