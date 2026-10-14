@@ -18,8 +18,8 @@ import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import { useComments } from "@/lib/hooks/useComments";
 import { useDriveSyncStatus } from "@/lib/hooks/useDriveSyncStatus";
+import { findOrCreateShareUrl } from "@/lib/share-links";
 import { useBoardShortcuts } from "@/lib/hooks/useBoardShortcuts";
-import { shareApi } from "@/api/share";
 import { diagramsApi } from "@/api/diagrams";
 import type { AppState } from "@excalidraw/excalidraw/types";
 import { applyLocalScene } from "@/lib/excalidraw";
@@ -196,28 +196,7 @@ export default function BoardEditor({
   });
 
   const handleCreateShareLink = useCallback(
-    async (role: "viewer" | "editor"): Promise<string | null> => {
-      const cacheShareKey = `drawhaus_share_${diagramId}_${role}`;
-      const cached = localStorage.getItem(cacheShareKey);
-      if (cached) return cached;
-
-      try {
-        const payload = await shareApi.create(diagramId, role);
-        const token = payload.shareLink?.token;
-        if (token) {
-          const url = `${globalThis.location.origin}/share/${token}`;
-          try {
-            localStorage.setItem(cacheShareKey, url);
-          } catch {
-            /* quota */
-          }
-          return url;
-        }
-        return null;
-      } catch {
-        return null;
-      }
-    },
+    (role: "viewer" | "editor") => findOrCreateShareUrl(diagramId, role),
     [diagramId],
   );
 

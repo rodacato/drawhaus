@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Dialog } from "@/components/Dialog";
 import { ui } from "@/lib/ui";
 import { shareApi } from "@/api/share";
+import { useToast } from "@/components/Toast";
 import {
   IconShare,
   IconX,
@@ -14,6 +15,14 @@ import {
   IconLink,
 } from "@/components/Icons";
 import { isExpired, formatRelativeDate } from "@/lib/format-utils";
+
+const MAX_EXPIRY_DAYS = 30;
+
+function parseExpiryDays(value: string): number | undefined | "invalid" {
+  if (!value.trim()) return undefined;
+  const days = Number(value);
+  return Number.isInteger(days) && days >= 1 && days <= MAX_EXPIRY_DAYS ? days : "invalid";
+}
 
 type ShareLink = {
   token: string;
@@ -46,6 +55,8 @@ interface ShareModalProps {
 export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
   const [selectedRole, setSelectedRole] = useState("viewer");
   const [expiresIn, setExpiresIn] = useState("");
+  const toast = useToast();
+  const expiryDays = parseExpiryDays(expiresIn);
   const [copied, setCopied] = useState(false);
   const [createdToken, setCreatedToken] = useState<string | null>(null);
   const [links, setLinks] = useState<ShareLink[]>([]);
@@ -60,11 +71,11 @@ export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
       const data = await shareApi.list(diagramId);
       setLinks(data.links ?? []);
     } catch {
-      // silently fail — user sees empty list
+      toast("Could not load the share links", "error");
     } finally {
       setLoadingLinks(false);
     }
-  }, [diagramId]);
+  }, [diagramId, toast]);
 
   // Load links when modal opens
   useEffect(() => {
@@ -80,11 +91,10 @@ export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
     : `${globalThis.location.origin}/share/...`;
 
   const handleCreateAndCopy = useCallback(async () => {
-    if (creating) return;
+    if (creating || expiryDays === "invalid") return;
     setCreating(true);
     try {
-      const days = expiresIn.trim() ? Number.parseInt(expiresIn.trim(), 10) : undefined;
-      const expiresInHours = days && !Number.isNaN(days) ? days * 24 : undefined;
+      const expiresInHours = expiryDays === undefined ? undefined : expiryDays * 24;
       const data = await shareApi.create(diagramId, selectedRole, expiresInHours);
       const token = data.shareLink?.token ?? data.token;
       setCreatedToken(token);
@@ -93,11 +103,11 @@ export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
       setCopied(true);
       await loadLinks();
     } catch {
-      // could show error toast
+      toast("Could not create the share link", "error");
     } finally {
       setCreating(false);
     }
-  }, [creating, diagramId, selectedRole, expiresIn, loadLinks]);
+  }, [creating, diagramId, selectedRole, expiryDays, loadLinks, toast]);
 
   const handleDeleteLink = useCallback(
     async (token: string) => {
@@ -105,17 +115,24 @@ export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
         await shareApi.deleteLink(token);
         await loadLinks();
       } catch {
-        // silently fail
+        toast("Could not delete the link", "error");
       }
     },
-    [loadLinks],
+    [loadLinks, toast],
   );
 
-  const handleCopyExistingLink = useCallback(async (token: string) => {
-    const url = `${globalThis.location.origin}/share/${token}`;
-    await navigator.clipboard.writeText(url);
-    setCopiedToken(token);
-  }, []);
+  const handleCopyExistingLink = useCallback(
+    async (token: string) => {
+      const url = `${globalThis.location.origin}/share/${token}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopiedToken(token);
+      } catch {
+        toast("Could not copy the link", "error");
+      }
+    },
+    [toast],
+  );
 
   // Reset copied state after 2 seconds
   useEffect(() => {
@@ -280,29 +297,39 @@ export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
                     <IconCalendar size={14} />
                   </span>
                   <input
-                    type="text"
+                    type="number"
+                    min={1}
+                    max={MAX_EXPIRY_DAYS}
+                    step={1}
                     placeholder="e.g. 7"
                     value={expiresIn}
                     onChange={(e) => setExpiresIn(e.target.value)}
+                    aria-invalid={expiryDays === "invalid"}
+                    aria-describedby={expiryDays === "invalid" ? "share-expiry-error" : undefined}
                     className={`${ui.input} pl-8`}
                   />
                 </div>
+                {expiryDays === "invalid" && (
+                  <p id="share-expiry-error" role="alert" className="text-xs text-error">
+                    Enter a whole number of days from 1 to {MAX_EXPIRY_DAYS}.
+                  </p>
+                )}
               </label>
             </div>
 
             {/* Generated link preview */}
             <div className="mt-3 flex items-center gap-2">
               <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-surface-dark px-3 py-2.5">
-                <span className="text-text-muted/60 shrink-0">
+                <span className="shrink-0 text-white/60">
                   <IconLink size={14} />
                 </span>
-                <span className="truncate font-[family-name:var(--font-family-mono)] text-xs text-text-muted">
+                <span className="truncate font-[family-name:var(--font-family-mono)] text-xs text-white/80">
                   {linkUrl}
                 </span>
               </div>
               <button
                 onClick={handleCreateAndCopy}
-                disabled={creating}
+                disabled={creating || expiryDays === "invalid"}
                 className={`${ui.btn} ${ui.btnPrimary} shrink-0 gap-1.5`}
               >
                 {renderCopyButtonContent({ copied, creating })}
