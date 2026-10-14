@@ -167,7 +167,7 @@ export function BoardToolbarPanel({
         <div className="p-4 space-y-1 max-h-80 overflow-y-auto">
           {selfUser && (
             <div className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 bg-selection">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-600">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-success/10 text-xs font-bold text-success">
                 {(selfUser.name || "?")[0].toUpperCase()}
               </span>
               <div className="flex-1">
@@ -279,12 +279,12 @@ export function BoardToolbarPanel({
               Can edit
             </button>
           </div>
-          {shareError && <p className="text-xs font-medium text-red-600">{shareError}</p>}
+          {shareError && <p className="text-xs font-medium text-error">{shareError}</p>}
           {shareUrl && (
             <div className="rounded-xl bg-selection p-3 space-y-1.5">
               <p className="break-all text-xs text-text-muted font-mono">{shareUrl}</p>
               <p
-                className={`text-xs font-medium ${shareCopied ? "text-emerald-600" : "text-text-muted"}`}
+                className={`text-xs font-medium ${shareCopied ? "text-success" : "text-text-muted"}`}
               >
                 {shareCopied ? "Copied to clipboard!" : ""}
               </p>

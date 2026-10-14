@@ -9,11 +9,11 @@ const SAVE_LABELS: Record<SaveState, string> = {
 };
 
 const SAVE_COLORS: Record<SaveState, string> = {
-  idle: "bg-white/80 text-black/70",
-  pending: "bg-amber-100 text-amber-700",
-  saving: "bg-blue-100 text-blue-700",
-  saved: "bg-emerald-100 text-emerald-700",
-  error: "bg-red-100 text-red-700",
+  idle: "bg-surface-raised/90 text-text-secondary ring-1 ring-border",
+  pending: "bg-surface-raised/90 text-warning ring-1 ring-warning/30",
+  saving: "bg-surface-raised/90 text-info ring-1 ring-info/30",
+  saved: "bg-surface-raised/90 text-success ring-1 ring-success/30",
+  error: "bg-surface-raised/90 text-error ring-1 ring-error/30",
 };
 
 export function deriveSaveLabel(state: SaveState, lastSavedAt: string | null): string {

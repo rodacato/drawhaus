@@ -295,7 +295,7 @@ export default function BoardEditor({
                 />
               ) : (
                 <button
-                  className="text-left text-lg font-medium text-text-primary hover:text-blue-600 transition-colors"
+                  className="text-left text-lg font-medium text-text-primary hover:text-info transition-colors"
                   onClick={startEditingTitle}
                   title={canEdit ? "Click to rename" : undefined}
                 >
@@ -303,7 +303,7 @@ export default function BoardEditor({
                 </button>
               )}
               {createdVia && createdVia !== "ui" && (
-                <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-600">
+                <span className="ml-2 rounded-full bg-accent-violet/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-violet">
                   {createdVia}
                 </span>
               )}

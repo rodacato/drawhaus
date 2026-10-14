@@ -207,7 +207,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
 
       {/* PlantUML validation feedback (no SVG preview yet) */}
       {validationInfo && format === "plantuml" && !error && (
-        <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700 flex items-center gap-1.5">
+        <div className="rounded-lg bg-success/10 border border-success/30 px-3 py-2 text-xs text-success flex items-center gap-1.5">
           <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
             <path
               fillRule="evenodd"
@@ -223,7 +223,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
 
       {/* Unsupported diagram type warning */}
       {isFallback && (
-        <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700 space-y-1">
+        <div className="rounded-lg bg-warning/10 border border-warning/30 px-3 py-2 text-xs text-warning space-y-1">
           <div className="flex items-center gap-1.5 font-medium">
             <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
               <path
@@ -235,7 +235,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
             Diagram type not supported yet
           </div>
           <p>{error}</p>
-          <p className="text-amber-600">
+          <p className="text-warning">
             Currently supported: class diagrams (class, interface, enum, abstract). Sequence and
             activity diagrams are coming soon.
           </p>
@@ -257,9 +257,9 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
 
       {/* Error */}
       {error && !isFallback && (
-        <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 space-y-1">
+        <div className="rounded-lg bg-error/10 px-3 py-2 text-xs text-error space-y-1">
           <div className="font-medium">Syntax error</div>
-          <pre className="whitespace-pre-wrap font-mono text-[11px] text-red-500 leading-relaxed">
+          <pre className="whitespace-pre-wrap font-mono text-[11px] text-error leading-relaxed">
             {error}
           </pre>
         </div>

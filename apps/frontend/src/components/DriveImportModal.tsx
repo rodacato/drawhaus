@@ -105,7 +105,7 @@ export function DriveImportModal({ open, onClose, onImported }: Props) {
     if (driveConnected === false) {
       return (
         <div className="flex flex-col items-center gap-4 py-8">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-info/10">
             <svg width="32" height="32" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
               <path d="M6.6 66.85L14.25 78h58.8l7.65-11.15z" fill="#2684FC" />
               <path d="M29.05 0L6.6 66.85l7.65 11.15 22.45-38.8z" fill="#0066DA" />

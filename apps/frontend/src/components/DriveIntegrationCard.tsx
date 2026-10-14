@@ -86,7 +86,7 @@ export function DriveIntegrationCard() {
           </p>
         </div>
         {status?.connected && (
-          <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
+          <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
             <svg
               width="8"
               height="8"

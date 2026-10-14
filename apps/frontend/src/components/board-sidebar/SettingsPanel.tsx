@@ -163,7 +163,7 @@ export function SettingsPanel({
         <div className="border-t border-border pt-2">
           <button
             onClick={() => logout()}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-red-600 transition hover:bg-red-50"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-error transition hover:bg-error/10"
             type="button"
           >
             <svg

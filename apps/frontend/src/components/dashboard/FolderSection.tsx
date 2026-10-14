@@ -82,7 +82,7 @@ export function FolderSection({
         {onDeleteFolder && (
           <button
             onClick={onDeleteFolder}
-            className="shrink-0 rounded p-1 text-text-muted transition hover:bg-red-500/10 hover:text-red-600"
+            className="shrink-0 rounded p-1 text-text-muted transition hover:bg-error/10 hover:text-error"
             title="Delete folder"
             type="button"
           >

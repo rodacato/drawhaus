@@ -62,7 +62,7 @@ function DriveExportButton({
         disabled={exporting}
         className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-text-secondary transition hover:bg-selection disabled:opacity-50"
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-500">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-success/10 text-success">
           <svg
             width="16"
             height="16"
@@ -161,7 +161,7 @@ export function ExportPanel({
         Export
       </h3>
       {status && (
-        <div className="mb-2 rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
+        <div className="mb-2 rounded-lg bg-success/10 px-3 py-2 text-xs font-medium text-success">
           {status}
         </div>
       )}
@@ -169,7 +169,7 @@ export function ExportPanel({
         onClick={() => handleExport("png")}
         className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-text-secondary transition hover:bg-selection"
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-orange-500">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning/10 text-warning">
           <svg
             width="16"
             height="16"
@@ -192,7 +192,7 @@ export function ExportPanel({
         onClick={() => handleExport("svg")}
         className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-text-secondary transition hover:bg-selection"
       >
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-purple-500">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-violet/10 text-accent-violet">
           <svg
             width="16"
             height="16"

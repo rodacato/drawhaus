@@ -56,7 +56,7 @@ export function SharePanel({
         <div className="space-y-1">
           {selfUser && (
             <div className="flex items-center gap-2.5 rounded-lg bg-selection px-3 py-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-600">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-success/10 text-xs font-bold text-success">
                 {(selfUser.name || "?")[0].toUpperCase()}
               </span>
               <div className="flex-1 min-w-0">
@@ -153,9 +153,7 @@ export function SharePanel({
         {shareUrl && (
           <div className="mt-2 rounded-lg bg-selection p-2.5">
             <p className="break-all text-[11px] text-text-muted font-mono">{shareUrl}</p>
-            {shareCopied && (
-              <p className="mt-1 text-[11px] font-medium text-emerald-600">Copied!</p>
-            )}
+            {shareCopied && <p className="mt-1 text-[11px] font-medium text-success">Copied!</p>}
           </div>
         )}
       </div>
@@ -209,9 +207,7 @@ export function SharePanel({
         {embedSnippet && (
           <div className="mt-2 rounded-lg bg-selection p-2.5">
             <p className="break-all text-[11px] text-text-muted font-mono">{embedSnippet}</p>
-            {embedCopied && (
-              <p className="mt-1 text-[11px] font-medium text-emerald-600">Copied!</p>
-            )}
+            {embedCopied && <p className="mt-1 text-[11px] font-medium text-success">Copied!</p>}
           </div>
         )}
       </div>

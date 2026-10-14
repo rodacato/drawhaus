@@ -13,7 +13,7 @@ export function AppErrorFallback({ error, resetErrorBoundary }: Readonly<Fallbac
           <h1 className={ui.h1}>Something went wrong</h1>
           <p className={ui.subtitle}>This page crashed. Try again, or go back to the dashboard.</p>
         </div>
-        <pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-surface px-3 py-2 text-xs text-red-600">
+        <pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-surface px-3 py-2 text-xs text-error">
           {message}
         </pre>
         <div className="flex gap-3">
