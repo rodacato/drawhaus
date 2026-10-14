@@ -30,9 +30,10 @@ as context for AI agents (`AGENTS.md` points them here).
 | --------------------- | ------- | ----- | ---------------------------------------------------------------------------- |
 | `flows/auth.pen`      | 8       | 0.1.0 | `/login`, `/register`, `/forgot-password`, `/reset-password`, unknown routes |
 | `flows/dashboard.pen` | 4       | 0.1.0 | `/dashboard` after sign-in                                                   |
+| `flows/setup.pen`     | 4       | 0.1.0 | `/setup` first-run wizard                                                    |
 
 Not drawn yet: embed, the editor's drawer panels, comments, admin
-(`/admin/*`), settings, setup wizard, marketing pages. Derive the next domain from
+(`/admin/*`), settings, marketing pages. Derive the next domain from
 `apps/frontend/src/App.tsx` routes, not from this list.
 
 **This table is present tense — it never carries history.** "Migrated on <date>, six
