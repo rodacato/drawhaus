@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { LoadError } from "@/components/LoadError";
 import { adminApi } from "@/api/admin";
 import { ui } from "@/lib/ui";
 
@@ -132,9 +133,7 @@ function ApiMetricsCards({ metrics }: { readonly metrics: Metrics }) {
           </div>
           <p className={ui.muted}>API Requests (24h)</p>
           <div className="mt-1 flex items-baseline gap-2">
-            <p className={ui.metric}>
-              {(metrics.apiRequests24h ?? 0).toLocaleString()}
-            </p>
+            <p className={ui.metric}>{(metrics.apiRequests24h ?? 0).toLocaleString()}</p>
           </div>
         </div>
       </div>
@@ -144,17 +143,24 @@ function ApiMetricsCards({ metrics }: { readonly metrics: Metrics }) {
 
 // --- Components ---
 
-type TabId = "admin-overview" | "admin-users" | "admin-site" | "admin-style";
+type TabId = "admin-overview" | "admin-users" | "admin-site";
 
 export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId) => void }) {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
 
-  useEffect(() => {
+  const [metricsError, setMetricsError] = useState(false);
+
+  const loadMetrics = useCallback(() => {
+    setMetricsError(false);
     adminApi
       .getMetrics()
       .then((data) => setMetrics(data.metrics ?? data))
-      .catch(() => {});
+      .catch(() => setMetricsError(true));
   }, []);
+
+  useEffect(() => {
+    loadMetrics();
+  }, [loadMetrics]);
 
   return (
     <div className="space-y-6">
@@ -164,6 +170,7 @@ export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId
           Welcome back. Here is what is happening with your Drawhaus instance today.
         </p>
       </div>
+      {metricsError && <LoadError message="Could not load the metrics." onRetry={loadMetrics} />}
       {metrics && (
         <div className="grid grid-cols-3 gap-4">
           {metricCards.map((card) => (
@@ -173,9 +180,7 @@ export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId
                 <div className={`mb-2 ${card.color}`}>{card.icon}</div>
                 <p className={ui.muted}>{card.label}</p>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <p className={ui.metric}>
-                    {(metrics[card.key] ?? 0).toLocaleString()}
-                  </p>
+                  <p className={ui.metric}>{(metrics[card.key] ?? 0).toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -237,34 +242,6 @@ export function AdminOverview({ onNavigate }: { readonly onNavigate: (tab: TabId
             <div>
               <h2 className={ui.h2}>Site Settings</h2>
               <p className={ui.muted}>Registration, instance name, and more.</p>
-            </div>
-          </div>
-        </button>
-        <button
-          onClick={() => onNavigate("admin-style")}
-          className={`${ui.card} block text-left hover:border-primary transition-colors`}
-          type="button"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-yellow/10 text-accent-yellow">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
-            </div>
-            <div>
-              <h2 className={ui.h2}>Style Guide</h2>
-              <p className={ui.muted}>Brand colors, typography, logos, and UI components.</p>
             </div>
           </div>
         </button>

@@ -72,10 +72,6 @@ export function AppRouter() {
             path="/admin/settings"
             element={<Navigate to="/settings?tab=admin-site" replace />}
           />
-          <Route
-            path="/admin/style-guide"
-            element={<Navigate to="/settings?tab=admin-style" replace />}
-          />
 
           {/* Workspace invite (works both authenticated and not) */}
           <Route path="/workspace-invite/:token" element={<WorkspaceInvite />} />

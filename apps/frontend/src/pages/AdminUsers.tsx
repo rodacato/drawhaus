@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import { LoadError } from "@/components/LoadError";
 import { Dialog } from "@/components/Dialog";
 import { adminApi } from "@/api/admin";
 import { useAuth } from "@/contexts/AuthContext";
@@ -147,13 +148,22 @@ export function AdminUsers() {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
 
-  useEffect(() => {
+  const loadUsers = useCallback(() => {
+    setLoadState("loading");
     adminApi
       .listUsers()
-      .then((data) => setUsers(data.users ?? []))
-      .catch(() => {});
+      .then((data) => {
+        setUsers(data.users ?? []);
+        setLoadState("ready");
+      })
+      .catch(() => setLoadState("error"));
   }, []);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   async function updateUser(id: string, data: { role?: string; disabled?: boolean }) {
     setPending(id);
@@ -223,106 +233,111 @@ export function AdminUsers() {
             {error}
           </p>
         )}
-        {users.length === 0 ? (
-          <div className={ui.empty}>No users found.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left">
-                  <th className="pb-3 font-medium text-text-muted">Name</th>
-                  <th className="pb-3 font-medium text-text-muted">Email</th>
-                  <th className="pb-3 font-medium text-text-muted">Role</th>
-                  <th className="pb-3 font-medium text-text-muted">Status</th>
-                  <th className="pb-3 font-medium text-text-muted">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {users.map((user) => {
-                  const isSelf = user.id === currentUser?.id;
-                  const isPending = pending === user.id;
-                  const badgeColor = roleBadgeColors[user.role] ?? roleBadgeColors.user;
-                  return (
-                    <tr key={user.id} className="transition hover:bg-surface/50">
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                            {user.name?.charAt(0)?.toUpperCase() ?? "?"}
-                          </div>
-                          <span className="font-medium text-text-primary">
-                            {user.name}
-                            {isSelf && (
-                              <span className="ml-1.5 text-xs text-text-muted">(you)</span>
-                            )}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 pr-4 text-text-secondary">{user.email}</td>
-                      <td className="py-3 pr-4">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ring-1 ring-inset ${badgeColor}`}
-                        >
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="py-3 pr-4">
-                        {isSelf ? (
-                          <span className="text-xs text-text-muted">Active</span>
-                        ) : (
-                          <ToggleSwitch
-                            label={`${user.name} is active`}
-                            checked={!user.disabled}
-                            onChange={(enabled) => updateUser(user.id, { disabled: !enabled })}
-                            disabled={isPending}
-                          />
-                        )}
-                      </td>
-                      <td className="py-3">
-                        <div className="flex items-center gap-2">
-                          {!isSelf && (
-                            <select
-                              className="rounded-lg border border-border bg-surface px-2 py-1.5 text-sm text-text-primary transition focus:border-primary focus:ring-2 focus:ring-primary/25"
-                              value={user.role}
-                              onChange={(e) => updateUser(user.id, { role: e.target.value })}
-                              disabled={isPending}
-                            >
-                              <option value="user">User</option>
-                              <option value="admin">Admin</option>
-                            </select>
-                          )}
-                          {!isSelf && user.role !== "admin" && (
-                            <button
-                              type="button"
-                              title="Delete user"
-                              className="rounded-lg p-1.5 text-text-muted hover:bg-error/10 hover:text-error transition-colors"
-                              onClick={() => handleDeleteUser(user)}
-                            >
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <polyline points="3 6 5 6 21 6" />
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                <line x1="10" y1="11" x2="10" y2="17" />
-                                <line x1="14" y1="11" x2="14" y2="17" />
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        {loadState === "loading" && <p className={ui.muted}>Loading...</p>}
+        {loadState === "error" && (
+          <LoadError message="Could not load the users." onRetry={loadUsers} />
         )}
+        {loadState === "ready" &&
+          (users.length === 0 ? (
+            <div className={ui.empty}>No users found.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left">
+                    <th className="pb-3 font-medium text-text-muted">Name</th>
+                    <th className="pb-3 font-medium text-text-muted">Email</th>
+                    <th className="pb-3 font-medium text-text-muted">Role</th>
+                    <th className="pb-3 font-medium text-text-muted">Status</th>
+                    <th className="pb-3 font-medium text-text-muted">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {users.map((user) => {
+                    const isSelf = user.id === currentUser?.id;
+                    const isPending = pending === user.id;
+                    const badgeColor = roleBadgeColors[user.role] ?? roleBadgeColors.user;
+                    return (
+                      <tr key={user.id} className="transition hover:bg-surface/50">
+                        <td className="py-3 pr-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                              {user.name?.charAt(0)?.toUpperCase() ?? "?"}
+                            </div>
+                            <span className="font-medium text-text-primary">
+                              {user.name}
+                              {isSelf && (
+                                <span className="ml-1.5 text-xs text-text-muted">(you)</span>
+                              )}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 pr-4 text-text-secondary">{user.email}</td>
+                        <td className="py-3 pr-4">
+                          <span
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ring-1 ring-inset ${badgeColor}`}
+                          >
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-4">
+                          {isSelf ? (
+                            <span className="text-xs text-text-muted">Active</span>
+                          ) : (
+                            <ToggleSwitch
+                              label={`${user.name} is active`}
+                              checked={!user.disabled}
+                              onChange={(enabled) => updateUser(user.id, { disabled: !enabled })}
+                              disabled={isPending}
+                            />
+                          )}
+                        </td>
+                        <td className="py-3">
+                          <div className="flex items-center gap-2">
+                            {!isSelf && (
+                              <select
+                                className="rounded-lg border border-border bg-surface px-2 py-1.5 text-sm text-text-primary transition focus:border-primary focus:ring-2 focus:ring-primary/25"
+                                value={user.role}
+                                onChange={(e) => updateUser(user.id, { role: e.target.value })}
+                                disabled={isPending}
+                              >
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                              </select>
+                            )}
+                            {!isSelf && user.role !== "admin" && (
+                              <button
+                                type="button"
+                                title="Delete user"
+                                className="rounded-lg p-1.5 text-text-muted hover:bg-error/10 hover:text-error transition-colors"
+                                onClick={() => handleDeleteUser(user)}
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                  <line x1="10" y1="11" x2="10" y2="17" />
+                                  <line x1="14" y1="11" x2="14" y2="17" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ))}
       </div>
 
       {inviteOpen && <InviteUserModal onClose={() => setInviteOpen(false)} />}

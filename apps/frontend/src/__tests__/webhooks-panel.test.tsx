@@ -101,14 +101,19 @@ describe("WebhooksPanel", () => {
     expect(screen.queryByRole("button", { name: "Add Webhook" })).toBeNull();
   });
 
-  test("a failed list request leaves the degraded state rather than an empty panel", async () => {
-    vi.mocked(adminApi.listWebhooks).mockRejectedValue(new Error("boom"));
+  test("a failed list request shows an error with a retry, not an empty or degraded panel", async () => {
+    vi.mocked(adminApi.listWebhooks).mockRejectedValueOnce(new Error("boom"));
+    const user = userEvent.setup();
     await act(async () => {
       render(<WebhooksPanel />);
     });
-    await waitFor(() => expect(screen.queryByText(/Loading webhooks/i)).toBeNull());
+    expect((await screen.findByRole("alert")).textContent).toMatch(/Could not load the webhooks/);
+    expect(screen.queryByText(/ENCRYPTION_KEY/)).toBeNull();
+    expect(screen.queryByText(/No webhooks registered/)).toBeNull();
 
-    expect(screen.getAllByText(/ENCRYPTION_KEY/).length).toBeGreaterThan(0);
+    mockList([webhook]);
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByText(webhook.url)).toBeTruthy();
   });
 
   test("Add Webhook stays disabled until a URL and at least one event are chosen", async () => {

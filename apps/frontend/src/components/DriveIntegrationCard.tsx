@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { LoadError } from "@/components/LoadError";
 import { useSearchParams } from "react-router-dom";
 import { driveApi, type DriveStatus } from "@/api/drive";
 import { ui } from "@/lib/ui";
@@ -23,13 +24,21 @@ export function DriveIntegrationCard() {
     }
   }, [searchParams]);
 
-  useEffect(() => {
+  const [loadError, setLoadError] = useState(false);
+
+  const loadStatus = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     driveApi
       .getStatus()
       .then(setStatus)
-      .catch(() => setStatus({ connected: false, autoBackupEnabled: false, scopes: "" }))
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadStatus();
+  }, [loadStatus]);
 
   async function handleToggleBackup() {
     if (!status) return;
@@ -63,6 +72,14 @@ export function DriveIntegrationCard() {
     return (
       <div className={ui.card}>
         <p className={ui.muted}>Loading...</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className={ui.card}>
+        <LoadError message="Could not load the Google Drive status." onRetry={loadStatus} />
       </div>
     );
   }

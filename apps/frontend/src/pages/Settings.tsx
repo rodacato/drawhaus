@@ -8,7 +8,6 @@ import { ui } from "@/lib/ui";
 import { getErrorMessage } from "@/lib/api-error";
 import { AdminUsers } from "@/pages/AdminUsers";
 import { AdminSettings as AdminSiteSettings } from "@/pages/AdminSettings";
-import { AdminStyleGuide } from "@/pages/AdminStyleGuide";
 import { AdminOverview } from "@/pages/AdminDashboard";
 import { DriveIntegrationCard } from "@/components/DriveIntegrationCard";
 import { ApiKeysSettings } from "@/components/ApiKeysSettings";
@@ -410,7 +409,6 @@ export function Settings() {
           {isAdmin && activeTab === "admin-overview" && <AdminOverview onNavigate={switchTab} />}
           {isAdmin && activeTab === "admin-users" && <AdminUsers />}
           {isAdmin && activeTab === "admin-site" && <AdminSiteSettings />}
-          {isAdmin && activeTab === "admin-style" && <AdminStyleGuide />}
         </div>
       </div>
     </div>

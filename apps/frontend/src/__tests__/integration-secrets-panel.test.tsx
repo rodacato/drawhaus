@@ -176,13 +176,23 @@ describe("IntegrationSecretsPanel", () => {
     });
   });
 
-  test("getIntegrations failure leaves loading=false with empty list", async () => {
-    vi.mocked(adminApi.getIntegrations).mockRejectedValue(new Error("boom"));
+  test("a failed load says so and offers a retry instead of claiming encryption is missing", async () => {
+    vi.mocked(adminApi.getIntegrations).mockRejectedValueOnce(new Error("boom"));
+    const user = userEvent.setup();
     await act(async () => {
       render(<IntegrationSecretsPanel />);
     });
-    await waitFor(() => expect(screen.queryByText(/Loading integrations/i)).toBeNull());
-    // encryptionEnabled defaults to false in error path -> warning shows
-    expect(screen.getAllByText(/ENCRYPTION_KEY/).length).toBeGreaterThan(0);
+    expect((await screen.findByRole("alert")).textContent).toMatch(
+      /Could not load the integrations/,
+    );
+    expect(screen.queryByText(/ENCRYPTION_KEY/)).toBeNull();
+
+    vi.mocked(adminApi.getIntegrations).mockResolvedValue({
+      integrations: [],
+      encryptionEnabled: true,
+    });
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+    expect(adminApi.getIntegrations).toHaveBeenCalledTimes(2);
   });
 });
