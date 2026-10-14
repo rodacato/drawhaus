@@ -31,7 +31,7 @@ as context for AI agents (`AGENTS.md` points them here).
 | `flows/auth.pen`      | 8       | 0.1.0 | `/login`, `/register`, `/forgot-password`, `/reset-password`, unknown routes |
 | `flows/dashboard.pen` | 4       | 0.1.0 | `/dashboard` after sign-in                                                   |
 | `flows/setup.pen`     | 4       | 0.1.0 | `/setup` first-run wizard                                                    |
-| `flows/settings.pen`  | 15      | 0.1.0 | `/settings` user tabs (10 screens) and admin tabs (5)                        |
+| `flows/settings.pen`  | 21      | 0.1.0 | `/settings` user tabs, admin tabs, load errors, validation, narrow layout    |
 
 Not drawn yet: embed, the editor's drawer panels, comments, marketing pages. Derive the next domain from
 `apps/frontend/src/router.tsx` routes, not from this list.

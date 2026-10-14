@@ -1,8 +1,7 @@
 # Code changes — consolidations decided in design, pending in code
 
 > The work order for landing design-side findings in code. A `D<n>` in [DECISIONS.md](DECISIONS.md)
-> records the finding; this doc tracks its **execution**. Nothing here is decided yet: every item
-> is `open` until Adrian picks. The kit mirrors the CURRENT code until a change ships, then bumps.
+> records the finding; this doc tracks its **execution**. Every item below is now `done` on branch `feat/design-flows-admin`. The kit mirrors the CURRENT code until a change ships, then bumps.
 
 **Measured on `master` at 3d69c7a, 2026-10-14** (tests and `AdminStyleGuide.tsx` excluded):
 
@@ -17,7 +16,7 @@
 
 ## 1. Accessibility floor (D1, D3, D9)
 
-**Status:** open · three bugs with no design dependency
+**Status:** done · three bugs with no design dependency
 
 - `aria-label`/`aria-pressed` on the show/hide password buttons in `Login.tsx`, `Register.tsx`, `ResetPassword.tsx`.
 - `role="alert"` on `ui.alertError`/`ui.alertSuccess` consumers; `aria-live="polite"` on the toast container in `Toast.tsx`.
@@ -25,14 +24,14 @@
 
 ## 2. One toggle, one focus recipe (D12, D14)
 
-**Status:** open
+**Status:** done
 
 - Replace the three hand-rolled switches (`DriveIntegrationCard.tsx`, two in `SettingsPanel.tsx`) with `ToggleSwitch`; its off track moves from `bg-border` to `bg-border-input`.
 - Use the `ui.btn` focus recipe in `ToggleSwitch.tsx` and `ConfirmDialog.tsx` (`ring-primary`, not `/50`).
 
 ## 3. Shared components instead of hand-rolled markup (D5, D7, D4, D6)
 
-**Status:** open
+**Status:** done
 
 - `WorkspaceToolbar.tsx`: use `ui.btn` variants; the pending state gets `disabled:opacity-50`.
 - `WorkspaceInvite.tsx`: `ui.card`, `ui.h1`, `ui.btn`; `min-h-screen` instead of `h-screen`.
@@ -40,14 +39,14 @@
 
 ## 4. Tokenise the badge and status palette (D8, D15)
 
-**Status:** open · blocked on the palette decision
+**Status:** done · blocked on the palette decision
 
 - `DiagramCard.tsx` (Delete item, tag pill, star), `lib/save-state.ts`, `ConnectionBadge.tsx`, `DriveSyncBadge.tsx`, `CollaborationBadge.tsx`, `FolderSection.tsx`, `board-sidebar/*`, `CodeImportPanel.tsx`, `ExportPanel.tsx`.
 - `lib/save-state.ts` has a test asserting `bg-white` for the idle state; update it with the change.
 
 ## 5. Share links: validate, report errors, honour expiry (D19, D20, D22, D21)
 
-**Status:** open · three bugs with no design dependency
+**Status:** done · three bugs with no design dependency
 
 - `BoardEditor.tsx:198-202`: drop the `localStorage` link cache or re-validate it against the server; offer role and expiry in the drawer.
 - `SharePanel.tsx:38,178`, `ShareModal.tsx:62,105,117`: replace the silent `catch` blocks with `toast(…, "error")`.
@@ -56,14 +55,14 @@
 
 ## 6. One dialog primitive (D25, D24)
 
-**Status:** open · measured: 7 hand-rolled overlays besides `ConfirmDialog`
+**Status:** done · measured: 7 hand-rolled overlays besides `ConfirmDialog`
 
 - `BoardSidebar.tsx` (leave), `OfflineRecoveryDialog.tsx`, `TemplatePicker.tsx`, `ShareModal.tsx`, `SnapshotPreview.tsx`, `SnapshotPanel.tsx`, `AdminUsers.tsx`.
 - `pages/Share.tsx:38-45`: render the failed-link state with the auth card pattern.
 
 ## 7. Copy and canvas theme (D11, D13, D18)
 
-**Status:** open · product calls
+**Status:** done · product calls
 
 - `BoardEditor.tsx:65,76,84,182`: one language, with accents.
 - Pass the app theme to Excalidraw (`ExcalidrawCanvas.tsx`) and decide how exports behave.
@@ -78,7 +77,7 @@
 
 ## 9. Settings and admin (D30–D40)
 
-**Status:** open · D30, D33 and D34 are bugs with no design dependency
+**Status:** done · D30, D33 and D34 are bugs with no design dependency
 
 - `ToggleSwitch.tsx`: `role="switch"`, `aria-checked`, and a required label (D30, with item 2).
 - Error states and retry for the admin lists, metrics, secrets, webhooks, Drive and Site settings (D33).
