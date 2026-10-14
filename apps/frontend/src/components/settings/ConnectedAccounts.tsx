@@ -73,7 +73,10 @@ export function ConnectedAccounts() {
       <h2 className={ui.h2}>Connected Accounts</h2>
       <p className={`${ui.muted} mt-1`}>Link your social accounts for easier sign-in.</p>
       {linkStatus && (
-        <p className={`mt-3 ${linkStatus.type === "error" ? ui.alertError : ui.alertSuccess}`}>
+        <p
+          role={linkStatus.type === "error" ? "alert" : "status"}
+          className={`mt-3 ${linkStatus.type === "error" ? ui.alertError : ui.alertSuccess}`}
+        >
           {linkStatus.message}
         </p>
       )}

@@ -49,7 +49,7 @@ export function ForgotPassword() {
         </div>
 
         {sent ? (
-          <div className={ui.alertSuccess}>
+          <div role="status" className={ui.alertSuccess}>
             If an account with that email exists, we've sent a password reset link. Check your
             inbox.
           </div>
@@ -81,7 +81,11 @@ export function ForgotPassword() {
                 />
               </div>
             </label>
-            {error && <p className={ui.alertError}>{error}</p>}
+            {error && (
+              <p role="alert" className={ui.alertError}>
+                {error}
+              </p>
+            )}
             <button
               className={`${ui.btn} ${ui.btnPrimary} w-full`}
               type="submit"

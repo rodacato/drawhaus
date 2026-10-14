@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { authApi } from "@/api/auth";
+import { PasswordInput } from "@/components/PasswordInput";
 import { ui } from "@/lib/ui";
 import { getErrorMessage } from "@/lib/api-error";
 import { AdminUsers } from "@/pages/AdminUsers";
@@ -187,7 +188,10 @@ export function Settings() {
                   />
                 </label>
                 {profileStatus && (
-                  <p className={profileStatus.type === "error" ? ui.alertError : ui.alertSuccess}>
+                  <p
+                    role={profileStatus.type === "error" ? "alert" : "status"}
+                    className={profileStatus.type === "error" ? ui.alertError : ui.alertSuccess}
+                  >
                     {profileStatus.message}
                   </p>
                 )}
@@ -209,9 +213,8 @@ export function Settings() {
                 <form onSubmit={handlePasswordSubmit} className="mt-4 space-y-4">
                   <label className={ui.label}>
                     Current Password
-                    <input
-                      className={ui.input}
-                      type="password"
+                    <PasswordInput
+                      leadingIcon={false}
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       required
@@ -219,9 +222,8 @@ export function Settings() {
                   </label>
                   <label className={ui.label}>
                     New Password
-                    <input
-                      className={ui.input}
-                      type="password"
+                    <PasswordInput
+                      leadingIcon={false}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
@@ -230,9 +232,8 @@ export function Settings() {
                   </label>
                   <label className={ui.label}>
                     Confirm New Password
-                    <input
-                      className={ui.input}
-                      type="password"
+                    <PasswordInput
+                      leadingIcon={false}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
@@ -241,6 +242,7 @@ export function Settings() {
                   </label>
                   {passwordStatus && (
                     <p
+                      role={passwordStatus.type === "error" ? "alert" : "status"}
                       className={passwordStatus.type === "error" ? ui.alertError : ui.alertSuccess}
                     >
                       {passwordStatus.message}

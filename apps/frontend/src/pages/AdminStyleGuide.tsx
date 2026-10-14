@@ -952,8 +952,12 @@ export function AdminStyleGuide() {
       {/* Alerts */}
       <Section id="alerts" title="Alerts & Feedback" description="Inline feedback messages.">
         <div className="space-y-3 max-w-lg">
-          <p className={ui.alertError}>This is an error alert.</p>
-          <p className={ui.alertSuccess}>This is a success alert.</p>
+          <p role="alert" className={ui.alertError}>
+            This is an error alert.
+          </p>
+          <p role="status" className={ui.alertSuccess}>
+            This is a success alert.
+          </p>
           <p className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
             This is a warning alert.
           </p>

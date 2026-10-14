@@ -45,7 +45,11 @@ export function SetupStep3({ onComplete }: { readonly onComplete: () => void | P
         </div>
       </div>
 
-      {error && <p className={ui.alertError}>{error}</p>}
+      {error && (
+        <p role="alert" className={ui.alertError}>
+          {error}
+        </p>
+      )}
 
       <button
         className={`${ui.btn} ${ui.btnPrimary} w-full`}

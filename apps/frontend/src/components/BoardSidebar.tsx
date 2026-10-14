@@ -117,7 +117,7 @@ export function BoardSidebar({
         <button
           type="button"
           onClick={handleLogoClick}
-          title="Ir al Dashboard"
+          title="Go to Dashboard"
           className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-selection"
         >
           <BrandLogo alt="Drawhaus" className="h-7 w-7" />

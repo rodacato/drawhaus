@@ -127,7 +127,7 @@ export function DiagramCard({
       </Link>
 
       {/* Three-dot more button — top-right on hover */}
-      <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100">
         <button
           ref={menuBtnRef}
           onClick={toggleMenu}

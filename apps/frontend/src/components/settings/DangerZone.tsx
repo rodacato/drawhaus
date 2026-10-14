@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "@/api/auth";
 import { workspacesApi } from "@/api/workspaces";
+import { PasswordInput } from "@/components/PasswordInput";
 import { ui } from "@/lib/ui";
 import { getErrorMessage } from "@/lib/api-error";
 
@@ -67,16 +68,19 @@ export function DangerZone() {
           <p className="text-sm font-medium text-danger">
             Enter your password to confirm account deletion:
           </p>
-          <input
-            className={ui.input}
-            type="password"
+          <PasswordInput
+            leadingIcon={false}
             placeholder="Your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             autoFocus
           />
-          {status && <p className={ui.alertError}>{status.message}</p>}
+          {status && (
+            <p role="alert" className={ui.alertError}>
+              {status.message}
+            </p>
+          )}
           {ownedSharedWorkspaces.length > 0 && (
             <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm text-text-secondary">
               <p className="font-medium text-warning mb-1">
