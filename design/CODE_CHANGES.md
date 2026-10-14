@@ -71,9 +71,7 @@
 
 ## 8. Setup wizard (D26, D27, D28, D29)
 
-**Status:** open · D27 is a bug with no design dependency
+**Status:** done except the password toggle (D28), which waits on the shared password field of item 1
 
-- `Setup.tsx:32-39`: on a failed `setupApi.complete()`, toast the error and stay on step 3.
-- `SetupStep3.tsx`: replace the “coming soon” note (the secrets panel exists in `AdminSettings.tsx`).
-- `SetupStep2.tsx`: checkbox border `border-input`; `SetupStep1.tsx`: show/hide password with the aria-label from item 1.
-- `SetupProgress.tsx`: stop overflowing the 400 px content area.
+- Done: `Setup.tsx` shows the error when `setupApi.complete()` fails and stays on step 3; `SetupStep3.tsx` shows a failed skip and re-enables the button; the “coming soon” note is gone; checkboxes use `border-border-input`; the progress connectors are `w-3`.
+- Open: show/hide password in `SetupStep1.tsx`, with the aria-label from item 1.

@@ -62,7 +62,7 @@ export function SetupStep2({ onComplete }: { readonly onComplete: () => void }) 
             type="checkbox"
             name="registrationOpen"
             defaultChecked
-            className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            className="h-4 w-4 rounded border-border-input text-primary focus:ring-primary"
           />
           <span>Allow public registration</span>
         </label>
@@ -74,7 +74,7 @@ export function SetupStep2({ onComplete }: { readonly onComplete: () => void }) 
               type="checkbox"
               name="backupEnabled"
               defaultChecked
-              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+              className="h-4 w-4 rounded border-border-input text-primary focus:ring-primary"
             />
             <span>Enable automated backups</span>
           </label>

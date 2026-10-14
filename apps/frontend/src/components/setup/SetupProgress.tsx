@@ -8,14 +8,14 @@ function stepBadgeClass(isDone: boolean, isActive: boolean): string {
 
 export function SetupProgress({ current }: { readonly current: number }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center justify-center gap-2">
       {STEPS.map((label, i) => {
         const step = i + 1;
         const isActive = step === current;
         const isDone = step < current;
         return (
           <div key={step} className="flex items-center gap-2">
-            {i > 0 && <div className={`h-px w-6 ${isDone ? "bg-primary" : "bg-border"}`} />}
+            {i > 0 && <div className={`h-px w-3 ${isDone ? "bg-primary" : "bg-border"}`} />}
             <div className="flex items-center gap-1.5">
               <div
                 className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${stepBadgeClass(isDone, isActive)}`}

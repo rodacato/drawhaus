@@ -6,12 +6,14 @@ import { SetupStep1 } from "@/components/setup/SetupStep1";
 import { SetupStep2 } from "@/components/setup/SetupStep2";
 import { SetupStep3 } from "@/components/setup/SetupStep3";
 import { ui } from "@/lib/ui";
+import { getErrorMessage } from "@/lib/api-error";
 import { BrandLogo } from "@/components/BrandLogo";
 
 export function Setup() {
   const navigate = useNavigate();
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(true);
+  const [completeError, setCompleteError] = useState<string | null>(null);
 
   useEffect(() => {
     setupApi
@@ -33,8 +35,8 @@ export function Setup() {
     try {
       await setupApi.complete();
       navigate("/dashboard", { replace: true });
-    } catch {
-      navigate("/dashboard", { replace: true });
+    } catch (err: unknown) {
+      setCompleteError(getErrorMessage(err, "Could not finish setup"));
     }
   }
 
@@ -76,6 +78,7 @@ export function Setup() {
         {step === 1 && <SetupStep1 onComplete={handleStepComplete} />}
         {step === 2 && <SetupStep2 onComplete={handleStepComplete} />}
         {step === 3 && <SetupStep3 onComplete={handleStepComplete} />}
+        {completeError && <p className={ui.alertError}>{completeError}</p>}
       </section>
     </div>
   );

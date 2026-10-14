@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { setupApi } from "@/api/setup";
 import { ui } from "@/lib/ui";
+import { getErrorMessage } from "@/lib/api-error";
 
-export function SetupStep3({ onComplete }: { readonly onComplete: () => void }) {
+export function SetupStep3({ onComplete }: { readonly onComplete: () => void | Promise<void> }) {
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSkip() {
     setPending(true);
+    setError(null);
     try {
       await setupApi.skipIntegrations();
-      onComplete();
-    } catch {
+      await onComplete();
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Could not finish setup"));
+    } finally {
       setPending(false);
     }
   }
@@ -40,10 +45,7 @@ export function SetupStep3({ onComplete }: { readonly onComplete: () => void }) 
         </div>
       </div>
 
-      <p className="text-xs text-text-muted">
-        These integrations will be configurable from the admin panel once integration secrets are
-        stored in the database (coming soon).
-      </p>
+      {error && <p className={ui.alertError}>{error}</p>}
 
       <button
         className={`${ui.btn} ${ui.btnPrimary} w-full`}
