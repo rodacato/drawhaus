@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/branding/logo_stacked_light.svg" alt="Drawhaus" height="120" />
+  <img src="docs/branding/generated/logo-stacked-light.svg" alt="Drawhaus" height="120" />
 </p>
 
 <h3 align="center">Your whiteboard, on your server.</h3>

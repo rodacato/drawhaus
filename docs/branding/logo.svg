@@ -1,7 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100" aria-label="Drawhaus Logo" role="img">
-  <path d="M20 20 L80 20 L80 60 Q80 80 60 80 L20 80 Z" fill="#111827"/>
-  <path d="M20 20 L50 20 L50 50 L20 50 Z" fill="#FBBF24"/>
-  <path d="M20 50 L50 50 L50 80 L20 80 Z" fill="#2563EB"/>
-  <circle cx="65" cy="65" r="10" fill="#F8FAF3"/>
-  <circle cx="65" cy="65" r="4" fill="#111827"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-labelledby="title">
+  <title id="title">Drawhaus — Looped d</title>
+  <path d="M76 20L50 73C35 87 13 75 16 57C18 39 42 34 54 48C65 64 41 83 28 72" fill="none" stroke="currentColor" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

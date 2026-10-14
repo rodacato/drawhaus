@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Drawhaus — Brand &amp; integration guide</title>
+    <meta
+      name="description"
+      content="The Drawhaus Ocean Ink identity: logos, color roles, typography, sharing assets and practical integration instructions."
+    />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="assets/tokens.css" />
+    <link rel="stylesheet" href="assets/fonts.css" />
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="lockup" href="../"
+          ><img src="assets/mark-light.svg" alt="" width="36" height="36" />Drawhaus</a
+        >
+        <nav class="header-links" aria-label="Main navigation">
+          <a href="../">Product</a><a href="#assets">Downloads</a
+          ><a href="#integration">Integration</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="guide-hero wrap">
+        <div>
+          <p class="eyebrow">Brand &amp; integration guide · Ocean Ink</p>
+          <h1>A free line.<br />A clear system.</h1>
+          <p class="lede">
+            A drawing tool should feel open enough to sketch in and dependable enough to work in.
+            The Looped d brings the freedom; Ocean Ink brings the structure.
+          </p>
+          <div class="cta-row">
+            <a class="button" href="#assets">Get the assets <span aria-hidden="true">↓</span></a
+            ><a class="text-link" href="#integration">Apply the system →</a>
+          </div>
+        </div>
+        <div class="brand-cover theme-dark">
+          <img src="assets/logo-horizontal-dark.svg" alt="Drawhaus" width="380" height="100" />
+          <p>Self-hosted diagrams.<br />Built on Excalidraw.</p>
+          <span>Looped d / Ocean Ink</span>
+        </div>
+      </section>
+      <div class="guide-layout wrap">
+        <nav class="guide-nav" aria-label="Guide sections">
+          <a href="#identity">01 / Identity</a><a href="#assets">02 / Assets</a
+          ><a href="#colors">03 / Color</a><a href="#type">04 / Typography</a
+          ><a href="#interface">05 / Interface</a><a href="#voice">06 / Voice &amp; sharing</a
+          ><a href="#integration">07 / Integration</a>
+        </nav>
+        <div class="guide-content">
+          <section id="identity">
+            <p class="eyebrow">01 / Identity</p>
+            <h2>A lowercase d, drawn in one line.</h2>
+            <p class="lede">
+              The open loop looks like a mark made on a canvas. It connects directly to drawing,
+              while the rising stem gives it a recognizable silhouette. Keep that geometry intact.
+            </p>
+            <div class="identity-study">
+              <div class="clearspace">
+                <img
+                  src="assets/mark-mono-light.svg"
+                  alt="The continuous Looped d mark with space around its edges"
+                  width="144"
+                  height="144"
+                />
+              </div>
+              <div>
+                <h3>Room to breathe</h3>
+                <p>
+                  The SVG's square includes the intended clear space. Keep its full viewBox and add
+                  at least one stroke width outside it when placing it beside other content.
+                </p>
+                <p>
+                  Use the mark at 24 px or larger in the interface. The favicon is the special 16–32
+                  px case; use the prepared export.
+                </p>
+                <div class="size-study">
+                  <img src="assets/favicon.svg" width="16" height="16" alt="16 pixel favicon" /><img
+                    src="assets/mark-light.svg"
+                    width="24"
+                    height="24"
+                    alt="24 pixel mark"
+                  /><img
+                    src="assets/mark-light.svg"
+                    width="32"
+                    height="32"
+                    alt="32 pixel mark"
+                  /><span>16 / 24 / 32 px</span>
+                </div>
+              </div>
+            </div>
+            <p class="note">
+              Preserve proportions and round terminals. Avoid rotation, extra strokes, shadows, or a
+              gradient on the wordmark. Use the supplied dark version rather than recoloring the
+              light logo by eye.
+            </p>
+          </section>
+          <section id="assets">
+            <p class="eyebrow">02 / Assets</p>
+            <h2>The right file for the job.</h2>
+            <p class="lede">
+              SVG is the default for interfaces and documents. The wordmarks are outlined, so the
+              logo does not depend on an installed font.
+            </p>
+            <div class="asset-grid">
+              <article class="asset-card">
+                <div class="asset-preview">
+                  <img
+                    src="assets/logo-horizontal-light.svg"
+                    alt="Horizontal logo on a light surface"
+                    width="380"
+                    height="100"
+                  />
+                </div>
+                <h3>Horizontal logo</h3>
+                <p>Website header, README, sign-in screen and document header.</p>
+                <div class="download-row">
+                  <a download href="assets/logo-horizontal-light.svg">Light SVG ↓</a
+                  ><a download href="assets/logo-horizontal-dark.svg">Dark SVG ↓</a>
+                </div>
+              </article>
+              <article class="asset-card">
+                <div class="asset-preview theme-dark">
+                  <img
+                    src="assets/mark-dark.svg"
+                    alt="Ocean Ink mark on a dark surface"
+                    width="100"
+                    height="100"
+                  />
+                </div>
+                <h3>Standalone mark</h3>
+                <p>App navigation, small brand signatures and square avatars.</p>
+                <div class="download-row">
+                  <a download href="assets/mark-light.svg">Light SVG ↓</a
+                  ><a download href="assets/mark-dark.svg">Dark SVG ↓</a
+                  ><a download href="assets/mark-solid.svg">Solid SVG ↓</a>
+                </div>
+              </article>
+              <article class="asset-card">
+                <div class="asset-preview">
+                  <img
+                    src="assets/mark-mono-light.svg"
+                    alt="Monochrome Drawhaus mark"
+                    width="100"
+                    height="100"
+                  />
+                </div>
+                <h3>Monochrome</h3>
+                <p>Print, one-color documents and places where gradients are unsuitable.</p>
+                <div class="download-row">
+                  <a download href="assets/mark-mono-light.svg">Ink SVG ↓</a
+                  ><a download href="assets/mark-mono-dark.svg">Light SVG ↓</a>
+                </div>
+              </article>
+              <article class="asset-card">
+                <div class="asset-preview">
+                  <img
+                    src="assets/logo-stacked-light.svg"
+                    alt="Stacked Drawhaus logo"
+                    width="200"
+                    height="120"
+                  />
+                </div>
+                <h3>Stacked &amp; wordmark</h3>
+                <p>
+                  Square covers and tighter layouts. Use the wordmark when the icon already appears
+                  nearby.
+                </p>
+                <div class="download-row">
+                  <a download href="assets/logo-stacked-light.svg">Stacked light ↓</a
+                  ><a download href="assets/logo-stacked-dark.svg">Stacked dark ↓</a
+                  ><a download href="assets/wordmark-light.svg">Wordmark light ↓</a
+                  ><a download href="assets/wordmark-dark.svg">Wordmark dark ↓</a>
+                </div>
+              </article>
+            </div>
+            <div class="social-preview">
+              <img
+                src="assets/social-card.png"
+                alt="Drawhaus social preview: Your whiteboard, on your server"
+                width="1200"
+                height="630"
+                loading="lazy"
+              />
+              <div>
+                <h3>Share the product</h3>
+                <p>
+                  The 1200 × 630 PNG is for link previews and launch posts. The square avatar is for
+                  repository or community profiles. Neither is a diagram thumbnail.
+                </p>
+                <div class="download-row">
+                  <a download href="assets/social-card.png">Social PNG ↓</a
+                  ><a download href="assets/social-card.svg">Editable SVG ↓</a
+                  ><a download href="assets/avatar.png">Avatar PNG ↓</a
+                  ><a download href="assets/favicon.svg">Favicon SVG ↓</a
+                  ><a download href="assets/favicon.png">Favicon PNG ↓</a>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section id="colors">
+            <p class="eyebrow">03 / Color</p>
+            <div class="section-heading">
+              <h2>Ocean Ink, by role.</h2>
+              <button class="button secondary theme-toggle" type="button" aria-pressed="false">
+                Preview dark
+              </button>
+            </div>
+            <p class="lede">
+              Cool paper and deep ink make room for the diagrams. Blue identifies actions. Teal
+              gives the mark its drawing character. The values below come from the canonical tokens.
+            </p>
+            <div class="color-system theme-sample">
+              <div class="swatch-grid">
+                <div class="swatch">
+                  <div style="background: var(--color-brand-canvas)"></div>
+                  <strong>Canvas</strong><code data-token="--color-brand-canvas"></code>
+                  <p>Page background.</p>
+                </div>
+                <div class="swatch">
+                  <div style="background: var(--color-brand-paper)"></div>
+                  <strong>Paper</strong><code data-token="--color-brand-paper"></code>
+                  <p>Panels and raised surfaces.</p>
+                </div>
+                <div class="swatch">
+                  <div style="background: var(--color-brand-ink)"></div>
+                  <strong>Ink</strong><code data-token="--color-brand-ink"></code>
+                  <p>Headings and body text.</p>
+                </div>
+                <div class="swatch">
+                  <div style="background: var(--color-brand-secondary)"></div>
+                  <strong>Secondary</strong><code data-token="--color-brand-secondary"></code>
+                  <p>Supporting text.</p>
+                </div>
+                <div class="swatch">
+                  <div style="background: var(--color-brand-action)"></div>
+                  <strong>Action</strong><code data-token="--color-brand-action"></code>
+                  <p>Buttons, links and focus.</p>
+                </div>
+                <div class="swatch">
+                  <div class="gradient-swatch"></div>
+                  <strong>Ocean gradient</strong><code data-token="--color-brand-logo-start"></code
+                  ><code data-token="--color-brand-logo-end"></code>
+                  <p>Identity only.</p>
+                </div>
+              </div>
+              <div class="role-example">
+                <div>
+                  <span class="example-label">Illustrative interface sample</span>
+                  <h3>Architecture notes</h3>
+                  <p>Sketch the flow. Share it with the team.</p>
+                </div>
+                <a class="button" href="#interface">See UI guidance</a>
+              </div>
+              <p class="contrast-note" aria-live="polite"></p>
+            </div>
+            <p class="note">
+              A gradient is an identity treatment, not a status. Keep controls solid. Pair action
+              backgrounds with <code>--color-brand-on-action</code>; dark actions use ink text.
+              Decorative borders are not a substitute for a visible focus ring.
+            </p>
+            <div class="download-row">
+              <a download href="assets/tokens.css">Generated CSS tokens ↓</a
+              ><a
+                href="https://github.com/rodacato/drawhaus/blob/master/apps/frontend/src/globals.css"
+                >Canonical token source →</a
+              >
+            </div>
+          </section>
+          <section id="type">
+            <p class="eyebrow">04 / Typography</p>
+            <h2>Character in headings. Clarity everywhere else.</h2>
+            <div class="type-row">
+              <div>
+                <h3>Sora / 600</h3>
+                <p>Headings and the wordmark. Compact, geometric forms balance the loose mark.</p>
+              </div>
+              <p class="type-heading">Draw ideas together.</p>
+            </div>
+            <div class="type-row">
+              <div>
+                <h3>Inter / 400–600</h3>
+                <p>
+                  Body text, navigation, buttons and form labels. Use regular weight for reading,
+                  medium for labels.
+                </p>
+              </div>
+              <p class="type-body">
+                A shared canvas for sketches, systems and the next conversation.
+              </p>
+            </div>
+            <div class="type-row">
+              <div>
+                <h3>JetBrains Mono / 400</h3>
+                <p>Commands, code, token names and technical values. Keep it out of long prose.</p>
+              </div>
+              <code class="type-code">docker compose up</code>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <caption>
+                  Presentation type scale
+                </caption>
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th>Token / value</th>
+                    <th>Use</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Display</td>
+                    <td><code data-token="--text-brand-display"></code></td>
+                    <td>One hero heading per page</td>
+                  </tr>
+                  <tr>
+                    <td>Title</td>
+                    <td><code data-token="--text-brand-title"></code></td>
+                    <td>Section headings</td>
+                  </tr>
+                  <tr>
+                    <td>Body</td>
+                    <td><code data-token="--text-brand-body"></code></td>
+                    <td>Reading, line-height 1.6</td>
+                  </tr>
+                  <tr>
+                    <td>Label</td>
+                    <td><code data-token="--text-brand-label"></code></td>
+                    <td>Navigation and controls</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="note">
+              Use sentence case. Keep paragraphs around 60–70 characters wide. The site serves
+              variable WOFF2 files locally with <code>font-display: swap</code>; system fallbacks
+              remain readable while fonts load.
+            </p>
+            <div class="download-row">
+              <a download href="assets/fonts/Sora.woff2">Sora WOFF2 ↓</a
+              ><a download href="assets/fonts/Inter.woff2">Inter WOFF2 ↓</a
+              ><a download href="assets/fonts/JetBrainsMono.woff2">JetBrains Mono WOFF2 ↓</a
+              ><a href="assets/fonts/Sora-OFL.txt">Sora license</a
+              ><a href="assets/fonts/Inter-OFL.txt">Inter license</a
+              ><a href="assets/fonts/JetBrainsMono-OFL.txt">Mono license</a>
+            </div>
+          </section>
+          <section id="interface">
+            <p class="eyebrow">05 / Interface</p>
+            <h2>The canvas stays the main event.</h2>
+            <p class="lede">
+              Use the brand in the surrounding interface: navigation, dialogs and workspaces.
+              Diagram content and collaborator colors remain independent of the brand palette.
+            </p>
+            <div class="ui-example theme-sample">
+              <div class="example-toolbar">
+                <span class="example-label">Illustrative sharing guidance · not a live dialog</span
+                ><span class="status-label">✓ Saved</span>
+              </div>
+              <h3>Share architecture notes</h3>
+              <p class="example-description">Choose what this link allows before sharing it.</p>
+              <div class="permission-example">
+                <div><strong>Viewer</strong><span>Can open and read the diagram.</span></div>
+                <div><strong>Editor</strong><span>Can change the diagram.</span></div>
+              </div>
+              <p class="sharing-note">
+                Show the selected role and expiry beside the link. “Copied” confirms the copy; it
+                does not mean someone has joined.
+              </p>
+            </div>
+            <div class="principles">
+              <article>
+                <h3>One clear action</h3>
+                <p>
+                  Make the next useful step prominent. Keep secondary actions outlined and
+                  destructive actions explicit.
+                </p>
+              </article>
+              <article>
+                <h3>State in words</h3>
+                <p>
+                  Saved, reconnecting, read-only and expired must have labels. Pair warnings and
+                  errors with an explanation and recovery action.
+                </p>
+              </article>
+              <article>
+                <h3>Calm geometry</h3>
+                <p>
+                  Use the <code data-token="--spacing-brand-unit"></code> spacing unit. Controls use
+                  <code data-token="--radius-brand-control"></code> corners; panels use
+                  <code data-token="--radius-brand-panel"></code>. Do not round every element into a
+                  pill.
+                </p>
+              </article>
+              <article>
+                <h3>Quiet feedback</h3>
+                <p>
+                  Use <code data-token="--duration-brand-feedback"></code> color feedback on
+                  controls. Avoid decorative entrance animations and animated logos. Respect reduced
+                  motion.
+                </p>
+              </article>
+            </div>
+            <p class="note">
+              Aim for at least 4.5:1 for normal text and 3:1 for meaningful control boundaries.
+              Provide a visible keyboard focus ring, useful labels and a 44 px target for primary
+              touch controls. Contrast is measured for the samples here; this is not a claim that
+              the whole application has been audited.
+            </p>
+          </section>
+          <section id="voice">
+            <p class="eyebrow">06 / Voice &amp; sharing</p>
+            <h2>Say what it does. Show that it does it.</h2>
+            <p class="lede">
+              Drawhaus is a self-hosted collaborative diagramming tool built on Excalidraw, for
+              developers and small teams. Speak plainly about the outcome, the setup and the
+              responsibility of running it.
+            </p>
+            <div class="copy-example">
+              <span class="example-label">Primary message</span>
+              <h3>Your whiteboard, on your server.</h3>
+              <p>
+                Draw together, keep diagrams organized, and share them with clear permissions. You
+                run the instance and own its database.
+              </p>
+              <button class="button secondary" type="button" data-copy="pitch">
+                Copy short description</button
+              ><span id="pitch" hidden
+                >Drawhaus is a self-hosted collaborative diagramming tool built on Excalidraw. Draw
+                together, organize your diagrams, and share them with clear permissions.</span
+              >
+            </div>
+            <div class="principles">
+              <article>
+                <h3>Product sharing</h3>
+                <p>
+                  Use the social card and public marketing URL when introducing Drawhaus. Include
+                  one real screenshot or a specific workflow, such as Mermaid to editable shapes.
+                </p>
+              </article>
+              <article>
+                <h3>Diagram sharing</h3>
+                <p>
+                  Use the application's share links. A product announcement and a diagram invitation
+                  have different audiences; keep private diagram names, URLs and thumbnails out of
+                  public cards.
+                </p>
+              </article>
+              <article>
+                <h3>Proof before promises</h3>
+                <p>
+                  Credit Excalidraw. Use repository-backed capabilities and current captures. Avoid
+                  invented customers, unmeasured setup times and blanket security or privacy claims.
+                </p>
+              </article>
+              <article>
+                <h3>Useful next steps</h3>
+                <p>
+                  “Read the setup guide”, “View source” and “Copy link” say what happens. Permission
+                  and expiry labels should use the product's actual behavior.
+                </p>
+              </article>
+            </div>
+          </section>
+          <section id="integration">
+            <p class="eyebrow">07 / Integration</p>
+            <h2>Use one source. Generate the rest.</h2>
+            <p class="lede">
+              The marketing site already consumes this kit. Application adoption is a separate step:
+              its operational tokens, screens and permissions have been preserved in this delivery.
+            </p>
+            <ol class="integration-steps">
+              <li>
+                <h3>Update the source, not an export</h3>
+                <p>
+                  Edit brand roles in
+                  <a
+                    href="https://github.com/rodacato/drawhaus/blob/master/apps/frontend/src/globals.css"
+                    ><code>apps/frontend/src/globals.css</code></a
+                  >. The selected mark is <code>docs/branding/logo.svg</code>; the outlined
+                  lettering is <code>docs/branding/wordmark.svg</code>. The guide and marketing CSS
+                  use the generated token export.
+                </p>
+                <pre><code>node site/build-brand.mjs
+node site/export-brand-png.mjs
+bash site/build.sh</code></pre>
+                <p class="small-note">
+                  SVG and CSS generation needs Node. PNG regeneration uses the repository's
+                  Playwright dependency and Chromium: run <code>npm ci</code> and
+                  <code>npx playwright install chromium</code> first. Normal Pages builds use the
+                  checked-in PNG exports and verify that their sources match.
+                </p>
+              </li>
+              <li>
+                <h3>Apply the roles in the application</h3>
+                <p>
+                  Import the generated font CSS once, copy the supplied fonts with their licenses,
+                  and replace old logo assets with the corresponding light/dark exports. Adapt the
+                  existing shared UI classes to the brand roles rather than hardcoding hex values in
+                  screens.
+                </p>
+                <pre><code>/* A primary action, in either theme */
+.primary-action {
+  background: var(--color-brand-action);
+  color: var(--color-brand-on-action);
+  border-radius: var(--radius-brand-control);
+}
+.primary-action:hover {
+  background: var(--color-brand-action-hover);
+}
+.primary-action:focus-visible {
+  outline: 3px solid var(--color-brand-action);
+  outline-offset: 3px;
+}</code></pre>
+                <p class="small-note">
+                  Apply the generated <code>.theme-dark</code> mapping on the app's theme root, or
+                  port that mapping into its existing <code>:root.dark</code> rule. Check sign-in,
+                  dashboard, editor shell and sharing in both themes. Changing a background alone
+                  can leave old white button text unreadable.
+                </p>
+              </li>
+              <li>
+                <h3>Set up product link previews</h3>
+                <p>
+                  Keep <code>og:image</code> and <code>twitter:image</code> absolute, pointing to
+                  the social PNG on the final host. The Pages home includes them. If you reuse the
+                  site under another host or base path, update its canonical URL and social metadata
+                  together.
+                </p>
+                <pre><code>&lt;meta property="og:image"
+  content="https://rodacato.github.io/drawhaus/brand/assets/social-card.png" /&gt;</code></pre>
+              </li>
+              <li>
+                <h3>Preview and publish with GitHub Pages</h3>
+                <p>
+                  The existing Pages workflow serves <code>site/_site</code>. The product home is
+                  <code>/drawhaus/</code>, the guide is <code>/drawhaus/brand/</code>, and the
+                  application remains independently hosted.
+                </p>
+                <pre><code>bash site/build.sh
+node site/check.mjs
+python3 -m http.server 8117 --directory site/_site</code></pre>
+                <p class="small-note">
+                  That quick server previews the output at <code>http://localhost:8117/</code>.
+                  Before publication, also serve it under the <code>/drawhaus/</code> project base
+                  path and check direct loads. Merge through the repository's normal PR flow; Pages
+                  deploys from master. A local build does not publish the site.
+                </p>
+              </li>
+            </ol>
+            <p class="note">
+              Previous exploration is archived for context:
+              <a href="logos/">logo directions A–I</a> and <a href="colors/">color studies</a>. The
+              selected source files and this guide define the identity.
+            </p>
+          </section>
+        </div>
+      </div>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Drawhaus / Ocean Ink · A drawing-first identity.</p>
+        <nav aria-label="Footer">
+          <a href="../">Product</a
+          ><a href="https://github.com/rodacato/drawhaus/blob/master/docs/BRANDING.md"
+            >Source guide</a
+          ><a href="#assets">Assets ↑</a>
+        </nav>
+      </div>
+    </footer>
+    <script src="guide.js"></script>
+  </body>
+</html>

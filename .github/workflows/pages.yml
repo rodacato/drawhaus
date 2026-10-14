@@ -6,7 +6,9 @@ on:
     paths:
       - "site/**"
       - "apps/frontend/public/screenshots/**"
+      - "apps/frontend/src/globals.css"
       - "docs/branding/**"
+      - "docs/BRANDING.md"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -25,19 +27,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - run: bash site/build.sh
 
-      - name: Fail on a reference to a file that will 404
-        run: |
-          cd site/_site
-          missing=$(grep -oE '(src|href)="[^"]+"' index.html \
-            | sed -E 's/^[a-z]+="//; s/"$//' \
-            | grep -vE '^(https?:|#|mailto:|data:)' \
-            | sort -u \
-            | while read -r f; do [ -f "$f" ] || echo "$f"; done)
-          if [ -n "$missing" ]; then
-            echo "missing assets:"; echo "$missing"; exit 1
-          fi
+      - name: Validate all pages, assets and raster sources
+        run: node site/check.mjs
 
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
