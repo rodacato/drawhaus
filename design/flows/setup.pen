@@ -321,7 +321,7 @@
                           "id": "lfB5y",
                           "name": "Connector",
                           "fill": "$border",
-                          "width": 24,
+                          "width": 12,
                           "height": 1
                         },
                         {
@@ -371,7 +371,7 @@
                           "id": "AYXCv",
                           "name": "Connector",
                           "fill": "$border",
-                          "width": 24,
+                          "width": 12,
                           "height": 1
                         },
                         {
@@ -635,7 +635,7 @@
                           "id": "KDf01",
                           "name": "Connector",
                           "fill": "$border",
-                          "width": 24,
+                          "width": 12,
                           "height": 1
                         },
                         {
@@ -686,7 +686,7 @@
                           "id": "SzH2J",
                           "name": "Connector",
                           "fill": "$border",
-                          "width": 24,
+                          "width": 12,
                           "height": 1
                         },
                         {
@@ -804,6 +804,7 @@
                           "height": 16,
                           "fill": "$primary",
                           "cornerRadius": 4,
+                          "stroke": "$border-input",
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -873,6 +874,7 @@
                               "height": 16,
                               "fill": "$primary",
                               "cornerRadius": 4,
+                              "stroke": "$border-input",
                               "justifyContent": "center",
                               "alignItems": "center",
                               "children": [
@@ -1080,7 +1082,7 @@
                           "id": "hiTph",
                           "name": "Connector",
                           "fill": "$primary",
-                          "width": 24,
+                          "width": 12,
                           "height": 1
                         },
                         {
@@ -1129,7 +1131,7 @@
                           "id": "oORwK",
                           "name": "Connector",
                           "fill": "$border",
-                          "width": 24,
+                          "width": 12,
                           "height": 1
                         },
                         {
@@ -1329,17 +1331,6 @@
                           ]
                         }
                       ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "g675MO",
-                      "name": "Coming soon note",
-                      "fill": "$text-muted",
-                      "textGrowth": "fixed-width",
-                      "width": "fill_container",
-                      "content": "These integrations will be configurable from the admin panel once integration secrets are stored in the database (coming soon).",
-                      "fontFamily": "$font-sans",
-                      "fontSize": 12
                     },
                     {
                       "id": "Cws6D",
@@ -1576,7 +1567,7 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "D4 no blobs or theme toggle here · D26 step 3 says integration secrets are “coming soon” but the admin panel already has them · D27 finishing setup from step 3 fails silently and still navigates · D28 checkbox border is 1.24:1 and step 1 has no show/hide password · D29 the progress row is 416 px in a 400 px area.",
+          "content": "D4 no blobs or theme toggle here · D28 step 1 has no show/hide password (checkbox border fixed). Fixed in code and redrawn: D26 “coming soon” note removed · D27 a failed finish now shows an error instead of navigating · D29 progress connectors 24→12 px so the row fits.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
           "fontSize": 14
@@ -1641,7 +1632,7 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "2026-10-14 · Drawn from the code at master 019a73a on kit 0.1.0: 4 screens. Findings D26–D29 logged; D4 cited.",
+          "content": "2026-10-14 · Drawn from the code at master 019a73a on kit 0.1.0: 4 screens. D26, D27, D29 and the checkbox part of D28 fixed in code and redrawn the same day; the error state of D27 is not drawn.",
           "fontFamily": "$font-sans",
           "fontSize": 14
         }

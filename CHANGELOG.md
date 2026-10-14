@@ -30,6 +30,8 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 ### Fixed
 
+- **Setup wizard.** Finishing setup no longer navigates to the dashboard when the request fails: the error is shown and the button works again. A failed "Skip for now" shows its error too. The step 3 note saying integration secrets were "coming soon" is gone (they are already in Admin settings), the checkboxes have a visible border, and the progress row no longer overflows the card.
+
 - **Board callbacks no longer run from the render the socket listeners were bound in.** `eslint-plugin-react-hooks` now runs in the frontend lint (`rules-of-hooks` as an error, `exhaustive-deps` as a warning), and its 26 findings are fixed, with no suppressions. Three changes alter behaviour:
   - **Scene manager.** It bound `onConflict`, `onRemoteDelete` and `onEditsReplaced` once per socket generation, so a conflict, remote-delete or discarded-edits toast called whichever callback existed when the socket connected. They now go through `useEffectEvent` and always reach the latest render's callback, without re-subscribing listeners.
   - **Offline snapshot.** The same applies to its five-minute grace timer and its `beforeunload` save: both read the user and callbacks from when they fire, not from when the connection dropped.
