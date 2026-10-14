@@ -31,10 +31,10 @@ as context for AI agents (`AGENTS.md` points them here).
 | `flows/auth.pen`      | 8       | 0.1.0 | `/login`, `/register`, `/forgot-password`, `/reset-password`, unknown routes |
 | `flows/dashboard.pen` | 4       | 0.1.0 | `/dashboard` after sign-in                                                   |
 | `flows/setup.pen`     | 4       | 0.1.0 | `/setup` first-run wizard                                                    |
+| `flows/settings.pen`  | 15      | 0.1.0 | `/settings` user tabs (10 screens) and admin tabs (5)                        |
 
-Not drawn yet: embed, the editor's drawer panels, comments, admin
-(`/admin/*`), settings, marketing pages. Derive the next domain from
-`apps/frontend/src/App.tsx` routes, not from this list.
+Not drawn yet: embed, the editor's drawer panels, comments, marketing pages. Derive the next domain from
+`apps/frontend/src/router.tsx` routes, not from this list.
 
 **This table is present tense — it never carries history.** "Migrated on <date>, six
 components consolidated" belongs in that flow's `Log` frame, not here.
