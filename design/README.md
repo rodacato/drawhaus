@@ -31,7 +31,7 @@ as context for AI agents (`AGENTS.md` points them here).
 | `flows/auth.pen`      | 8       | 0.1.0 | `/login`, `/register`, `/forgot-password`, `/reset-password`, unknown routes |
 | `flows/dashboard.pen` | 4       | 0.1.0 | `/dashboard` after sign-in                                                   |
 
-Not drawn yet: editor (`/board/:id`), share and public share (`/share/:token`), embed, admin
+Not drawn yet: embed, the editor's drawer panels, comments, admin
 (`/admin/*`), settings, setup wizard, marketing pages. Derive the next domain from
 `apps/frontend/src/App.tsx` routes, not from this list.
 
@@ -102,7 +102,7 @@ flow even when nothing renders differently.
 
 1. Design changes go through PRs, like code — atomic with the implementing code when possible.
 2. One person per `.pen` at a time. Kit changes get review.
-3. No auto-save: **save often, commit often**.
+3. Pencil saves when VS Code changes focus or tab, not on a timer: after editing, run `code -r <file>` on another file and confirm the `.pen` mtime moved (`ls -l --time-style=full-iso design/flows`) before committing.
 4. Nothing moves from `_playground.pen` to `flows/` without cleanup + approval.
 5. Export PNGs of changed flows for PM/PO review.
 

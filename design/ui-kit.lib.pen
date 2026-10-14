@@ -5038,6 +5038,95 @@
     "white": {
       "type": "color",
       "value": "#ffffff"
+    },
+    "primary-10": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#2457d61a",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#82adff1a",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "coral-10": {
+      "type": "color",
+      "value": "#e95b2d1a"
+    },
+    "warning-10": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#8a4b081a",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#f2c17b1a",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "warning-20": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#8a4b0833",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#f2c17b33",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "success-20": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#17634433",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#86d7af33",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "error-20": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#b4231833",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#ffb4a933",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
     }
   },
   "fileToken": "b89832e2-dbf3-4cfa-823a-16dad4512416"
