@@ -29,7 +29,7 @@
     "react-router-dom": "^7.13.1",
     "socket.io-client": "^4.8.3",
     "socket.io-msgpack-parser": "^3.0.2",
-    "three": "^0.183.2"
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
@@ -39,10 +39,10 @@
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/dagre": "^0.7.54",
-    "@types/node": "^24.13.3",
+    "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@types/three": "^0.185.4",
+    "@types/three": "^0.186.0",
     "@typescript-eslint/eslint-plugin": "^8.70.0",
     "@typescript-eslint/parser": "^8.70.0",
     "@vitejs/plugin-react": "^6.1.1",

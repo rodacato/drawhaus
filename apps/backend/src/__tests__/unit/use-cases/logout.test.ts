@@ -35,6 +35,6 @@ describe("LogoutUseCase", () => {
   it("is idempotent: deleting a non-existent session does not throw", async () => {
     const { useCase } = setup();
 
-    await useCase.execute("never-existed");
+    await assert.doesNotReject(useCase.execute("never-existed"));
   });
 });
