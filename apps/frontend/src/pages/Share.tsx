@@ -8,6 +8,7 @@ import { BoardToolbarTrigger, BoardToolbarPanel, FollowingBanner } from "@/compo
 import { CollaborationBadge } from "@/components/CollaborationBadge";
 import { useCollaboration } from "@/lib/hooks/useCollaboration";
 import { useCanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
+import { AuthShell } from "@/components/AuthShell";
 import { ui } from "@/lib/ui";
 import { BrandLogo } from "@/components/BrandLogo";
 
@@ -22,7 +23,7 @@ type ShareData = {
 export function Share() {
   const { token } = useParams<{ token: string }>();
   const [data, setData] = useState<ShareData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ notFound: boolean } | null>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -38,12 +39,39 @@ export function Share() {
           appState: d.appState ?? d.app_state ?? {},
         });
       })
-      .catch(() => setError("Share link not found or expired"));
+      .catch((err: { response?: { status?: number } }) => {
+        const status = err?.response?.status;
+        setError({ notFound: status === 404 || status === 410 });
+      });
   }, [token]);
 
   if (error)
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-error">{error}</div>
+      <AuthShell>
+        <div className="space-y-2 text-center">
+          <BrandLogo alt="Drawhaus" className="mx-auto h-10 w-10" />
+          <h1 className={ui.h1}>Link unavailable</h1>
+          <p className={ui.subtitle}>
+            {error.notFound
+              ? "This share link was not found, was revoked or has expired."
+              : "We could not load this link. Check your connection and try again."}
+          </p>
+        </div>
+        <div className="flex justify-center gap-3">
+          {!error.notFound && (
+            <button
+              type="button"
+              className={`${ui.btn} ${ui.btnPrimary}`}
+              onClick={() => globalThis.location.reload()}
+            >
+              Try again
+            </button>
+          )}
+          <Link className={`${ui.btn} ${ui.btnSecondary}`} to="/">
+            Go to Drawhaus
+          </Link>
+        </div>
+      </AuthShell>
     );
   if (!data)
     return (
@@ -111,25 +139,6 @@ function ShareViewInner({
                     <line x1="9" y1="21" x2="9" y2="9" />
                   </svg>
                 </div>
-              </div>
-              {/* Live session badge */}
-              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold uppercase tracking-wider text-on-primary">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-                Live Session
               </div>
             </div>
           </div>
