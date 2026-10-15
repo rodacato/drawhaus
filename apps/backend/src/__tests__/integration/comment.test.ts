@@ -45,6 +45,8 @@ let comments: InMemoryCommentRepository;
 let diagrams: InMemoryDiagramRepository;
 let userStore: InMemoryUserRepository;
 
+const commentNotifier = new FakeRealtimeNotifier();
+
 function createApp() {
   userStore = new InMemoryUserRepository();
   const sessions = new InMemorySessionRepository(() => userStore.store);
@@ -129,6 +131,7 @@ function createApp() {
         toggleLike: new ToggleLikeUseCase(comments, diagrams),
       },
       requireAuth,
+      commentNotifier,
     ),
   );
 
@@ -630,4 +633,61 @@ test("GET /api/diagrams/:diagramId/comments without auth returns 401", async () 
 
   const res = await request(app).get(`/api/diagrams/${diagram.id}/comments`);
   assert.equal(res.status, 401);
+});
+
+test("reply, resolve and delete through another diagram's URL are refused and announce nothing", async () => {
+  const app = createApp();
+  const { cookie, userId } = await registerAndGetUser(app, "cmismatch@example.com");
+  const own = await diagrams.create({ ownerId: userId, title: "Own" });
+  const other = await diagrams.create({ ownerId: userId, title: "Other" });
+  const thread = await comments.createThread({
+    diagramId: other.id,
+    sceneId: null,
+    elementId: "el-1",
+    authorId: userId,
+    body: "root",
+  });
+  commentNotifier.commentsChanged.length = 0;
+  const base = `/api/diagrams/${own.id}/comments/${thread.id}`;
+
+  const reply = await request(app)
+    .post(`${base}/replies`)
+    .set("Cookie", cookie)
+    .send({ body: "x" });
+  const resolve = await request(app)
+    .patch(`${base}/resolve`)
+    .set("Cookie", cookie)
+    .send({ resolved: true });
+  const del = await request(app).delete(base).set("Cookie", cookie);
+
+  assert.deepEqual([reply.status, resolve.status, del.status], [404, 404, 404]);
+  assert.deepEqual(commentNotifier.commentsChanged, []);
+  const stored = await comments.findThreadById(thread.id);
+  assert.equal(stored?.replies.length, 0);
+  assert.equal(stored?.resolved, false);
+});
+
+test("a reply through the thread's own diagram announces it to that diagram", async () => {
+  const app = createApp();
+  const { cookie, userId } = await registerAndGetUser(app, "cmatch@example.com");
+  const diagram = await diagrams.create({ ownerId: userId, title: "D" });
+  const thread = await comments.createThread({
+    diagramId: diagram.id,
+    sceneId: null,
+    elementId: "el-1",
+    authorId: userId,
+    body: "root",
+  });
+  commentNotifier.commentsChanged.length = 0;
+
+  const res = await request(app)
+    .post(`/api/diagrams/${diagram.id}/comments/${thread.id}/replies`)
+    .set("Cookie", cookie)
+    .send({ body: "ok" });
+
+  assert.equal(res.status, 201);
+  assert.deepEqual(
+    commentNotifier.commentsChanged.map((e) => [e.kind, e.diagramId]),
+    [["replied", diagram.id]],
+  );
 });

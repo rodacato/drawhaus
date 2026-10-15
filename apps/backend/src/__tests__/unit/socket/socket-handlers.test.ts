@@ -100,6 +100,7 @@ function setup() {
     sessions,
     diagrams,
     scenes,
+    comments,
     shares,
     snapshots,
     drive,
@@ -457,5 +458,45 @@ describe("socket handlers — save-scene side effects", () => {
       h.driveBackups.mappings.map((m) => ({ userId: m.userId, diagramId: m.diagramId })),
       [{ userId: editor.id, diagramId: diagram.id }],
     );
+  });
+});
+
+describe("socket handlers — comments", () => {
+  it("a guest's comment is answered with a sign-in rejection and stores nothing", async () => {
+    const h = setup();
+    const { diagram } = await joinAsGuestEditor(h);
+
+    await h.socket.receive("comment-create", { roomId: diagram.id, elementId: "el1", body: "hi" });
+
+    assert.deepEqual(eventsNamed(h.socket.emitted, "comment-rejected"), [
+      { event: "comment-rejected", payload: { action: "create", reason: "sign-in-required" } },
+    ]);
+    assert.deepEqual(await h.comments.findByDiagram(diagram.id), []);
+  });
+
+  it("a thread of another diagram cannot be resolved or deleted through a joined room", async () => {
+    const h = setup();
+    const { editor, diagram } = await joinAsEditor(h);
+    const foreign = await h.diagrams.create({ title: "Foreign", ownerId: editor.id });
+    const thread = await h.comments.createThread({
+      diagramId: foreign.id,
+      elementId: "el1",
+      authorId: editor.id,
+      body: "root",
+    });
+
+    await h.socket.receive("comment-resolve", {
+      roomId: diagram.id,
+      threadId: thread.id,
+      resolved: true,
+    });
+    await h.socket.receive("comment-delete", { roomId: diagram.id, threadId: thread.id });
+
+    assert.equal(eventsNamed(h.socket.emitted, "comment-rejected").length, 2);
+    assert.deepEqual(eventsNamed(h.socket.emitted, "comment-resolved"), []);
+    assert.deepEqual(eventsNamed(h.socket.emitted, "comment-deleted"), []);
+    assert.deepEqual(eventsNamed(h.socket.broadcasts, "comment-deleted"), []);
+    const stored = await h.comments.findThreadById(thread.id);
+    assert.equal(stored?.resolved, false);
   });
 });
