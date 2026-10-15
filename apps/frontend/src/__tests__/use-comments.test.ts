@@ -82,12 +82,39 @@ describe("useComments", () => {
     expect(result.current.threads).toHaveLength(1);
   });
 
-  test("refresh is silent on API error and still clears loading", async () => {
-    vi.spyOn(commentsApi, "list").mockRejectedValue(new Error("boom"));
+  test("a failed load flags loadError, and a retry clears it", async () => {
+    const listSpy = vi.spyOn(commentsApi, "list").mockRejectedValueOnce(new Error("boom"));
     const { result } = render();
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.threads).toEqual([]);
+    expect(result.current.loadError).toBe(true);
+
+    listSpy.mockResolvedValue({ threads: [makeThread()] } as never);
+    await act(() => result.current.refresh());
+    expect(result.current.loadError).toBe(false);
+    expect(result.current.threads).toHaveLength(1);
+  });
+
+  test("a rejected comment event reports a message the user can act on", async () => {
+    const socket = createMockSocket();
+    vi.spyOn(commentsApi, "list").mockResolvedValue({ threads: [] } as never);
+    const onRejected = vi.fn();
+    const socketRef = makeRef(socket as unknown as Socket);
+    const { result } = renderHook(() =>
+      useComments({ diagramId: "d1", sceneId: null, socketRef, onRejected }),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() =>
+      triggerSocketEvent(socket, "comment-rejected", { action: "create", reason: "rate-limited" }),
+    );
+    expect(onRejected).toHaveBeenLastCalledWith(expect.stringContaining("too fast"));
+
+    act(() =>
+      triggerSocketEvent(socket, "comment-rejected", { action: "reply", reason: "failed" }),
+    );
+    expect(onRejected).toHaveBeenLastCalledWith(expect.stringContaining("could not be saved"));
   });
 
   test("defaults to an empty list when the response omits threads", async () => {

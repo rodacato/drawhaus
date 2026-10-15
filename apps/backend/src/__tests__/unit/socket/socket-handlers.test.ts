@@ -241,6 +241,40 @@ describe("socket handlers — valid payloads keep their behavior", () => {
       { event: "scene-saved", payload: { roomId: diagram.id, sceneId: scene.id } },
     ]);
   });
+
+  it("comment-create tells the sender when the rate limit drops a post", async () => {
+    const h = setup();
+    const { diagram } = await joinAsOwner(h);
+
+    for (let i = 0; i < 12; i++) {
+      await h.socket.receive("comment-create", {
+        roomId: diagram.id,
+        elementId: "el1",
+        body: `note ${i}`,
+      });
+    }
+
+    assert.equal(eventsNamed(h.socket.emitted, "comment-created").length, 10);
+    assert.deepEqual(eventsNamed(h.socket.emitted, "comment-rejected"), [
+      { event: "comment-rejected", payload: { action: "create", reason: "rate-limited" } },
+      { event: "comment-rejected", payload: { action: "create", reason: "rate-limited" } },
+    ]);
+  });
+
+  it("comment-reply tells the sender when the thread cannot take the reply", async () => {
+    const h = setup();
+    const { diagram } = await joinAsOwner(h);
+
+    await h.socket.receive("comment-reply", {
+      roomId: diagram.id,
+      threadId: "00000000-0000-4000-8000-000000000000",
+      body: "hello",
+    });
+
+    assert.deepEqual(eventsNamed(h.socket.emitted, "comment-rejected"), [
+      { event: "comment-rejected", payload: { action: "reply", reason: "failed" } },
+    ]);
+  });
 });
 
 describe("socket handlers — scene binding", () => {

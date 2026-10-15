@@ -10,11 +10,13 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 - **The project site no longer promises what the page cannot deliver.** The REST example now sends the `X-Drawhaus-Client` header the public API requires (without it the first request answered 400), and the MCP example shows the `~/.npmrc` registry line `npx` needs for GitHub Packages. Captions and alt text describe what the screenshots actually show, the hero image is named for the PlantUML import it displays, MCP and Kamal are glossed once, a line says what Drawhaus is relative to Excalidraw+, and Brand guide moves out of the main nav to the footer. README badges follow the real React 19, Vite 8 and TypeScript 6. The screenshots themselves still predate the Ocean Ink brand and need regenerating with `npm run screenshots` in `e2e/`.
 
+- **Comment failures are no longer silent.** A failed load shows a retry instead of “No open comments”, a post or reply the server drops (rate limit, error) toasts and keeps the typed text, and the socket sends `comment-rejected` to the sender. Deleting a thread asks first and names the replies it takes with it, the dead Filter, Mention, Emoji and Attach buttons are gone, the tabs have tab semantics, the textareas have labels and a 5000 character cap, icon buttons are 32 px, and resolved threads are muted with a token instead of `opacity-60`.
+
 - **Design review findings D1–D40 are fixed in the app.** Password fields share one `PasswordInput` with a named, pressable show/hide button; alerts and toasts announce themselves; hover-only controls reveal on focus and touch; overlays share one focus-trapping `Dialog`; the auth pages, Setup and Not found share one `AuthShell`; Spanish UI copy is English; raw palette colors are tokens; the canvas follows the app theme. Admin tabs show a retryable error instead of an empty or endless state, revoking an API key asks first, site settings validate numbers and the cron expression, and a failed share link has its own state. The Style Guide page and Setup's Error Monitoring card are gone. The e2e visual snapshots need regenerating (`npm run test:update-snapshots`).
 
 ### Changed
 
-- **CI runs only the e2e smoke subset on pull requests and pushes.** The full Playwright suite (about 190 tests, one worker) made every PR wait for it. The `@smoke` tests in `e2e/tests/smoke/` still gate each PR; the full suite runs on release pull requests (`release/*` branches), so a release cannot merge without it, and through *Run workflow* on any branch.
+- **CI runs only the e2e smoke subset on pull requests and pushes.** The full Playwright suite (about 190 tests, one worker) made every PR wait for it. The `@smoke` tests in `e2e/tests/smoke/` still gate each PR; the full suite runs on release pull requests (`release/*` branches), so a release cannot merge without it, and through _Run workflow_ on any branch.
 
 ### Added
 

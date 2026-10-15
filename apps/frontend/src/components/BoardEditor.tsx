@@ -124,6 +124,7 @@ export default function BoardEditor({
     diagramId,
     sceneId: collab.activeSceneId,
     socketRef: collab.socketRef,
+    onRejected: (message) => toast(message, "error"),
   });
 
   // Drive sync status from socket
@@ -372,6 +373,8 @@ export default function BoardEditor({
         {commentsPanelOpen && (
           <CommentsPanel
             threads={comments.threads}
+            loadError={comments.loadError}
+            onRetry={comments.refresh}
             elements={currentElements}
             selectedElementId={selectedElementId}
             showIndicators={showCommentIndicators}

@@ -183,16 +183,17 @@ Cursor and viewport events use `socket.volatile` — messages may be dropped und
 
 ### Comments
 
-| Direction | Event              | Payload                                 | Description               |
-| --------- | ------------------ | --------------------------------------- | ------------------------- |
-| C → S     | `comment-create`   | `{ roomId, elementId, body, sceneId? }` | Create new comment thread |
-| S → Room  | `comment-created`  | `{ roomId, thread }`                    | New thread broadcast      |
-| C → S     | `comment-reply`    | `{ roomId, threadId, body }`            | Reply to thread           |
-| S → Room  | `comment-replied`  | `{ roomId, threadId, reply }`           | Reply broadcast           |
-| C → S     | `comment-resolve`  | `{ roomId, threadId, resolved }`        | Resolve/unresolve thread  |
-| S → Room  | `comment-resolved` | `{ roomId, thread }`                    | Resolution broadcast      |
-| C → S     | `comment-delete`   | `{ roomId, threadId }`                  | Delete thread             |
-| S → Room  | `comment-deleted`  | `{ roomId, threadId }`                  | Deletion broadcast        |
+| Direction  | Event              | Payload                                 | Description                                              |
+| ---------- | ------------------ | --------------------------------------- | -------------------------------------------------------- |
+| C → S      | `comment-create`   | `{ roomId, elementId, body, sceneId? }` | Create new comment thread                                |
+| S → Room   | `comment-created`  | `{ roomId, thread }`                    | New thread broadcast                                     |
+| C → S      | `comment-reply`    | `{ roomId, threadId, body }`            | Reply to thread                                          |
+| S → Room   | `comment-replied`  | `{ roomId, threadId, reply }`           | Reply broadcast                                          |
+| C → S      | `comment-resolve`  | `{ roomId, threadId, resolved }`        | Resolve/unresolve thread                                 |
+| S → Room   | `comment-resolved` | `{ roomId, thread }`                    | Resolution broadcast                                     |
+| C → S      | `comment-delete`   | `{ roomId, threadId }`                  | Delete thread                                            |
+| S → Room   | `comment-deleted`  | `{ roomId, threadId }`                  | Deletion broadcast                                       |
+| S → Sender | `comment-rejected` | `{ action, reason }`                    | A comment event was dropped (`rate-limited` or `failed`) |
 
 The four `S → Room` events above are also emitted for the REST comment routes, which the client
 falls back to when the socket is down. `POST /comments/:threadId/like` has no socket counterpart
