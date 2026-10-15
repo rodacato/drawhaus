@@ -54,7 +54,7 @@ External dependencies: Google OAuth, GitHub OAuth, Google Drive API, Resend (ema
     │
     └── MCP protocol ───────────┐
                                 ▼
-                       [@drawhaus/mcp]
+                       [@rodacato/drawhaus-mcp]
                          5 tools, 2 resources
                          Uses /v1/ API internally
 ```
@@ -430,7 +430,7 @@ Shared by backend, frontend, and MCP server. Core exports:
 | `EXCALIDRAW_SPEC`, `getSpecForPrompt()`        | Curated spec for AI agents                         |
 | `DIAGRAM_STYLES`                               | Bauhaus design system (colors, fonts)              |
 
-### @drawhaus/mcp
+### @rodacato/drawhaus-mcp
 
 MCP server for AI agents (Claude Code, Cursor, VS Code):
 
