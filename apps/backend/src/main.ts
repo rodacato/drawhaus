@@ -17,6 +17,7 @@ import { runMigrations, pool } from "./infrastructure/db";
 import { logger } from "./infrastructure/logger";
 import { requestId } from "./infrastructure/http/middleware/request-id";
 import { requestLogger } from "./infrastructure/http/middleware/request-logger";
+import { asyncPublicRoute } from "./infrastructure/http/middleware/async-handler";
 import { registerMetrics } from "./infrastructure/metrics";
 
 // --- Sentry (must be configured before other imports) ---
@@ -118,10 +119,14 @@ app.get("/api/version", (_req, res) => {
   });
 });
 
-app.get("/api/site/status", generalLimiter, async (_req, res) => {
-  const settings = await useCases.getSettings.execute();
-  res.json({ maintenanceMode: settings.maintenanceMode, instanceName: settings.instanceName });
-});
+app.get(
+  "/api/site/status",
+  generalLimiter,
+  asyncPublicRoute(async (_req, res) => {
+    const settings = await useCases.getSettings.execute();
+    res.json({ maintenanceMode: settings.maintenanceMode, instanceName: settings.instanceName });
+  }),
+);
 
 // Setup lock (blocks all routes except whitelisted until setup is complete)
 const setupLock = createSetupLock(repos.siteSettingsRepo);

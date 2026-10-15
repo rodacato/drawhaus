@@ -32,9 +32,13 @@ export function createSetupLock(siteSettingsRepo: SiteSettingsRepository): {
     // When false, always re-check so that auto-setup via first registration
     // is picked up immediately instead of waiting for the cache TTL.
     if (!cached || Date.now() - cacheTime > CACHE_TTL) {
-      const settings = await siteSettingsRepo.get();
-      cached = settings.setupCompleted;
-      cacheTime = Date.now();
+      try {
+        const settings = await siteSettingsRepo.get();
+        cached = settings.setupCompleted;
+        cacheTime = Date.now();
+      } catch (error) {
+        return next(error);
+      }
     }
 
     if (cached) return next();
