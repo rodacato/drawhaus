@@ -5,13 +5,23 @@ import type { ReplyCommentUseCase } from "../../../application/use-cases/comment
 import type { ResolveCommentUseCase } from "../../../application/use-cases/comments/resolve-comment";
 import type { DeleteCommentUseCase } from "../../../application/use-cases/comments/delete-comment";
 import type { SocketData } from "../helpers";
-import { checkRateLimit, onEvent } from "../helpers";
+import { accountUserId, checkRateLimit, onEvent } from "../helpers";
 import { logger } from "../../logger";
 
 const RATE_LIMIT_MAX_COMMENT = 10;
 
-const reject = (socket: Socket, action: string, reason: "rate-limited" | "failed") =>
-  socket.emit("comment-rejected", { action, reason });
+const reject = (
+  socket: Socket,
+  action: string,
+  reason: "rate-limited" | "failed" | "sign-in-required",
+) => socket.emit("comment-rejected", { action, reason });
+
+/** Guest ids are not user rows; commenting needs an account. */
+function commenterId(socket: Socket, action: string): string | null {
+  const userId = accountUserId(socket.data as SocketData);
+  if (!userId) reject(socket, action, "sign-in-required");
+  return userId;
+}
 
 const commentBody = z.string().trim().min(1).max(5000);
 
@@ -54,10 +64,11 @@ export function registerCommentHandlers(
           reject(socket, "create", "rate-limited");
           return;
         }
-        const data = socket.data as SocketData;
+        const userId = commenterId(socket, "create");
+        if (!userId) return;
         const thread = await useCases.createComment.execute(
           roomId,
-          data.userId,
+          userId,
           elementId,
           body,
           sceneId,
@@ -78,8 +89,9 @@ export function registerCommentHandlers(
         reject(socket, "reply", "rate-limited");
         return;
       }
-      const data = socket.data as SocketData;
-      const reply = await useCases.replyComment.execute(threadId, data.userId, body);
+      const userId = commenterId(socket, "reply");
+      if (!userId) return;
+      const reply = await useCases.replyComment.execute(threadId, userId, body, roomId);
       socket.to(roomId).emit("comment-replied", { roomId, threadId, reply });
       socket.emit("comment-replied", { roomId, threadId, reply });
     } catch (error: unknown) {
@@ -99,8 +111,9 @@ export function registerCommentHandlers(
           reject(socket, "resolve", "rate-limited");
           return;
         }
-        const data = socket.data as SocketData;
-        const thread = await useCases.resolveComment.execute(threadId, data.userId, resolved);
+        const userId = commenterId(socket, "resolve");
+        if (!userId) return;
+        const thread = await useCases.resolveComment.execute(threadId, userId, resolved, roomId);
         socket.to(roomId).emit("comment-resolved", { roomId, thread });
         socket.emit("comment-resolved", { roomId, thread });
       } catch (error: unknown) {
@@ -117,8 +130,9 @@ export function registerCommentHandlers(
         reject(socket, "delete", "rate-limited");
         return;
       }
-      const data = socket.data as SocketData;
-      await useCases.deleteComment.execute(threadId, data.userId);
+      const userId = commenterId(socket, "delete");
+      if (!userId) return;
+      await useCases.deleteComment.execute(threadId, userId, roomId);
       socket.to(roomId).emit("comment-deleted", { roomId, threadId });
       socket.emit("comment-deleted", { roomId, threadId });
     } catch (error: unknown) {

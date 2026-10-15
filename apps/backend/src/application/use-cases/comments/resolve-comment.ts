@@ -10,9 +10,14 @@ export class ResolveCommentUseCase {
     private readonly diagrams: DiagramRepository,
   ) {}
 
-  async execute(threadId: string, userId: string, resolve: boolean): Promise<CommentThread> {
+  async execute(
+    threadId: string,
+    userId: string,
+    resolve: boolean,
+    diagramId: string,
+  ): Promise<CommentThread> {
     const thread = await this.comments.findThreadById(threadId);
-    if (!thread) throw new NotFoundError("Comment thread");
+    if (thread?.diagramId !== diagramId) throw new NotFoundError("Comment thread");
 
     const role = await this.diagrams.findAccessRole(thread.diagramId, userId);
     requireEditAccess(role);

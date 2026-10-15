@@ -4,6 +4,11 @@ import { commentsApi } from "@/api/comments";
 import { countElementComments } from "@/lib/comments";
 import type { CommentThread, CommentReply } from "@/lib/types";
 
+const COMMENT_REJECTION_MESSAGES: Record<string, string> = {
+  "rate-limited": "You are commenting too fast. Wait a moment and try again.",
+  "sign-in-required": "Sign in to comment.",
+};
+
 function addThreadIfNew(threads: CommentThread[], thread: CommentThread): CommentThread[] {
   if (threads.some((t) => t.id === thread.id)) return threads;
   return [...threads, thread];
@@ -131,9 +136,7 @@ export function useComments({
 
     function onRejectedEvent({ reason }: { action: string; reason: string }) {
       onRejectedRef.current?.(
-        reason === "rate-limited"
-          ? "You are commenting too fast. Wait a moment and try again."
-          : "The comment could not be saved. Try again.",
+        COMMENT_REJECTION_MESSAGES[reason] ?? "The comment could not be saved. Try again.",
       );
     }
 

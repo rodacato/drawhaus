@@ -84,10 +84,16 @@ export function createCommentRoutes(
     validate(replySchema),
     asyncRoute(async (req, res) => {
       const threadId = String(req.params.threadId);
-      const reply = await useCases.reply.execute(threadId, req.authUser.id, req.body.body);
+      const diagramId = String(req.params.diagramId);
+      const reply = await useCases.reply.execute(
+        threadId,
+        req.authUser.id,
+        req.body.body,
+        diagramId,
+      );
       notifier?.commentChanged({
         kind: "replied",
-        diagramId: String(req.params.diagramId),
+        diagramId,
         threadId,
         reply,
       });
@@ -101,14 +107,16 @@ export function createCommentRoutes(
     validateParams(threadParams),
     validate(resolveSchema),
     asyncRoute(async (req, res) => {
+      const diagramId = String(req.params.diagramId);
       const thread = await useCases.resolve.execute(
         String(req.params.threadId),
         req.authUser.id,
         req.body.resolved,
+        diagramId,
       );
       notifier?.commentChanged({
         kind: "resolved",
-        diagramId: String(req.params.diagramId),
+        diagramId,
         thread,
       });
       return res.json({ thread: formatThread(thread) });
@@ -121,10 +129,11 @@ export function createCommentRoutes(
     validateParams(threadParams),
     asyncRoute(async (req, res) => {
       const threadId = String(req.params.threadId);
-      await useCases.delete.execute(threadId, req.authUser.id);
+      const diagramId = String(req.params.diagramId);
+      await useCases.delete.execute(threadId, req.authUser.id, diagramId);
       notifier?.commentChanged({
         kind: "deleted",
-        diagramId: String(req.params.diagramId),
+        diagramId,
         threadId,
       });
       return res.json({ success: true });

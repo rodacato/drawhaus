@@ -10,9 +10,14 @@ export class ReplyCommentUseCase {
     private readonly diagrams: DiagramRepository,
   ) {}
 
-  async execute(threadId: string, userId: string, body: string): Promise<CommentReply> {
+  async execute(
+    threadId: string,
+    userId: string,
+    body: string,
+    diagramId: string,
+  ): Promise<CommentReply> {
     const thread = await this.comments.findThreadById(threadId);
-    if (!thread) throw new NotFoundError("Comment thread");
+    if (thread?.diagramId !== diagramId) throw new NotFoundError("Comment thread");
 
     const role = await this.diagrams.findAccessRole(thread.diagramId, userId);
     requireAccess(role);

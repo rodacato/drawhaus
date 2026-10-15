@@ -9,9 +9,9 @@ export class DeleteCommentUseCase {
     private readonly diagrams: DiagramRepository,
   ) {}
 
-  async execute(threadId: string, userId: string): Promise<void> {
+  async execute(threadId: string, userId: string, diagramId: string): Promise<void> {
     const thread = await this.comments.findThreadById(threadId);
-    if (!thread) throw new NotFoundError("Comment thread");
+    if (thread?.diagramId !== diagramId) throw new NotFoundError("Comment thread");
 
     const role = await this.diagrams.findAccessRole(thread.diagramId, userId);
     requireAccess(role);
