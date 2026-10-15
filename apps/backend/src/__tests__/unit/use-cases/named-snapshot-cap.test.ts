@@ -17,7 +17,13 @@ async function setupAtCap() {
   await scenes.create({ diagramId: diagram.id, name: "S", sortOrder: 0, elements: [] });
   const create = new CreateSnapshotUseCase(snapshots, scenes, diagrams);
   for (let i = 0; i < 20; i++) await create.createManual(diagram.id, ownerId, `v${i}`);
-  return { ownerId, diagram, snapshots, create, rename: new RenameSnapshotUseCase(snapshots, diagrams) };
+  return {
+    ownerId,
+    diagram,
+    snapshots,
+    create,
+    rename: new RenameSnapshotUseCase(snapshots, diagrams),
+  };
 }
 
 describe("named snapshot cap", () => {

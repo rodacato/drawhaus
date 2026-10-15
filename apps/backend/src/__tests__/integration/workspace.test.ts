@@ -160,7 +160,11 @@ function createApp() {
           siteSettings,
           emailService,
         ),
-        acceptInvite: new AcceptWorkspaceInviteUseCase(workspaces, workspaceInvitations),
+        acceptInvite: new AcceptWorkspaceInviteUseCase(
+          workspaces,
+          workspaceInvitations,
+          siteSettings,
+        ),
         resolveInvite: new ResolveWorkspaceInviteUseCase(workspaces, workspaceInvitations),
         ensurePersonal: new EnsurePersonalWorkspaceUseCase(workspaces),
         transferOwnership: new TransferWorkspaceOwnershipUseCase(
