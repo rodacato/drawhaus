@@ -46,3 +46,29 @@ describe("PgSessionRepository.findUserByToken", () => {
     assert.equal((await sessions.findUserByToken(live.token))?.id, userId);
   });
 });
+
+describe("PgSessionRepository.deleteOthersForUser", () => {
+  it("ends every other session of the user, returns their tokens and keeps the given one", async () => {
+    const userId = await createUser();
+    const keep = await sessions.create(userId);
+    const other1 = await sessions.create(userId);
+    const other2 = await sessions.create(userId);
+
+    const ended = await sessions.deleteOthersForUser(userId, keep.token);
+
+    assert.equal(ended.length, 2);
+    assert.ok(ended.includes(other1.token) && ended.includes(other2.token));
+    assert.equal((await sessions.findUserByToken(keep.token))?.id, userId);
+    assert.equal(await sessions.findUserByToken(other1.token), null);
+  });
+
+  it("never touches another user's sessions", async () => {
+    const userId = await createUser();
+    const bystander = await sessions.create(await createUser());
+    const keep = await sessions.create(userId);
+
+    await sessions.deleteOthersForUser(userId, keep.token);
+
+    assert.equal(await countRows("sessions", "id = $1", [bystander.token]), 1);
+  });
+});
