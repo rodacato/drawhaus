@@ -64,7 +64,11 @@ export class PgWorkspaceInvitationRepository implements WorkspaceInvitationRepos
     return rows[0] ? toDomain(rows[0]) : null;
   }
 
-  async markUsed(id: string): Promise<void> {
-    await pool.query("UPDATE workspace_invitations SET used_at = now() WHERE id = $1", [id]);
+  async markUsed(id: string): Promise<boolean> {
+    const { rowCount } = await pool.query(
+      "UPDATE workspace_invitations SET used_at = now() WHERE id = $1 AND used_at IS NULL",
+      [id],
+    );
+    return (rowCount ?? 0) > 0;
   }
 }

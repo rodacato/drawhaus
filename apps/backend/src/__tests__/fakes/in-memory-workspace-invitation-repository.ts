@@ -33,8 +33,10 @@ export class InMemoryWorkspaceInvitationRepository implements WorkspaceInvitatio
     return this.store.find((i) => i.token === token) ?? null;
   }
 
-  async markUsed(id: string): Promise<void> {
+  async markUsed(id: string): Promise<boolean> {
     const invite = this.store.find((i) => i.id === id);
-    if (invite) invite.usedAt = new Date();
+    if (!invite || invite.usedAt) return false;
+    invite.usedAt = new Date();
+    return true;
   }
 }

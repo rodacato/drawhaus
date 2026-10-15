@@ -11,5 +11,5 @@ export interface WorkspaceInvitationRepository {
     expiresAt: Date;
   }): Promise<WorkspaceInvitation>;
   findByToken(token: string): Promise<WorkspaceInvitation | null>;
-  markUsed(id: string): Promise<void>;
+  markUsed(id: string): Promise<boolean>;
 }

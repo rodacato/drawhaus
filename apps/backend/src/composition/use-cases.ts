@@ -251,6 +251,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   const acceptWorkspaceInvite = new AcceptWorkspaceInviteUseCase(
     repos.workspaceRepo,
     repos.workspaceInvitationRepo,
+    repos.siteSettingsRepo,
   );
   const resolveWorkspaceInvite = new ResolveWorkspaceInviteUseCase(
     repos.workspaceRepo,
