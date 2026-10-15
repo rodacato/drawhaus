@@ -8,7 +8,6 @@ import type { DeleteDiagramUseCase } from "../../../application/use-cases/diagra
 import type { Diagram } from "../../../domain/entities/diagram";
 import { asyncRoute } from "../middleware/async-handler";
 import { validate, validateParams, validateQuery } from "../middleware/validate";
-import { sanitizeElements } from "./sanitize-elements";
 import type { ApiKeyAuthedRequest } from "./middleware/require-api-key";
 import { ForbiddenError } from "../../../domain/errors";
 import { validateElements } from "@drawhaus/helpers";
@@ -79,7 +78,7 @@ export function createV1DiagramRoutes(
     validate(createSchema),
     asyncRoute(async (req, res) => {
       const { authUser, apiKeyWorkspaceId } = req as ApiKeyAuthedRequest;
-      const elements = req.body.elements ? sanitizeElements(req.body.elements) : undefined;
+      const elements: unknown[] | undefined = req.body.elements;
 
       if (elements) {
         const validation = validateElements(elements);
@@ -159,8 +158,7 @@ export function createV1DiagramRoutes(
         appState?: Record<string, unknown>;
       } = {};
       if (req.body.title !== undefined) updateData.title = req.body.title;
-      if (req.body.elements !== undefined)
-        updateData.elements = sanitizeElements(req.body.elements);
+      if (req.body.elements !== undefined) updateData.elements = req.body.elements;
       if (req.body.appState !== undefined) updateData.appState = req.body.appState;
 
       if (updateData.elements) {

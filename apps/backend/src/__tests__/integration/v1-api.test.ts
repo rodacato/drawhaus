@@ -356,26 +356,28 @@ describe("/v1/diagrams workspace scoping", () => {
   });
 });
 
-describe("/v1/diagrams sanitization", () => {
-  test("strips HTML tags from element text fields", async () => {
+describe("/v1/diagrams element text", () => {
+  test("keeps angle brackets in element text on create", async () => {
     const app = createApp();
 
     const res = await api(app)
       .post("/v1/diagrams")
       .send({
-        title: "XSS Test",
+        title: "Text",
         elements: [
-          { id: "el-1", type: "text", x: 0, y: 0, text: "<script>alert('xss')</script>Hello" },
-          { id: "el-2", type: "rectangle", x: 0, y: 0, width: 100, height: 50 },
+          { id: "el-1", type: "text", x: 0, y: 0, text: "List<String> items" },
+          { id: "el-2", type: "text", x: 0, y: 0, text: "x < 5 and y > 3" },
+          { id: "el-3", type: "rectangle", x: 0, y: 0, width: 100, height: 50 },
         ],
       });
 
     assert.equal(res.status, 201);
-    assert.equal(res.body.data.elements[0].text, "alert('xss')Hello");
-    assert.equal(res.body.data.elements[1].type, "rectangle");
+    assert.equal(res.body.data.elements[0].text, "List<String> items");
+    assert.equal(res.body.data.elements[1].text, "x < 5 and y > 3");
+    assert.equal(res.body.data.elements[2].type, "rectangle");
   });
 
-  test("strips HTML tags on update too", async () => {
+  test("keeps angle brackets in element text on update", async () => {
     const app = createApp();
     const createRes = await api(app).post("/v1/diagrams").send({ title: "Test" });
     const id = createRes.body.data.id;
@@ -383,11 +385,11 @@ describe("/v1/diagrams sanitization", () => {
     const res = await api(app)
       .patch(`/v1/diagrams/${id}`)
       .send({
-        elements: [{ id: "el-1", type: "text", x: 0, y: 0, text: "<b>bold</b> text" }],
+        elements: [{ id: "el-1", type: "text", x: 0, y: 0, text: "Map<K, V> & <b>bold</b>" }],
       });
 
     assert.equal(res.status, 200);
-    assert.equal(res.body.data.elements[0].text, "bold text");
+    assert.equal(res.body.data.elements[0].text, "Map<K, V> & <b>bold</b>");
   });
 });
 

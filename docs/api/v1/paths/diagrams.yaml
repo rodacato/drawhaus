@@ -62,7 +62,7 @@ post:
 
     - `title` defaults to `"Untitled"` if omitted
     - `elements` and `appState` accept Excalidraw scene format
-    - Text fields in elements are sanitized to prevent stored XSS
+    - Text fields in elements are stored as sent; clients render them on canvas, not as HTML
     - `createdVia` is automatically set to `"api"`
   tags: [Diagrams]
   parameters:
