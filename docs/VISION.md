@@ -280,7 +280,7 @@ The ecosystem uses a consistent naming pattern:
 
 - **Drawhaus** — the platform
 - **@drawhaus/helpers** — element builders and layout engine for programmatic use
-- **@drawhaus/mcp** — MCP server for AI agent integration
+- **@rodacato/drawhaus-mcp** — MCP server for AI agent integration
 - **@drawhaus/plantuml-to-excalidraw** — PlantUML parser and converter
 - **@drawhaus/mermaid-to-excalidraw** — Mermaid parser and converter
 

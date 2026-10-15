@@ -197,7 +197,7 @@ const FAQ_ITEMS = [
   {
     question: "Can AI tools create diagrams?",
     answer:
-      "Yes. The @drawhaus/mcp package lets Claude Code, Cursor, and VS Code create, read, update, and delete diagrams via natural language. AI-generated diagrams are fully editable in the editor.",
+      "Yes. The @rodacato/drawhaus-mcp package lets Claude Code, Cursor, and VS Code create, read, update, and delete diagrams via natural language. AI-generated diagrams are fully editable in the editor.",
   },
   {
     question: "Is my data secure?",

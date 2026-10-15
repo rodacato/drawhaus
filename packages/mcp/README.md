@@ -1,4 +1,4 @@
-# @drawhaus/mcp
+# @rodacato/drawhaus-mcp
 
 MCP (Model Context Protocol) server for [Drawhaus](https://github.com/drawhaus/drawhaus) — create and manage diagrams from AI tools like Claude Code, Cursor, and VS Code.
 
@@ -12,10 +12,11 @@ MCP (Model Context Protocol) server for [Drawhaus](https://github.com/drawhaus/d
 
 ### Claude Code
 
-First, configure npm to use the GitHub Packages registry for `@drawhaus` packages:
+First, configure npm to use the GitHub Packages registry for `@rodacato` packages:
 
 ```bash
-echo "@drawhaus:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "@rodacato:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "//npm.pkg.github.com/:_authToken=<github token with read:packages>" >> ~/.npmrc
 ```
 
 **Via CLI (recommended):**
@@ -24,7 +25,7 @@ echo "@drawhaus:registry=https://npm.pkg.github.com" >> ~/.npmrc
 claude mcp add drawhaus \
   -e DRAWHAUS_URL=http://localhost:4000 \
   -e DRAWHAUS_API_KEY=dhk_your_api_key \
-  -- npx @drawhaus/mcp
+  -- npx @rodacato/drawhaus-mcp
 ```
 
 **Or manually** — add to `.mcp.json` (project root) or `~/.claude.json` (user-wide):
@@ -34,7 +35,7 @@ claude mcp add drawhaus \
   "mcpServers": {
     "drawhaus": {
       "command": "npx",
-      "args": ["@drawhaus/mcp"],
+      "args": ["@rodacato/drawhaus-mcp"],
       "env": {
         "DRAWHAUS_URL": "http://localhost:4000",
         "DRAWHAUS_API_KEY": "dhk_your_api_key"
@@ -52,7 +53,7 @@ Add to Cursor Settings → MCP Servers:
 {
   "drawhaus": {
     "command": "npx",
-    "args": ["@drawhaus/mcp"],
+    "args": ["@rodacato/drawhaus-mcp"],
     "env": {
       "DRAWHAUS_URL": "http://localhost:4000",
       "DRAWHAUS_API_KEY": "dhk_your_api_key"
@@ -70,7 +71,7 @@ Add to `.vscode/mcp.json`:
   "servers": {
     "drawhaus": {
       "command": "npx",
-      "args": ["@drawhaus/mcp"],
+      "args": ["@rodacato/drawhaus-mcp"],
       "env": {
         "DRAWHAUS_URL": "http://localhost:4000",
         "DRAWHAUS_API_KEY": "dhk_your_api_key"

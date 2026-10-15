@@ -221,15 +221,17 @@ curl -H "Authorization: Bearer $DRAWHAUS_API_KEY" \
      -H "X-Drawhaus-Client: curl" \
      https://draw.example.com/v1/diagrams
 
-<span class="c"># MCP — Claude Code, Cursor, VS Code (once: point @drawhaus at GitHub Packages)</span>
-echo "@drawhaus:registry=https://npm.pkg.github.com" >> ~/.npmrc
+<span class="c"># MCP — Claude Code, Cursor, VS Code (once: point @rodacato at GitHub Packages)</span>
+echo "@rodacato:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "//npm.pkg.github.com/:_authToken=&lt;github token with read:packages&gt;" >> ~/.npmrc
 claude mcp add drawhaus \
   -e DRAWHAUS_URL=http://localhost:4300 \
   -e DRAWHAUS_API_KEY=dhk_... \
-  -- npx @drawhaus/mcp</code></pre>
+  -- npx @rodacato/drawhaus-mcp</code></pre>
           <p class="also note">
             Mermaid and PlantUML paste straight into the canvas as editable shapes.
-            <code>@drawhaus/mcp</code> is published to GitHub Packages —
+            <code>@rodacato/drawhaus-mcp</code> installs from GitHub Packages, which needs a token
+            with <code>read:packages</code> —
             <a href="https://github.com/rodacato/drawhaus/tree/master/packages/mcp"
               >setup is in its README</a
             >. MCP (Model Context Protocol) is how AI tools call an app; here it lets them create

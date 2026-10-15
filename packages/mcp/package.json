@@ -1,5 +1,5 @@
 {
-  "name": "@drawhaus/mcp",
+  "name": "@rodacato/drawhaus-mcp",
   "version": "0.1.0",
   "description": "MCP server for Drawhaus — create and manage diagrams from AI tools",
   "type": "module",

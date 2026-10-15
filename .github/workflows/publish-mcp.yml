@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   publish:
-    name: Publish @drawhaus/mcp
+    name: Publish @rodacato/drawhaus-mcp
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -42,7 +42,7 @@ jobs:
         run: npm run build --workspace=@drawhaus/helpers
 
       - name: Build MCP package
-        run: npm run build --workspace=@drawhaus/mcp
+        run: npm run build --workspace=@rodacato/drawhaus-mcp
 
       - name: Set version from tag
         if: startsWith(github.ref, 'refs/tags/v')

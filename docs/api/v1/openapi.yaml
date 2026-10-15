@@ -61,10 +61,11 @@ info:
 
     ## MCP Setup
 
-    The `@drawhaus/mcp` package is published to GitHub Packages. Configure the registry once:
+    The `@rodacato/drawhaus-mcp` package is published to GitHub Packages. Configure the registry once:
 
     ```bash
-    echo "@drawhaus:registry=https://npm.pkg.github.com" >> ~/.npmrc
+    echo "@rodacato:registry=https://npm.pkg.github.com" >> ~/.npmrc
+    echo "//npm.pkg.github.com/:_authToken=<github token with read:packages>" >> ~/.npmrc
     ```
 
     **Claude Code (`.mcp.json` or `~/.claude.json`)**
@@ -73,7 +74,7 @@ info:
       "mcpServers": {
         "drawhaus": {
           "command": "npx",
-          "args": ["@drawhaus/mcp"],
+          "args": ["@rodacato/drawhaus-mcp"],
           "env": {
             "DRAWHAUS_URL": "${baseUrl}",
             "DRAWHAUS_API_KEY": "dhk_your_key"
@@ -89,7 +90,7 @@ info:
       "servers": {
         "drawhaus": {
           "command": "npx",
-          "args": ["@drawhaus/mcp"],
+          "args": ["@rodacato/drawhaus-mcp"],
           "env": {
             "DRAWHAUS_URL": "${baseUrl}",
             "DRAWHAUS_API_KEY": "dhk_your_key"

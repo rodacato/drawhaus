@@ -19,7 +19,7 @@ Only `v*` tags are releases.
 
 **The version lives in the root `package.json`.** `apps/backend` and `apps/frontend` carry the same
 number and move with it in the same command. The packages under `packages/` version on their own;
-`@drawhaus/mcp` is published with the tag's version whatever its `package.json` says.
+`@rodacato/drawhaus-mcp` is published with the tag's version whatever its `package.json` says.
 
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Changes land under
 `## [Unreleased]` as they merge; a release renames that section. Earlier sections keep their
@@ -76,9 +76,9 @@ default branch's head.
 
 ## What a tag publishes
 
-| Workflow          | On a `v*` tag                                                                          |
-| ----------------- | -------------------------------------------------------------------------------------- |
-| `publish-mcp.yml` | Builds `@drawhaus/mcp`, sets its version from the tag, publishes it to GitHub Packages |
+| Workflow          | On a `v*` tag                                                                                   |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| `publish-mcp.yml` | Builds `@rodacato/drawhaus-mcp`, sets its version from the tag, publishes it to GitHub Packages |
 
 No Docker image is tagged with the version. `kamal deploy` tags each image with the deployed
 commit's SHA and `latest`, whether or not that commit is a release.

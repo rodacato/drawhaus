@@ -26,7 +26,7 @@ drawhaus/
 │   └── backend/                 # Express + TypeScript (Clean Architecture)
 ├── packages/
 │   ├── helpers/                 # @drawhaus/helpers — element builders, layout, validator
-│   ├── mcp/                     # @drawhaus/mcp — MCP server for AI tools
+│   ├── mcp/                     # @rodacato/drawhaus-mcp — MCP server for AI tools
 │   └── plantuml-to-excalidraw/  # PlantUML parser and converter
 ├── e2e/                         # Playwright end-to-end tests
 └── docs/                        # Vision, roadmap, specs, ADRs, branding, guides

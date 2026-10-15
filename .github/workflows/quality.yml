@@ -90,7 +90,7 @@ jobs:
       - name: Build workspace packages
         run: |
           npm run build --workspace=@drawhaus/helpers
-          npm run build --workspace=@drawhaus/mcp
+          npm run build --workspace=@rodacato/drawhaus-mcp
           npm run build --workspace=@drawhaus/plantuml-to-excalidraw
           npm run build --workspace=@drawhaus/mermaid-to-excalidraw
 

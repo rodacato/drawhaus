@@ -150,8 +150,8 @@ troubleshooting.
 | `npm run docs:preview`                             | Preview API docs locally                                                     |
 | `npm run build --workspace=@drawhaus/helpers`      | Build helpers package                                                        |
 | `npm test --workspace=@drawhaus/helpers`           | Run helpers tests (90 tests)                                                 |
-| `npm run build --workspace=@drawhaus/mcp`          | Build MCP server package                                                     |
-| `npm test --workspace=@drawhaus/mcp`               | Run MCP server tests                                                         |
+| `npm run build --workspace=@rodacato/drawhaus-mcp` | Build MCP server package                                                     |
+| `npm test --workspace=@rodacato/drawhaus-mcp`      | Run MCP server tests                                                         |
 
 ---
 
@@ -181,7 +181,7 @@ drawhaus/
 │               └── socket/     # Socket.IO event handlers
 ├── packages/
 │   ├── helpers/                 # @drawhaus/helpers — element builders, layout, validator, spec
-│   ├── mcp/                     # @drawhaus/mcp — MCP server for AI tools
+│   ├── mcp/                     # @rodacato/drawhaus-mcp — MCP server for AI tools
 │   ├── plantuml-to-excalidraw/  # PlantUML parser and converter
 │   └── mermaid-to-excalidraw/   # Mermaid parser and converter
 ├── e2e/               # Playwright end-to-end tests
@@ -465,24 +465,25 @@ All `/v1/` endpoints (except health) require `Authorization: Bearer dhk_...` and
 
 ### MCP Server
 
-The `@drawhaus/mcp` package lets AI tools (Claude Code, Cursor, VS Code) create and manage diagrams via the Model Context Protocol.
+The `@rodacato/drawhaus-mcp` package lets AI tools (Claude Code, Cursor, VS Code) create and manage diagrams via the Model Context Protocol.
 
 ```bash
 # One-time: configure GitHub Packages registry
-echo "@drawhaus:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "@rodacato:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "//npm.pkg.github.com/:_authToken=<github token with read:packages>" >> ~/.npmrc
 
 # Via Claude Code CLI:
 claude mcp add drawhaus \
   -e DRAWHAUS_URL=http://localhost:4000 \
   -e DRAWHAUS_API_KEY=dhk_your_api_key \
-  -- npx @drawhaus/mcp
+  -- npx @rodacato/drawhaus-mcp
 
 # Or add to .mcp.json (project root) / ~/.claude.json (user-wide):
 {
   "mcpServers": {
     "drawhaus": {
       "command": "npx",
-      "args": ["@drawhaus/mcp"],
+      "args": ["@rodacato/drawhaus-mcp"],
       "env": {
         "DRAWHAUS_URL": "http://localhost:4000",
         "DRAWHAUS_API_KEY": "dhk_your_api_key"
@@ -576,17 +577,17 @@ Playwright E2E suite).
 
 ## Documentation
 
-| Document                                 | Description                                                     |
-| ---------------------------------------- | --------------------------------------------------------------- |
-| [GETTING_STARTED.md](GETTING_STARTED.md) | Run Drawhaus locally — all paths, social login, troubleshooting |
-| [CHANGELOG.md](CHANGELOG.md)             | Full version history                                            |
-| [docs/ROADMAP.md](docs/ROADMAP.md)       | Strategy, shipped capabilities, decision log                    |
-| [docs/VISION.md](docs/VISION.md)         | Product vision and architecture principles                      |
-| [docs/WORKFLOW.md](docs/WORKFLOW.md)     | AI-assisted build cycle and conventions                         |
-| [docs/BRANDING.md](docs/branding/README.md)     | Brand guide, assets, and design tokens                          |
-| [docs/adr/](docs/adr/)                   | Architecture Decision Records                                   |
-| [docs/specs/](docs/specs/)               | Feature implementation specs                                    |
-| [docs/guides/](docs/guides/)             | Deploy and release guides                                       |
+| Document                                    | Description                                                     |
+| ------------------------------------------- | --------------------------------------------------------------- |
+| [GETTING_STARTED.md](GETTING_STARTED.md)    | Run Drawhaus locally — all paths, social login, troubleshooting |
+| [CHANGELOG.md](CHANGELOG.md)                | Full version history                                            |
+| [docs/ROADMAP.md](docs/ROADMAP.md)          | Strategy, shipped capabilities, decision log                    |
+| [docs/VISION.md](docs/VISION.md)            | Product vision and architecture principles                      |
+| [docs/WORKFLOW.md](docs/WORKFLOW.md)        | AI-assisted build cycle and conventions                         |
+| [docs/BRANDING.md](docs/branding/README.md) | Brand guide, assets, and design tokens                          |
+| [docs/adr/](docs/adr/)                      | Architecture Decision Records                                   |
+| [docs/specs/](docs/specs/)                  | Feature implementation specs                                    |
+| [docs/guides/](docs/guides/)                | Deploy and release guides                                       |
 
 ---
 

@@ -12,13 +12,14 @@ Use the Drawhaus MCP server to create and manage diagrams directly from AI codin
 
 ### Option A — From GitHub Packages (recommended)
 
-The `@drawhaus/mcp` package is published to GitHub Packages on every release. Configure npm to use the GitHub registry for `@drawhaus` packages:
+The `@rodacato/drawhaus-mcp` package is published to GitHub Packages on every release. Configure npm to use the GitHub registry for `@rodacato` packages:
 
 ```bash
-echo "@drawhaus:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "@rodacato:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "//npm.pkg.github.com/:_authToken=<github token with read:packages>" >> ~/.npmrc
 ```
 
-Then you can use `npx @drawhaus/mcp` directly in the configs below.
+Then you can use `npx @rodacato/drawhaus-mcp` directly in the configs below.
 
 ### Option B — From source (local build)
 
@@ -29,7 +30,7 @@ git clone https://github.com/rodacato/drawhaus.git
 cd drawhaus
 npm ci
 npm run build --workspace=@drawhaus/helpers
-npm run build --workspace=@drawhaus/mcp
+npm run build --workspace=@rodacato/drawhaus-mcp
 
 # Get the absolute path for the configs below:
 echo "$(pwd)/packages/mcp/dist/index.js"
@@ -45,7 +46,7 @@ echo "$(pwd)/packages/mcp/dist/index.js"
 
 ## Step 3: Configure Your AI Tool
 
-> The examples below use `npx @drawhaus/mcp` (GitHub Packages install). If you built from source, replace with `"command": "node", "args": ["/path/to/drawhaus/packages/mcp/dist/index.js"]`.
+> The examples below use `npx @rodacato/drawhaus-mcp` (GitHub Packages install). If you built from source, replace with `"command": "node", "args": ["/path/to/drawhaus/packages/mcp/dist/index.js"]`.
 
 ### Claude Code
 
@@ -55,7 +56,7 @@ echo "$(pwd)/packages/mcp/dist/index.js"
 claude mcp add drawhaus \
   -e DRAWHAUS_URL=http://localhost:4000 \
   -e DRAWHAUS_API_KEY=dhk_your_api_key \
-  -- npx @drawhaus/mcp
+  -- npx @rodacato/drawhaus-mcp
 ```
 
 Use `--scope project` to share with your team (saves to `.mcp.json`) or `--scope user` for personal use (saves to `~/.claude.json`).
@@ -67,7 +68,7 @@ Use `--scope project` to share with your team (saves to `.mcp.json`) or `--scope
   "mcpServers": {
     "drawhaus": {
       "command": "npx",
-      "args": ["@drawhaus/mcp"],
+      "args": ["@rodacato/drawhaus-mcp"],
       "env": {
         "DRAWHAUS_URL": "http://localhost:4000",
         "DRAWHAUS_API_KEY": "dhk_your_api_key"
@@ -85,7 +86,7 @@ Go to **Cursor Settings → MCP Servers** and add:
 {
   "drawhaus": {
     "command": "npx",
-    "args": ["@drawhaus/mcp"],
+    "args": ["@rodacato/drawhaus-mcp"],
     "env": {
       "DRAWHAUS_URL": "http://localhost:4000",
       "DRAWHAUS_API_KEY": "dhk_your_api_key"
@@ -103,7 +104,7 @@ Add to your project's `.vscode/mcp.json`:
   "servers": {
     "drawhaus": {
       "command": "npx",
-      "args": ["@drawhaus/mcp"],
+      "args": ["@rodacato/drawhaus-mcp"],
       "env": {
         "DRAWHAUS_URL": "http://localhost:4000",
         "DRAWHAUS_API_KEY": "dhk_your_api_key"
@@ -115,7 +116,7 @@ Add to your project's `.vscode/mcp.json`:
 
 > Replace `http://localhost:4000` with your Drawhaus instance URL if deployed remotely.
 >
-> **npm publish alternative:** If you publish `@drawhaus/mcp` to an npm registry, you can use `"command": "npx", "args": ["@drawhaus/mcp"]` instead of the absolute path.
+> **npm publish alternative:** If you publish `@rodacato/drawhaus-mcp` to an npm registry, you can use `"command": "npx", "args": ["@rodacato/drawhaus-mcp"]` instead of the absolute path.
 
 ## Step 4: Verify the Connection
 
