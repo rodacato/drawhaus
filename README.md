@@ -580,7 +580,7 @@ Playwright E2E suite).
 | [docs/ROADMAP.md](docs/ROADMAP.md)       | Strategy, shipped capabilities, decision log                    |
 | [docs/VISION.md](docs/VISION.md)         | Product vision and architecture principles                      |
 | [docs/WORKFLOW.md](docs/WORKFLOW.md)     | AI-assisted build cycle and conventions                         |
-| [docs/BRANDING.md](docs/BRANDING.md)     | Brand guide, assets, and design tokens                          |
+| [docs/BRANDING.md](docs/branding/README.md)     | Brand guide, assets, and design tokens                          |
 | [docs/adr/](docs/adr/)                   | Architecture Decision Records                                   |
 | [docs/specs/](docs/specs/)               | Feature implementation specs                                    |
 | [docs/guides/](docs/guides/)             | Deploy and release guides                                       |

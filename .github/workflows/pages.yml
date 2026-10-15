@@ -8,7 +8,6 @@ on:
       - "apps/frontend/public/screenshots/**"
       - "apps/frontend/src/globals.css"
       - "docs/branding/**"
-      - "docs/BRANDING.md"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 

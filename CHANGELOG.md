@@ -109,6 +109,7 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 ### Changed
 
+- **The brand guide moves to `docs/branding/README.md`.** It sits next to the sources, generated assets and fonts it describes instead of beside a same-named folder, and gains an asset-usage table and a short guide to reusing the identity elsewhere. The logo exploration README now says which file is live: `proposals/looped-d.svg` is still read by the color-asset build.
 - **Docker images are built on every PR that can change them.** A new `docker-build.yml` workflow builds the backend and frontend production targets without pushing, on PRs and master pushes touching `apps/`, `packages/`, the manifests or the lockfile. Until now the only image build ran on a push to `production`, so a broken Dockerfile surfaced at deploy time. Master pushes write the GitHub Actions layer cache and PRs read it.
 - **The devcontainer can run the E2E suite and drops Docker-in-Docker.** `post-create.sh` waits for PostgreSQL, creates `drawhaus_e2e` if it is missing, and installs Chromium with its system libraries, all idempotent across rebuilds. PostgreSQL and Redis no longer publish host ports (`5432`, `6479`): the workspace reaches them over the compose network, and `forwardPorts` exposes PostgreSQL on a free local port. A fixed host port collides with any other project's container on the same machine, the likely reason the devcontainer's database was found not running. Docker-in-Docker was added so deploys could run from the container. Deploys run in CI now, and the local Kamal commands only read over SSH, so a privileged container no longer pays for itself; image builds moved to CI (above).
 - **Ruby 4.0 for Kamal**, in the devcontainer and the deploy workflow. Ruby 3.2 reached end of life in April 2026. Kamal 2.12 installs on Ruby 4.0.6 with its native extensions (`ed25519`, `bcrypt_pbkdf`), and both deploy configs render.
@@ -165,6 +166,7 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 ### Removed
 
+- **The portable brand-kit exporter** (`site/export-brand-kit.mjs`, `site/verify-brand-kit.py`, `docs/branding/HANDOFF.template.md`). Nothing consumed the generated ZIP; the assets, fonts and tokens it bundled stay in `docs/branding/`, and its file-purpose index and integration notes now live in the brand guide.
 - **`.notdefined.yml` and its `docs/screenshots/notdefined.png`.** Metadata for the maintainer's site, whose sync from repository files no longer exists; nothing else read either file.
 - **`dompurify` and `@types/dompurify` dropped from `apps/frontend`.** Neither was imported anywhere in the frontend — the declared `^3.3.3` range mirrored what `mermaid` already depends on, and `@types/dompurify` is a deprecated stub (DOMPurify has shipped its own types since 3.2). Removing them changes nothing at runtime: `dompurify` stays at 3.4.15 in the tree via `mermaid@11.17.2` (`^3.3.3`), and `npm audit` is unchanged at 14 findings.
 - `@honeybadger-io/js` dependency and the `HONEYBADGER_API_KEY` env var.

@@ -12,4 +12,4 @@ python3 -m venv /tmp/drawhaus-font-export
 /tmp/drawhaus-font-export/bin/python docs/branding/fonts/export.py
 ```
 
-The script downloads sources to a temporary directory and replaces the WOFF2 files, licenses and outlined wordmark. Afterwards regenerate brand assets and PNGs as described in [the source guide](../../BRANDING.md). Keep generated fonts and licensing together when copying them into an app.
+The script downloads sources to a temporary directory and replaces the WOFF2 files, licenses and outlined wordmark. Afterwards regenerate brand assets and PNGs as described in [the source guide](../README.md). Keep generated fonts and licensing together when copying them into an app.
