@@ -1,7 +1,7 @@
 import type { SnapshotRepository } from "../../../domain/ports/snapshot-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
 import type { DiagramSnapshot } from "../../../domain/entities/diagram-snapshot";
-import { NotFoundError } from "../../../domain/errors";
+import { ConflictError, NotFoundError } from "../../../domain/errors";
 import { requireEditAccess } from "../../helpers/require-access";
 
 const MAX_NAMED = 20;
@@ -23,7 +23,7 @@ export class RenameSnapshotUseCase {
     if (name && !snapshot.name) {
       const namedCount = await this.snapshots.countNamed(snapshot.diagramId);
       if (namedCount >= MAX_NAMED) {
-        throw new Error(`Maximum of ${MAX_NAMED} named snapshots per diagram reached`);
+        throw new ConflictError(`Maximum of ${MAX_NAMED} named snapshots per diagram reached`);
       }
     }
 

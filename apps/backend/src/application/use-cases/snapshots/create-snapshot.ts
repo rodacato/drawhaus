@@ -4,7 +4,7 @@ import type { SceneRepository } from "../../../domain/ports/scene-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
 import type { DiagramSnapshot, SnapshotTrigger } from "../../../domain/entities/diagram-snapshot";
 import type { Scene } from "../../../domain/entities/scene";
-import { NotFoundError } from "../../../domain/errors";
+import { ConflictError, NotFoundError } from "../../../domain/errors";
 import { logger } from "../../../infrastructure/logger";
 import { requireEditAccess } from "../../helpers/require-access";
 
@@ -35,7 +35,7 @@ export class CreateSnapshotUseCase {
     if (name) {
       const namedCount = await this.snapshots.countNamed(diagramId);
       if (namedCount >= MAX_NAMED) {
-        throw new Error(`Maximum of ${MAX_NAMED} named snapshots per diagram reached`);
+        throw new ConflictError(`Maximum of ${MAX_NAMED} named snapshots per diagram reached`);
       }
     }
 
