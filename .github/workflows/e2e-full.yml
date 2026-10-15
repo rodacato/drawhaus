@@ -1,0 +1,89 @@
+name: E2E Full
+
+# The whole Playwright suite, kept out of every PR (ci.yml runs only @smoke). It is not a
+# required check, so a red run here does not block a merge: read it before tagging a release.
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  push:
+    branches: ["release/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-full-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-full:
+    name: E2E Full
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: drawhaus_test
+          POSTGRES_USER: drawhaus
+          POSTGRES_PASSWORD: drawhaus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build workspace packages
+        run: |
+          npm run build --workspace=@drawhaus/helpers
+          npm run build --workspace=@drawhaus/mcp
+          npm run build --workspace=@drawhaus/plantuml-to-excalidraw
+          npm run build --workspace=@drawhaus/mermaid-to-excalidraw
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: e2e
+
+      - name: Run E2E tests
+        run: npx playwright test
+        working-directory: e2e
+        env:
+          DATABASE_URL: postgres://drawhaus:drawhaus@localhost:5432/drawhaus_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          retention-days: 14
+          if-no-files-found: ignore

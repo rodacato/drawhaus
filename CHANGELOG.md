@@ -18,7 +18,7 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 ### Changed
 
-- **CI runs only the e2e smoke subset on pull requests and pushes.** The full Playwright suite (about 190 tests, one worker) made every PR wait for it. The `@smoke` tests in `e2e/tests/smoke/` still gate each PR; the full suite runs on release pull requests (`release/*` branches), so a release cannot merge without it, and through _Run workflow_ on any branch.
+- **CI runs only the e2e smoke subset on pull requests and pushes.** The full Playwright suite (about 190 tests, one worker) made every PR wait for it. The `@smoke` tests in `e2e/tests/smoke/` still gate each PR; the full suite is its own workflow, `e2e-full.yml`, which runs nightly at 08:00 UTC, on every push to a `release/*` branch and through *Run workflow*. It is not a required check, so `RELEASING.md` asks to read it before tagging.
 
 ### Added
 

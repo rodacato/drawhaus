@@ -544,8 +544,9 @@ Runs the `src/__tests__/postgres/*.pg-test.ts` suite against the database in `DA
 ### End-to-End Tests (Playwright)
 
 In CI, every PR and push to `master` runs only the `@smoke` subset (`e2e/tests/smoke/`), after the
-`validate` job. The full suite runs on release PRs (`release/*` branches) and on demand
-(Actions → CI → Run workflow). Locally it starts its own
+`validate` job. The full suite is `e2e-full.yml`: nightly at 08:00 UTC, on every push to a
+`release/*` branch and on demand (Actions → E2E Full → Run workflow). It is not a required check;
+read it before tagging a release. Locally it starts its own
 backend (port 4000) and frontend (port 5173) and needs PostgreSQL with a disposable database whose
 name ends in `_e2e` or `_test`, because the schema is wiped on every run:
 

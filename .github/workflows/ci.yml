@@ -5,7 +5,6 @@ on:
     branches: [master, main]
   push:
     branches: [master, main]
-  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -141,11 +140,9 @@ jobs:
         working-directory: e2e
 
       - name: Run E2E tests
-        run: |
-          if [ "$E2E_SUITE" = full ]; then npx playwright test; else npx playwright test --grep @smoke; fi
+        run: npx playwright test --grep @smoke
         working-directory: e2e
         env:
-          E2E_SUITE: ${{ (github.event_name == 'workflow_dispatch' || startsWith(github.head_ref, 'release/')) && 'full' || 'smoke' }}
           DATABASE_URL: postgres://drawhaus:drawhaus@localhost:5432/drawhaus_test
           REDIS_URL: redis://localhost:6379
 
