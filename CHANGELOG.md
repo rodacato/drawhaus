@@ -13,6 +13,7 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 ### Fixed
 
 - **Moving a diagram into a folder now respects its workspace.** A workspace diagram can no longer be moved into a personal folder or another workspace's folder, and folders created by other members of the diagram's workspace are accepted instead of returning 403.
+- **Transferring diagram ownership validates the new owner.** A nonexistent or disabled user now gets 404 instead of a 500 foreign-key error or silently becoming owner.
 
 ---
 

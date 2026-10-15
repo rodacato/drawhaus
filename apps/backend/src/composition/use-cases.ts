@@ -421,6 +421,7 @@ export function createUseCases(repos: Repositories, services: Services) {
   const transferDiagramOwnership = new TransferDiagramOwnershipUseCase(
     repos.diagramRepo,
     repos.workspaceRepo,
+    repos.userRepo,
     services.auditLogger,
   );
   const transferTemplateOwnership = new TransferTemplateOwnershipUseCase(
