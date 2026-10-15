@@ -6,6 +6,10 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 ## [Unreleased]
 
+### Changed
+
+- **Workflows follow one `Category · Name` taxonomy and are hardened.** `ci.yml` is `CI · Test`, `quality.yml` is `ci-quality.yml` (`CI · Quality`), `docker-build.yml` is `ci-docker.yml`, `e2e-full.yml` is `ci-e2e.yml` (`CI · E2E Nightly`), `deploy.yml` is `cd-deploy.yml`, `publish-mcp.yml` is `release-mcp.yml` and `pages.yml` is `site-pages.yml`, so the Actions sidebar groups by what a failure means. Job names are unchanged, so the required checks (`Validate`, `E2E Tests`) keep working. Every `uses:` is pinned to a full commit SHA (Dependabot keeps bumping them), checkouts no longer persist credentials, the remaining workflows gained timeouts and concurrency, and `CI · Quality` now runs actionlint and zizmor.
+
 ---
 
 ## [0.13.0] - 2026-10-15
