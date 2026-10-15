@@ -9,6 +9,7 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 ### Changed
 
 - **Workflows follow one `Category · Name` taxonomy and are hardened.** `ci.yml` is `CI · Test`, `quality.yml` is `ci-quality.yml` (`CI · Quality`), `docker-build.yml` is `ci-docker.yml`, `e2e-full.yml` is `ci-e2e.yml` (`CI · E2E Nightly`), `deploy.yml` is `cd-deploy.yml`, `publish-mcp.yml` is `release-mcp.yml` and `pages.yml` is `site-pages.yml`, so the Actions sidebar groups by what a failure means. Job names are unchanged, so the required checks (`Validate`, `E2E Tests`) keep working. Every `uses:` is pinned to a full commit SHA (Dependabot keeps bumping them), checkouts no longer persist credentials, the remaining workflows gained timeouts and concurrency, and `CI · Quality` now runs actionlint and zizmor.
+- **The brand source moves to `design/brand/`.** It sits with the rest of the design work; `design/brand/README.md` is the entry point and now adds a voice-and-messaging summary and an asset map of every runtime copy (`apps/frontend/public/brand/`, the Pages site) and the script that generates it. The site scripts, the Pages workflow path filter and the docs point at the new location. A portable kit, if ever needed, is generated into the gitignored `design/brand/dist/`.
 
 ### Fixed
 

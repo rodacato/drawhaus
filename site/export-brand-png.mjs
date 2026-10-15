@@ -5,7 +5,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const assets = resolve(repo, "docs/branding/generated");
+const assets = resolve(repo, "design/brand/generated");
 const browser = await chromium.launch(
   process.env.BRAND_CHROMIUM ? { executablePath: process.env.BRAND_CHROMIUM } : {},
 );

@@ -9,7 +9,7 @@ Only font maintenance needs Python/fontTools. The normal site build uses the che
 ```sh
 python3 -m venv /tmp/drawhaus-font-export
 /tmp/drawhaus-font-export/bin/pip install 'fonttools[woff]==4.60.1'
-/tmp/drawhaus-font-export/bin/python docs/branding/fonts/export.py
+/tmp/drawhaus-font-export/bin/python design/brand/fonts/export.py
 ```
 
 The script downloads sources to a temporary directory and replaces the WOFF2 files, licenses and outlined wordmark. Afterwards regenerate brand assets and PNGs as described in [the source guide](../README.md). Keep generated fonts and licensing together when copying them into an app.

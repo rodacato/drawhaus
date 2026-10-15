@@ -15,8 +15,8 @@ touch "$out/.nojekyll"
 
 mkdir -p "$out/brand/assets"
 node "$repo/site/build-brand.mjs" "$out/brand/assets"
-cp "$repo/docs/branding/generated/"*.png "$repo/docs/branding/generated/raster-sources.json" "$out/brand/assets/"
-cp "$repo/docs/branding/generated/favicon.png" "$out/img/favicon.png"
+cp "$repo/design/brand/generated/"*.png "$repo/design/brand/generated/raster-sources.json" "$out/brand/assets/"
+cp "$repo/design/brand/generated/favicon.png" "$out/img/favicon.png"
 cp "$repo/site/brand/index.html" "$repo/site/brand/styles.css" "$repo/site/brand/guide.js" "$out/brand/"
 cp "$shots/screenshot-code-import-mermaid.png" "$out/img/code-import.png"
 cp "$shots/screenshot-admin.png" "$out/img/admin.png"
@@ -26,13 +26,13 @@ cp "$shots/screenshot-dashboard.png" "$out/img/dashboard.png"
 mkdir -p "$out/brand/logos/assets"
 cp "$repo/site/brand/logos/index.html" "$repo/site/brand/logos/styles.css" "$out/brand/logos/"
 for name in open-d drawing-house shared-frame; do
-  cp "$repo/docs/branding/proposals/$name.svg" "$out/brand/logos/assets/$name.svg"
-  sed 's/#111827/#F8FAF3/g' "$repo/docs/branding/proposals/$name.svg" \
+  cp "$repo/design/brand/proposals/$name.svg" "$out/brand/logos/assets/$name.svg"
+  sed 's/#111827/#F8FAF3/g' "$repo/design/brand/proposals/$name.svg" \
     > "$out/brand/logos/assets/$name-light.svg"
 done
 
 for name in canvas-stroke modular-d drawn-dh; do
-  source="$repo/docs/branding/proposals/$name.svg"
+  source="$repo/design/brand/proposals/$name.svg"
   cp "$source" "$out/brand/logos/assets/$name.svg"
   sed -E 's/#[[:xdigit:]]{6}/#111827/g' "$source" \
     > "$out/brand/logos/assets/$name-mono.svg"
@@ -41,7 +41,7 @@ for name in canvas-stroke modular-d drawn-dh; do
 done
 
 for name in freehand-dh signature-dh looped-d; do
-  source="$repo/docs/branding/proposals/$name.svg"
+  source="$repo/design/brand/proposals/$name.svg"
   cp "$source" "$out/brand/logos/assets/$name.svg"
   sed 's/#2F7058/#111827/g' "$source" > "$out/brand/logos/assets/$name-mono.svg"
   sed 's/#2F7058/#A6D9BB/g' "$source" > "$out/brand/logos/assets/$name-light.svg"
