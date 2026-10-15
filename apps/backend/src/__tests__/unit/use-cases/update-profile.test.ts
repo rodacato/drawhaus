@@ -62,4 +62,26 @@ describe("UpdateProfileUseCase", () => {
     assert.equal(result.email, "same@example.com");
     assert.equal(users.store[0].name, "B");
   });
+
+  it("stores the email lowercased, as login and register expect it", async () => {
+    const { users, useCase } = setup();
+    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "h" });
+
+    const result = await useCase.execute(user.id, { email: "New.Address@Example.COM" });
+
+    assert.equal(users.store[0].email, "new.address@example.com");
+    assert.equal(result.email, "new.address@example.com");
+  });
+
+  it("treats an address that differs only by case as already in use", async () => {
+    const { users, useCase } = setup();
+    await users.create({ email: "taken@example.com", name: "T", passwordHash: "h" });
+    const user = await users.create({ email: "u@example.com", name: "U", passwordHash: "h" });
+
+    await assert.rejects(
+      () => useCase.execute(user.id, { email: "Taken@Example.com" }),
+      (err: unknown) => err instanceof ConflictError,
+    );
+    assert.equal(users.store[1].email, "u@example.com");
+  });
 });

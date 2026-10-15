@@ -8,14 +8,15 @@ export class UpdateProfileUseCase {
     const user = await this.users.findById(userId);
     if (!user) throw new NotFoundError("User");
 
-    if (input.email && input.email !== user.email) {
-      const existing = await this.users.findByEmail(input.email);
+    const email = input.email?.toLowerCase();
+    if (email && email !== user.email) {
+      const existing = await this.users.findByEmail(email);
       if (existing) throw new ConflictError("Email already in use");
     }
 
     const updated = await this.users.update(userId, {
       name: input.name,
-      email: input.email,
+      email,
     });
     if (!updated) throw new NotFoundError("User");
 
