@@ -4245,7 +4245,7 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "D7 toolbar buttons are hand-rolled, disabled has no style · D8 DiagramCard uses raw palette colours and fails AA on Delete · D9 hover-only controls unreachable by keyboard · D10 heading scale ad hoc · D16 micro type 9–12px · D18 “Invalid Date” fallback.",
+          "content": "D7–D10, D16 and D18 are fixed in code and redrawn: toolbar buttons use the shared button roles, the card menu uses tokens, hover-only controls also reveal on focus and touch, the heading uses the display role, micro type is 12 px and a missing date is omitted instead of “Invalid Date”.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
           "fontSize": 14,
@@ -4312,7 +4312,7 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "2026-10-14 · Drawn from the code at master 3d69c7a on kit 0.1.0: 4 screens. Findings D7–D10, D16, D18 logged.",
+          "content": "2026-10-15 · Redrawn after the D7–D10, D16 and D18 fixes on kit 0.1.0: toolbar weight, 12 px type floor.",
           "fontFamily": "$font-sans",
           "fontSize": 14,
           "fontWeight": "normal"

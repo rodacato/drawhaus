@@ -83,7 +83,8 @@
                   "fill": "$text-muted",
                   "content": "you@example.com",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -130,7 +131,8 @@
               "fill": "$text-secondary",
               "content": "Subtitle text",
               "fontFamily": "$font-sans",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontWeight": "normal"
             }
           ]
         },
@@ -155,7 +157,8 @@
               "fill": "$error",
               "content": "Error",
               "fontFamily": "$font-sans",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontWeight": "normal"
             }
           ]
         },
@@ -222,6 +225,28 @@
       "justifyContent": "center",
       "alignItems": "center",
       "children": [
+        {
+          "type": "ellipse",
+          "id": "UdO94",
+          "layoutPosition": "absolute",
+          "x": -96,
+          "y": -96,
+          "name": "Blob primary",
+          "fill": "$primary-10",
+          "width": 384,
+          "height": 384
+        },
+        {
+          "type": "ellipse",
+          "id": "piqgW",
+          "layoutPosition": "absolute",
+          "x": 992,
+          "y": 512,
+          "name": "Blob coral",
+          "fill": "$coral-10",
+          "width": 384,
+          "height": 384
+        },
         {
           "id": "SPh20",
           "type": "ref",
@@ -362,7 +387,8 @@
                               "fill": "$text-muted",
                               "content": "Instance Config",
                               "fontFamily": "$font-sans",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -412,7 +438,8 @@
                               "fill": "$text-muted",
                               "content": "Integrations",
                               "fontFamily": "$font-sans",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -455,7 +482,8 @@
                           "width": "fill_container",
                           "content": "This will be the first admin user.",
                           "fontFamily": "$font-sans",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -499,8 +527,44 @@
                         "rEuqp": {
                           "content": "Password"
                         },
-                        "cYQk8": {
-                          "content": ""
+                        "bmaOt": {
+                          "type": "frame",
+                          "id": "S6WeD",
+                          "name": "Input",
+                          "width": "fill_container",
+                          "height": 40,
+                          "fill": "$surface-raised",
+                          "cornerRadius": 8,
+                          "stroke": "$border-input",
+                          "strokeWidth": 1,
+                          "gap": 8,
+                          "padding": [
+                            0,
+                            12
+                          ],
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "yyTdW",
+                              "name": "Placeholder",
+                              "fill": "$text-muted",
+                              "fontFamily": "$font-sans",
+                              "fontSize": 14,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "hek2G",
+                              "name": "Show/hide",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "eye",
+                              "library": "feather",
+                              "fill": "$text-muted"
+                            }
+                          ]
                         }
                       }
                     },
@@ -521,6 +585,33 @@
               ]
             }
           }
+        },
+        {
+          "type": "frame",
+          "id": "ZQ9Tl",
+          "layoutPosition": "absolute",
+          "x": 1232,
+          "y": 16,
+          "name": "ThemeToggle",
+          "width": 32,
+          "height": 32,
+          "cornerRadius": 8,
+          "stroke": "$border",
+          "strokeWidth": 1,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "yVpHz",
+              "name": "Icon",
+              "width": 16,
+              "height": 16,
+              "icon": "moon",
+              "library": "feather",
+              "fill": "$text-secondary"
+            }
+          ]
         }
       ]
     },
@@ -538,6 +629,28 @@
       "justifyContent": "center",
       "alignItems": "center",
       "children": [
+        {
+          "type": "ellipse",
+          "id": "nrWZ3",
+          "layoutPosition": "absolute",
+          "x": -96,
+          "y": -96,
+          "name": "Blob primary",
+          "fill": "$primary-10",
+          "width": 384,
+          "height": 384
+        },
+        {
+          "type": "ellipse",
+          "id": "edwZj",
+          "layoutPosition": "absolute",
+          "x": 992,
+          "y": 512,
+          "name": "Blob coral",
+          "fill": "$coral-10",
+          "width": 384,
+          "height": 384
+        },
         {
           "id": "AVKgj",
           "type": "ref",
@@ -626,7 +739,8 @@
                               "fill": "$text-muted",
                               "content": "Admin Account",
                               "fontFamily": "$font-sans",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -727,7 +841,8 @@
                               "fill": "$text-muted",
                               "content": "Integrations",
                               "fontFamily": "$font-sans",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -770,7 +885,8 @@
                           "width": "fill_container",
                           "content": "Name your instance and choose who can sign up.",
                           "fontFamily": "$font-sans",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -827,7 +943,8 @@
                           "fill": "$text-secondary",
                           "content": "Allow public registration",
                           "fontFamily": "$font-sans",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -897,7 +1014,8 @@
                               "fill": "$text-secondary",
                               "content": "Enable automated backups",
                               "fontFamily": "$font-sans",
-                              "fontSize": 14
+                              "fontSize": 14,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -923,7 +1041,8 @@
                           "fill": "$text-muted",
                           "content": "Crontab syntax, UTC. Default: 0 3 * * * (daily at 3AM).",
                           "fontFamily": "$font-sans",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         },
                         {
                           "id": "olTwU",
@@ -947,7 +1066,8 @@
                           "fill": "$text-muted",
                           "content": "Backups older than this are deleted automatically.",
                           "fontFamily": "$font-sans",
-                          "fontSize": 12
+                          "fontSize": 12,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -968,6 +1088,33 @@
               ]
             }
           }
+        },
+        {
+          "type": "frame",
+          "id": "nz4j3",
+          "layoutPosition": "absolute",
+          "x": 1232,
+          "y": 16,
+          "name": "ThemeToggle",
+          "width": 32,
+          "height": 32,
+          "cornerRadius": 8,
+          "stroke": "$border",
+          "strokeWidth": 1,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "fGaqI",
+              "name": "Icon",
+              "width": 16,
+              "height": 16,
+              "icon": "moon",
+              "library": "feather",
+              "fill": "$text-secondary"
+            }
+          ]
         }
       ]
     },
@@ -985,6 +1132,28 @@
       "justifyContent": "center",
       "alignItems": "center",
       "children": [
+        {
+          "type": "ellipse",
+          "id": "tLPBX",
+          "layoutPosition": "absolute",
+          "x": -96,
+          "y": -96,
+          "name": "Blob primary",
+          "fill": "$primary-10",
+          "width": 384,
+          "height": 384
+        },
+        {
+          "type": "ellipse",
+          "id": "pPCKD",
+          "layoutPosition": "absolute",
+          "x": 992,
+          "y": 512,
+          "name": "Blob coral",
+          "fill": "$coral-10",
+          "width": 384,
+          "height": 384
+        },
         {
           "id": "AxKMA",
           "type": "ref",
@@ -1073,7 +1242,8 @@
                               "fill": "$text-muted",
                               "content": "Admin Account",
                               "fontFamily": "$font-sans",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1122,7 +1292,8 @@
                               "fill": "$text-muted",
                               "content": "Instance Config",
                               "fontFamily": "$font-sans",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1216,7 +1387,8 @@
                           "width": "fill_container",
                           "content": "Configure optional integrations like Google OAuth and email. You can set these up later in Site Settings.",
                           "fontFamily": "$font-sans",
-                          "fontSize": 14
+                          "fontSize": 14,
+                          "fontWeight": "normal"
                         }
                       ]
                     },
@@ -1258,7 +1430,8 @@
                               "fill": "$text-muted",
                               "content": "Enable Google login and Drive integration",
                               "fontFamily": "$font-sans",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         },
@@ -1292,7 +1465,8 @@
                               "fill": "$text-muted",
                               "content": "Send invitations and password reset emails",
                               "fontFamily": "$font-sans",
-                              "fontSize": 12
+                              "fontSize": 12,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -1315,6 +1489,33 @@
               ]
             }
           }
+        },
+        {
+          "type": "frame",
+          "id": "mKhYB",
+          "layoutPosition": "absolute",
+          "x": 1232,
+          "y": 16,
+          "name": "ThemeToggle",
+          "width": 32,
+          "height": 32,
+          "cornerRadius": 8,
+          "stroke": "$border",
+          "strokeWidth": 1,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "ORBc4",
+              "name": "Icon",
+              "width": 16,
+              "height": 16,
+              "icon": "moon",
+              "library": "feather",
+              "fill": "$text-secondary"
+            }
+          ]
         }
       ]
     },
@@ -1333,13 +1534,63 @@
       "alignItems": "center",
       "children": [
         {
+          "type": "ellipse",
+          "id": "j5mY7",
+          "layoutPosition": "absolute",
+          "x": -96,
+          "y": -96,
+          "name": "Blob primary",
+          "fill": "$primary-10",
+          "width": 384,
+          "height": 384
+        },
+        {
+          "type": "ellipse",
+          "id": "aKKEW",
+          "layoutPosition": "absolute",
+          "x": 992,
+          "y": 512,
+          "name": "Blob coral",
+          "fill": "$coral-10",
+          "width": 384,
+          "height": 384
+        },
+        {
           "type": "text",
           "id": "O2fyE",
           "name": "Message",
           "fill": "$text-muted",
           "content": "Loading...",
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "G98yps",
+          "layoutPosition": "absolute",
+          "x": 1232,
+          "y": 16,
+          "name": "ThemeToggle",
+          "width": 32,
+          "height": 32,
+          "cornerRadius": 8,
+          "stroke": "$border",
+          "strokeWidth": 1,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "rjEH4",
+              "name": "Icon",
+              "width": 16,
+              "height": 16,
+              "icon": "moon",
+              "library": "feather",
+              "fill": "$text-secondary"
+            }
+          ]
         }
       ]
     },
@@ -1392,7 +1643,8 @@
           "content": "First-run wizard for a fresh instance: create the admin, name the instance and set registration and backups, then optionally note integrations.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -1416,7 +1668,8 @@
           "content": "/setup. AuthLayout redirects any visitor there while the instance needs setup; a completed setup redirects /setup to /login. Registering the first user auto-completes setup (the page re-checks status after each step).",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -1440,7 +1693,8 @@
           "content": "Step 1 Admin account · Step 2 Instance configuration · Step 3 Integrations · Loading. Base frame 1280×800, light theme, one card of 448 px. There is no back button.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -1464,7 +1718,8 @@
           "content": "The first registered user becomes admin. Defaults: instance name Drawhaus, public registration on, backups on, cron 0 3 * * * (UTC), retention 7 days (1–365). Password min. 8 characters. Step 3 only skips; nothing is configured there.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -1488,7 +1743,8 @@
           "content": "pages/Setup.tsx and components/setup/*. Fields in step 1 have no placeholders in the code, so none are drawn. Hints sit under their field.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -1512,7 +1768,8 @@
           "content": "Pending labels (“Creating...”, “Saving...”, “Finishing...”), the error alert under each form (same alert as Auth), validation messages, dark theme, a 320 px layout. Checkboxes are drawn as the app's default-checked state.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -1533,10 +1790,11 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "D4 no blobs or theme toggle here · D28 step 1 has no show/hide password (checkbox border fixed). Fixed in code and redrawn: D26 “coming soon” note removed · D27 a failed finish now shows an error instead of navigating · D29 progress connectors 24→12 px so the row fits.",
+          "content": "D4, D26, D27, D28, D29 and D36 are fixed in code and redrawn: the shell has the blobs and the theme toggle, step 1 has the show/hide eye, the “coming soon” note and the Error Monitoring card are gone, and the progress row fits. The error state of D27 is not drawn.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -1560,7 +1818,8 @@
           "content": "See the Log frame below this band.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         }
       ]
     },
@@ -1598,9 +1857,10 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "2026-10-14 · Drawn from the code at master 019a73a on kit 0.1.0: 4 screens. D26, D27, D29 and the checkbox part of D28 fixed in code and redrawn the same day; the error state of D27 is not drawn.",
+          "content": "2026-10-15 · Redrawn after the D4, D26–D29 and D36 fixes on kit 0.1.0: blobs, theme toggle, eye icon, no Error Monitoring card; the error state of D27 is not drawn.",
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         }
       ]
     }
