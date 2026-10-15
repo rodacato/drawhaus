@@ -2,6 +2,7 @@ import type { DiagramRepository } from "../../../domain/ports/diagram-repository
 import type { FolderRepository } from "../../../domain/ports/folder-repository";
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
+import { folderFitsTarget } from "../../../domain/policies/access-policy";
 import { requireOwnerAccess } from "../../helpers/require-access";
 
 export class MoveDiagramUseCase {
@@ -28,7 +29,11 @@ export class MoveDiagramUseCase {
     if (folderId !== null) {
       const folder = await this.folders.findById(folderId);
       if (!folder) throw new NotFoundError("Folder");
-      if (folder.ownerId !== userId) throw new ForbiddenError();
+      const diagram = await this.diagrams.findById(diagramId);
+      if (!diagram) throw new NotFoundError("Diagram");
+      if (!folderFitsTarget(folder, { userId, workspaceId: diagram.workspaceId })) {
+        throw new ForbiddenError();
+      }
     }
 
     await this.diagrams.moveTo(diagramId, folderId);
