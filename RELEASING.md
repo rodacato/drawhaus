@@ -43,7 +43,10 @@ git push -u origin release/vX.Y.Z:release/vX.Y.Z
 gh pr create --base master --title "release: vX.Y.Z"
 ```
 
-Merge it once the checks pass, like any change.
+Merge it once the checks pass, like any change. A pull request from a `release/*` branch runs the
+full e2e suite instead of the `@smoke` subset, so a green release PR is the gate: do not tag a commit
+whose release PR did not pass it. Any other branch can run the full suite on demand from
+Actions → CI → Run workflow.
 
 ## 2. Tag the merged commit
 
