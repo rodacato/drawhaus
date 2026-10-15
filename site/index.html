@@ -48,7 +48,6 @@
         <nav class="header-links" aria-label="Main navigation">
           <a href="#what">What it does</a>
           <a href="#run">Run it</a>
-          <a class="brand-nav ghost" href="brand/">Brand guide</a>
           <a class="ghost" href="https://github.com/rodacato/drawhaus">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -74,7 +73,8 @@
             <p class="lede">
               Sketch systems, draw together, and keep your diagrams organized. Drawhaus adds
               workspaces, collaboration and sharing around Excalidraw's editor. You run the instance
-              and own its database.
+              and own its database. Excalidraw+ offers workspaces and sharing as a hosted service;
+              this is that, on your own server.
             </p>
             <div class="cta-row">
               <a class="button" href="#run">Run Drawhaus <span aria-hidden="true">→</span></a
@@ -86,9 +86,9 @@
           </div>
 
           <figure class="shot">
-            <figcaption>Actual product capture · diagram code → editable shapes</figcaption>
+            <figcaption>Actual product capture · PlantUML import → editable shapes</figcaption>
             <img
-              src="img/code-import-mermaid.png"
+              src="img/code-import.png"
               alt="Drawhaus importing a PlantUML class diagram into editable Excalidraw shapes"
               width="1917"
               height="962"
@@ -129,10 +129,10 @@
 
           <div class="row">
             <figure class="shot">
-              <figcaption>admin — users, metrics, integrations, backups</figcaption>
+              <figcaption>admin dashboard — instance counts, users, site settings</figcaption>
               <img
                 src="img/admin.png"
-                alt="Drawhaus admin panel showing the user list, instance metrics and integration settings"
+                alt="Drawhaus admin dashboard with user, diagram and session counts and shortcuts to Users and Site Settings"
                 width="1440"
                 height="900"
               />
@@ -155,10 +155,10 @@
 
           <div class="row flip">
             <figure class="shot">
-              <figcaption>two people on one canvas</figcaption>
+              <figcaption>live cursors, share link and embed code</figcaption>
               <img
                 src="img/collab.png"
-                alt="Two users editing the same Drawhaus canvas at once, with live cursors and presence avatars"
+                alt="A Drawhaus canvas with two collaborators' live cursors, and the share link and embed code panel"
                 width="1440"
                 height="900"
               />
@@ -218,9 +218,11 @@
           </p>
           <pre><code><span class="c"># REST — OpenAPI 3.1 spec, API-key auth</span>
 curl -H "Authorization: Bearer $DRAWHAUS_API_KEY" \
+     -H "X-Drawhaus-Client: curl" \
      https://draw.example.com/v1/diagrams
 
-<span class="c"># MCP — Claude Code, Cursor, VS Code</span>
+<span class="c"># MCP — Claude Code, Cursor, VS Code (once: point @drawhaus at GitHub Packages)</span>
+echo "@drawhaus:registry=https://npm.pkg.github.com" >> ~/.npmrc
 claude mcp add drawhaus \
   -e DRAWHAUS_URL=http://localhost:4300 \
   -e DRAWHAUS_API_KEY=dhk_... \
@@ -230,7 +232,8 @@ claude mcp add drawhaus \
             <code>@drawhaus/mcp</code> is published to GitHub Packages —
             <a href="https://github.com/rodacato/drawhaus/tree/master/packages/mcp"
               >setup is in its README</a
-            >.
+            >. MCP (Model Context Protocol) is how AI tools call an app; here it lets them create
+            and edit your diagrams.
           </p>
         </div>
       </section>
@@ -273,8 +276,8 @@ claude mcp add drawhaus \
           </ol>
 
           <p class="lede note">
-            Putting it on a real box? <code>config/deploy.*.yml</code> holds the Kamal setup —
-            kamal-proxy, images on ghcr.io, TLS terminated upstream.
+            Putting it on a real box? <code>config/deploy.*.yml</code> holds the Kamal setup (a
+            Docker deploy tool for a VPS) — kamal-proxy, images on ghcr.io, TLS terminated upstream.
             <a href="https://github.com/rodacato/drawhaus/blob/master/GETTING_STARTED.md"
               >GETTING_STARTED.md</a
             >
