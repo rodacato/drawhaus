@@ -6,6 +6,10 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 ## [Unreleased]
 
+---
+
+## [0.13.0] - 2026-10-15
+
 ### Fixed
 
 - **The MCP package can be published and installed.** It was named `@drawhaus/mcp`, but GitHub Packages only accepts a scope that matches the repository owner (`rodacato`; `drawhaus` is another account), and the tag-triggered publish failed for v0.11.0 and v0.12.0. It is now `@rodacato/drawhaus-mcp`; install with `npx @rodacato/drawhaus-mcp` after `~/.npmrc` points `@rodacato` at `npm.pkg.github.com` with a token that has `read:packages`. Separately, it listed the unpublished `@drawhaus/helpers` as a runtime dependency and left the import external, so even a successful publish would not have installed. Helpers is now bundled into the build and `dagre` declared directly. Verified by packing the tarball, installing it outside the monorepo and calling `validate_elements` over stdio. Anyone who configured the old name must switch to the new one.
