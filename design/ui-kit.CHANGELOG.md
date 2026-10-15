@@ -13,6 +13,18 @@ diverging is not. A changed token VALUE forces every consumer.
 
 ---
 
+## 0.2.0 — form controls and the findings from the settings review
+
+**Tokens (+2):** `accent-violet` (#5b3fb8 light, #c4b5fd dark) and its `violet-10` tint, for the API diagram metrics.
+
+**Components (+5, 30 total):** `Select`, `Checkbox/Off`, `Checkbox/On`, `PasswordInput` (leading lock, show/hide eye) and `LoadError` (message plus Try again), mirroring `ui.select`, `ui.checkbox`, `PasswordInput.tsx` and `LoadError.tsx`.
+
+**Changed:** `Toggle/Off` fills `$border-input` instead of `$border` (D12/D14: 3:1 against the surface).
+
+**Vendored by:** `flows/settings.pen` carries the new components by hand; `auth`, `dashboard`, `editor`, `share` and `setup` stay on 0.1.0 (additive bump, but their Toggle/Off still uses `$border` where they draw one).
+
+---
+
 ## 0.1.0 — initial
 
 **Tokens (60):** the Ocean Ink brand roles, the operational roles that resolve to them, state and
