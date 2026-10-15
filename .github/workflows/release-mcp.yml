@@ -16,13 +16,15 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   publish:
     name: Publish @rodacato/drawhaus-mcp
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout
