@@ -8,6 +8,8 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 ### Fixed
 
+- **The project site no longer promises what the page cannot deliver.** The REST example now sends the `X-Drawhaus-Client` header the public API requires (without it the first request answered 400), and the MCP example shows the `~/.npmrc` registry line `npx` needs for GitHub Packages. Captions and alt text describe what the screenshots actually show, the hero image is named for the PlantUML import it displays, MCP and Kamal are glossed once, a line says what Drawhaus is relative to Excalidraw+, and Brand guide moves out of the main nav to the footer. README badges follow the real React 19, Vite 8 and TypeScript 6. The screenshots themselves still predate the Ocean Ink brand and need regenerating with `npm run screenshots` in `e2e/`.
+
 - **Design review findings D1–D40 are fixed in the app.** Password fields share one `PasswordInput` with a named, pressable show/hide button; alerts and toasts announce themselves; hover-only controls reveal on focus and touch; overlays share one focus-trapping `Dialog`; the auth pages, Setup and Not found share one `AuthShell`; Spanish UI copy is English; raw palette colors are tokens; the canvas follows the app theme. Admin tabs show a retryable error instead of an empty or endless state, revoking an API key asks first, site settings validate numbers and the cron expression, and a failed share link has its own state. The Style Guide page and Setup's Error Monitoring card are gone. The e2e visual snapshots need regenerating (`npm run test:update-snapshots`).
 
 ### Added
