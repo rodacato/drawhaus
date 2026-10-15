@@ -33,7 +33,8 @@
           "width": "fill_container",
           "content": "kit-version 0.1.0 · Ocean Ink · values mirrored from apps/frontend/src/globals.css. Canvas scaffolding for tokens, not a screen to implement.",
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "frame",
@@ -106,7 +107,8 @@
                       "width": "fill_container",
                       "content": "brand-canvas",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -138,7 +140,8 @@
                       "width": "fill_container",
                       "content": "brand-paper",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -170,7 +173,8 @@
                       "width": "fill_container",
                       "content": "brand-ink",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -202,7 +206,8 @@
                       "width": "fill_container",
                       "content": "brand-secondary",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -234,7 +239,8 @@
                       "width": "fill_container",
                       "content": "brand-line",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -266,7 +272,8 @@
                       "width": "fill_container",
                       "content": "brand-action",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -298,7 +305,8 @@
                       "width": "fill_container",
                       "content": "brand-action-hover",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -330,7 +338,8 @@
                       "width": "fill_container",
                       "content": "brand-on-action",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -362,7 +371,8 @@
                       "width": "fill_container",
                       "content": "brand-selection",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -394,7 +404,8 @@
                       "width": "fill_container",
                       "content": "brand-logo-start",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -426,7 +437,8 @@
                       "width": "fill_container",
                       "content": "brand-logo-end",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -477,7 +489,8 @@
                       "width": "fill_container",
                       "content": "primary",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -509,7 +522,8 @@
                       "width": "fill_container",
                       "content": "primary-hover",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -541,7 +555,8 @@
                       "width": "fill_container",
                       "content": "on-primary",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -573,7 +588,8 @@
                       "width": "fill_container",
                       "content": "surface",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -605,7 +621,8 @@
                       "width": "fill_container",
                       "content": "surface-raised",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -637,7 +654,8 @@
                       "width": "fill_container",
                       "content": "surface-dark",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -669,7 +687,8 @@
                       "width": "fill_container",
                       "content": "selection",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -701,7 +720,8 @@
                       "width": "fill_container",
                       "content": "border",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -733,7 +753,8 @@
                       "width": "fill_container",
                       "content": "border-input",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -765,7 +786,8 @@
                       "width": "fill_container",
                       "content": "text-primary",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -797,7 +819,8 @@
                       "width": "fill_container",
                       "content": "text-secondary",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -829,7 +852,8 @@
                       "width": "fill_container",
                       "content": "text-muted",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -880,7 +904,8 @@
                       "width": "fill_container",
                       "content": "success",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -912,7 +937,8 @@
                       "width": "fill_container",
                       "content": "warning",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -944,7 +970,8 @@
                       "width": "fill_container",
                       "content": "error",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -976,7 +1003,8 @@
                       "width": "fill_container",
                       "content": "danger",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1008,7 +1036,8 @@
                       "width": "fill_container",
                       "content": "on-danger",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1040,7 +1069,8 @@
                       "width": "fill_container",
                       "content": "info",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1072,7 +1102,8 @@
                       "width": "fill_container",
                       "content": "accent-coral",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1104,7 +1135,8 @@
                       "width": "fill_container",
                       "content": "accent-yellow",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1136,7 +1168,8 @@
                       "width": "fill_container",
                       "content": "accent-orange",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -1215,7 +1248,8 @@
                       "width": "fill_container",
                       "content": "brand-canvas",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1247,7 +1281,8 @@
                       "width": "fill_container",
                       "content": "brand-paper",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1279,7 +1314,8 @@
                       "width": "fill_container",
                       "content": "brand-ink",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1311,7 +1347,8 @@
                       "width": "fill_container",
                       "content": "brand-secondary",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1343,7 +1380,8 @@
                       "width": "fill_container",
                       "content": "brand-line",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1375,7 +1413,8 @@
                       "width": "fill_container",
                       "content": "brand-action",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1407,7 +1446,8 @@
                       "width": "fill_container",
                       "content": "brand-action-hover",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1439,7 +1479,8 @@
                       "width": "fill_container",
                       "content": "brand-on-action",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1471,7 +1512,8 @@
                       "width": "fill_container",
                       "content": "brand-selection",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1503,7 +1545,8 @@
                       "width": "fill_container",
                       "content": "brand-logo-start",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1535,7 +1578,8 @@
                       "width": "fill_container",
                       "content": "brand-logo-end",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -1586,7 +1630,8 @@
                       "width": "fill_container",
                       "content": "primary",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1618,7 +1663,8 @@
                       "width": "fill_container",
                       "content": "primary-hover",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1650,7 +1696,8 @@
                       "width": "fill_container",
                       "content": "on-primary",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1682,7 +1729,8 @@
                       "width": "fill_container",
                       "content": "surface",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1714,7 +1762,8 @@
                       "width": "fill_container",
                       "content": "surface-raised",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1746,7 +1795,8 @@
                       "width": "fill_container",
                       "content": "surface-dark",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1778,7 +1828,8 @@
                       "width": "fill_container",
                       "content": "selection",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1810,7 +1861,8 @@
                       "width": "fill_container",
                       "content": "border",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1842,7 +1894,8 @@
                       "width": "fill_container",
                       "content": "border-input",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1874,7 +1927,8 @@
                       "width": "fill_container",
                       "content": "text-primary",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1906,7 +1960,8 @@
                       "width": "fill_container",
                       "content": "text-secondary",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -1938,7 +1993,8 @@
                       "width": "fill_container",
                       "content": "text-muted",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -1989,7 +2045,8 @@
                       "width": "fill_container",
                       "content": "success",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2021,7 +2078,8 @@
                       "width": "fill_container",
                       "content": "warning",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2053,7 +2111,8 @@
                       "width": "fill_container",
                       "content": "error",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2085,7 +2144,8 @@
                       "width": "fill_container",
                       "content": "danger",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2117,7 +2177,8 @@
                       "width": "fill_container",
                       "content": "on-danger",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2149,7 +2210,8 @@
                       "width": "fill_container",
                       "content": "info",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2181,7 +2243,8 @@
                       "width": "fill_container",
                       "content": "accent-coral",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2213,7 +2276,8 @@
                       "width": "fill_container",
                       "content": "accent-yellow",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -2245,7 +2309,8 @@
                       "width": "fill_container",
                       "content": "accent-orange",
                       "fontFamily": "$font-sans",
-                      "fontSize": 11
+                      "fontSize": 11,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -2323,7 +2388,8 @@
               "fill": "$text-primary",
               "content": "Sign in to your Drawhaus instance.",
               "fontFamily": "$font-sans",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontWeight": "normal"
             },
             {
               "type": "text",
@@ -2342,7 +2408,8 @@
               "fill": "$text-primary",
               "content": "docker compose up",
               "fontFamily": "$font-mono",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontWeight": "normal"
             }
           ]
         },
@@ -2380,7 +2447,8 @@
                   "fill": "$text-secondary",
                   "content": "rounded-md 6",
                   "fontFamily": "$font-sans",
-                  "fontSize": 11
+                  "fontSize": 11,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2410,7 +2478,8 @@
                   "fill": "$text-secondary",
                   "content": "rounded-lg 8 (controls)",
                   "fontFamily": "$font-sans",
-                  "fontSize": 11
+                  "fontSize": 11,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2440,7 +2509,8 @@
                   "fill": "$text-secondary",
                   "content": "rounded-xl 12",
                   "fontFamily": "$font-sans",
-                  "fontSize": 11
+                  "fontSize": 11,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2470,7 +2540,8 @@
                   "fill": "$text-secondary",
                   "content": "rounded-2xl 16 (cards)",
                   "fontFamily": "$font-sans",
-                  "fontSize": 11
+                  "fontSize": 11,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2500,7 +2571,8 @@
                   "fill": "$text-secondary",
                   "content": "rounded-full",
                   "fontFamily": "$font-sans",
-                  "fontSize": 11
+                  "fontSize": 11,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -2527,7 +2599,8 @@
           "width": "fill_container",
           "content": "Verdict: body = 4.5+ · large = 3+ · non-text = 3+ · deco = below 3, never carries information alone.",
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "frame",
@@ -2637,7 +2710,8 @@
                   "width": 170,
                   "content": "14.45",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2648,7 +2722,8 @@
                   "width": 170,
                   "content": "14.69",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2659,7 +2734,8 @@
                   "width": 110,
                   "content": "body",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2697,7 +2773,8 @@
                   "width": 170,
                   "content": "6.43",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2708,7 +2785,8 @@
                   "width": 170,
                   "content": "7.77",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2719,7 +2797,8 @@
                   "width": 110,
                   "content": "body",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2757,7 +2836,8 @@
                   "width": 170,
                   "content": "4.76",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2768,7 +2848,8 @@
                   "width": 170,
                   "content": "7.25",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2779,7 +2860,8 @@
                   "width": 110,
                   "content": "body",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2817,7 +2899,8 @@
                   "width": 170,
                   "content": "5.14",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2828,7 +2911,8 @@
                   "width": 170,
                   "content": "5.88",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2839,7 +2923,8 @@
                   "width": 110,
                   "content": "body",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2877,7 +2962,8 @@
                   "width": 170,
                   "content": "6.16",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2888,7 +2974,8 @@
                   "width": 170,
                   "content": "5.83",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2899,7 +2986,8 @@
                   "width": 110,
                   "content": "body",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2937,7 +3025,8 @@
                   "width": 170,
                   "content": "6.16",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2948,7 +3037,8 @@
                   "width": 170,
                   "content": "7.20",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -2959,7 +3049,8 @@
                   "width": 110,
                   "content": "body",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -2997,7 +3088,8 @@
                   "width": 170,
                   "content": "6.57",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3008,7 +3100,8 @@
                   "width": 170,
                   "content": "9.49",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3019,7 +3112,8 @@
                   "width": 110,
                   "content": "body",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3057,7 +3151,8 @@
                   "width": 170,
                   "content": "7.23 / 6.79 / 6.57",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3068,7 +3163,8 @@
                   "width": 170,
                   "content": "7.69 / 7.90 / 7.69",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3079,7 +3175,8 @@
                   "width": 110,
                   "content": "body",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3117,7 +3214,8 @@
                   "width": 170,
                   "content": "3.38",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3128,7 +3226,8 @@
                   "width": 170,
                   "content": "4.53",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3139,7 +3238,8 @@
                   "width": 110,
                   "content": "non-text",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3177,7 +3277,8 @@
                   "width": 170,
                   "content": "1.24",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3188,7 +3289,8 @@
                   "width": 170,
                   "content": "2.00",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3199,7 +3301,8 @@
                   "width": 110,
                   "content": "deco",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3237,7 +3340,8 @@
                   "width": 170,
                   "content": "3.50",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3248,7 +3352,8 @@
                   "width": 170,
                   "content": "3.73",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 },
                 {
                   "type": "text",
@@ -3259,7 +3364,8 @@
                   "width": 110,
                   "content": "large only",
                   "fontFamily": "$font-sans",
-                  "fontSize": 13
+                  "fontSize": 13,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -3299,7 +3405,8 @@
           "width": "fill_container",
           "content": "Kit 0.1.0. Focus ring is drawn as a 2px outer stroke; the code's 2px ring-offset has no Pencil equivalent (kit gap G1).",
           "fontFamily": "$font-sans",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontWeight": "normal"
         },
         {
           "type": "text",
@@ -3665,7 +3772,8 @@
                       "fill": "$text-muted",
                       "content": "you@example.com",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -3713,7 +3821,8 @@
                       "fill": "$text-muted",
                       "content": "you@example.com",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 }
@@ -3779,7 +3888,8 @@
                   "fill": "$text-secondary",
                   "content": "Subtitle text",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3804,7 +3914,8 @@
                   "fill": "$error",
                   "content": "This reset link is invalid or has expired.",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3829,7 +3940,8 @@
                   "fill": "$success",
                   "content": "Template saved!",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             },
@@ -3880,7 +3992,8 @@
                   "width": "fill_container",
                   "content": "No users found.",
                   "fontFamily": "$font-sans",
-                  "fontSize": 14
+                  "fontSize": 14,
+                  "fontWeight": "normal"
                 }
               ]
             }
@@ -3910,7 +4023,7 @@
               "reusable": true,
               "width": 44,
               "height": 24,
-              "fill": "$border",
+              "fill": "$border-input",
               "cornerRadius": 999,
               "padding": 2,
               "alignItems": "center",
@@ -4364,7 +4477,8 @@
                       "width": "fill_container",
                       "content": "The current secret stops working immediately. Receivers must be updated.",
                       "fontFamily": "$font-sans",
-                      "fontSize": 14
+                      "fontSize": 14,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -4409,6 +4523,211 @@
               ]
             }
           ]
+        },
+        {
+          "type": "text",
+          "id": "RjbH9",
+          "name": "Form controls — ui.select, ui.checkbox, PasswordInput, LoadError caption",
+          "fill": "$text-secondary",
+          "content": "Form controls — ui.select, ui.checkbox, PasswordInput, LoadError",
+          "fontFamily": "$font-sans",
+          "fontSize": 14,
+          "fontWeight": "600"
+        },
+        {
+          "type": "frame",
+          "id": "evUad",
+          "name": "Form controls — ui.select, ui.checkbox, PasswordInput, LoadError",
+          "width": "fill_container",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Q8Y2I6",
+              "name": "Select",
+              "reusable": true,
+              "width": 200,
+              "height": 36,
+              "fill": "$surface-raised",
+              "cornerRadius": 8,
+              "stroke": "$border-input",
+              "strokeWidth": 1,
+              "padding": [
+                0,
+                8
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hGi61",
+                  "name": "Value",
+                  "fill": "$text-primary",
+                  "content": "Viewer",
+                  "fontFamily": "$font-sans",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "d76mg",
+                  "name": "Chevron",
+                  "width": 14,
+                  "height": 14,
+                  "icon": "chevron-down",
+                  "library": "feather",
+                  "fill": "$text-muted"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "UpEUt",
+              "name": "Checkbox/Off",
+              "reusable": true,
+              "width": 16,
+              "height": 16,
+              "fill": "$surface-raised",
+              "cornerRadius": 4,
+              "stroke": "$border-input",
+              "strokeWidth": 1
+            },
+            {
+              "type": "frame",
+              "id": "UDAXt",
+              "name": "Checkbox/On",
+              "reusable": true,
+              "width": 16,
+              "height": 16,
+              "fill": "$primary",
+              "cornerRadius": 4,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "my5GG",
+                  "name": "Check",
+                  "width": 12,
+                  "height": 12,
+                  "icon": "check",
+                  "library": "feather",
+                  "fill": "$on-primary"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "j9Uh3v",
+              "name": "PasswordInput",
+              "reusable": true,
+              "width": 320,
+              "height": 40,
+              "fill": "$surface-raised",
+              "cornerRadius": 8,
+              "stroke": "$border-input",
+              "strokeWidth": 1,
+              "gap": 8,
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "WtqZG",
+                  "name": "Lock",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "lock",
+                  "library": "feather",
+                  "fill": "$text-muted"
+                },
+                {
+                  "type": "text",
+                  "id": "WUOFu",
+                  "name": "Value",
+                  "fill": "$text-muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Min. 8 characters",
+                  "fontFamily": "$font-sans",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "icon",
+                  "id": "KJuOI",
+                  "name": "Show/hide",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "eye",
+                  "library": "feather",
+                  "fill": "$text-muted"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "UCSK0",
+              "name": "LoadError",
+              "reusable": true,
+              "width": 420,
+              "fill": "$error-10",
+              "cornerRadius": 8,
+              "stroke": "$error-30",
+              "strokeWidth": 1,
+              "gap": 12,
+              "padding": [
+                8,
+                12
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "LrfM1",
+                  "name": "Message",
+                  "fill": "$error",
+                  "content": "Could not load the metrics.",
+                  "fontFamily": "$font-sans",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "h3MZL",
+                  "name": "Try again",
+                  "height": 32,
+                  "fill": "$surface-raised",
+                  "cornerRadius": 8,
+                  "stroke": "$border-input",
+                  "strokeWidth": 1,
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "e72MN",
+                      "name": "Label",
+                      "fill": "$text-primary",
+                      "content": "Try again",
+                      "fontFamily": "$font-sans",
+                      "fontSize": 12,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
@@ -4422,7 +4741,7 @@
   "variables": {
     "kit-version": {
       "type": "string",
-      "value": "0.1.0"
+      "value": "0.2.0"
     },
     "brand-canvas": {
       "type": "color",
@@ -5122,6 +5441,40 @@
         },
         {
           "value": "#ffb4a933",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "accent-violet": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#5b3fb8",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#c4b5fd",
+          "theme": {
+            "mode": "dark"
+          }
+        }
+      ]
+    },
+    "violet-10": {
+      "type": "color",
+      "value": [
+        {
+          "value": "#5b3fb81a",
+          "theme": {
+            "mode": "light"
+          }
+        },
+        {
+          "value": "#c4b5fd1a",
           "theme": {
             "mode": "dark"
           }
