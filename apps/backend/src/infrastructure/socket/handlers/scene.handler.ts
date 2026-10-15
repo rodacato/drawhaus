@@ -1,8 +1,12 @@
 import type { Server, Socket } from "socket.io";
 import { z } from "zod";
-import type { SaveSceneUseCase } from "../../../application/use-cases/realtime/save-scene";
+import type {
+  SaveSceneUseCase,
+  SceneWriter,
+} from "../../../application/use-cases/realtime/save-scene";
 import type { SyncToDriveUseCase } from "../../../application/use-cases/drive/sync-to-drive";
 import type { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
+import { ForbiddenError } from "../../../domain/errors";
 import type { Scene } from "../../../domain/entities/scene";
 import {
   type SocketData,
@@ -53,6 +57,28 @@ function sceneFromDb(scene: Scene) {
     activeSceneId: scene.id,
     revision: scene.revision,
   };
+}
+
+function writerOf(data: SocketData): SceneWriter | null {
+  const userId = accountUserId(data);
+  if (userId) return { kind: "user", userId };
+  return data.shareToken ? { kind: "guest", shareToken: data.shareToken } : null;
+}
+
+async function stillMayEdit(
+  data: SocketData,
+  roomId: string,
+  saveScene: SaveSceneUseCase,
+): Promise<boolean> {
+  const writer = writerOf(data);
+  if (!writer) return false;
+  try {
+    await saveScene.assertCanEdit(roomId, writer);
+    return true;
+  } catch (error: unknown) {
+    if (error instanceof ForbiddenError) return false;
+    throw error;
+  }
 }
 
 export function registerSceneHandlers(
@@ -131,6 +157,11 @@ export function registerSceneHandlers(
         }
 
         const saverId = accountUserId(socket.data as SocketData);
+        if (!(await stillMayEdit(socket.data as SocketData, roomId, useCases.saveScene))) {
+          delete (socket.data as SocketData).roomRoles?.[roomId];
+          ack?.({ ok: false, reason: "forbidden" });
+          return;
+        }
 
         const targetSceneId = sceneId ?? (socket.data as SocketData).activeSceneId;
         if (!targetSceneId) {

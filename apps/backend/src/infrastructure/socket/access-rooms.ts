@@ -12,6 +12,7 @@ export function accessRoom(credential: AccessRevoked): string {
     case "session":
       return `access:session:${digest(credential.sessionToken)}`;
     case "user-sessions":
+    case "user-access":
       return `access:user:${credential.userId}`;
     case "share-link":
       return `access:share-link:${digest(credential.shareToken)}`;

@@ -99,6 +99,7 @@ export function registerRoomHandlers(io: Server, socket: Socket, useCases: RoomU
       socket.data.userName = name;
       socket.data.userEmail = "";
       socket.data.isGuest = true;
+      socket.data.shareToken = shareToken;
       (socket.data.roomRoles as Record<string, string>)[roomId] = result.role;
 
       socket.join(roomId);

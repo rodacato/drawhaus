@@ -87,7 +87,7 @@ before(async () => {
     authenticateSocket: new AuthenticateSocketUseCase(sessions, shares),
     joinRoom: new JoinRoomUseCase(sessions, diagrams, scenes),
     joinRoomGuest: new JoinRoomGuestUseCase(shares, diagrams, scenes),
-    saveScene: new SaveSceneUseCase(scenes),
+    saveScene: new SaveSceneUseCase(scenes, diagrams, shares),
     syncToDrive: new SyncToDriveUseCase(
       new FakeGoogleDriveService(),
       new InMemoryDriveBackupRepository(),

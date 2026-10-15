@@ -1,6 +1,7 @@
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
 import type { SiteSettingsRepository } from "../../../domain/ports/site-settings-repository";
 import type { WorkspaceRole } from "../../../domain/entities/workspace";
+import type { RealtimeNotifier } from "../../../domain/ports/realtime-notifier";
 import type { AuditLogger } from "../../../domain/ports/audit-logger";
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
 
@@ -36,7 +37,10 @@ export class AddWorkspaceMemberUseCase {
 }
 
 export class UpdateWorkspaceMemberRoleUseCase {
-  constructor(private readonly workspaces: WorkspaceRepository) {}
+  constructor(
+    private readonly workspaces: WorkspaceRepository,
+    private readonly notifier: RealtimeNotifier,
+  ) {}
 
   async execute(workspaceId: string, actorId: string, targetUserId: string, role: WorkspaceRole) {
     const workspace = await this.workspaces.findById(workspaceId);
@@ -49,11 +53,15 @@ export class UpdateWorkspaceMemberRoleUseCase {
     if (targetUserId === workspace.ownerId) throw new ForbiddenError();
 
     await this.workspaces.updateMemberRole(workspaceId, targetUserId, role);
+    this.notifier.accessRevoked({ kind: "user-access", userId: targetUserId });
   }
 }
 
 export class RemoveWorkspaceMemberUseCase {
-  constructor(private readonly workspaces: WorkspaceRepository) {}
+  constructor(
+    private readonly workspaces: WorkspaceRepository,
+    private readonly notifier: RealtimeNotifier,
+  ) {}
 
   async execute(workspaceId: string, actorId: string, targetUserId: string) {
     const workspace = await this.workspaces.findById(workspaceId);
@@ -69,5 +77,6 @@ export class RemoveWorkspaceMemberUseCase {
     }
 
     await this.workspaces.removeMember(workspaceId, targetUserId);
+    this.notifier.accessRevoked({ kind: "user-access", userId: targetUserId });
   }
 }

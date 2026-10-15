@@ -36,6 +36,7 @@ export type CommentChanged =
 export type AccessRevoked =
   | { kind: "session"; sessionToken: string }
   | { kind: "user-sessions"; userId: string }
+  | { kind: "user-access"; userId: string }
   | { kind: "share-link"; shareToken: string };
 
 /**

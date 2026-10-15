@@ -7,6 +7,7 @@ export type SocketData = {
   userName: string;
   userEmail: string;
   isGuest: boolean;
+  shareToken?: string;
   activeSceneId?: string;
   roomRoles: Record<string, "owner" | "editor" | "viewer">;
 };

@@ -39,6 +39,8 @@ function setup() {
         );
       case "share-link":
         return shares.store.some((l) => l.token === event.shareToken);
+      case "user-access":
+        return true;
     }
   }
 

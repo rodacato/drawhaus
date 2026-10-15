@@ -10,6 +10,7 @@ import { registerSceneHandlers } from "../../../infrastructure/socket/handlers/s
 import { SaveSceneUseCase } from "../../../application/use-cases/realtime/save-scene";
 import { CreateSnapshotUseCase } from "../../../application/use-cases/snapshots/create-snapshot";
 import { InMemoryDiagramRepository } from "../../fakes/in-memory-diagram-repository";
+import { InMemoryShareRepository } from "../../fakes/in-memory-share-repository";
 import { InMemorySceneRepository } from "../../fakes/in-memory-scene-repository";
 import { InMemorySnapshotRepository } from "../../fakes/in-memory-snapshot-repository";
 
@@ -24,12 +25,14 @@ let io: Server;
 let url: string;
 let scenes: InMemorySceneRepository;
 let diagrams: InMemoryDiagramRepository;
+let shares: InMemoryShareRepository;
 /** Applied to every socket as it connects — each test decides the role and room it joins with. */
 let onConnection: (socket: Socket) => void = () => {};
 
 before(async () => {
   scenes = new InMemorySceneRepository();
   diagrams = new InMemoryDiagramRepository();
+  shares = new InMemoryShareRepository();
   const snapshots = new InMemorySnapshotRepository();
   httpServer = createServer();
   io = new Server(httpServer, { parser: msgpackParser });
@@ -38,7 +41,7 @@ before(async () => {
     socket.data.isGuest = false;
     onConnection(socket);
     registerSceneHandlers(io, socket, {
-      saveScene: new SaveSceneUseCase(scenes),
+      saveScene: new SaveSceneUseCase(scenes, diagrams, shares),
       createSnapshot: new CreateSnapshotUseCase(snapshots, scenes, diagrams),
     });
   });
@@ -145,6 +148,67 @@ describe("save-scene acknowledgement", () => {
 
     assert.deepEqual(response, { ok: false, reason: "forbidden" });
     assert.deepEqual((await scenes.findById(sceneId))!.elements, []);
+  });
+
+  it("refuses a save from a member whose access was removed after joining", async () => {
+    const { roomId, sceneId } = await board("editor");
+    const former = crypto.randomUUID();
+    onConnection = (socket) => {
+      socket.data.userId = former;
+      socket.data.userName = "Former member";
+      socket.data.roomRoles = { [roomId]: "editor" };
+      socket.join(roomId);
+    };
+    const socket = await client();
+
+    const { response } = await save(socket, {
+      roomId,
+      sceneId,
+      elements: [{ id: "late", version: 1 }],
+      appState: {},
+    });
+
+    assert.deepEqual(response, { ok: false, reason: "forbidden" });
+    assert.deepEqual((await scenes.findById(sceneId))!.elements, []);
+  });
+
+  it("refuses a guest save once the share link has expired, and accepts it while valid", async () => {
+    const { roomId, sceneId } = await board("owner");
+    const link = await shares.create({
+      diagramId: roomId,
+      createdBy: crypto.randomUUID(),
+      role: "editor",
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+    onConnection = (socket) => {
+      socket.data.userId = `guest_${socket.id}`;
+      socket.data.userName = "Guest";
+      socket.data.isGuest = true;
+      socket.data.shareToken = link.token;
+      socket.data.roomRoles = { [roomId]: "editor" };
+      socket.join(roomId);
+    };
+    const socket = await client();
+
+    const valid = await save(socket, {
+      roomId,
+      sceneId,
+      elements: [{ id: "g1", version: 1 }],
+      appState: {},
+    });
+    assert.deepEqual(valid.response, { ok: true, sceneId });
+
+    link.expiresAt = new Date(Date.now() - 1000);
+    const expired = await save(socket, {
+      roomId,
+      sceneId,
+      elements: [{ id: "g2", version: 1 }],
+      appState: {},
+    });
+
+    assert.deepEqual(expired.response, { ok: false, reason: "forbidden" });
+    const ids = ((await scenes.findById(sceneId))!.elements as { id: string }[]).map((e) => e.id);
+    assert.deepEqual(ids, ["g1"]);
   });
 
   it("refuses a save that names no scene and has no active one", async () => {

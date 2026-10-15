@@ -21,6 +21,7 @@ export interface UseSocketConnectionReturn {
 type ConnectError = Error & { data?: { reason?: string } };
 
 const SESSION_ENDED = "Your session ended. Reload the page to sign in again.";
+const ACCESS_CHANGED = "Your access to this board changed. Reload the page.";
 const LINK_INVALID = "This link is no longer valid. Ask for a new one.";
 
 function refusalMessage(isGuest: boolean, reason: string | undefined): string {
@@ -31,6 +32,7 @@ function refusalMessage(isGuest: boolean, reason: string | undefined): string {
 }
 
 function revokedMessage(isGuest: boolean, reason: string | undefined): string {
+  if (reason === "access-changed") return ACCESS_CHANGED;
   return reason === "session-ended" ? SESSION_ENDED : refusalMessage(isGuest, "unauthenticated");
 }
 
