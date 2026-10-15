@@ -3,7 +3,7 @@
 > The registry the `.pen` briefs point at. Entries stay after resolution: the outcome is
 > recorded, the reasoning is the useful part.
 
-**Status:** 53 entries · 52 resolved in code · 1 withdrawn (D6, a false finding: `Register.tsx` already had the arrow; only the drawing lacked it) · 19 🐞 real app bugs (belong in the backlog, not here — logged until filed).
+**Status:** 53 entries · 52 resolved in code · 1 withdrawn (D6, a false finding: `Register.tsx` already had the arrow; only the drawing lacked it) · 18 🐞 real app bugs (belong in the backlog, not here — logged until filed).
 
 **How entries work.** A `D<n>` is logged when the design and the code disagree, or when the code
 has a defect the design cannot fix. The design is built to match the **code**; the entry records
