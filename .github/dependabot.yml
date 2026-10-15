@@ -4,19 +4,29 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
   - package-ecosystem: npm
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
   - package-ecosystem: docker
     directory: "/apps/backend"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
   - package-ecosystem: docker
     directory: "/apps/frontend"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
   - package-ecosystem: devcontainers
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
