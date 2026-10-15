@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { TransferDiagramOwnershipUseCase } from "../../../application/use-cases/diagrams/transfer-ownership";
 import { InMemoryDiagramRepository } from "../../fakes/in-memory-diagram-repository";
+import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemoryWorkspaceRepository } from "../../fakes/in-memory-workspace-repository";
 import { NoopAuditLogger } from "../../fakes/noop-audit-logger";
 import { ForbiddenError, NotFoundError } from "../../../domain/errors";
@@ -10,9 +11,25 @@ describe("TransferDiagramOwnershipUseCase", () => {
   function setup() {
     const diagrams = new InMemoryDiagramRepository();
     const workspaces = new InMemoryWorkspaceRepository();
+    const users = new InMemoryUserRepository();
     const audit = new NoopAuditLogger();
-    const useCase = new TransferDiagramOwnershipUseCase(diagrams, workspaces, audit);
-    return { diagrams, workspaces, useCase };
+    const useCase = new TransferDiagramOwnershipUseCase(diagrams, workspaces, users, audit);
+    for (const id of ["owner-1", "member-2", "anyone", "new-owner", "outsider"]) {
+      users.store.push({
+        id,
+        email: `${id}@example.com`,
+        name: id,
+        passwordHash: null,
+        role: "user",
+        disabled: false,
+        googleId: null,
+        githubId: null,
+        githubUsername: null,
+        avatarUrl: null,
+        createdAt: new Date(),
+      });
+    }
+    return { diagrams, workspaces, users, useCase };
   }
 
   it("owner can transfer diagram ownership", async () => {
@@ -31,7 +48,7 @@ describe("TransferDiagramOwnershipUseCase", () => {
     const d = await diagrams.create({ title: "D1", ownerId: "owner-1" });
 
     await assert.rejects(
-      () => useCase.execute([d.id], "other-user", "someone"),
+      () => useCase.execute([d.id], "other-user", "member-2"),
       (err: unknown) => err instanceof ForbiddenError,
     );
   });
@@ -84,5 +101,28 @@ describe("TransferDiagramOwnershipUseCase", () => {
 
     assert.equal((await diagrams.findById(d1.id))!.ownerId, "new-owner");
     assert.equal((await diagrams.findById(d2.id))!.ownerId, "new-owner");
+  });
+
+  it("rejects a personal diagram transfer to a nonexistent user", async () => {
+    const { diagrams, useCase } = setup();
+    const d = await diagrams.create({ title: "D1", ownerId: "owner-1" });
+
+    await assert.rejects(
+      () => useCase.execute([d.id], "owner-1", "ghost"),
+      (err: unknown) => err instanceof NotFoundError,
+    );
+    assert.equal((await diagrams.findById(d.id))!.ownerId, "owner-1");
+  });
+
+  it("rejects a transfer to a disabled user", async () => {
+    const { diagrams, users, useCase } = setup();
+    users.store.find((u) => u.id === "anyone")!.disabled = true;
+    const d = await diagrams.create({ title: "D1", ownerId: "owner-1" });
+
+    await assert.rejects(
+      () => useCase.execute([d.id], "owner-1", "anyone"),
+      (err: unknown) => err instanceof NotFoundError,
+    );
+    assert.equal((await diagrams.findById(d.id))!.ownerId, "owner-1");
   });
 });

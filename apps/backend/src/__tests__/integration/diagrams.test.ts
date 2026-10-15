@@ -133,6 +133,7 @@ function createApp() {
         transferOwnership: new TransferDiagramOwnershipUseCase(
           diagrams,
           new InMemoryWorkspaceRepository(),
+          users,
           new NoopAuditLogger(),
         ),
       },

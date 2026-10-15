@@ -1,4 +1,5 @@
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
+import type { UserRepository } from "../../../domain/ports/user-repository";
 import type { WorkspaceRepository } from "../../../domain/ports/workspace-repository";
 import type { AuditLogger } from "../../../domain/ports/audit-logger";
 import { NotFoundError, ForbiddenError } from "../../../domain/errors";
@@ -7,11 +8,15 @@ export class TransferDiagramOwnershipUseCase {
   constructor(
     private readonly diagrams: DiagramRepository,
     private readonly workspaces: WorkspaceRepository,
+    private readonly users: UserRepository,
     private readonly audit: AuditLogger,
   ) {}
 
   async execute(diagramIds: string[], actorId: string, newOwnerId: string) {
     if (newOwnerId === actorId) throw new ForbiddenError();
+
+    const newOwner = await this.users.findById(newOwnerId);
+    if (!newOwner || newOwner.disabled) throw new NotFoundError("User");
 
     for (const id of diagramIds) {
       const diagram = await this.diagrams.findById(id);
