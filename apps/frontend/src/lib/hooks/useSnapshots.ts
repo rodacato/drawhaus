@@ -4,6 +4,7 @@ import { snapshotsApi, type SnapshotMeta, type SnapshotFull } from "@/api/snapsh
 export function useSnapshots(diagramId: string | null) {
   const [snapshots, setSnapshots] = useState<SnapshotMeta[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!diagramId) return;
@@ -11,8 +12,9 @@ export function useSnapshots(diagramId: string | null) {
     try {
       const res = await snapshotsApi.list(diagramId);
       setSnapshots(res.snapshots);
+      setLoadError(false);
     } catch {
-      // ignore — user may not have access or endpoint may fail
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -78,6 +80,7 @@ export function useSnapshots(diagramId: string | null) {
     named,
     auto,
     loading,
+    loadError,
     refresh,
     createSnapshot,
     getSnapshot,

@@ -4,6 +4,7 @@ import type { ExcalidrawApi } from "@/lib/types";
 import { renderMermaid } from "@/lib/diagram-code/mermaid-renderer";
 import { mermaidToElements, plantumlToElements } from "@/lib/diagram-code/convert-to-excalidraw";
 import { PlantUMLParseError, PlantUMLUnsupportedError } from "@drawhaus/plantuml-to-excalidraw";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { detectDiagramFormat, type DiagramFormat } from "@/lib/format-utils";
 
 type Format = DiagramFormat;
@@ -44,6 +45,8 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
   const [autoDetected, setAutoDetected] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const confirm = useConfirm();
   const [importing, setImporting] = useState(false);
   const [replaceAll, setReplaceAll] = useState(false);
   const [isFallback, setIsFallback] = useState(false);
@@ -61,6 +64,10 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
       setAutoDetected(false);
     }
   }, [code]);
+
+  useEffect(() => {
+    setImportError(null);
+  }, [code, format]);
 
   function handleFormatChange(newFormat: Format) {
     userOverrodeFormat.current = true;
@@ -133,9 +140,21 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
     };
   }, [code, format, updatePreview]);
 
+  async function confirmReplace(count: number): Promise<boolean> {
+    if (count === 0) return true;
+    return confirm({
+      title: "Replace the canvas",
+      message: `This removes the ${count} ${count === 1 ? "element" : "elements"} on the canvas for everyone in the board.`,
+      confirmLabel: "Replace",
+      variant: "danger",
+    });
+  }
+
   async function handleImport() {
     const api = excalidrawApiRef.current;
     if (!api || !code.trim()) return;
+    if (replaceAll && !(await confirmReplace(api.getSceneElements().length))) return;
+    setImportError(null);
     setImporting(true);
     try {
       let newElements: unknown[];
@@ -146,14 +165,14 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
         newElements = result.elements;
       }
       if (newElements.length === 0) {
-        setError("The diagram produced no elements. Check the syntax.");
+        setImportError("The diagram produced no elements. Check the syntax.");
         return;
       }
       const existing = replaceAll ? [] : (api.getSceneElements() as any[]);
       api.updateScene({ elements: [...existing, ...newElements] });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to convert");
+      setImportError(err instanceof Error ? err.message : "Failed to convert");
     } finally {
       setImporting(false);
     }
@@ -165,27 +184,29 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
 
   return (
     <div className="space-y-3">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
-        Import from Code
-      </h3>
+      <h3 className={`${ui.h2} mb-3`}>Import from Code</h3>
 
       {/* Format selector */}
-      <div className="flex items-center gap-1.5">
+      <div role="group" aria-label="Diagram format" className="flex items-center gap-1.5">
         <button
+          type="button"
+          aria-pressed={format === "mermaid"}
           onClick={() => handleFormatChange("mermaid")}
           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition ${
             format === "mermaid"
-              ? "bg-selection text-primary"
+              ? "bg-primary text-on-primary"
               : "bg-selection text-text-muted hover:bg-border"
           }`}
         >
           Mermaid
         </button>
         <button
+          type="button"
+          aria-pressed={format === "plantuml"}
           onClick={() => handleFormatChange("plantuml")}
           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition ${
             format === "plantuml"
-              ? "bg-selection text-primary"
+              ? "bg-primary text-on-primary"
               : "bg-selection text-text-muted hover:bg-border"
           }`}
         >
@@ -200,6 +221,7 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
       <textarea
         value={code}
         onChange={(e) => setCode(e.target.value)}
+        aria-label="Diagram code"
         placeholder={placeholder}
         spellCheck={false}
         className="block h-52 w-full resize-y rounded-lg border border-border bg-selection px-3 py-2.5 font-mono text-[13px] leading-relaxed text-text-primary outline-none transition placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/25"
@@ -255,9 +277,16 @@ export function CodeImportPanel({ excalidrawApiRef, onClose }: Props) {
         </div>
       )}
 
+      {importError && (
+        <div role="alert" className="rounded-lg bg-error/10 px-3 py-2 text-xs text-error space-y-1">
+          <div className="font-medium">Could not import</div>
+          <p>{importError}</p>
+        </div>
+      )}
+
       {/* Error */}
       {error && !isFallback && (
-        <div className="rounded-lg bg-error/10 px-3 py-2 text-xs text-error space-y-1">
+        <div role="alert" className="rounded-lg bg-error/10 px-3 py-2 text-xs text-error space-y-1">
           <div className="font-medium">Syntax error</div>
           <pre className="whitespace-pre-wrap font-mono text-xs text-error leading-relaxed">
             {error}

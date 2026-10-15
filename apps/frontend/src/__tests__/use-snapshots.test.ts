@@ -52,12 +52,18 @@ describe("useSnapshots", () => {
     expect(result.current.loading).toBe(false);
   });
 
-  test("refresh is silent on API error", async () => {
-    vi.spyOn(snapshotsApi, "list").mockRejectedValue(new Error("boom"));
+  test("a failed refresh flags loadError and a retry clears it", async () => {
+    const listSpy = vi.spyOn(snapshotsApi, "list").mockRejectedValueOnce(new Error("boom"));
     const { result } = renderHook(() => useSnapshots("d1"));
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.snapshots).toEqual([]);
+    expect(result.current.loadError).toBe(true);
+
+    listSpy.mockResolvedValue({ snapshots: [makeMeta({ id: "a" })] });
+    await act(() => result.current.refresh());
+    expect(result.current.loadError).toBe(false);
+    expect(result.current.snapshots).toHaveLength(1);
   });
 
   test("splits snapshots into named and auto buckets", async () => {

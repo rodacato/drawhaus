@@ -14,16 +14,21 @@ vi.mock("@/lib/diagram-code/mermaid-renderer", () => ({
 }));
 
 import { CodeImportPanel } from "@/components/board-sidebar/CodeImportPanel";
+import { ConfirmProvider } from "@/components/ConfirmDialog";
 
 const FLOWCHART = "graph TD\n    A-->B";
 
-function renderPanel() {
+function renderPanel(existing: unknown[] = []) {
   const updateScene = vi.fn();
   const onClose = vi.fn();
   const excalidrawApiRef = {
-    current: { getSceneElements: () => [], updateScene },
+    current: { getSceneElements: () => existing, updateScene },
   } as unknown as React.RefObject<never>;
-  render(<CodeImportPanel excalidrawApiRef={excalidrawApiRef} onClose={onClose} />);
+  render(
+    <ConfirmProvider>
+      <CodeImportPanel excalidrawApiRef={excalidrawApiRef} onClose={onClose} />
+    </ConfirmProvider>,
+  );
   return { updateScene, onClose };
 }
 
@@ -63,5 +68,30 @@ describe("CodeImportPanel", () => {
       elements: [{ id: "el-1", type: "rectangle" }],
     });
     expect(screen.queryByText(/produced no elements/i)).toBeNull();
+  });
+
+  test("replacing the canvas asks first and keeps everything when cancelled", async () => {
+    conversion.elements = [{ id: "el-1", type: "rectangle" }];
+    const { updateScene, onClose } = renderPanel([{ id: "old-1" }, { id: "old-2" }]);
+
+    await userEvent.click(screen.getByLabelText("Replace existing elements"));
+    await typeAndImport(FLOWCHART);
+
+    expect(await screen.findByText(/removes the 2 elements/i)).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(updateScene).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  test("confirming the replacement swaps the canvas for the new elements", async () => {
+    conversion.elements = [{ id: "el-1", type: "rectangle" }];
+    const { updateScene, onClose } = renderPanel([{ id: "old-1" }]);
+
+    await userEvent.click(screen.getByLabelText("Replace existing elements"));
+    await typeAndImport(FLOWCHART);
+    await userEvent.click(await screen.findByRole("button", { name: "Replace" }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(updateScene).toHaveBeenCalledWith({ elements: [{ id: "el-1", type: "rectangle" }] });
   });
 });

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import type { CanvasPrefs } from "@/lib/hooks/useCanvasPrefs";
 import { ToggleSwitch } from "@/components/ToggleSwitch";
+import { ui } from "@/lib/ui";
 
 const GRID_SIZES = [
   { label: "Small", value: 10 },
@@ -35,6 +36,7 @@ export function SettingsPanel({
 
   return (
     <div className="space-y-5">
+      <h3 className={ui.h2}>Settings</h3>
       {/* ── Canvas ── */}
       <section>
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
@@ -58,8 +60,9 @@ export function SettingsPanel({
               <button
                 key={s.value}
                 type="button"
+                aria-pressed={gridSize === s.value}
                 onClick={() => onCanvasPrefsChange({ gridSize: s.value })}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${gridSize === s.value ? "bg-selection text-primary" : "bg-selection text-text-secondary hover:bg-border"}`}
+                className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition ${gridSize === s.value ? "bg-primary text-on-primary" : "bg-selection text-text-secondary hover:bg-border"}`}
               >
                 {s.label}
               </button>
@@ -86,15 +89,17 @@ export function SettingsPanel({
                 key={p.color}
                 type="button"
                 title={p.label}
+                aria-label={`Background ${p.label}`}
+                aria-pressed={viewBackgroundColor === p.color}
                 onClick={() => onCanvasPrefsChange({ viewBackgroundColor: p.color })}
-                className={`h-7 w-7 rounded-md border-2 transition ${viewBackgroundColor === p.color ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-border-input"}`}
+                className={`h-8 w-8 rounded-md border-2 transition ${viewBackgroundColor === p.color ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-border-input"}`}
                 style={{ backgroundColor: p.color }}
               />
             ))}
             {/* Custom color picker */}
             <label
               title="Custom color"
-              className={`relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border-2 transition ${BG_PRESETS.some((p) => p.color === viewBackgroundColor) ? "border-border hover:border-border-input" : "border-primary ring-2 ring-primary/30"}`}
+              className={`relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border-2 transition ${BG_PRESETS.some((p) => p.color === viewBackgroundColor) ? "border-border hover:border-border-input" : "border-primary ring-2 ring-primary/30"}`}
               style={{ background: "conic-gradient(red, yellow, lime, aqua, blue, magenta, red)" }}
             >
               <span className="sr-only">Custom background color</span>
