@@ -1,6 +1,6 @@
 import type { ShareRepository } from "../../../domain/ports/share-repository";
 import type { DiagramRepository } from "../../../domain/ports/diagram-repository";
-import { NotFoundError } from "../../../domain/errors";
+import { requireEditAccess } from "../../helpers/require-access";
 
 export class ListLinksUseCase {
   constructor(
@@ -9,9 +9,10 @@ export class ListLinksUseCase {
   ) {}
 
   async execute(diagramId: string, userId: string) {
-    const diagram = await this.diagrams.findById(diagramId);
-    if (diagram?.ownerId !== userId) throw new NotFoundError("Diagram");
+    const role = await this.diagrams.findAccessRole(diagramId, userId);
+    requireEditAccess(role);
 
-    return this.shares.findByDiagram(diagramId);
+    const links = await this.shares.findByDiagram(diagramId);
+    return role === "owner" ? links : links.filter((link) => link.createdBy === userId);
   }
 }

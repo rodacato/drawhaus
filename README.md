@@ -363,12 +363,12 @@ Deploys run only in GitHub Actions, and `master` is the only source of what ship
 
 ### Share
 
-| Method   | Endpoint                      | Description        |
-| -------- | ----------------------------- | ------------------ |
-| `POST`   | `/api/share/:diagramId`       | Create share link  |
-| `GET`    | `/api/share/:diagramId/links` | List share links   |
-| `GET`    | `/api/share/link/:token`      | Resolve share link |
-| `DELETE` | `/api/share/link/:token`      | Revoke share link  |
+| Method   | Endpoint                      | Description                                  |
+| -------- | ----------------------------- | -------------------------------------------- |
+| `POST`   | `/api/share/:diagramId`       | Create share link                            |
+| `GET`    | `/api/share/:diagramId/links` | List share links (owner: all; editor: own)   |
+| `GET`    | `/api/share/link/:token`      | Resolve share link                           |
+| `DELETE` | `/api/share/link/:token`      | Revoke share link (creator or diagram owner) |
 
 ### Templates
 

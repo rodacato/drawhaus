@@ -302,7 +302,7 @@ describe("closing open sockets — share-link revoke", () => {
       otherLink.token,
     );
 
-    await new DeleteLinkUseCase(shares, notifier).execute(link.token, ada.user.id);
+    await new DeleteLinkUseCase(shares, diagrams, notifier).execute(link.token, ada.user.id);
 
     await assertClosedFor(guest, "share-link-revoked");
     await assertClosedFor(signedInViaLink, "share-link-revoked");
@@ -323,7 +323,7 @@ describe("closing open sockets — share-link revoke", () => {
 
     joining.socket.emit("join-room-guest", { shareToken: link.token, guestName: "Bob" });
     await lookup.started;
-    await new DeleteLinkUseCase(shares, notifier).execute(link.token, ada.user.id);
+    await new DeleteLinkUseCase(shares, diagrams, notifier).execute(link.token, ada.user.id);
     lookup.release();
 
     await assertClosedFor(joining, "share-link-revoked");

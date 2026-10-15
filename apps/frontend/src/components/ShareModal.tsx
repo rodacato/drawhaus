@@ -98,9 +98,12 @@ export function ShareModal({ open, onClose, diagramId }: ShareModalProps) {
       const data = await shareApi.create(diagramId, selectedRole, expiresInHours);
       const token = data.shareLink?.token ?? data.token;
       setCreatedToken(token);
-      const url = `${globalThis.location.origin}/share/${token}`;
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
+      try {
+        await navigator.clipboard.writeText(`${globalThis.location.origin}/share/${token}`);
+        setCopied(true);
+      } catch {
+        toast("Link created, but it could not be copied. Copy it from the list.", "error");
+      }
       await loadLinks();
     } catch {
       toast("Could not create the share link", "error");

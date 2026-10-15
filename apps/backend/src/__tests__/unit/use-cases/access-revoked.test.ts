@@ -10,6 +10,7 @@ import type { AccessRevoked } from "../../../domain/ports/realtime-notifier";
 import { InMemoryUserRepository } from "../../fakes/in-memory-user-repository";
 import { InMemorySessionRepository } from "../../fakes/in-memory-session-repository";
 import { InMemoryShareRepository } from "../../fakes/in-memory-share-repository";
+import { InMemoryDiagramRepository } from "../../fakes/in-memory-diagram-repository";
 import { InMemoryPasswordResetRepository } from "../../fakes/in-memory-password-reset-repository";
 import { InMemoryWorkspaceRepository } from "../../fakes/in-memory-workspace-repository";
 import { FakeHasher } from "../../fakes/fake-hasher";
@@ -265,7 +266,10 @@ describe("DeleteLinkUseCase — closing open sockets", () => {
     const owner = await ctx.user("owner@x.com");
     const link = await linkOf(ctx, owner.id);
 
-    await new DeleteLinkUseCase(ctx.shares, ctx.notifier).execute(link.token, owner.id);
+    await new DeleteLinkUseCase(ctx.shares, new InMemoryDiagramRepository(), ctx.notifier).execute(
+      link.token,
+      owner.id,
+    );
 
     assert.deepEqual(ctx.revokes, [
       { event: { kind: "share-link", shareToken: link.token }, stillValid: false },
@@ -279,7 +283,11 @@ describe("DeleteLinkUseCase — closing open sockets", () => {
     const link = await linkOf(ctx, owner.id);
 
     await assert.rejects(
-      () => new DeleteLinkUseCase(ctx.shares, ctx.notifier).execute(link.token, stranger.id),
+      () =>
+        new DeleteLinkUseCase(ctx.shares, new InMemoryDiagramRepository(), ctx.notifier).execute(
+          link.token,
+          stranger.id,
+        ),
       (e: unknown) => e instanceof NotFoundError,
     );
 
