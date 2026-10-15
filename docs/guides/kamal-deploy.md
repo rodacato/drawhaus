@@ -9,7 +9,7 @@ Zero-downtime deploys via Kamal, run only by GitHub Actions. `master` is the onl
 ```
 git push origin origin/master:production
     ↓
-GitHub Actions (.github/workflows/deploy.yml)
+GitHub Actions (.github/workflows/cd-deploy.yml)
     ↓
 Guard: the commit must already be on master
     ↓
@@ -40,7 +40,7 @@ Production ✓
 1. Deploy backend: `kamal deploy` builds and pushes the image, then swaps containers behind the `/health` check
 2. Deploy frontend: the same, once the backend job succeeds
 
-`kamal deploy` is the only thing that builds and publishes a production image. `docker-build.yml` builds both images on every pull request without pushing, so a broken Dockerfile fails before it merges.
+`kamal deploy` is the only thing that builds and publishes a production image. `ci-docker.yml` builds both images on every pull request without pushing, so a broken Dockerfile fails before it merges.
 
 ---
 
@@ -155,7 +155,7 @@ sudo systemctl restart cloudflared
 
 On a new host, open **Actions → Deploy → Run workflow**, pick `master`, and set `action` to `setup`. `kamal setup` installs Docker if needed, starts kamal-proxy, boots the accessories (PostgreSQL 16, Redis 7), and then builds, pushes and deploys the backend; the frontend job runs `setup` against the same host after it.
 
-**Emergency only: from a host shell.** If Actions is unavailable, the same commands run from a machine with Kamal 2.12.0 (the `KAMAL_VERSION` in `deploy.yml`), SSH access as `deploy`, and every name in `.kamal/secrets` exported. A name missing from the environment resolves to an empty string without any error, so check the list before running:
+**Emergency only: from a host shell.** If Actions is unavailable, the same commands run from a machine with Kamal 2.12.0 (the `KAMAL_VERSION` in `cd-deploy.yml`), SSH access as `deploy`, and every name in `.kamal/secrets` exported. A name missing from the environment resolves to an empty string without any error, so check the list before running:
 
 ```bash
 export HOST_IP=<your-vps-ip> APP_HOST=draw.example.com API_HOST=draw-api.example.com
@@ -262,7 +262,7 @@ kamal app details -c config/deploy.frontend.yml
 | `config/deploy.backend.yml`    | Kamal config for backend (includes accessories) |
 | `config/deploy.frontend.yml`   | Kamal config for frontend                       |
 | `.kamal/secrets`               | Secret env var references                       |
-| `.github/workflows/deploy.yml` | CI/CD deploy workflow                           |
+| `.github/workflows/cd-deploy.yml` | CI/CD deploy workflow                           |
 | `.github/workflows/ci.yml`     | CI tests (runs on PRs and master)               |
 | `apps/backend/Dockerfile`      | Backend multi-stage build                       |
 | `apps/frontend/Dockerfile`     | Frontend multi-stage build (nginx)              |

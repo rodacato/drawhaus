@@ -1,4 +1,4 @@
-name: Publish MCP Package
+name: Release · MCP
 
 on:
   push:

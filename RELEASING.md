@@ -44,7 +44,7 @@ gh pr create --base master --title "release: vX.Y.Z"
 ```
 
 Merge it once the checks pass, like any change. Pushing a `release/*` branch also starts the full
-e2e suite (`e2e-full.yml`), which is not a required check: wait for it to go green before merging,
+e2e suite (`ci-e2e.yml`), which is not a required check: wait for it to go green before merging,
 and do not tag a commit whose release run failed. It also runs nightly and on demand from
 Actions → E2E Full → Run workflow.
 
@@ -78,7 +78,7 @@ default branch's head.
 
 | Workflow          | On a `v*` tag                                                                                   |
 | ----------------- | ----------------------------------------------------------------------------------------------- |
-| `publish-mcp.yml` | Builds `@rodacato/drawhaus-mcp`, sets its version from the tag, publishes it to GitHub Packages |
+| `release-mcp.yml` | Builds `@rodacato/drawhaus-mcp`, sets its version from the tag, publishes it to GitHub Packages |
 
 No Docker image is tagged with the version. `kamal deploy` tags each image with the deployed
 commit's SHA and `latest`, whether or not that commit is a release.
