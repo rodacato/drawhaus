@@ -20,7 +20,6 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write
 
 env:
   KAMAL_VERSION: "2.12.0"
@@ -31,6 +30,9 @@ jobs:
     name: Deploy backend (${{ inputs.action || 'deploy' }})
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
+      packages: write
     timeout-minutes: 20
 
     env:
@@ -118,6 +120,9 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
+      packages: write
     timeout-minutes: 10
 
     env:
