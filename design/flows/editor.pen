@@ -2813,7 +2813,7 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "2026-10-15 · Drew the Comments panel on kit 0.1.0: 4 screens (open, empty, resolved, reply form). Findings D41–D45 logged.",
+          "content": "2026-10-15 · Drew the Comments panel on kit 0.1.0: 4 screens (open, empty, resolved, reply form). D41–D45 fixed in code and redrawn the same day: no dead controls, muted resolved text.",
           "fontFamily": "$font-sans",
           "fontSize": 14,
           "fontWeight": "normal"
@@ -3287,16 +3287,6 @@
                       "children": [
                         {
                           "type": "icon",
-                          "id": "RjIxQ",
-                          "name": "filter",
-                          "width": 16,
-                          "height": 16,
-                          "icon": "filter",
-                          "library": "feather",
-                          "fill": "$text-muted"
-                        },
-                        {
-                          "type": "icon",
                           "id": "MvQsu",
                           "name": "eye",
                           "width": 16,
@@ -3518,75 +3508,9 @@
                       "id": "dFqzw",
                       "name": "Toolbar",
                       "width": "fill_container",
-                      "justifyContent": "space_between",
+                      "justifyContent": "end",
                       "alignItems": "center",
                       "children": [
-                        {
-                          "type": "frame",
-                          "id": "HbsFx",
-                          "name": "Tools",
-                          "gap": 4,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "O7Ls1G",
-                              "name": "at-sign",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "aY9nk",
-                                  "name": "at-sign",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "at-sign",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "XYwk6",
-                              "name": "smile",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "NlfR7",
-                                  "name": "smile",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "smile",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "lKFB7",
-                              "name": "paperclip",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "sicI2",
-                                  "name": "paperclip",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "paperclip",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            }
-                          ]
-                        },
                         {
                           "type": "frame",
                           "id": "hPMxE",
@@ -5042,16 +4966,6 @@
                       "children": [
                         {
                           "type": "icon",
-                          "id": "ZKnQb",
-                          "name": "filter",
-                          "width": 16,
-                          "height": 16,
-                          "icon": "filter",
-                          "library": "feather",
-                          "fill": "$text-muted"
-                        },
-                        {
-                          "type": "icon",
                           "id": "m5NtRv",
                           "name": "eye",
                           "width": 16,
@@ -5273,75 +5187,9 @@
                       "id": "Z2euQ",
                       "name": "Toolbar",
                       "width": "fill_container",
-                      "justifyContent": "space_between",
+                      "justifyContent": "end",
                       "alignItems": "center",
                       "children": [
-                        {
-                          "type": "frame",
-                          "id": "lyJBT",
-                          "name": "Tools",
-                          "gap": 4,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "ogs6R",
-                              "name": "at-sign",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "lmk8r",
-                                  "name": "at-sign",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "at-sign",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "l0lMA",
-                              "name": "smile",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "q3F4pI",
-                                  "name": "smile",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "smile",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "xp6Bk",
-                              "name": "paperclip",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "JHcdO",
-                                  "name": "paperclip",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "paperclip",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            }
-                          ]
-                        },
                         {
                           "type": "frame",
                           "id": "E2xZOY",
@@ -5873,16 +5721,6 @@
                       "children": [
                         {
                           "type": "icon",
-                          "id": "uhDbz",
-                          "name": "filter",
-                          "width": 16,
-                          "height": 16,
-                          "icon": "filter",
-                          "library": "feather",
-                          "fill": "$text-muted"
-                        },
-                        {
-                          "type": "icon",
                           "id": "J2DqmW",
                           "name": "eye",
                           "width": 16,
@@ -6104,75 +5942,9 @@
                       "id": "Cgbe1",
                       "name": "Toolbar",
                       "width": "fill_container",
-                      "justifyContent": "space_between",
+                      "justifyContent": "end",
                       "alignItems": "center",
                       "children": [
-                        {
-                          "type": "frame",
-                          "id": "IwL4O",
-                          "name": "Tools",
-                          "gap": 4,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "KxgLK",
-                              "name": "at-sign",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "x2Kxj",
-                                  "name": "at-sign",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "at-sign",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "JRPkQ",
-                              "name": "smile",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "a6ZYcs",
-                                  "name": "smile",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "smile",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "rtEDt",
-                              "name": "paperclip",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "scRTj",
-                                  "name": "paperclip",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "paperclip",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            }
-                          ]
-                        },
                         {
                           "type": "frame",
                           "id": "UH2cb",
@@ -6221,7 +5993,6 @@
                       "type": "frame",
                       "id": "sP2ey",
                       "name": "Thread",
-                      "opacity": 0.6,
                       "width": "fill_container",
                       "layout": "vertical",
                       "gap": 12,
@@ -6336,7 +6107,7 @@
                                   "type": "text",
                                   "id": "okscb",
                                   "name": "Text",
-                                  "fill": "$text-secondary",
+                                  "fill": "$text-muted",
                                   "textGrowth": "fixed-width",
                                   "width": "fill_container",
                                   "content": "Label is cut off on the right.",
@@ -6951,16 +6722,6 @@
                       "children": [
                         {
                           "type": "icon",
-                          "id": "b8A52",
-                          "name": "filter",
-                          "width": 16,
-                          "height": 16,
-                          "icon": "filter",
-                          "library": "feather",
-                          "fill": "$text-muted"
-                        },
-                        {
-                          "type": "icon",
                           "id": "EvO6I",
                           "name": "eye",
                           "width": 16,
@@ -7182,75 +6943,9 @@
                       "id": "hlIWM",
                       "name": "Toolbar",
                       "width": "fill_container",
-                      "justifyContent": "space_between",
+                      "justifyContent": "end",
                       "alignItems": "center",
                       "children": [
-                        {
-                          "type": "frame",
-                          "id": "D9ha9",
-                          "name": "Tools",
-                          "gap": 4,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "dZehu",
-                              "name": "at-sign",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "HTLOU",
-                                  "name": "at-sign",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "at-sign",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "WHwed",
-                              "name": "smile",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "z2vhF",
-                                  "name": "smile",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "smile",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "a8x33V",
-                              "name": "paperclip",
-                              "padding": 4,
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "icon",
-                                  "id": "MxFcx",
-                                  "name": "paperclip",
-                                  "width": 16,
-                                  "height": 16,
-                                  "icon": "paperclip",
-                                  "library": "feather",
-                                  "fill": "$text-muted"
-                                }
-                              ]
-                            }
-                          ]
-                        },
                         {
                           "type": "frame",
                           "id": "jwvr1",
@@ -7843,7 +7538,7 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "Dark theme, the filter menu (the button does nothing), mention, emoji and attach (they do nothing), a failed post or load (the app shows nothing), delete confirmation (there is none), the viewer-only panel (identical).",
+          "content": "Dark theme, a failed post or load (a toast and a LoadError with Try again, as in the settings flow), the delete confirmation (the shared ConfirmDialog), the viewer-only panel (identical).",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
           "fontSize": 14,
@@ -7868,7 +7563,7 @@
           "fill": "$text-primary",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "D41 comment failures are silent · D42 delete drops a whole thread in one click · D43 four controls do nothing · D44 the composer and tabs have no accessible names or roles · D45 resolved threads fall below AA contrast.",
+          "content": "D41–D45 are fixed in code and redrawn: failures show a retry or a toast, delete asks first, the dead Filter, Mention, Emoji and Attach buttons are gone, the tabs and fields are named, and resolved threads are muted with a token.",
           "lineHeight": 1.45,
           "fontFamily": "$font-sans",
           "fontSize": 14,
