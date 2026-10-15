@@ -222,7 +222,12 @@ export function createUseCases(repos: Repositories, services: Services) {
   );
   const updateThumbnail = new UpdateThumbnailUseCase(repos.diagramRepo);
   const toggleStar = new ToggleStarUseCase(repos.diagramRepo);
-  const duplicateDiagram = new DuplicateDiagramUseCase(repos.diagramRepo, repos.sceneRepo);
+  const duplicateDiagram = new DuplicateDiagramUseCase(
+    repos.diagramRepo,
+    repos.sceneRepo,
+    repos.workspaceRepo,
+    repos.folderRepo,
+  );
 
   // Workspaces
   const createWorkspace = new CreateWorkspaceUseCase(repos.workspaceRepo, repos.siteSettingsRepo);

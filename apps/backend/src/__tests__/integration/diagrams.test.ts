@@ -128,7 +128,7 @@ function createApp() {
         updateThumbnail: new UpdateThumbnailUseCase(diagrams),
         delete: new DeleteDiagramUseCase(diagrams, new InMemoryWorkspaceRepository()),
         toggleStar: new ToggleStarUseCase(diagrams),
-        duplicate: new DuplicateDiagramUseCase(diagrams, diagrams.scenes),
+        duplicate: new DuplicateDiagramUseCase(diagrams, diagrams.scenes, new InMemoryWorkspaceRepository(), folders),
         move: new MoveDiagramUseCase(diagrams, folders, new InMemoryWorkspaceRepository()),
         transferOwnership: new TransferDiagramOwnershipUseCase(
           diagrams,
