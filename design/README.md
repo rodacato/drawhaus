@@ -33,7 +33,7 @@ as context for AI agents (`AGENTS.md` points them here).
 | `flows/setup.pen`     | 4       | 0.1.0 | `/setup` first-run wizard                                                    |
 | `flows/settings.pen`  | 21      | 0.1.0 | `/settings` user tabs, admin tabs, load errors, validation, narrow layout    |
 
-Not drawn yet: embed, the editor's other drawer panels, marketing pages. Comments are drawn inside `flows/editor.pen`. Derive the next domain from
+Not drawn yet: embed, marketing pages. Comments and the editor's drawer panels are drawn inside `flows/editor.pen`. Derive the next domain from
 `apps/frontend/src/router.tsx` routes, not from this list.
 
 **This table is present tense — it never carries history.** "Migrated on <date>, six
