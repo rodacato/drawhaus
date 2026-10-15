@@ -1,18 +1,14 @@
 import { FormEvent, useState } from "react";
 import type { CommentThread, ExcalidrawElement } from "@/lib/types";
-import {
-  IconFilter,
-  IconThumbUp,
-  IconReply,
-  IconCheck,
-  IconPointer,
-  IconAtSign,
-  IconSmile,
-  IconPaperclip,
-} from "@/components/Icons";
+import { IconThumbUp, IconReply, IconCheck, IconPointer } from "@/components/Icons";
+import { LoadError } from "@/components/LoadError";
+import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 
 type CommentsPanelProps = {
   readonly threads: CommentThread[];
+  readonly loadError: boolean;
+  readonly onRetry: () => void;
   readonly elements: readonly unknown[];
   readonly selectedElementId: string | null;
   readonly showIndicators: boolean;
@@ -67,6 +63,8 @@ function shortId(id: string): string {
 
 export function CommentsPanel({
   threads,
+  loadError,
+  onRetry,
   elements,
   selectedElementId,
   showIndicators,
@@ -84,6 +82,31 @@ export function CommentsPanel({
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState("");
   const [pending, setPending] = useState(false);
+  const toast = useToast();
+  const confirm = useConfirm();
+
+  async function attempt(action: () => Promise<void>, failure: string): Promise<boolean> {
+    try {
+      await action();
+      return true;
+    } catch {
+      toast(failure, "error");
+      return false;
+    }
+  }
+
+  async function handleDelete(thread: CommentThread) {
+    const replies = thread.replies.length;
+    const replyNoun = replies === 1 ? "reply" : "replies";
+    const subject = replies > 0 ? `this comment and its ${replies} ${replyNoun}` : "this comment";
+    const ok = await confirm({
+      title: "Delete comment",
+      message: `Delete ${subject}? This cannot be undone.`,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (ok) await attempt(() => onDelete(thread.id), "Could not delete the comment.");
+  }
 
   const filtered = threads.filter((t) => {
     if (filter === "open") return !t.resolved;
@@ -96,8 +119,11 @@ export function CommentsPanel({
     if (!newBody.trim()) return;
     setPending(true);
     try {
-      await onCreateThread(selectedElementId ?? "__general__", newBody.trim());
-      setNewBody("");
+      const posted = await attempt(
+        () => onCreateThread(selectedElementId ?? "__general__", newBody.trim()),
+        "Could not post the comment.",
+      );
+      if (posted) setNewBody("");
     } finally {
       setPending(false);
     }
@@ -108,9 +134,14 @@ export function CommentsPanel({
     if (!replyBody.trim()) return;
     setPending(true);
     try {
-      await onReply(threadId, replyBody.trim());
-      setReplyBody("");
-      setReplyingTo(null);
+      const posted = await attempt(
+        () => onReply(threadId, replyBody.trim()),
+        "Could not post the reply.",
+      );
+      if (posted) {
+        setReplyBody("");
+        setReplyingTo(null);
+      }
     } finally {
       setPending(false);
     }
@@ -129,15 +160,12 @@ export function CommentsPanel({
         <h2 className="text-sm font-semibold text-text-primary">Comments</h2>
         <div className="flex items-center gap-1.5">
           <button
-            className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary"
-            title="Filter comments"
-          >
-            <IconFilter />
-          </button>
-          <button
             onClick={onToggleIndicators}
-            className={`rounded p-1 transition ${showIndicators ? "text-primary hover:bg-primary/10" : "text-text-muted hover:bg-surface-raised hover:text-text-secondary"}`}
+            className={`flex h-8 w-8 items-center justify-center rounded transition ${showIndicators ? "text-primary hover:bg-primary/10" : "text-text-muted hover:bg-surface-raised hover:text-text-secondary"}`}
             title={showIndicators ? "Hide indicators on canvas" : "Show indicators on canvas"}
+            aria-label={showIndicators ? "Hide indicators on canvas" : "Show indicators on canvas"}
+            aria-pressed={showIndicators}
+            type="button"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               {showIndicators ? (
@@ -170,8 +198,10 @@ export function CommentsPanel({
           </button>
           <button
             onClick={onClose}
-            className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary"
+            className="flex h-8 w-8 items-center justify-center rounded text-text-muted hover:bg-surface-raised hover:text-text-secondary"
             title="Close"
+            aria-label="Close comments"
+            type="button"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path
@@ -186,10 +216,13 @@ export function CommentsPanel({
       </div>
 
       {/* Comment Tabs */}
-      <div className="flex border-b border-border">
+      <div role="tablist" aria-label="Comment filter" className="flex border-b border-border">
         {tabItems.map((tab) => (
           <button
             key={tab.key}
+            role="tab"
+            type="button"
+            aria-selected={filter === tab.key}
             onClick={() => setFilter(tab.key)}
             className={`flex-1 border-b-2 px-3 py-2 text-xs font-medium transition ${
               filter === tab.key
@@ -215,34 +248,14 @@ export function CommentsPanel({
         <textarea
           className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none placeholder:text-text-muted focus:border-primary focus:ring-1 focus:ring-primary"
           rows={2}
+          maxLength={5000}
+          aria-label="New comment"
           placeholder="Add a comment..."
           value={newBody}
           onChange={(e) => setNewBody(e.target.value)}
         />
         <div className="mt-2 flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary"
-              title="Mention someone"
-            >
-              <IconAtSign />
-            </button>
-            <button
-              type="button"
-              className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary"
-              title="Add emoji"
-            >
-              <IconSmile />
-            </button>
-            <button
-              type="button"
-              className="rounded p-1 text-text-muted hover:bg-surface-raised hover:text-text-secondary"
-              title="Attach file"
-            >
-              <IconPaperclip />
-            </button>
-          </div>
+          <span />
           <button
             type="submit"
             disabled={pending || !newBody.trim()}
@@ -255,7 +268,12 @@ export function CommentsPanel({
 
       {/* Thread list */}
       <div className="flex-1 overflow-y-auto">
-        {filtered.length === 0 && (
+        {loadError && (
+          <div className="px-4 py-3">
+            <LoadError message="Could not load the comments." onRetry={onRetry} />
+          </div>
+        )}
+        {!loadError && filtered.length === 0 && (
           <div className="px-4 py-8 text-center text-xs text-text-muted">
             {EMPTY_FILTER_MESSAGES[filter]}
           </div>
@@ -265,10 +283,7 @@ export function CommentsPanel({
           const el = isGeneral ? undefined : findElement(elements, thread.elementId);
           const exists = isGeneral || !!el;
           return (
-            <div
-              key={thread.id}
-              className={`border-b border-border px-4 py-3 ${thread.resolved ? "opacity-60" : ""}`}
-            >
+            <div key={thread.id} className="border-b border-border px-4 py-3">
               {/* Enhanced comment card */}
               <div className="flex items-start gap-2.5">
                 {/* Avatar circle */}
@@ -301,17 +316,21 @@ export function CommentsPanel({
                   )}
 
                   {/* Comment text */}
-                  <p className="mt-1 text-sm text-text-secondary">{thread.body}</p>
+                  <p
+                    className={`mt-1 text-sm ${thread.resolved ? "text-text-muted" : "text-text-secondary"}`}
+                  >
+                    {thread.body}
+                  </p>
 
-                  {!exists && (
-                    <p className="mt-1 text-xs italic text-warning">Element removed</p>
-                  )}
+                  {!exists && <p className="mt-1 text-xs italic text-warning">Element removed</p>}
 
                   {/* Action buttons row */}
                   <div className="mt-2 flex items-center gap-1">
                     <button
                       type="button"
-                      onClick={() => onToggleLike(thread.id)}
+                      onClick={() =>
+                        attempt(() => onToggleLike(thread.id), "Could not update the like.")
+                      }
                       className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs ${thread.likedByMe ? "text-primary bg-primary/10" : "text-text-muted hover:bg-surface-raised hover:text-text-secondary"}`}
                       title={thread.likedByMe ? "Unlike" : "Like"}
                     >
@@ -329,7 +348,12 @@ export function CommentsPanel({
                     </button>
                     <div className="flex-1" />
                     <button
-                      onClick={() => onResolve(thread.id, !thread.resolved)}
+                      onClick={() =>
+                        attempt(
+                          () => onResolve(thread.id, !thread.resolved),
+                          "Could not update the comment.",
+                        )
+                      }
                       className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs hover:bg-surface-raised ${thread.resolved ? "text-success" : "text-text-muted hover:text-success"}`}
                       title={thread.resolved ? "Unresolve" : "Resolve"}
                     >
@@ -337,9 +361,11 @@ export function CommentsPanel({
                       <span>{thread.resolved ? "Resolved" : "Resolve"}</span>
                     </button>
                     <button
-                      onClick={() => onDelete(thread.id)}
-                      className="rounded p-0.5 text-text-muted hover:bg-surface-raised hover:text-error"
+                      onClick={() => handleDelete(thread)}
+                      className="flex h-8 w-8 items-center justify-center rounded text-text-muted hover:bg-surface-raised hover:text-error"
                       title="Delete"
+                      aria-label="Delete comment"
+                      type="button"
                     >
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                         <path
@@ -388,6 +414,8 @@ export function CommentsPanel({
                   <textarea
                     className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-1.5 text-xs text-text-primary outline-none placeholder:text-text-muted focus:border-primary"
                     rows={2}
+                    maxLength={5000}
+                    aria-label="Reply"
                     placeholder="Reply..."
                     value={replyBody}
                     onChange={(e) => setReplyBody(e.target.value)}

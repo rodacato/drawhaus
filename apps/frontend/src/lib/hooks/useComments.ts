@@ -43,11 +43,13 @@ export type UseCommentsOptions = {
   diagramId: string;
   sceneId: string | null;
   socketRef: React.MutableRefObject<Socket | null>;
+  onRejected?: (message: string) => void;
 };
 
 export type UseCommentsState = {
   threads: CommentThread[];
   loading: boolean;
+  loadError: boolean;
   elementsWithComments: Map<string, number>;
   createThread: (elementId: string, body: string) => Promise<void>;
   addReply: (threadId: string, body: string) => Promise<void>;
@@ -61,9 +63,13 @@ export function useComments({
   diagramId,
   sceneId,
   socketRef,
+  onRejected,
 }: UseCommentsOptions): UseCommentsState {
   const [threads, setThreads] = useState<CommentThread[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const onRejectedRef = useRef(onRejected);
+  onRejectedRef.current = onRejected;
   const diagramIdRef = useRef(diagramId);
   diagramIdRef.current = diagramId;
   const sceneIdRef = useRef(sceneId);
@@ -73,8 +79,9 @@ export function useComments({
     try {
       const data = await commentsApi.list(diagramIdRef.current, sceneIdRef.current);
       setThreads(data.threads ?? []);
+      setLoadError(false);
     } catch {
-      // silent
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -122,13 +129,23 @@ export function useComments({
       setThreads((prev) => removeThread(prev, threadId));
     }
 
+    function onRejectedEvent({ reason }: { action: string; reason: string }) {
+      onRejectedRef.current?.(
+        reason === "rate-limited"
+          ? "You are commenting too fast. Wait a moment and try again."
+          : "The comment could not be saved. Try again.",
+      );
+    }
+
     socket.on("comment-created", onCreated);
+    socket.on("comment-rejected", onRejectedEvent);
     socket.on("comment-replied", onReplied);
     socket.on("comment-resolved", onResolved);
     socket.on("comment-deleted", onDeleted);
 
     return () => {
       socket.off("comment-created", onCreated);
+      socket.off("comment-rejected", onRejectedEvent);
       socket.off("comment-replied", onReplied);
       socket.off("comment-resolved", onResolved);
       socket.off("comment-deleted", onDeleted);
@@ -210,6 +227,7 @@ export function useComments({
   return {
     threads,
     loading,
+    loadError,
     elementsWithComments,
     createThread,
     addReply,
