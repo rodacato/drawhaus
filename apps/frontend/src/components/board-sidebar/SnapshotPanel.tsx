@@ -2,6 +2,9 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { Dialog } from "@/components/Dialog";
 import type { Socket } from "socket.io-client";
 import { ui } from "@/lib/ui";
+import { LoadError } from "@/components/LoadError";
+import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import { useSnapshots } from "@/lib/hooks/useSnapshots";
 import type { SnapshotMeta, SnapshotFull } from "@/api/snapshots";
 import { applyRemoteScene, type ExcalidrawApi } from "@/lib/excalidraw";
@@ -40,6 +43,7 @@ export function SnapshotPanel({
     named,
     auto,
     loading,
+    loadError,
     getSnapshot,
     createSnapshot,
     restoreSnapshot,
@@ -47,6 +51,9 @@ export function SnapshotPanel({
     deleteSnapshot,
     refresh,
   } = useSnapshots(diagramId);
+
+  const toast = useToast();
+  const confirm = useConfirm();
 
   // Auto-refresh when other users create snapshots
   useEffect(() => {
@@ -75,13 +82,14 @@ export function SnapshotPanel({
     setCreating(true);
     try {
       await createSnapshot();
+      toast("Version created", "success");
     } catch {
-      /* ignore */
+      toast("Could not create the version.", "error");
     }
     setCreating(false);
   }
 
-  async function handleRestore(snapshotId: string) {
+  async function handleRestore(snapshotId: string): Promise<boolean> {
     try {
       const snapshot = await restoreSnapshot(snapshotId);
       if (snapshot && excalidrawApiRef.current) {
@@ -90,17 +98,43 @@ export function SnapshotPanel({
       }
       setPreviewSnapshot(null);
       onRestored?.();
+      return true;
     } catch {
-      /* ignore */
+      toast("Could not restore that version.", "error");
+      return false;
     }
   }
 
   async function handleRestoreFromConfirm() {
     if (!confirmRestore) return;
     setRestoring(true);
-    await handleRestore(confirmRestore.id);
+    const restored = await handleRestore(confirmRestore.id);
     setRestoring(false);
-    setConfirmRestore(null);
+    if (restored) setConfirmRestore(null);
+  }
+
+  async function handleRename(snapshotId: string, name: string | null) {
+    try {
+      await renameSnapshot(snapshotId, name);
+    } catch {
+      toast("Could not rename the version.", "error");
+    }
+  }
+
+  async function handleDelete(snapshot: SnapshotMeta) {
+    const label = snapshot.name ?? timeAgo(snapshot.createdAt);
+    const ok = await confirm({
+      title: "Delete version",
+      message: `Delete “${label}”? This cannot be undone.`,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
+    try {
+      await deleteSnapshot(snapshot.id);
+    } catch {
+      toast("Could not delete the version.", "error");
+    }
   }
 
   const handlePreview = useCallback(
@@ -110,11 +144,11 @@ export function SnapshotPanel({
         const full = await getSnapshot(snapshotId);
         if (full) setPreviewSnapshot(full);
       } catch {
-        /* ignore */
+        toast("Could not load the preview.", "error");
       }
       setLoadingPreview(null);
     },
-    [getSnapshot],
+    [getSnapshot, toast],
   );
 
   // Use refs to avoid stale closures in preview callbacks
@@ -135,18 +169,22 @@ export function SnapshotPanel({
       setPreviewSnapshot(null);
       onRestored?.();
     } catch {
-      /* ignore */
+      toast("Could not restore that version.", "error");
     }
-  }, [excalidrawApiRef, onRestored]);
+  }, [excalidrawApiRef, onRestored, toast]);
 
   const handlePreviewRename = useCallback(
     async (name: string) => {
       const snap = previewSnapshotRef.current;
       if (!snap) return;
-      await renameSnapshot(snap.id, name);
-      setPreviewSnapshot((prev) => (prev ? { ...prev, name } : null));
+      try {
+        await renameSnapshot(snap.id, name);
+        setPreviewSnapshot((prev) => (prev ? { ...prev, name } : null));
+      } catch {
+        toast("Could not rename the version.", "error");
+      }
     },
-    [renameSnapshot],
+    [renameSnapshot, toast],
   );
 
   function renderList(items: SnapshotMeta[], label: string) {
@@ -161,8 +199,8 @@ export function SnapshotPanel({
             canEdit={canEdit}
             onPreview={() => handlePreview(s.id)}
             onRestore={() => setConfirmRestore(s)}
-            onRename={(name) => renameSnapshot(s.id, name)}
-            onDelete={() => deleteSnapshot(s.id)}
+            onRename={(name) => handleRename(s.id, name)}
+            onDelete={() => handleDelete(s)}
           />
         ))}
       </div>
@@ -175,9 +213,10 @@ export function SnapshotPanel({
         <h3 className={ui.h2}>Version History</h3>
         <button
           type="button"
-          className="rounded-lg p-1.5 text-text-muted transition hover:bg-surface hover:text-text-primary"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition hover:bg-surface hover:text-text-primary"
           onClick={() => refresh()}
           title="Refresh"
+          aria-label="Refresh versions"
         >
           <svg
             width="14"
@@ -207,11 +246,13 @@ export function SnapshotPanel({
         </button>
       )}
 
+      {loadError && <LoadError message="Could not load the versions." onRetry={refresh} />}
+
       {loading && named.length === 0 && auto.length === 0 && (
         <p className="text-xs text-text-muted text-center py-4">Loading...</p>
       )}
 
-      {!loading && named.length === 0 && auto.length === 0 && (
+      {!loading && !loadError && named.length === 0 && auto.length === 0 && (
         <p className="text-xs text-text-muted text-center py-4">
           No snapshots yet. They are created automatically when you close or edit a diagram.
         </p>

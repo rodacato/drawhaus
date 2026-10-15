@@ -117,6 +117,7 @@ export function SaveTemplatePanel({ excalidrawApiRef, workspaceId }: SaveTemplat
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. My Architecture Template"
+          aria-invalid={error === "Title is required"}
         />
       </label>
 
@@ -132,7 +133,11 @@ export function SaveTemplatePanel({ excalidrawApiRef, workspaceId }: SaveTemplat
 
       <label className={ui.label}>
         <span>Category</span>
-        <select className={ui.input} value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select
+          className={`${ui.select} w-full`}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
           {CATEGORIES.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}

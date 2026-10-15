@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { driveApi } from "@/api/drive";
 import type { ExcalidrawApi } from "@/lib/types";
+import { ui } from "@/lib/ui";
+
+type Status = { readonly kind: "success" | "error"; readonly message: string };
 
 function DriveExportButton({
   getSceneData,
   onStatus,
 }: {
   readonly getSceneData: () => { elements: unknown[]; appState: unknown; files: unknown } | null;
-  readonly onStatus: (msg: string | null) => void;
+  readonly onStatus: (status: Status | null) => void;
 }) {
   const [driveConnected, setDriveConnected] = useState<boolean | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -45,12 +48,11 @@ function DriveExportButton({
         content,
         fileName: `diagram-${new Date().toISOString().slice(0, 10)}.excalidraw`,
       });
-      onStatus("Saved to Drive!");
+      onStatus({ kind: "success", message: "Saved to Drive" });
     } catch {
-      onStatus("Drive export failed");
+      onStatus({ kind: "error", message: "Could not save to Drive. Try again." });
     } finally {
       setExporting(false);
-      setTimeout(() => onStatus(null), 3000);
     }
   }
 
@@ -88,7 +90,13 @@ export function ExportPanel({
 }: {
   readonly excalidrawApiRef: React.RefObject<ExcalidrawApi | null>;
 }) {
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status | null>(null);
+
+  useEffect(() => {
+    if (status?.kind !== "success") return;
+    const timer = setTimeout(() => setStatus(null), 4000);
+    return () => clearTimeout(timer);
+  }, [status]);
 
   const getSceneData = useCallback(() => {
     const api = excalidrawApiRef.current;
@@ -127,7 +135,7 @@ export function ExportPanel({
           files: data.files,
         });
         download(blob, "diagram.png");
-        setStatus("PNG exported");
+        setStatus({ kind: "success", message: "PNG exported" });
       } else if (type === "svg") {
         const { exportToSvg } = await import("@excalidraw/excalidraw");
         const svg = await exportToSvg({
@@ -138,7 +146,7 @@ export function ExportPanel({
         const svgStr = new XMLSerializer().serializeToString(svg);
         const blob = new Blob([svgStr], { type: "image/svg+xml" });
         download(blob, "diagram.svg");
-        setStatus("SVG exported");
+        setStatus({ kind: "success", message: "SVG exported" });
       } else {
         const { exportToBlob } = await import("@excalidraw/excalidraw");
         const blob = await exportToBlob({
@@ -147,23 +155,26 @@ export function ExportPanel({
           files: data.files,
         });
         await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        setStatus("Copied!");
+        setStatus({ kind: "success", message: "Copied to the clipboard" });
       }
     } catch {
-      setStatus("Failed");
+      setStatus({
+        kind: "error",
+        message: `Could not export the ${type === "copy" ? "copy" : type.toUpperCase()}. Try again.`,
+      });
     }
-    setTimeout(() => setStatus(null), 2000);
   }
 
   return (
     <div className="space-y-1">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
-        Export
-      </h3>
+      <h3 className={`${ui.h2} mb-3`}>Export</h3>
       {status && (
-        <div className="mb-2 rounded-lg bg-success/10 px-3 py-2 text-xs font-medium text-success">
-          {status}
-        </div>
+        <p
+          role={status.kind === "error" ? "alert" : "status"}
+          className={`mb-2 ${status.kind === "error" ? ui.alertError : ui.alertSuccess}`}
+        >
+          {status.message}
+        </p>
       )}
       <button
         onClick={() => handleExport("png")}

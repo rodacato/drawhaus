@@ -29,6 +29,15 @@ import { BrandLogo } from "@/components/BrandLogo";
 type ActivePanel = "export" | "share" | "settings" | "template" | "code" | "snapshots" | null;
 
 /** Panel width overrides — default is 300 */
+const PANEL_LABELS: Record<NonNullable<ActivePanel>, string> = {
+  export: "Export",
+  share: "Share and collaborate",
+  settings: "Settings",
+  template: "Save as template",
+  code: "Import from code",
+  snapshots: "Version history",
+};
+
 const PANEL_WIDTH: Partial<Record<NonNullable<ActivePanel>, number>> = {
   code: 380,
 };
@@ -201,7 +210,12 @@ export function BoardSidebar({
       </div>
 
       {/* Expandable drawer panel — pushes canvas */}
-      <SidebarDrawer open={!!activePanel} onClose={closePanel} width={drawerWidth}>
+      <SidebarDrawer
+        open={!!activePanel}
+        onClose={closePanel}
+        width={drawerWidth}
+        label={activePanel ? PANEL_LABELS[activePanel] : undefined}
+      >
         {activePanel === "export" && <ExportPanel excalidrawApiRef={excalidrawApiRef} />}
         {activePanel === "share" && (
           <SharePanel

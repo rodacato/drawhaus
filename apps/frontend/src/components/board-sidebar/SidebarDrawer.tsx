@@ -4,6 +4,7 @@ interface SidebarDrawerProps {
   readonly open: boolean;
   readonly onClose: () => void;
   readonly width?: number;
+  readonly label?: string;
   readonly children: React.ReactNode;
 }
 
@@ -11,7 +12,7 @@ interface SidebarDrawerProps {
  * Inline drawer that pushes adjacent content (no overlay/backdrop).
  * Animates width from 0 → target. Used by BoardSidebar for panel content.
  */
-export function SidebarDrawer({ open, onClose, width = 300, children }: SidebarDrawerProps) {
+export function SidebarDrawer({ open, onClose, width = 300, label, children }: SidebarDrawerProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -46,6 +47,8 @@ export function SidebarDrawer({ open, onClose, width = 300, children }: SidebarD
   return (
     <div
       ref={ref}
+      role={open && label ? "complementary" : undefined}
+      aria-label={open ? label : undefined}
       className="relative z-20 h-full overflow-y-auto border-r border-border bg-surface-raised shadow-lg transition-[width] duration-200 ease-out"
       style={{ width: open ? width : 0 }}
     >
