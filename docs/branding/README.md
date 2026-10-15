@@ -23,7 +23,7 @@ node site/check.mjs
 python3 -m http.server 8117 --directory site/_site
 ```
 
-Open `/` for marketing or `/brand/` for the local guide. Before publishing, test the same output under the GitHub Pages project base `/drawhaus/`, including direct loads. The existing [Pages workflow](../../.github/workflows/pages.yml) validates all local page/CSS references and checks that raster exports match their SVG/font sources.
+Open `/` for marketing or `/brand/` for the local guide. Before publishing, test the same output under the GitHub Pages project base `/drawhaus/`, including direct loads. The existing [Pages workflow](../../.github/workflows/site-pages.yml) validates all local page/CSS references and checks that raster exports match their SVG/font sources.
 
 Generated SVG/PNG assets in [branding/generated/](generated/) are checked in for repository use. Derived CSS and font copies there are ignored; the build recreates them. The normal Pages build requires Node only, without a browser or a font toolchain.
 

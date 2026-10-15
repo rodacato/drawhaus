@@ -15,7 +15,7 @@
 
 <p align="center">
   <a href="https://github.com/rodacato/drawhaus/actions/workflows/ci.yml"><img src="https://github.com/rodacato/drawhaus/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
-  <a href="https://github.com/rodacato/drawhaus/actions/workflows/quality.yml"><img src="https://github.com/rodacato/drawhaus/actions/workflows/quality.yml/badge.svg" alt="Quality" /></a>
+  <a href="https://github.com/rodacato/drawhaus/actions/workflows/ci-quality.yml"><img src="https://github.com/rodacato/drawhaus/actions/workflows/ci-quality.yml/badge.svg" alt="Quality" /></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
   <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React" /></a>
   <a href="https://vite.dev/"><img src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white" alt="Vite" /></a>
@@ -544,7 +544,7 @@ Runs the `src/__tests__/postgres/*.pg-test.ts` suite against the database in `DA
 ### End-to-End Tests (Playwright)
 
 In CI, every PR and push to `master` runs only the `@smoke` subset (`e2e/tests/smoke/`), after the
-`validate` job. The full suite is `e2e-full.yml`: nightly at 08:00 UTC, on every push to a
+`validate` job. The full suite is `ci-e2e.yml`: nightly at 08:00 UTC, on every push to a
 `release/*` branch and on demand (Actions → E2E Full → Run workflow). It is not a required check;
 read it before tagging a release. Locally it starts its own
 backend (port 4000) and frontend (port 5173) and needs PostgreSQL with a disposable database whose

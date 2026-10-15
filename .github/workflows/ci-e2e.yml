@@ -1,4 +1,4 @@
-name: E2E Full
+name: CI · E2E Nightly
 
 # The whole Playwright suite, kept out of every PR (ci.yml runs only @smoke). It is not a
 # required check, so a red run here does not block a merge: read it before tagging a release.

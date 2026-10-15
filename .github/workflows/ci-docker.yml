@@ -1,4 +1,4 @@
-name: Docker build
+name: CI · Docker Build
 
 # Images are otherwise built only on a push to production, so a broken Dockerfile
 # surfaced at deploy time. This builds both production targets without pushing.
@@ -11,7 +11,7 @@ on:
       - e2e/package.json
       - package.json
       - package-lock.json
-      - .github/workflows/docker-build.yml
+      - .github/workflows/ci-docker.yml
   push:
     branches: [master, main]
     paths: *image-inputs
