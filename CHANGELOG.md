@@ -15,6 +15,14 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 - **Moving a diagram into a folder now respects its workspace.** A workspace diagram can no longer be moved into a personal folder or another workspace's folder, and folders created by other members of the diagram's workspace are accepted instead of returning 403.
 - **Transferring diagram ownership validates the new owner.** A nonexistent or disabled user now gets 404 instead of a 500 foreign-key error or silently becoming owner.
 
+- **Share links can be managed by the diagram owner.** The owner can now list and revoke every link of a diagram, including ones an editor created; editors list and revoke their own. The share dialog no longer shows "Could not load the share links" to editors, and a clipboard failure after a link was created no longer says the link could not be created.
+
+- **Boards larger than 1 MB save over the socket.** The socket server now accepts the same 5 MB payload as the REST API instead of dropping the connection and reconnecting in a loop.
+
+- **Accepting a workspace invitation is safe to repeat and to race.** An invitation is claimed atomically, so only one of two simultaneous accepts succeeds; accepting never lowers an existing member's role or the owner's; and a new member is refused when the workspace is already at its member limit.
+
+- **Snapshot and duplicate errors are no longer server errors.** Hitting the named-snapshot limit answers 409 with its message, duplicating a missing diagram answers 404, and the copy lands in the workspace and folder only when the user may use them, otherwise in their personal space.
+
 ---
 
 ## [0.13.0] - 2026-10-15
