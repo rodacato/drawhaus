@@ -50,7 +50,12 @@ function createApp() {
   const logout = new LogoutUseCase(sessions, new FakeRealtimeNotifier());
   const getCurrentUser = new GetCurrentUserUseCase(sessions);
   const updateProfile = new UpdateProfileUseCase(users);
-  const changePassword = new ChangePasswordUseCase(users, hasher);
+  const changePassword = new ChangePasswordUseCase(
+    users,
+    hasher,
+    sessions,
+    new FakeRealtimeNotifier(),
+  );
   const invitations = new InMemoryInvitationRepository();
   const passwordResets = new InMemoryPasswordResetRepository();
   const emailService = new NoopEmailService();

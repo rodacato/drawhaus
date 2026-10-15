@@ -75,7 +75,12 @@ function createApp() {
         logout: new LogoutUseCase(sessions, new FakeRealtimeNotifier()),
         getCurrentUser,
         updateProfile: new UpdateProfileUseCase(users),
-        changePassword: new ChangePasswordUseCase(users, hasher),
+        changePassword: new ChangePasswordUseCase(
+          users,
+          hasher,
+          sessions,
+          new FakeRealtimeNotifier(),
+        ),
         acceptInvite: new AcceptInviteUseCase(users, sessions, invitations, hasher),
         forgotPassword: new ForgotPasswordUseCase(users, passwordResets, emailService),
         resetPassword: new ResetPasswordUseCase(

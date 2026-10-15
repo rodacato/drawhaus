@@ -47,6 +47,12 @@ export class InMemorySessionRepository implements SessionRepository {
     this.sessions = this.sessions.filter((s) => s.token !== token);
   }
 
+  async deleteOthersForUser(userId: string, keepToken: string): Promise<string[]> {
+    const ended = this.sessions.filter((s) => s.userId === userId && s.token !== keepToken);
+    this.sessions = this.sessions.filter((s) => !ended.includes(s));
+    return ended.map((s) => s.token);
+  }
+
   async deleteAllForUser(userId: string): Promise<void> {
     this.sessions = this.sessions.filter((s) => s.userId !== userId);
   }
