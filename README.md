@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/branding/generated/logo-stacked-light.svg" alt="Drawhaus" height="120" />
+  <img src="design/brand/generated/logo-stacked-light.svg" alt="Drawhaus" height="120" />
 </p>
 
 <h3 align="center">Your whiteboard, on your server.</h3>
@@ -186,7 +186,8 @@ drawhaus/
 │   └── mermaid-to-excalidraw/   # Mermaid parser and converter
 ├── e2e/               # Playwright end-to-end tests
 ├── config/            # Kamal deployment configs
-├── docs/              # Vision, roadmap, specs, ADRs, branding, guides
+├── design/            # Pencil designs; brand/ holds the brand guide and sources
+├── docs/              # Vision, roadmap, specs, ADRs, guides
 └── docker-compose.yml # Local dev orchestration
 ```
 
@@ -578,17 +579,17 @@ Playwright E2E suite).
 
 ## Documentation
 
-| Document                                    | Description                                                     |
-| ------------------------------------------- | --------------------------------------------------------------- |
-| [GETTING_STARTED.md](GETTING_STARTED.md)    | Run Drawhaus locally — all paths, social login, troubleshooting |
-| [CHANGELOG.md](CHANGELOG.md)                | Full version history                                            |
-| [docs/ROADMAP.md](docs/ROADMAP.md)          | Strategy, shipped capabilities, decision log                    |
-| [docs/VISION.md](docs/VISION.md)            | Product vision and architecture principles                      |
-| [docs/WORKFLOW.md](docs/WORKFLOW.md)        | AI-assisted build cycle and conventions                         |
-| [docs/BRANDING.md](docs/branding/README.md) | Brand guide, assets, and design tokens                          |
-| [docs/adr/](docs/adr/)                      | Architecture Decision Records                                   |
-| [docs/specs/](docs/specs/)                  | Feature implementation specs                                    |
-| [docs/guides/](docs/guides/)                | Deploy and release guides                                       |
+| Document                                 | Description                                                     |
+| ---------------------------------------- | --------------------------------------------------------------- |
+| [GETTING_STARTED.md](GETTING_STARTED.md) | Run Drawhaus locally — all paths, social login, troubleshooting |
+| [CHANGELOG.md](CHANGELOG.md)             | Full version history                                            |
+| [docs/ROADMAP.md](docs/ROADMAP.md)       | Strategy, shipped capabilities, decision log                    |
+| [docs/VISION.md](docs/VISION.md)         | Product vision and architecture principles                      |
+| [docs/WORKFLOW.md](docs/WORKFLOW.md)     | AI-assisted build cycle and conventions                         |
+| [design/brand/](design/brand/README.md)  | Brand guide, assets, and design tokens                          |
+| [docs/adr/](docs/adr/)                   | Architecture Decision Records                                   |
+| [docs/specs/](docs/specs/)               | Feature implementation specs                                    |
+| [docs/guides/](docs/guides/)             | Deploy and release guides                                       |
 
 ---
 

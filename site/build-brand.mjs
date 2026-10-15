@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const output = resolve(repo, process.argv[2] || "docs/branding/generated");
+const output = resolve(repo, process.argv[2] || "design/brand/generated");
 mkdirSync(output, { recursive: true });
 
 const css = readFileSync(resolve(repo, "apps/frontend/src/globals.css"), "utf8");
@@ -56,15 +56,15 @@ writeFileSync(
     )
     .join("\n") + "\n",
 );
-cpSync(resolve(repo, "docs/branding/fonts"), resolve(output, "fonts"), {
+cpSync(resolve(repo, "design/brand/fonts"), resolve(output, "fonts"), {
   recursive: true,
   filter: (source) => !source.endsWith(".py"),
 });
 
-const markSource = readFileSync(resolve(repo, "docs/branding/logo.svg"), "utf8");
+const markSource = readFileSync(resolve(repo, "design/brand/logo.svg"), "utf8");
 const mark = markSource.match(/<path\s[^>]+\/>/)?.[0];
 if (!mark) throw new Error("Missing selected logo path");
-const wordmarkSource = readFileSync(resolve(repo, "docs/branding/wordmark.svg"), "utf8");
+const wordmarkSource = readFileSync(resolve(repo, "design/brand/wordmark.svg"), "utf8");
 const wordmark = wordmarkSource.match(/<path\s[^>]+\/>/)?.[0];
 const wordmarkWidth = Number(wordmarkSource.match(/viewBox="0 0 ([\d.]+) 60"/)?.[1]);
 if (!wordmark || !wordmarkWidth) throw new Error("Missing outlined wordmark");

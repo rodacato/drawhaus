@@ -2,7 +2,7 @@
 
 /* Static export keeps brand roles available to plain CSS integration as well as utilities. */
 @theme static {
-  /* Ocean Ink presentation roles — docs/branding/README.md.
+  /* Ocean Ink presentation roles — design/brand/README.md.
      Operational UI roles below resolve to these. */
   --color-brand-canvas: #f2f7fa;
   --color-brand-paper: #ffffff;

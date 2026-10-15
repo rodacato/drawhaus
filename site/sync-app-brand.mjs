@@ -19,6 +19,6 @@ cpSync(scratch, target, {
     return name === "" || appFiles.test(name.split("/")[0]) || name.startsWith("fonts");
   },
 });
-cpSync(resolve(repo, "docs/branding/generated/favicon.png"), resolve(target, "favicon.png"));
+cpSync(resolve(repo, "design/brand/generated/favicon.png"), resolve(target, "favicon.png"));
 rmSync(scratch, { recursive: true, force: true });
 console.log(`App brand assets synced: ${target}`);

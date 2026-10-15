@@ -29,7 +29,8 @@ drawhaus/
 │   ├── mcp/                     # @rodacato/drawhaus-mcp — MCP server for AI tools
 │   └── plantuml-to-excalidraw/  # PlantUML parser and converter
 ├── e2e/                         # Playwright end-to-end tests
-└── docs/                        # Vision, roadmap, specs, ADRs, branding, guides
+├── design/                      # Pencil designs; brand/ holds the brand guide and sources
+└── docs/                        # Vision, roadmap, specs, ADRs, guides
 ```
 
 ## Development Workflow

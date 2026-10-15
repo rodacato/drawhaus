@@ -6,7 +6,7 @@ const repo = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const output = process.argv[2];
 if (!output) throw new Error("Provide a color asset output directory");
 
-const source = readFileSync(resolve(repo, "docs/branding/proposals/looped-d.svg"), "utf8");
+const source = readFileSync(resolve(repo, "design/brand/proposals/looped-d.svg"), "utf8");
 const palettes = readFileSync(resolve(repo, "site/brand/colors/palettes.css"), "utf8");
 mkdirSync(output, { recursive: true });
 

@@ -57,3 +57,6 @@ site/_site/
 
 # Design: local-only device captures (real user data)
 design/references/
+
+# Brand: portable kit generated on demand (sources stay in design/brand/)
+design/brand/dist/

@@ -23,6 +23,7 @@ as context for AI agents (`AGENTS.md` points them here).
 | `CODE_CHANGES.md`     | Work order for design-decided consolidations pending in code               |
 | `exports/`            | Canvas PNGs for PM/PO/PR review — **committed** (they must travel)         |
 | `references/`         | Local-only device captures — **never commit: real user data** (gitignored) |
+| `brand/`              | **Brand source and guide** — start at [brand/README.md](brand/README.md)   |
 
 ### The flows
 
@@ -121,7 +122,7 @@ flow even when nothing renders differently.
 - **Sample data** comes from `npm run db:seed` (Admin User; Architecture Overview, Sprint Planning
   Board, User Flow Diagram). Any other user data in a screen is marked in its brief.
 - **Brand assets** (`apps/frontend/public/brand/`) are generated; the logo mark is drawn from the exact
-  path in `docs/branding/logo.svg` (stroke scaled by the viewBox ratio).
+  path in `design/brand/logo.svg` (stroke scaled by the viewBox ratio).
 - **Vendoring** has no tooling: each flow re-creates the tokens and the kit components it uses. Diff a
   flow against `ui-kit.lib.pen` before relying on it.
 - **Findings** are `D<n>` in [DECISIONS.md](DECISIONS.md); the app has no shared component for most of
