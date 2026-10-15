@@ -74,7 +74,7 @@ function setup() {
     createSnapshot,
   });
   registerSceneHandlers(server, client, {
-    saveScene: new SaveSceneUseCase(scenes),
+    saveScene: new SaveSceneUseCase(scenes, diagrams, shares),
     syncToDrive: new SyncToDriveUseCase(
       drive,
       driveBackups,

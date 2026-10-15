@@ -152,8 +152,11 @@ function createApp() {
         update: new UpdateWorkspaceUseCase(workspaces),
         delete: new DeleteWorkspaceUseCase(workspaces),
         addMember: new AddWorkspaceMemberUseCase(workspaces, siteSettings, new NoopAuditLogger()),
-        updateMemberRole: new UpdateWorkspaceMemberRoleUseCase(workspaces),
-        removeMember: new RemoveWorkspaceMemberUseCase(workspaces),
+        updateMemberRole: new UpdateWorkspaceMemberRoleUseCase(
+          workspaces,
+          new FakeRealtimeNotifier(),
+        ),
+        removeMember: new RemoveWorkspaceMemberUseCase(workspaces, new FakeRealtimeNotifier()),
         invite: new InviteToWorkspaceUseCase(
           workspaces,
           workspaceInvitations,

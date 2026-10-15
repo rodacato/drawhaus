@@ -22,6 +22,7 @@ const COMMENT_EVENTS = {
 const REVOKED_REASONS = {
   session: "session-ended",
   "user-sessions": "session-ended",
+  "user-access": "access-changed",
   "share-link": "share-link-revoked",
 } as const;
 

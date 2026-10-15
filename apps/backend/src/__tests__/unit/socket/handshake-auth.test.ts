@@ -69,7 +69,7 @@ async function startServer(sessionRepo: SessionRepository): Promise<void> {
     authenticateSocket: new CountingAuthenticateSocket(sessionRepo, shares),
     joinRoom: new JoinRoomUseCase(sessionRepo, diagrams, scenes),
     joinRoomGuest: new JoinRoomGuestUseCase(shares, diagrams, scenes),
-    saveScene: new SaveSceneUseCase(scenes),
+    saveScene: new SaveSceneUseCase(scenes, diagrams, shares),
     syncToDrive: new SyncToDriveUseCase(
       new FakeGoogleDriveService(),
       new InMemoryDriveBackupRepository(),

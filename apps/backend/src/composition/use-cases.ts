@@ -240,8 +240,14 @@ export function createUseCases(repos: Repositories, services: Services) {
     repos.siteSettingsRepo,
     services.auditLogger,
   );
-  const updateWorkspaceMemberRole = new UpdateWorkspaceMemberRoleUseCase(repos.workspaceRepo);
-  const removeWorkspaceMember = new RemoveWorkspaceMemberUseCase(repos.workspaceRepo);
+  const updateWorkspaceMemberRole = new UpdateWorkspaceMemberRoleUseCase(
+    repos.workspaceRepo,
+    services.realtimeNotifier,
+  );
+  const removeWorkspaceMember = new RemoveWorkspaceMemberUseCase(
+    repos.workspaceRepo,
+    services.realtimeNotifier,
+  );
   const inviteToWorkspace = new InviteToWorkspaceUseCase(
     repos.workspaceRepo,
     repos.workspaceInvitationRepo,
@@ -354,7 +360,7 @@ export function createUseCases(repos: Repositories, services: Services) {
     repos.diagramRepo,
     repos.sceneRepo,
   );
-  const saveScene = new SaveSceneUseCase(repos.sceneRepo);
+  const saveScene = new SaveSceneUseCase(repos.sceneRepo, repos.diagramRepo, repos.shareRepo);
 
   // Drive
   const syncToDrive = new SyncToDriveUseCase(
