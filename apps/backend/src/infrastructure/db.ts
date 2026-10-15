@@ -20,6 +20,10 @@ export const pool = new Pool({
   connectionTimeoutMillis: config.nodeEnv === "test" ? 1_000 : 10_000,
 });
 
+pool.on("error", (err) => {
+  logger.error({ err }, "idle postgres client failed");
+});
+
 export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
   try {
