@@ -7,6 +7,7 @@ export default defineConfig({
   outDir: "dist",
   clean: true,
   minify: false,
+  noExternal: ["@drawhaus/helpers"],
   banner: {
     js: "#!/usr/bin/env node",
   },
