@@ -23,6 +23,13 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 - **Snapshot and duplicate errors are no longer server errors.** Hitting the named-snapshot limit answers 409 with its message, duplicating a missing diagram answers 404, and the copy lands in the workspace and folder only when the user may use them, otherwise in their personal space.
 
+- **Realtime edits re-check access before saving.** A socket's role used to be cached for the whole connection, so a demoted or removed member, or a guest on an expired share link, could keep saving. `save-scene` now re-verifies the account's role or the share link, and removing a workspace member or changing their role closes their open boards with an `access-changed` notice.
+- **Comment actions stay inside their own diagram.** Replying to, resolving or deleting a thread now requires the thread to belong to the diagram in the request, and live updates go only to that diagram. Guests on a share link who try to comment over the socket get a "Sign in to comment" message instead of a generic failure.
+- **Changing your password signs out your other sessions** (the current one stays), and their open boards are closed.
+- **A failing settings lookup no longer risks crashing the server.** `/api/site/status` and the setup lock hand database errors to the error handler, and idle Postgres connection errors are logged.
+- **Profile email changes are stored lowercased**, matching login and registration, so the same address can no longer be taken twice in different cases.
+- **The public API keeps `<` and `>` in element text.** Text such as `List<String>` or `x < 5 and y > 3` was being mangled by HTML-tag stripping; Excalidraw draws text on a canvas, so it is now stored as sent.
+
 ---
 
 ## [0.13.0] - 2026-10-15
