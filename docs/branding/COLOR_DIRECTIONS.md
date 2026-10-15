@@ -25,4 +25,4 @@ Open `http://localhost:8080/brand/colors/`. GitHub Pages would serve this route 
 
 ## Final identity
 
-This is the archived comparison. The selected roles now live in the existing [token source](../../apps/frontend/src/globals.css), with exports consumed by the marketing site and guide. See [the source guide](../BRANDING.md) for generation and application adoption. The operational app theme is preserved in this presentation-stage delivery.
+This is the archived comparison. The selected roles now live in the existing [token source](../../apps/frontend/src/globals.css), with exports consumed by the marketing site and guide. See [the source guide](README.md) for generation and application adoption. The operational app theme is preserved in this presentation-stage delivery.

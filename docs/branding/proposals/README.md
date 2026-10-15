@@ -1,6 +1,8 @@
 # Drawhaus logo directions
 
-Nine explored symbols for a self-hosted collaborative whiteboard. **I · Looped d is selected by Adrian (2026-10-14).** Ocean Ink is selected. The finished [brand guide](../../BRANDING.md) defines the identity.
+Archive of nine explored symbols for a self-hosted collaborative whiteboard. **I · Looped d is the selected mark** (Adrian, 2026-10-14) and Ocean Ink is the selected palette; the [brand guide](../README.md) defines the identity.
+
+`looped-d.svg` is **not** just history: `site/build-color-assets.mjs` and the logo comparison page read it as the live source of the selected mark. The other eight are the archive and feed only the comparison page.
 
 | Candidate         | Idea                                                              | Main tradeoff                                                                   |
 | ----------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -14,9 +16,11 @@ Nine explored symbols for a self-hosted collaborative whiteboard. **I · Looped 
 | H · Signature dh  | A slanted loop flows into an arched h.                            | The most expressive gesture; its crossing is denser at favicon size.            |
 | I · Looped d      | One slanted d with an open loop.                                  | The simplest silhouette; deliberately drops the h.                              |
 
-**Decision:** I. The simple single d is the selected symbol. The original mint/green is not selected; compare the new color directions at `site/brand/colors/`. The other marks remain an archive of the exploration.
+**Decision:** I. The simple single d is the selected symbol. The original mint/green is not selected; the color studies are archived in [COLOR_DIRECTIONS.md](../COLOR_DIRECTIONS.md). The other marks remain an archive of the exploration.
 
-G–I use the supplied Skynot image as a reference for fluid strokes, round terminals, and mint on charcoal. They use Drawhaus's letter cues rather than the reference's R. Each is one editable SVG path with one continuous stroke. Their color values remain exploratory.
+G–I used the supplied Skynot image as a reference for fluid strokes, round terminals, and mint on charcoal. They use Drawhaus's letter cues rather than the reference's R. Each is one editable SVG path with one continuous stroke. Their color values remain exploratory.
+
+Colors inside these SVGs are exploratory and are not application tokens.
 
 ## Preview
 
@@ -33,17 +37,4 @@ Open `http://localhost:8080/brand/logos/`. The page compares the marks at the sa
 
 The nine SVGs in this directory are the editable symbol sources. [The site build](../../../site/build.sh) copies them into the comparison page and derives the display variants from the same geometry. For D–I it also generates monochrome variants. G–I provide a deeper green for light surfaces and mint for dark surfaces. Run the build after editing a source; never edit generated files in `site/_site/`.
 
-D–F add provisional color directions. Color values live in their SVG sources; they are not adopted application tokens. Each new mark is also shown in monochrome and at favicon size, so color is not required to recognize it.
-
 The [comparison page](../../../site/brand/logos/index.html) uses the existing site's typography and palette. Its lowercase wordmarks and headline are proposals. Downloaded SVGs contain only the symbols; final outlined wordmarks, favicon files, and share images follow selection.
-
-| Asset                  | Purpose                                                                                             |
-| ---------------------- | --------------------------------------------------------------------------------------------------- |
-| Symbol                 | Favicons, app icons, avatars, and compact navigation.                                               |
-| Symbol + wordmark      | Introduce Drawhaus in app headers, marketing, and the README.                                       |
-| Product share image    | Explain the product in link previews with the final identity and a real screenshot.                 |
-| Shared diagram preview | Represent the specific document; keep its title, privacy, and permissions independent of marketing. |
-
-## Final identity
-
-See [the source guide](../../BRANDING.md) for the chosen Looped d / Ocean Ink identity and integration. This directory is an archive; its provisional colors are not production tokens.
