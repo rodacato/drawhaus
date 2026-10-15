@@ -139,6 +139,7 @@ troubleshooting.
 | `npm test --workspace=backend`                     | Run backend unit & integration tests                                         |
 | `npm run test:pg --workspace=backend`              | Run backend repository tests against a real PostgreSQL (`*_test` database)   |
 | `cd e2e && npm test`                               | Run Playwright end-to-end tests (starts its own servers; needs a `*_e2e` DB) |
+| `cd e2e && npm run test:smoke`                     | Run only the `@smoke` subset that gates every PR                             |
 | `cd e2e && npm run test:ui`                        | Open Playwright test runner UI                                               |
 | `npm run db:seed`                                  | Seed database with test data                                                 |
 | `npm run db:reset`                                 | Drop all tables, recreate schema, and seed                                   |
@@ -541,7 +542,9 @@ Runs the `src/__tests__/postgres/*.pg-test.ts` suite against the database in `DA
 
 ### End-to-End Tests (Playwright)
 
-The Playwright suite runs in CI on every PR, after the `validate` job. Locally it starts its own
+In CI, every PR and push to `master` runs only the `@smoke` subset (`e2e/tests/smoke/`), after the
+`validate` job. The full suite runs on release PRs (`release/*` branches) and on demand
+(Actions → CI → Run workflow). Locally it starts its own
 backend (port 4000) and frontend (port 5173) and needs PostgreSQL with a disposable database whose
 name ends in `_e2e` or `_test`, because the schema is wiped on every run:
 
