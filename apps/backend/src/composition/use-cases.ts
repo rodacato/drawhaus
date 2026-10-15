@@ -153,7 +153,12 @@ export function createUseCases(repos: Repositories, services: Services) {
   const logout = new LogoutUseCase(repos.sessionRepo, services.realtimeNotifier);
   const getCurrentUser = new GetCurrentUserUseCase(repos.sessionRepo);
   const updateProfile = new UpdateProfileUseCase(repos.userRepo);
-  const changePassword = new ChangePasswordUseCase(repos.userRepo, services.hasher);
+  const changePassword = new ChangePasswordUseCase(
+    repos.userRepo,
+    services.hasher,
+    repos.sessionRepo,
+    services.realtimeNotifier,
+  );
   const acceptInvite = new AcceptInviteUseCase(
     repos.userRepo,
     repos.sessionRepo,

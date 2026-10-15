@@ -173,7 +173,9 @@ export function createAuthRoutes(
     requireAuth,
     validate(changePasswordSchema),
     asyncRoute(async (req, res) => {
-      await useCases.changePassword.execute(req.authUser.id, req.body);
+      const cookieHeader = req.headers.cookie;
+      const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
+      await useCases.changePassword.execute(req.authUser.id, req.body, token);
       return res.status(200).json({ success: true });
     }),
   );

@@ -74,6 +74,14 @@ export class PgSessionRepository implements SessionRepository {
     await pool.query("DELETE FROM sessions WHERE id = $1", [token]);
   }
 
+  async deleteOthersForUser(userId: string, keepToken: string): Promise<string[]> {
+    const result = await pool.query<{ id: string }>(
+      "DELETE FROM sessions WHERE user_id = $1 AND id <> $2 RETURNING id",
+      [userId, keepToken],
+    );
+    return result.rows.map((row) => row.id);
+  }
+
   async deleteAllForUser(userId: string): Promise<void> {
     await pool.query("DELETE FROM sessions WHERE user_id = $1", [userId]);
   }

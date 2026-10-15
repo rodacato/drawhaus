@@ -18,4 +18,6 @@ export interface SessionRepository {
   findUserByToken(token: string): Promise<AuthUser | null>;
   delete(token: string): Promise<void>;
   deleteAllForUser(userId: string): Promise<void>;
+  /** Returns the tokens it ended. */
+  deleteOthersForUser(userId: string, keepToken: string): Promise<string[]>;
 }
