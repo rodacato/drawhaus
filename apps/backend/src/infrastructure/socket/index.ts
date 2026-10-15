@@ -18,6 +18,7 @@ import { registerCursorHandlers } from "./handlers/cursor.handler";
 import { registerCommentHandlers } from "./handlers/comment.handler";
 import { registerLockHandlers } from "./handlers/lock.handler";
 import { config } from "../config";
+import { MAX_PAYLOAD_BYTES } from "../payload-limit";
 import { attachRedisAdapter } from "./redis-adapter";
 import { activeCollaborators } from "../metrics";
 
@@ -38,6 +39,7 @@ export async function setupSocketServer(
 ): Promise<Server> {
   const io = new Server(httpServer, {
     parser: msgpackParser,
+    maxHttpBufferSize: MAX_PAYLOAD_BYTES,
     cors: {
       origin: config.frontendUrl,
       credentials: true,

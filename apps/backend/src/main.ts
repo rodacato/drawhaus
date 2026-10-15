@@ -1,3 +1,4 @@
+import { MAX_PAYLOAD_BYTES } from "./infrastructure/payload-limit";
 import * as Sentry from "@sentry/node";
 import express from "express";
 import cors from "cors";
@@ -91,7 +92,7 @@ app.use(requestLogger);
 registerMetrics(app);
 
 app.use(cors({ origin: config.frontendUrl, credentials: true }));
-app.use(express.json({ limit: "5mb" }));
+app.use(express.json({ limit: MAX_PAYLOAD_BYTES }));
 
 app.get("/health", healthLimiter, async (_req, res) => {
   let database = "ok";
