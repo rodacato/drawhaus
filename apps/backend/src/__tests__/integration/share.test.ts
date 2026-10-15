@@ -120,7 +120,7 @@ function createApp() {
         createLink: new CreateShareLinkUseCase(shares, diagrams),
         resolveLink: new ResolveLinkUseCase(shares, diagrams, diagrams.scenes),
         listLinks: new ListLinksUseCase(shares, diagrams),
-        deleteLink: new DeleteLinkUseCase(shares, new FakeRealtimeNotifier()),
+        deleteLink: new DeleteLinkUseCase(shares, diagrams, new FakeRealtimeNotifier()),
       },
       requireAuth,
     ),

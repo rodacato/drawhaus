@@ -278,7 +278,11 @@ export function createUseCases(repos: Repositories, services: Services) {
   );
   const resolveLink = new ResolveLinkUseCase(repos.shareRepo, repos.diagramRepo, repos.sceneRepo);
   const listLinks = new ListLinksUseCase(repos.shareRepo, repos.diagramRepo);
-  const deleteLink = new DeleteLinkUseCase(repos.shareRepo, services.realtimeNotifier);
+  const deleteLink = new DeleteLinkUseCase(
+    repos.shareRepo,
+    repos.diagramRepo,
+    services.realtimeNotifier,
+  );
 
   // Admin
   const listUsers = new ListUsersUseCase(repos.userRepo);
