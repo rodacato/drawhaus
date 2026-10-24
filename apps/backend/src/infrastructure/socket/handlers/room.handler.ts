@@ -1,5 +1,5 @@
 import type { Server, Socket } from "socket.io";
-import { parse } from "cookie";
+import { parseCookie } from "cookie";
 import { z } from "zod";
 import type { JoinRoomUseCase } from "../../../application/use-cases/realtime/join-room";
 import type { JoinRoomGuestUseCase } from "../../../application/use-cases/realtime/join-room-guest";
@@ -38,7 +38,7 @@ export function registerRoomHandlers(io: Server, socket: Socket, useCases: RoomU
   onEvent(socket, "join-room", joinRoomSchema, async ({ roomId }) => {
     try {
       const cookieHeader = socket.handshake.headers.cookie;
-      const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
+      const token = cookieHeader ? (parseCookie(cookieHeader)[config.cookieName] ?? null) : null;
 
       const result = await useCases.joinRoom.execute(token, roomId);
 
