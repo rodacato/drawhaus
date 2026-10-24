@@ -27,7 +27,20 @@ if (config.sentryDsn) {
     environment: config.sentryEnvironment,
     tracesSampleRate: config.sentryTracesSampleRate,
     release: config.sentryRelease,
-    sendDefaultPii: false,
+    dataCollection: {
+      userInfo: false,
+      cookies: false,
+      httpHeaders: {
+        request: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+        response: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+      },
+      httpBodies: [],
+      urlQueryParams: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+      genAI: { inputs: false, outputs: false },
+      databaseQueryData: false,
+      queues: false,
+      graphQL: { document: false, variables: false },
+    },
     beforeSend(event) {
       if (event.request) {
         delete event.request.data;
@@ -361,6 +374,8 @@ app.use(
 
 // --- Sentry error handler (must be after all routes) ---
 if (config.sentryDsn) {
+  // expressIntegration only auto-captures when Sentry.init runs before `import express`; here it does not.
+  // eslint-disable-next-line sonarjs/deprecation
   Sentry.setupExpressErrorHandler(app);
 }
 
