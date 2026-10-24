@@ -36,7 +36,7 @@
     "helmet": "^8.1.0",
     "ioredis": "^6.0.0",
     "node-cron": "^4.6.0",
-    "node-pg-migrate": "^8.0.4",
+    "node-pg-migrate": "^9.0.0",
     "pg": "^8.20.0",
     "pino": "^10.3.1",
     "prom-client": "^15.1.3",
