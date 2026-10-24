@@ -16,6 +16,7 @@ import { config } from "./infrastructure/config";
 import { runMigrations, pool } from "./infrastructure/db";
 import { logger } from "./infrastructure/logger";
 import { requestId } from "./infrastructure/http/middleware/request-id";
+import { errorHandler } from "./infrastructure/http/middleware/error-handler";
 import { requestLogger } from "./infrastructure/http/middleware/request-logger";
 import { asyncPublicRoute } from "./infrastructure/http/middleware/async-handler";
 import { registerMetrics } from "./infrastructure/metrics";
@@ -379,6 +380,8 @@ if (config.sentryDsn) {
   Sentry.setupExpressErrorHandler(app);
 }
 
+app.use(errorHandler);
+
 // ============================================================
 // Start
 // ============================================================
@@ -447,6 +450,6 @@ async function startServer(): Promise<void> {
 }
 
 startServer().catch((error: unknown) => {
-  logger.fatal(error, "Failed to start backend");
+  logger.fatal({ err: error }, "Failed to start backend");
   process.exit(1);
 });

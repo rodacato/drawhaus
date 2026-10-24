@@ -85,7 +85,7 @@ troubleshooting.
 | `SESSION_SECRET`  | Yes (prod) | `dev-secret`            | Session cookie signing key                                                                                                                                       |
 | `PORT`            | No         | `4000`                  | Server port                                                                                                                                                      |
 | `METRICS_ENABLED` | No         | `false`                 | Set to `true` to expose Prometheus `GET /metrics`. Opt-in — left off, there's no endpoint and no instrumentation overhead                                        |
-| `METRICS_TOKEN`   | No         | —                       | Bearer token guarding `/metrics`. **Required in production** when metrics are enabled (without it the endpoint returns 404); in dev it's optional (open)         |
+| `METRICS_TOKEN`   | No         | —                       | Bearer token guarding `/metrics`. **Required** when metrics are enabled — without it the endpoint returns 404 in every environment         |
 | `FRONTEND_URL`    | Yes (prod) | `http://localhost:5173` | Public frontend URL: CORS and socket origin, links in emails, OAuth redirects. Must be an absolute `http(s)` URL in production; Kamal derives it from `APP_HOST` |
 | `COOKIE_DOMAIN`   | No         | —                       | Cookie domain for subdomain sharing (e.g. `.drawhaus.dev`)                                                                                                       |
 | `REDIS_URL`       | No         | —                       | Redis connection string. Required for multi-container deployments (Socket.IO scaling)                                                                            |
@@ -241,7 +241,7 @@ The backend can expose Prometheus metrics via [`prom-client`](https://github.com
 - **`http_request_duration_seconds`** — request-latency histogram labelled by `method`, matched `route` (e.g. `/api/diagrams/:id`, never the raw URL), and `status_code`.
 - **`drawhaus_active_collaborators`** — gauge of currently connected real-time collaboration clients (Socket.IO). This is the product's core value and main load driver; it's per-process, so `sum()` across instances in PromQL when running multi-container.
 
-`/metrics` is served on the **public hostname** (same `PORT`, behind kamal-proxy/Cloudflare) and gated by a **bearer token** (`METRICS_TOKEN`), so scraping works like any external service — point your Prometheus at `https://your-api-host/metrics` with an `Authorization: Bearer <token>` header, from anywhere, surviving a host migration with no network rewiring. In production the token is **required**: with metrics enabled but no token set, the endpoint returns 404 instead of exposing data unauthenticated.
+`/metrics` is served on the **public hostname** (same `PORT`, behind kamal-proxy/Cloudflare) and gated by a **bearer token** (`METRICS_TOKEN`), so scraping works like any external service — point your Prometheus at `https://your-api-host/metrics` with an `Authorization: Bearer <token>` header, from anywhere, surviving a host migration with no network rewiring. The token is **required**: with metrics enabled but no token set, the endpoint returns 404 (wrong token: 401) instead of exposing data unauthenticated.
 
 ```yaml
 # prometheus.yml

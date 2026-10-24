@@ -80,7 +80,7 @@ export function registerRoomHandlers(io: Server, socket: Socket, useCases: RoomU
         users: await getRoomPresenceUsers(io, roomId),
       });
     } catch (error: unknown) {
-      logger.error(error, "join-room failed");
+      logger.error({ err: error }, "join-room failed");
       socket.emit("room-error", { message: "Join failed" });
     }
   });
@@ -133,7 +133,7 @@ export function registerRoomHandlers(io: Server, socket: Socket, useCases: RoomU
         users: await getRoomPresenceUsers(io, roomId),
       });
     } catch (error: unknown) {
-      logger.error(error, "join-room-guest failed");
+      logger.error({ err: error }, "join-room-guest failed");
       socket.emit("room-error", { message: "Invalid or expired share link" });
     }
   });

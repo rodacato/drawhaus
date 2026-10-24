@@ -17,7 +17,7 @@ export function startWebhookScheduler(service: WebhookDeliveryService): void {
     try {
       await service.drain();
     } catch (err) {
-      logger.error(err, "Webhook delivery poll failed");
+      logger.error({ err }, "Webhook delivery poll failed");
     } finally {
       draining = false;
     }

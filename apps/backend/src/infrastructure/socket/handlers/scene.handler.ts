@@ -248,7 +248,7 @@ export function registerSceneHandlers(
             });
         }
       } catch (error: unknown) {
-        logger.error(error, "save-scene failed");
+        logger.error({ err: error }, "save-scene failed");
         ack?.({ ok: false, reason: "server-error" });
       }
     },

@@ -46,7 +46,7 @@ export async function runMigrations(databaseUrl = config.databaseUrl): Promise<v
       await createBackup();
       logger.info("Pre-migration backup created");
     } catch (err) {
-      logger.warn(err, "Pre-migration backup failed, continuing...");
+      logger.warn({ err }, "Pre-migration backup failed, continuing...");
     }
   }
 
