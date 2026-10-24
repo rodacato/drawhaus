@@ -6,7 +6,7 @@
   "runServices": ["workspace", "db", "redis"],
   "features": {
     "ghcr.io/devcontainers/features/node:2": {
-      "version": "24"
+      "version": "24.22.1"
     },
     "ghcr.io/rails/devcontainer/features/postgres-client:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
