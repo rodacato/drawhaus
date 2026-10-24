@@ -8,6 +8,7 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 ### Changed
 
+- **Express 5 and a dependency refresh.** The backend moves to Express 5.3 (`validateQuery` now shadows the getter-only `req.query` on the instance), `@sentry/vite-plugin` to 11.8 to match the Sentry 11 SDKs, and `zizmorcore/zizmor-action` to 0.7.1. The `@types/cookie` stub is removed because `cookie` 2 ships its own types. Node stays on 24.22.1 for now (Dependabot's Node 26 bumps are not taken).
 - **Logs follow the shared JSON contract.** Level is a string, `time` is ISO-8601, `pid`/`hostname` are dropped, and the per-request child logger carries `request_id` (was `requestId`). Errors are logged as `logger.error({ err }, "message")` so the stack stays inside one JSON line, and a new final Express error handler replaces the default one that printed multi-line stacks. Requests to `/metrics` and `/health` are no longer logged.
 - **`/metrics` is fail-closed in every environment.** Without `METRICS_TOKEN` it returns 404 (it used to be open outside production); a wrong token returns 401.
 
