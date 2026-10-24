@@ -49,7 +49,7 @@ export class WebhookDeliveryService {
     const error = result.error.slice(0, ERROR_MAX_LENGTH);
     if (webhookAttemptsExhausted(delivery.attempts)) {
       logger.warn(
-        { webhookId: webhook.id, deliveryId: delivery.id, attempts: delivery.attempts, error },
+        { webhookId: webhook.id, deliveryId: delivery.id, attempts: delivery.attempts, err: error },
         "Webhook delivery dead-lettered",
       );
       await this.webhooks.markFailed(delivery.id, error);

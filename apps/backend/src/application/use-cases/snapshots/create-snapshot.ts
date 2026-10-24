@@ -91,7 +91,7 @@ export class CreateSnapshotUseCase {
     });
 
     this.snapshots.purgeAuto(scene.diagramId, KEEP_COUNT, KEEP_DAYS).catch((err) => {
-      logger.error(err, "Failed to purge auto-snapshots");
+      logger.error({ err }, "Failed to purge auto-snapshots");
     });
 
     return snapshot;

@@ -6,6 +6,11 @@ All notable changes to Drawhaus are documented here. The format follows [Keep a 
 
 ## [Unreleased]
 
+### Changed
+
+- **Logs follow the shared JSON contract.** Level is a string, `time` is ISO-8601, `pid`/`hostname` are dropped, and the per-request child logger carries `request_id` (was `requestId`). Errors are logged as `logger.error({ err }, "message")` so the stack stays inside one JSON line, and a new final Express error handler replaces the default one that printed multi-line stacks. Requests to `/metrics` and `/health` are no longer logged.
+- **`/metrics` is fail-closed in every environment.** Without `METRICS_TOKEN` it returns 404 (it used to be open outside production); a wrong token returns 401.
+
 ---
 
 ## [0.13.1] - 2026-10-24

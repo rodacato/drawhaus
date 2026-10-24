@@ -127,7 +127,7 @@ export class ResendEmailService implements EmailService {
 
     const { error } = await resend.client.emails.send({ from: resend.from, to, subject, html });
     if (error) {
-      logger.error({ to, subject, error }, "Failed to send email via Resend");
+      logger.error({ to, subject, err: error }, "Failed to send email via Resend");
       throw new Error(`Failed to send email: ${error.message}`);
     }
     logger.info({ to, subject }, "Email sent successfully");

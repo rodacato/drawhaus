@@ -287,11 +287,11 @@ describe("ResendEmailService — send orchestration", () => {
     );
     assert.equal(errorMock.mock.calls.length, 1);
     const [meta, msg] = errorMock.mock.calls[0].arguments as [
-      { to: string; subject: string; error: { message: string } },
+      { to: string; subject: string; err: { message: string } },
       string,
     ];
     assert.equal(meta.to, "user@example.com");
-    assert.equal(meta.error.message, "Invalid API key");
+    assert.equal(meta.err.message, "Invalid API key");
     assert.match(msg, /Failed to send email via Resend/);
   });
 });

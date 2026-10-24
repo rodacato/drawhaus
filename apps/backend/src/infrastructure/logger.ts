@@ -4,6 +4,11 @@ const isProduction = process.env.NODE_ENV === "production";
 
 export const logger = pino({
   level: process.env.LOG_LEVEL ?? (isProduction ? "info" : "debug"),
+  base: undefined,
+  timestamp: pino.stdTimeFunctions.isoTime,
+  formatters: {
+    level: (label) => ({ level: label }),
+  },
   ...(isProduction
     ? {}
     : {
@@ -11,7 +16,6 @@ export const logger = pino({
           target: "pino-pretty",
           options: {
             colorize: true,
-            ignore: "pid,hostname",
             translateTime: "HH:MM:ss",
             messageFormat: "{msg}",
           },

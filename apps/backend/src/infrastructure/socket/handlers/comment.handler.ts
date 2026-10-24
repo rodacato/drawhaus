@@ -76,7 +76,7 @@ export function registerCommentHandlers(
         socket.to(roomId).emit("comment-created", { roomId, thread });
         socket.emit("comment-created", { roomId, thread });
       } catch (error: unknown) {
-        logger.error(error, "comment-create failed");
+        logger.error({ err: error }, "comment-create failed");
         reject(socket, "create", "failed");
       }
     },
@@ -95,7 +95,7 @@ export function registerCommentHandlers(
       socket.to(roomId).emit("comment-replied", { roomId, threadId, reply });
       socket.emit("comment-replied", { roomId, threadId, reply });
     } catch (error: unknown) {
-      logger.error(error, "comment-reply failed");
+      logger.error({ err: error }, "comment-reply failed");
       reject(socket, "reply", "failed");
     }
   });
@@ -117,7 +117,7 @@ export function registerCommentHandlers(
         socket.to(roomId).emit("comment-resolved", { roomId, thread });
         socket.emit("comment-resolved", { roomId, thread });
       } catch (error: unknown) {
-        logger.error(error, "comment-resolve failed");
+        logger.error({ err: error }, "comment-resolve failed");
         reject(socket, "resolve", "failed");
       }
     },
@@ -136,7 +136,7 @@ export function registerCommentHandlers(
       socket.to(roomId).emit("comment-deleted", { roomId, threadId });
       socket.emit("comment-deleted", { roomId, threadId });
     } catch (error: unknown) {
-      logger.error(error, "comment-delete failed");
+      logger.error({ err: error }, "comment-delete failed");
       reject(socket, "delete", "failed");
     }
   });

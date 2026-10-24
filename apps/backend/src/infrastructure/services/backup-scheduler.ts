@@ -35,7 +35,7 @@ export async function startBackupScheduler(): Promise<void> {
         logger.info({ deleted }, "Old backups cleaned up");
       }
     } catch (err) {
-      logger.error(err, "Scheduled backup failed");
+      logger.error({ err }, "Scheduled backup failed");
     }
   });
 

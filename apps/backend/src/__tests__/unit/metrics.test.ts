@@ -6,7 +6,7 @@ import { registerMetrics, registry } from "../../infrastructure/metrics";
 
 const TOKEN = "test-metrics-token";
 
-function appWith(options: { enabled?: boolean; token?: string; isProduction?: boolean }) {
+function appWith(options: { enabled?: boolean; token?: string }) {
   const app = express();
   registerMetrics(app, options);
   return app;
@@ -46,17 +46,8 @@ describe("metrics endpoint", () => {
     );
   });
 
-  it("hides the endpoint in production when no token is configured", async () => {
-    const res = await request(appWith({ enabled: true, token: "", isProduction: true })).get(
-      "/metrics",
-    );
+  it("returns 404 when no token is configured, in any environment", async () => {
+    const res = await request(appWith({ enabled: true, token: "" })).get("/metrics");
     assert.equal(res.status, 404);
-  });
-
-  it("serves openly in dev when no token is configured", async () => {
-    const res = await request(appWith({ enabled: true, token: "", isProduction: false })).get(
-      "/metrics",
-    );
-    assert.equal(res.status, 200);
   });
 });

@@ -40,16 +40,11 @@ function tokenMatches(provided: string, expected: string): boolean {
 }
 
 // /metrics sits on the public hostname (behind kamal-proxy/Cloudflare), so a
-// bearer token gates it. No token configured: hidden in production (404),
-// open in dev for convenience.
-function makeRequireToken(token: string, isProduction: boolean): RequestHandler {
+// bearer token gates it. Fail-closed: no token configured means 404 in every env.
+function makeRequireToken(token: string): RequestHandler {
   return (req, res, next) => {
     if (!token) {
-      if (isProduction) {
-        res.sendStatus(404);
-        return;
-      }
-      next();
+      res.sendStatus(404);
       return;
     }
     const header = req.get("authorization") ?? "";
@@ -68,13 +63,12 @@ let defaultMetricsCollected = false;
 // is mounted, so a self-hoster who wants nothing pays nothing.
 export function registerMetrics(
   app: Express,
-  options: { enabled?: boolean; token?: string; isProduction?: boolean } = {},
+  options: { enabled?: boolean; token?: string } = {},
 ): void {
   const enabled = options.enabled ?? config.metricsEnabled;
   if (!enabled) return;
 
   const token = options.token ?? config.metricsToken;
-  const isProduction = options.isProduction ?? config.nodeEnv === "production";
 
   if (!defaultMetricsCollected) {
     client.collectDefaultMetrics({ register: registry });
@@ -82,7 +76,7 @@ export function registerMetrics(
   }
 
   app.use(metricsMiddleware);
-  app.get("/metrics", makeRequireToken(token, isProduction), async (_req, res) => {
+  app.get("/metrics", makeRequireToken(token), async (_req, res) => {
     res.set("Content-Type", registry.contentType);
     res.end(await registry.metrics());
   });
