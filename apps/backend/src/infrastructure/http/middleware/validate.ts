@@ -34,7 +34,8 @@ export function validateQuery(schema: ZodType) {
         .json({ error: "Invalid query parameters", details: formatIssues(parsed.error.issues) });
       return;
     }
-    (req as unknown as Record<string, unknown>).query = parsed.data;
+    // Express 5 exposes req.query as a getter-only property; shadow it on the instance.
+    Object.defineProperty(req, "query", { value: parsed.data, configurable: true, writable: true });
     next();
   };
 }
