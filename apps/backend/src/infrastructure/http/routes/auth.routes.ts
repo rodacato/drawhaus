@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { parse } from "cookie";
+import { parseCookie } from "cookie";
 import { z } from "zod";
 import type { RegisterUseCase } from "../../../application/use-cases/auth/register";
 import type { LoginUseCase } from "../../../application/use-cases/auth/login";
@@ -141,7 +141,7 @@ export function createAuthRoutes(
     "/logout",
     asyncPublicRoute(async (req, res) => {
       const cookieHeader = req.headers.cookie;
-      const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
+      const token = cookieHeader ? (parseCookie(cookieHeader)[config.cookieName] ?? null) : null;
       await useCases.logout.execute(token);
       res.clearCookie(config.cookieName, getClearCookieOptions());
       return res.status(200).json({ success: true });
@@ -152,7 +152,7 @@ export function createAuthRoutes(
     "/me",
     asyncPublicRoute(async (req, res) => {
       const cookieHeader = req.headers.cookie;
-      const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
+      const token = cookieHeader ? (parseCookie(cookieHeader)[config.cookieName] ?? null) : null;
       const user = await useCases.getCurrentUser.execute(token);
       return res.status(200).json({ user });
     }),
@@ -174,7 +174,7 @@ export function createAuthRoutes(
     validate(changePasswordSchema),
     asyncRoute(async (req, res) => {
       const cookieHeader = req.headers.cookie;
-      const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
+      const token = cookieHeader ? (parseCookie(cookieHeader)[config.cookieName] ?? null) : null;
       await useCases.changePassword.execute(req.authUser.id, req.body, token);
       return res.status(200).json({ success: true });
     }),
@@ -282,7 +282,7 @@ export function createAuthRoutes(
     asyncPublicRoute(async (req, res) => {
       const { code, state } = req.query;
       const cookieHeader = req.headers.cookie;
-      const rawState = cookieHeader ? (parse(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
+      const rawState = cookieHeader ? (parseCookie(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
 
       clearOAuthStateCookie(res);
 
@@ -352,7 +352,7 @@ export function createAuthRoutes(
     asyncPublicRoute(async (req, res) => {
       const { code, state } = req.query;
       const cookieHeader = req.headers.cookie;
-      const rawState = cookieHeader ? (parse(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
+      const rawState = cookieHeader ? (parseCookie(cookieHeader)["drawhaus_oauth_state"] ?? null) : null;
 
       clearOAuthStateCookie(res);
 

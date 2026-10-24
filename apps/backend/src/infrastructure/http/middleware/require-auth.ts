@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { parse } from "cookie";
+import { parseCookie } from "cookie";
 import type { GetCurrentUserUseCase } from "../../../application/use-cases/auth/get-current-user";
 import type { AuthedRequest } from "./async-handler";
 import { config } from "../../config";
@@ -12,7 +12,7 @@ export function createRequireAuth(getCurrentUser: GetCurrentUserUseCase) {
   ): Promise<void> {
     try {
       const cookieHeader = req.headers.cookie;
-      const token = cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null;
+      const token = cookieHeader ? (parseCookie(cookieHeader)[config.cookieName] ?? null) : null;
       const user = await getCurrentUser.execute(token);
 
       if (user.disabled) {

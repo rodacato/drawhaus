@@ -1,5 +1,5 @@
 import type { ExtendedError, Socket } from "socket.io";
-import { parse } from "cookie";
+import { parseCookie } from "cookie";
 import { z } from "zod";
 import type {
   AuthenticateSocketUseCase,
@@ -17,7 +17,7 @@ function credentialsOf(handshake: Socket["handshake"]): SocketCredentials {
   const cookieHeader = handshake.headers.cookie;
   const parsed = handshakeAuthSchema.safeParse(handshake.auth);
   return {
-    sessionToken: cookieHeader ? (parse(cookieHeader)[config.cookieName] ?? null) : null,
+    sessionToken: cookieHeader ? (parseCookie(cookieHeader)[config.cookieName] ?? null) : null,
     shareToken: parsed.success ? parsed.data.shareToken : null,
   };
 }
