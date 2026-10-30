@@ -1,6 +1,6 @@
 # Use slim (glibc) for builder — Alpine/musl breaks npm optional deps
 # for native bindings (rollup, lightningcss) even with npm install
-FROM node:24.22.1-slim AS builder
+FROM node:26.12.0-slim AS builder
 WORKDIR /app
 
 # Copy all package manifests for workspace resolution
@@ -26,7 +26,7 @@ RUN npm run build --workspace=@drawhaus/helpers \
  && npm run build --workspace=backend
 
 # ── Production ──
-FROM node:24.22.1-alpine AS production
+FROM node:26.12.1-alpine AS production
 RUN apk add --no-cache postgresql16-client
 WORKDIR /app
 
