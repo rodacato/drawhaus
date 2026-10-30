@@ -17,8 +17,32 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Skip if idle
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      # Re-running a suite on code it already passed only spends shared runners. Mondays still run,
+      # to catch browser and dependency drift. 30 hours because a scheduled start can slip by hours.
+      - id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          since=$(date -u -d '30 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+          commits=$(gh api "repos/$GITHUB_REPOSITORY/commits?sha=$GITHUB_SHA&since=$since&per_page=1" --jq length) || commits=1
+          if [ "$EVENT" != schedule ] || [ "$(date -u +%u)" = 1 ] || [ "$commits" != 0 ]; then
+            echo "run=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "run=false" >>"$GITHUB_OUTPUT"
+          fi
+
   e2e-full:
     name: E2E Full
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
