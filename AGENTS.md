@@ -35,18 +35,25 @@ This project is built with an AI-first workflow. Agents should maximize delivery
 ## Working Rules
 
 - Default to shipping thin vertical slices end-to-end.
-- Work from a Project item; capture new work there before starting it.
+- Work from a Project item; capture new planned work there before starting it (maintenance can go straight to a PR).
 - Keep code changes small, reviewable, and reversible.
 - Every change should include basic validation steps.
 - Security and auth checks are required for API/socket changes.
 
 ## Project-First Workflow
 
-1. Capture each request as a draft item in the GitHub Project (Status, Priority, Area, Kind) with acceptance criteria that include a negative case. Items are private drafts; never open a public issue for a security finding ([SECURITY.md](SECURITY.md)).
-2. Move the item to In Progress and implement it on a branch.
-3. Open PRs early, small, and focused; name the Project item in the PR body.
-4. Run GitHub Actions on each PR.
-5. Merge only when CI is green and acceptance criteria are met, then move the item to Done.
+Two lanes reach a PR ([docs/WORKFLOW.md](docs/WORKFLOW.md)).
+
+**Planned work** (features, ideas, debt someone decided to pay):
+
+1. Capture each request as a draft item in the GitHub Project (Status, Priority, Area, Kind) with acceptance criteria that include a negative case. It stays a draft until work starts.
+2. Spec, expert panel and ADR only when needed: a spec when options need weighing, an ADR when a decision was made (it lands in the same PR).
+3. When work starts, convert the draft with the Project's "Convert to issue" (never a fresh duplicate issue), move it to In Progress and implement it on a branch. Security items are never converted; they stay drafts ([SECURITY.md](SECURITY.md)).
+4. Open PRs early, small, and focused; the PR body says `Closes #N`.
+5. Run GitHub Actions on each PR.
+6. Merge only when CI is green and acceptance criteria are met, then move the item to Done.
+
+**Maintenance** found while working (fix, chore, docs, ci, dependency bumps) may go straight to a PR with no item and no issue; the PR body says what changed, why, and how it was verified. If it changes behaviour a user would notice, it was planned work: capture it.
 
 ## Definition of Done (MVP)
 

@@ -34,19 +34,25 @@ This workflow is tool-agnostic — it works with Claude Code, Cursor, Windsurf, 
 
 ## The Build Cycle
 
-Every feature follows this path:
+Work reaches a PR by one of two lanes.
+
+**Planned work** — features, ideas, debt someone decided to pay:
 
 ```
-Idea → Project item → Spec → Implement → Test → Release
-         ↑                   ↓
-         └── ADR (if architectural decision needed)
+Draft item → [Spec] → [Expert panel] → Convert to issue → Implement → PR (Closes #N) → Release
+                                                                        ↑
+                                                         [ADR, in the same PR]
 ```
+
+Bracketed steps are conditional: a spec when there are options to weigh or a plan worth writing, the panel when the tradeoffs are cross-cutting, an ADR when a decision was made. Most changes skip some or all of them.
+
+**Maintenance** found while working — fixes, chores, docs, CI, dependency bumps — may go straight to a PR, with no Project item and no issue. The PR body is the record: what changed, why, and how it was verified. A maintenance PR that changes behaviour a user would notice was planned work: give it a Project item.
 
 ### 1. Capture the idea
 
-Add a draft item to the GitHub Project with Status `Todo`, Priority, Area and Kind, a one-line summary, an effort estimate (Sizing Key in `docs/ROADMAP.md`) and acceptance criteria that include a negative case. Items are private drafts; security findings never go to public issues ([SECURITY.md](../SECURITY.md)).
+Add a draft item to the GitHub Project with Status `Todo`, Priority, Area and Kind, a one-line summary, an effort estimate (Sizing Key in `docs/ROADMAP.md`) and acceptance criteria that include a negative case. It stays a draft until work starts. Security findings stay drafts for good, never issues ([SECURITY.md](../SECURITY.md)).
 
-### 2. Write a spec (when ready to build)
+### 2. Write a spec (when options need weighing)
 
 Create `docs/specs/<feature-name>.md` with:
 
@@ -55,7 +61,7 @@ Create `docs/specs/<feature-name>.md` with:
 - **File-by-file plan** — specific files to create or modify.
 - **Verification steps** — concrete steps to confirm it works.
 
-Link the spec from the Project item.
+Link the spec from the Project item. When the spec closes, its status line says where it went: `Decided in ADR-NNN`, `Shipped`, `Discarded`, or `Reference only`.
 
 ### 3. Consult the expert panel (when uncertain)
 
@@ -67,9 +73,9 @@ For cross-cutting decisions, consult `docs/EXPERTS.md`:
 "Product + Growth: which approach serves the ICP better?"
 ```
 
-### 4. Record architectural decisions
+### 4. Record architectural decisions (when a decision was made)
 
-If a decision was non-trivial (debated >5 min, involved tradeoffs), write an ADR in `docs/adr/`:
+If a decision was non-trivial (debated >5 min, involved tradeoffs), write an ADR in `docs/adr/`. An ADR born from the work lands in the PR that carries that work:
 
 ```
 docs/adr/NNN-short-title.md
@@ -80,7 +86,7 @@ Format:
 ```markdown
 # ADR-NNN: Title
 
-**Status:** accepted | superseded | deprecated
+**Status:** accepted | accepted · amended YYYY-MM-DD | superseded by ADR-NNN | superseded in part by ADR-NNN | deprecated
 **Date:** YYYY-MM-DD
 
 ## Context
@@ -92,13 +98,19 @@ Format:
 ## Consequences
 ```
 
+One status line per ADR. Changing a recorded decision:
+
+- **Refinement that leaves the decision standing** → append a dated `## Amendment, YYYY-MM-DD` section and set the status to `accepted · amended YYYY-MM-DD`.
+- **New or reversed decision** → write a new ADR; the old one's status becomes `superseded by ADR-NNN` or `superseded in part by ADR-NNN`.
+
 The Decision Log in `docs/ROADMAP.md` serves as an executive summary. ADRs hold the full reasoning.
 
 ### 5. Implement
 
-- Follow the spec. Reference `CLAUDE.md` for conventions.
+- When work starts, convert the draft with the Project's **Convert to issue** — never open a fresh duplicate issue — and move it to `In Progress`. Security items skip the conversion and stay drafts.
+- Follow the spec if there is one. Reference `CLAUDE.md` for conventions.
 - Keep changes small, reviewable, and reversible.
-- Move the Project item to `In Progress`, and to `Done` once merged.
+- The PR body says `Closes #N` for the converted issue; the item moves to `Done` once merged.
 
 ### 6. Test & ship
 
@@ -135,7 +147,7 @@ When making changes, update corresponding docs **in the same commit**:
 - New features shipped → `CHANGELOG.md` + "What's Been Built" in `docs/ROADMAP.md` + Project item to `Done`
 - New frontend routes → `README.md` Routes table
 - Architectural decisions → `docs/adr/` + Decision Log in `docs/ROADMAP.md`
-- New work or findings → draft item in the GitHub Project
+- New planned work or findings → draft item in the GitHub Project (maintenance can go straight to a PR)
 
 ---
 
