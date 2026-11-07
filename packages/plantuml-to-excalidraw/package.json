@@ -28,11 +28,11 @@
   },
   "dependencies": {
     "@drawhaus/helpers": "*",
-    "pako": "^3.0.2"
+    "pako": "^3.0.3"
   },
   "devDependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
