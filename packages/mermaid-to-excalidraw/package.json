@@ -28,19 +28,19 @@
   "dependencies": {
     "@drawhaus/helpers": "*",
     "@excalidraw/mermaid-to-excalidraw": "^2.2.2",
-    "mermaid": "^12.0.0"
+    "mermaid": "^12.3.0"
   },
   "devDependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-react": "^6.3.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "tsup": "^9.0.0",
     "tsx": "^4.19.4",
-    "vite": "^8.3.0"
+    "vite": "^8.3.8"
   },
   "engines": {
     "node": ">=24.22.1"
